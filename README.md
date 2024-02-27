@@ -16,9 +16,17 @@
 
 Not yet deployed.
 
-### Deployment
+## Deployment
 
 Not yet deployed.
+
+## Usage
+
+- Clone the repository: `git clone https://github.com/Hombre/job-tracker-frontend`
+- Change the directory: `cd job-tracker-frontend`
+- Install the dependencies: `yarn install` or `npm install`
+- Run the app: `yarn dev` or `npm run dev`
+- Open browser: `http://localhost:3000`
 
 ## Authors
 
