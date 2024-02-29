@@ -42,6 +42,14 @@ Not yet deployed.
 - Twitter: [@Chamkoriyski](https://twitter.com/Chamkoriyski)
 - LinkedIn: [axebit](https://linkedin.com/in/axebit)
 
+## Design
+
+👤 **Amadu Kamara (Amkam)**
+
+- GitHub: [@AmaduKamara](https://github.com/AmaduKamara)
+- Twitter: [@DevAmkam](https://twitter.com/DevAmkam)
+- LinkedIn: [Amadu Kamara](https://amadu-kamara-3b60a25b)
+
 ## 🤝 Contributing
 
 Contributions, issues, and feature requests are welcome!
