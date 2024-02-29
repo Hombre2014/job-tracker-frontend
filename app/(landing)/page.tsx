@@ -1,11 +1,17 @@
+import ContentSection from '@/components/LandingPage/ContentSection';
+import Footer from '@/components/LandingPage/Footer';
+import HeroSection from '@/components/LandingPage/HeroSection';
+import Navbar from '@/components/LandingPage/Navbar';
+import { Fragment } from 'react';
+
 const Home = () => {
   return (
-    <div className="flex flex-col items-center justify-center">
-      <h1 className="text-3xl font-bold">Job Tracker</h1>
-      <p className="text-lg text-slate-600">
-        Track your job applications online
-      </p>
-    </div>
+    <Fragment>
+      <Navbar />
+      <HeroSection />
+      <ContentSection />
+      <Footer />
+    </Fragment>
   );
 };
 
