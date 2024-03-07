@@ -4,12 +4,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Fragment } from 'react';
 import { ModeToggle } from '@/components/mode-toggle';
+import HamburgerMenu from '@/components/HamburgerMenu';
 
 const Navbar = () => {
   return (
     <Fragment>
       <div className="w-full h-8 z-50 fixed bg-white dark:bg-black" />
       <header className="flex gap-x-8 w-5/6 mx-auto fixed top-8 left-0 right-0 z-50 pb-8 bg-white dark:bg-black">
+        <HamburgerMenu />
         <Link href="/">
           <div className="flex items-center gap-x-2 w-64">
             <Image
