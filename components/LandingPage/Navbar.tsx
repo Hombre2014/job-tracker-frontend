@@ -3,8 +3,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Fragment } from 'react';
-import { ModeToggle } from '@/components/mode-toggle';
-import HamburgerMenu from '@/components/HamburgerMenu';
+import { ModeToggle } from '@/components/Themes/mode-toggle';
+import HamburgerMenu from '@/components/Hamburger/HamburgerMenu';
 
 const Navbar = () => {
   return (
@@ -39,10 +39,10 @@ const Navbar = () => {
           <nav className="flex items-center gap-x-2 mr-2">
             <ul className="flex gap-x-2">
               <li className="font-semibold p-2 rounded-md hover:bg-slate-100 transition duration-300 delay-150 dark:hover:bg-slate-800">
-                <Link href="">Log in</Link>
+                <Link href="/login">Log in</Link>
               </li>
               <li className="font-semibold p-2 bg-blue-500 text-white rounded-md">
-                <Link href="">Sign up</Link>
+                <Link href="/signup">Sign up</Link>
               </li>
             </ul>
           </nav>
