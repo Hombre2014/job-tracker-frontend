@@ -3,7 +3,7 @@
 const HamburgerIcon = () => (
   <div className="p-1/2">
     <svg
-      className="w-8 h-8 text-gray-500"
+      className="w-8 h-8 text-gray-700 dark:text-gray-200"
       fill="none"
       strokeLinecap="round"
       strokeLinejoin="round"

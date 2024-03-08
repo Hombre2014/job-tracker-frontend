@@ -9,11 +9,9 @@ import HamburgerMenu from '@/components/HamburgerMenu';
 const Navbar = () => {
   return (
     <Fragment>
-      <div className="w-full h-8 z-50 fixed bg-white dark:bg-black" />
-      <header className="flex gap-x-8 w-5/6 mx-auto fixed top-8 left-0 right-0 z-50 pb-8 bg-white dark:bg-black">
-        <HamburgerMenu />
+      <header className="md:flex gap-x-1 w-11/12 mx-auto fixed top-0 left-0 right-0 z-50 py-8 bg-white dark:bg-black justify-between flex xl:w-5/6 2xl:w-2/3">
         <Link href="/">
-          <div className="flex items-center gap-x-2 w-64">
+          <div className="flex items-center gap-x-1 w-44">
             <Image
               src="/images/logo.png"
               alt="Logo"
@@ -24,9 +22,9 @@ const Navbar = () => {
             <h1 className="text-2xl font-bold">JobTracker</h1>
           </div>
         </Link>
-        <div className="flex items-center justify-between gap-x-8 w-full">
+        <div className="items-center justify-between gap-x-2 w-full hidden md:flex">
           <nav className="flex items-center gap-x-2">
-            <ul className="flex gap-x-4">
+            <ul className="flex gap-x-2">
               <li className="font-semibold p-2 rounded-md hover:bg-slate-100 transition duration-300 delay-150 dark:hover:bg-slate-800">
                 <Link href="#applications">Applications </Link>
               </li>
@@ -38,17 +36,22 @@ const Navbar = () => {
               </li>
             </ul>
           </nav>
-          <nav className="flex items-center gap-x-2">
-            <ModeToggle />
-            <ul className="flex gap-x-4">
+          <nav className="flex items-center gap-x-2 mr-2">
+            <ul className="flex gap-x-2">
               <li className="font-semibold p-2 rounded-md hover:bg-slate-100 transition duration-300 delay-150 dark:hover:bg-slate-800">
                 <Link href="">Log in</Link>
               </li>
               <li className="font-semibold p-2 bg-blue-500 text-white rounded-md">
-                <Link href="">Sign up for free</Link>
+                <Link href="">Sign up</Link>
               </li>
             </ul>
           </nav>
+        </div>
+        <div className="flex items-center gap-x-1">
+          <ModeToggle />
+          <div className="flex md:hidden ml-2">
+            <HamburgerMenu />
+          </div>
         </div>
       </header>
     </Fragment>
