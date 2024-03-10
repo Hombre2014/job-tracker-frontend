@@ -7,7 +7,7 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <>
       <main className="h-full overflow-auto flex">
-        <div className="w-48 h-full border-r-2 border-slate-200">
+        <div className="hidden md:flex w-48 h-full border-r-2 border-slate-200">
           <Link href="/">
             <Image
               src="/images/logo.png"
@@ -18,7 +18,7 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
             />
           </Link>
         </div>
-        <div className="flex flex-col items-center justify-center h-full w-full">
+        <div className="flex flex-col items-center justify-center h-full w-full mx-4">
           {children}
         </div>
       </main>
