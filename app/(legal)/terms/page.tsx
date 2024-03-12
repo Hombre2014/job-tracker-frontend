@@ -5,9 +5,7 @@ import Link from 'next/link';
 const Terms = () => {
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-8">
-        JobsTracker Terms and Conditions
-      </h1>
+      <h1 className="text-3xl font-bold mb-8">JobsTracker Terms of Service</h1>
       <p className="mb-8 mt-2">Last updated: March 10, 2024</p>
       <p className="mb-8 mt-2">
         These terms and conditions outline the rules and regulations for the use

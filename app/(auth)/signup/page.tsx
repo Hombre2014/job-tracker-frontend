@@ -96,7 +96,7 @@ const SignUp = () => {
       <p className="text-slate-500 text-sm mt-6">
         By continuing, you agree to JobTracker&apos;s <br />
         <Link href="/terms" className="text-blue-500">
-          Terms of Service
+          Terms of Service{' '}
         </Link>
         and{' '}
         <Link href="/privacy" className="text-blue-500">
