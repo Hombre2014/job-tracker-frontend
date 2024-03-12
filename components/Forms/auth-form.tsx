@@ -30,6 +30,7 @@ interface AuthFormProps {
   successMessage: string;
   noteTitle?: string;
   noteText?: string;
+  passwordVisibility?: boolean;
 }
 
 const AuthForm = ({
@@ -40,6 +41,7 @@ const AuthForm = ({
   successMessage,
   noteTitle,
   noteText,
+  passwordVisibility = true,
 }: AuthFormProps) => {
   const form = useForm({
     resolver: zodResolver(schema),
@@ -70,19 +72,21 @@ const AuthForm = ({
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder="********" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {passwordVisibility && (
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="********" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
         </div>
         <p className="text-slate-500 text-sm">
           <span className="font-semibold">{noteTitle}</span> {noteText}

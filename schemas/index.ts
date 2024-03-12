@@ -17,3 +17,9 @@ export const LoginSchema = z.object({
     message: 'Password is required',
   }),
 });
+
+export const ForgotPasswordSchema = z.object({
+  email: z.string().email({
+    message: 'Email is required',
+  }),
+});
