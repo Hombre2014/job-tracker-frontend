@@ -1,34 +1,12 @@
 'use client';
 
 import * as z from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-
-import { LoginSchema } from '@/schemas';
-import { Input } from '@/components/ui/input';
-
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
-import { FormError } from '@/components/Forms/form-error';
-import { FormSuccess } from '@/components/Forms/form-success';
 import Link from 'next/link';
 
-const Login = () => {
-  const form = useForm<z.infer<typeof LoginSchema>>({
-    resolver: zodResolver(LoginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
-  });
+import { LoginSchema } from '@/schemas';
+import AuthForm from '@/components/Forms/auth-form';
 
+const Login = () => {
   const onSubmit = (values: z.infer<typeof LoginSchema>) => {
     console.log(values);
   };
@@ -37,50 +15,13 @@ const Login = () => {
     <div className="flex flex-col items-left justify-center h-full min-w-[330px] mx-4">
       <h1 className="text-4xl font-semibold">Log in</h1>
       <p className="text-slate-500 mt-2 mb-6">Log into your account</p>
-      <Form {...form}>
-        <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="john.doe@domain.com"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" placeholder="********" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <FormError message="" />
-          <FormSuccess message="" />
-          <Button
-            type="submit"
-            className="w-full bg-blue-500 transition duration-300 delay-100 hover:bg-blue-600"
-          >
-            Log in
-          </Button>
-        </form>
-      </Form>
+      <AuthForm
+        schema={LoginSchema}
+        onSubmit={onSubmit}
+        buttonText="Log in"
+        errorMessage=""
+        successMessage=""
+      />
       <p className="text-slate-500 text-sm mt-6">
         Don&apos;t have an account?{' '}
         <Link href="/signup" className="text-blue-500 font-semibold">
