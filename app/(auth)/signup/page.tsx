@@ -2,7 +2,7 @@
 
 import * as z from 'zod';
 import Link from 'next/link';
-// import axios from 'axios';
+import axios from 'axios';
 
 import { RegisterSchema } from '@/schemas';
 import AuthForm from '@/components/Forms/auth-form';
@@ -12,39 +12,39 @@ const SignUp = () => {
     const { email, password, role = 'user' } = values;
     console.log({ email, password, role });
 
-    // axios
-    //   .post(
-    //     'http://localhost:3000/users',
-    //     { email, password, role },
-    //     {
-    //       headers: {
-    //         'Access-Control-Allow-Origin': 'no-cors',
-    //         'Content-Type': 'application/json',
-    //       },
-    //     }
-    //   )
-    //   .then((res) => {
-    //     console.log(res.data);
-    //   })
-    //   .catch((err) => {
-    //     console.log(err);
-    //   });
-
-    const res = await fetch('http://localhost:3000/users', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': 'no-cors',
-      },
-      body: JSON.stringify({ email, password, role }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log(data);
+    const res = await axios
+      .post(
+        'http://localhost:3000/users',
+        { email, password, role }
+        // {
+        //   headers: {
+        //     'Content-Type': 'application/json',
+        //   },
+        // }
+      )
+      .then((res) => {
+        console.log(res.data);
+        return res;
       })
       .catch((err) => {
         console.log(err);
       });
+
+    //   const res = await fetch('http://localhost:3000/users', {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //       'Access-Control-Allow-Origin': 'no-cors',
+    //     },
+    //     body: JSON.stringify({ email, password, role }),
+    //   })
+    //     .then((res) => res.json())
+    //     .then((data) => {
+    //       console.log(data);
+    //     })
+    //     .catch((err) => {
+    //       console.log(err);
+    //     });
   };
 
   return (
