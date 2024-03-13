@@ -10,41 +10,23 @@ import AuthForm from '@/components/Forms/auth-form';
 const SignUp = () => {
   const onSubmit = async (values: z.infer<typeof RegisterSchema>) => {
     const { email, password, role = 'user' } = values;
-    console.log({ email, password, role });
 
     const res = await axios
       .post(
         'http://localhost:3000/users',
-        { email, password, role }
-        // {
-        //   headers: {
-        //     'Content-Type': 'application/json',
-        //   },
-        // }
+        { email, password, role },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
       )
       .then((res) => {
-        console.log(res.data);
         return res;
       })
       .catch((err) => {
         console.log(err);
       });
-
-    //   const res = await fetch('http://localhost:3000/users', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //       'Access-Control-Allow-Origin': 'no-cors',
-    //     },
-    //     body: JSON.stringify({ email, password, role }),
-    //   })
-    //     .then((res) => res.json())
-    //     .then((data) => {
-    //       console.log(data);
-    //     })
-    //     .catch((err) => {
-    //       console.log(err);
-    //     });
   };
 
   return (
