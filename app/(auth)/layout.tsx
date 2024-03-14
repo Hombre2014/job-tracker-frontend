@@ -18,7 +18,7 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
             />
           </Link>
         </div>
-        <div className="flex flex-col items-center justify-center h-full w-full mx-4">
+        <div className="flex flex-col items-center justify-center h-full w-full mx-auto">
           {children}
         </div>
       </main>

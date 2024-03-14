@@ -54,8 +54,8 @@ const VerifyEmail = () => {
   };
 
   return (
-    <div className="flex">
-      <div className="flex flex-col items-left h-full min-w-[330px] mx-4">
+    <div className="flex flex-col md:flex-row items-center justify-center gap-y-10 mx-4">
+      <div className="flex flex-col items-left h-full md:min-w-[330px] mx-4">
         <h1 className="text-4xl font-semibold">Verify Email</h1>
         <p className="text-slate-500 mt-2 mb-6">
           Enter the code sent to {user.email}
