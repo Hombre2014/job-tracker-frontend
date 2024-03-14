@@ -37,7 +37,6 @@ const SignUp = () => {
 
   const onSubmit = async (values: z.infer<typeof RegisterSchema>) => {
     setError('');
-    // setSuccess('');
     const { email, password, role = 'user' } = values;
     localStorage.setItem('user', JSON.stringify({ email, role }));
 

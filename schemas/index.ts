@@ -25,10 +25,9 @@ export const ForgotPasswordSchema = z.object({
   }),
 });
 
+// TODO: This is always true from restriction on the input in verify-email component. It never triggers an error message! Refactor
 export const VerifyEmailSchema = z.object({
-  code: z
-    .string()
-    .refine((value) => value.length === 6 && /^\d+$/.test(value), {
-      message: 'The code must be exactly 6 digits.',
-    }),
+  code: z.string().max(6, {
+    message: 'Invalid code',
+  }),
 });

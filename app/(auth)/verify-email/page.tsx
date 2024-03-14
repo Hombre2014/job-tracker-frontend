@@ -3,7 +3,7 @@
 import * as z from 'zod';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { VerifyEmailSchema } from '@/schemas';
@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/form';
 
 const VerifyEmail = () => {
+  const formRef = useRef<HTMLInputElement>(null);
   const form = useForm<z.infer<typeof VerifyEmailSchema>>({
     resolver: zodResolver(VerifyEmailSchema),
     defaultValues: {
@@ -29,8 +30,9 @@ const VerifyEmail = () => {
 
   const [user, setUser] = useState<any>({});
   const [buttonEnabled, setButtonEnabled] = useState<boolean>(false);
-  const onSubmit = (values: z.infer<typeof VerifyEmailSchema>) => {
-    console.log(values);
+  const onSubmit = () => {
+    // TODO: Implement
+    console.log('FormRef: ', formRef.current?.value);
   };
 
   useEffect(() => {
@@ -43,7 +45,7 @@ const VerifyEmail = () => {
     console.log('Resend');
   };
 
-  const handleInput = (e: any) => {
+  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.value.length === 6) {
       if (/^[0-9]+$/.test(e.target.value)) {
         setButtonEnabled(true);
@@ -66,7 +68,7 @@ const VerifyEmail = () => {
               <FormField
                 control={form.control}
                 name="code"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <FormLabel>Verification code</FormLabel>
                     <FormControl>
@@ -74,10 +76,11 @@ const VerifyEmail = () => {
                         maxLength={6}
                         minLength={6}
                         pattern="[0-9]*"
+                        name="code"
+                        ref={formRef}
                         onChange={handleInput}
-                        type="code"
+                        type="text"
                         placeholder="Enter 6 digits code"
-                        // {...field}
                       />
                     </FormControl>
                     <FormMessage />
