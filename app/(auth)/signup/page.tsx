@@ -3,8 +3,10 @@
 import * as z from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import axios from 'axios';
+import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 
+import client from '@/api/client';
 import { RegisterSchema } from '@/schemas';
 import { Input } from '@/components/ui/input';
 
@@ -18,10 +20,13 @@ import {
 } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { FormError } from '@/components/Forms/form-error';
-import { FormSuccess } from '@/components/Forms/form-success';
 import Link from 'next/link';
 
 const SignUp = () => {
+  const router = useRouter();
+  const [error, setError] = useState<string | undefined>('');
+  const [isPending, startTransition] = useTransition();
+
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
@@ -31,24 +36,23 @@ const SignUp = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof RegisterSchema>) => {
+    setError('');
+    // setSuccess('');
     const { email, password, role = 'user' } = values;
+    localStorage.setItem('user', JSON.stringify({ email, role }));
 
-    const res = await axios
-      .post(
-        'http://localhost:3000/users',
-        { email, password, role },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-      .then((res) => {
-        return res;
-      })
-      .catch((err) => {
-        console.log(err);
+    startTransition(async () => {
+      const res = await client.post('/users', {
+        email,
+        password,
+        role,
       });
+      if (res.status === 201) {
+        router.push('/verify-email');
+      } else {
+        setError(res.data.message);
+      }
+    });
   };
 
   return (
@@ -68,6 +72,7 @@ const SignUp = () => {
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
+                      disabled={isPending}
                       type="email"
                       placeholder="john.doe@domain.com"
                       {...field}
@@ -84,7 +89,12 @@ const SignUp = () => {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="********" {...field} />
+                    <Input
+                      disabled={isPending}
+                      type="password"
+                      placeholder="********"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -95,11 +105,11 @@ const SignUp = () => {
             <span className="font-semibold">*At least:</span> 8 characters, 1
             number, 1 upper, 1 lower.
           </p>
-          <FormError message="" />
-          <FormSuccess message="" />
+          <FormError message={error} />
           <Button
+            disabled={isPending}
             type="submit"
-            className="w-full bg-blue-500 transition duration-300 delay-100 hover:bg-blue-600"
+            className="w-full bg-blue-500 transition duration-300 delay-100 hover:bg-blue-600 dark:text-white"
           >
             Create Account
           </Button>

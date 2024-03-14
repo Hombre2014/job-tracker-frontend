@@ -75,7 +75,7 @@ const Login = () => {
           <FormSuccess message="" />
           <Button
             type="submit"
-            className="w-full bg-blue-500 transition duration-300 delay-100 hover:bg-blue-600"
+            className="w-full bg-blue-500 transition duration-300 delay-100 hover:bg-blue-600 dark:text-white"
           >
             Log in
           </Button>

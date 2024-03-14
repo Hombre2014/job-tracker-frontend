@@ -24,3 +24,11 @@ export const ForgotPasswordSchema = z.object({
     message: 'Email is required',
   }),
 });
+
+export const VerifyEmailSchema = z.object({
+  code: z
+    .string()
+    .refine((value) => value.length === 6 && /^\d+$/.test(value), {
+      message: 'The code must be exactly 6 digits.',
+    }),
+});
