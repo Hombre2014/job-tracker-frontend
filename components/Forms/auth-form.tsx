@@ -31,6 +31,9 @@ interface AuthFormProps {
   noteTitle?: string;
   noteText?: string;
   passwordVisibility?: boolean;
+  label: string;
+  placeholder: string;
+  type: string;
 }
 
 const AuthForm = ({
@@ -42,6 +45,9 @@ const AuthForm = ({
   noteTitle,
   noteText,
   passwordVisibility = true,
+  label,
+  placeholder,
+  type,
 }: AuthFormProps) => {
   const form = useForm({
     resolver: zodResolver(schema),
@@ -60,13 +66,9 @@ const AuthForm = ({
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>{label}</FormLabel>
                 <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="john.doe@domain.com"
-                    {...field}
-                  />
+                  <Input type={type} placeholder={placeholder} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

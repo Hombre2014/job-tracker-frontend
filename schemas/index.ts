@@ -7,6 +7,7 @@ export const RegisterSchema = z.object({
   password: z.string().min(8, {
     message: 'Minimum 8 characters required',
   }),
+  role: z.string().optional(),
 });
 
 export const LoginSchema = z.object({
@@ -21,5 +22,12 @@ export const LoginSchema = z.object({
 export const ForgotPasswordSchema = z.object({
   email: z.string().email({
     message: 'Email is required',
+  }),
+});
+
+// TODO: This is always true from restriction on the input in verify-email component. It never triggers an error message! Refactor
+export const VerifyEmailSchema = z.object({
+  code: z.string().max(6, {
+    message: 'Invalid code',
   }),
 });
