@@ -2,7 +2,7 @@
 
 const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="mx-auto w-full text-slate-700 dark:text-slate-300">
+    <div className="mx-auto w-full h-full text-slate-700 dark:text-slate-300">
       {children}
     </div>
   );
