@@ -1,14 +1,14 @@
 'use client';
 
 import * as z from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-import { LoginSchema } from '@/schemas';
+import { ForgotPasswordSchema } from '@/schemas';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-
 import {
   Form,
   FormControl,
@@ -19,16 +19,19 @@ import {
 } from '@/components/ui/form';
 
 const ForgotPassword: React.FC = () => {
-  const form = useForm<z.infer<typeof LoginSchema>>({
-    resolver: zodResolver(LoginSchema),
+  const router = useRouter();
+  const form = useForm<z.infer<typeof ForgotPasswordSchema>>({
+    resolver: zodResolver(ForgotPasswordSchema),
     defaultValues: {
       email: '',
-      password: '',
     },
   });
 
-  const onSubmit = (values: z.infer<typeof LoginSchema>) => {
-    console.log(values);
+  const onSubmit = (values: z.infer<typeof ForgotPasswordSchema>) => {
+    const { email } = values;
+    console.log('Email: ', email);
+
+    router.push('/reset-password');
   };
 
   return (

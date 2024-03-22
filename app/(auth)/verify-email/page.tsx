@@ -3,6 +3,7 @@
 import * as z from 'zod';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -20,6 +21,7 @@ import {
 } from '@/components/ui/form';
 
 const VerifyEmail = () => {
+  const router = useRouter();
   const formRef = useRef<HTMLInputElement>(null);
   const form = useForm<z.infer<typeof VerifyEmailSchema>>({
     resolver: zodResolver(VerifyEmailSchema),
@@ -33,6 +35,7 @@ const VerifyEmail = () => {
   const onSubmit = () => {
     // TODO: Implement
     console.log('FormRef: ', formRef.current?.value);
+    router.push('/login');
   };
 
   useEffect(() => {
