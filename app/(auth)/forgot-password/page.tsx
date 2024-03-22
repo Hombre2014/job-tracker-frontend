@@ -19,6 +19,13 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { RiQuestionMark } from 'react-icons/ri';
 
 const ForgotPassword: React.FC = () => {
   const router = useRouter();
@@ -82,7 +89,19 @@ const ForgotPassword: React.FC = () => {
                 name="code"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Reset Password Code</FormLabel>
+                    <div className="flex justify-between">
+                      <FormLabel>Reset Password Code</FormLabel>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <RiQuestionMark className="h-4 w-4 border rounded-md p-[1px] mr-1 dark:border-slate-500 cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Enter the 6 digit code sent to your email.</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                     <FormControl>
                       <Input
                         // disabled={isPending}
