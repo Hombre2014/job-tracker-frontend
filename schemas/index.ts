@@ -25,6 +25,16 @@ export const ForgotPasswordSchema = z.object({
   }),
 });
 
+export const ResetPasswordSchema = z.object({
+  // TODO: This should be modified, so it is just 6 digits, not any string
+  code: z.string().max(6, {
+    message: 'Invalid code',
+  }),
+  newPassword: z.string().min(8, {
+    message: 'Minimum 8 characters required',
+  }),
+});
+
 // TODO: This is always true from restriction on the input in verify-email component. It never triggers an error message! Refactor
 export const VerifyEmailSchema = z.object({
   code: z.string().max(6, {
