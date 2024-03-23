@@ -36,22 +36,27 @@ const SignUp = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof RegisterSchema>) => {
-    setError('');
-    const { email, password, role = 'user' } = values;
-    localStorage.setItem('user', JSON.stringify({ email, role }));
-
-    startTransition(async () => {
+    try {
+      setError('');
+      const { email, password, role = 'user' } = values;
       const res = await client.post('/users', {
         email,
         password,
         role,
       });
+
       if (res.status === 201) {
+        form.reset();
+        const userId = res.data.id;
+        localStorage.setItem('user', JSON.stringify({ userId, email, role }));
+        console.log('Response: ', res);
         router.push('/verify-email');
-      } else {
-        setError(res.data.message);
       }
-    });
+    } catch (error) {
+      console.log('Error: ', error);
+      setError('Something went wrong');
+      form.reset();
+    }
   };
 
   return (
