@@ -36,27 +36,27 @@ const SignUp = () => {
   });
 
   const onSubmit = async (values: z.infer<typeof RegisterSchema>) => {
-    try {
-      setError('');
-      const { email, password, role = 'user' } = values;
-      const res = await client.post('/users', {
-        email,
-        password,
-        role,
-      });
-
-      if (res.status === 201) {
+    setError('');
+    const { email, password, role = 'user' } = values;
+    startTransition(async () => {
+      try {
+        const res = await client.post('/users', {
+          email,
+          password,
+          role,
+        });
+        if (res.status === 201) {
+          form.reset();
+          const userId = res.data.id;
+          localStorage.setItem('user', JSON.stringify({ userId, email, role }));
+          router.push('/verify-email');
+        }
+      } catch (error) {
+        console.log('Error: ', error);
+        setError('Something went wrong');
         form.reset();
-        const userId = res.data.id;
-        localStorage.setItem('user', JSON.stringify({ userId, email, role }));
-        console.log('Response: ', res);
-        router.push('/verify-email');
       }
-    } catch (error) {
-      console.log('Error: ', error);
-      setError('Something went wrong');
-      form.reset();
-    }
+    });
   };
 
   return (

@@ -33,7 +33,7 @@ const VerifyEmail = () => {
   const [user, setUser] = useState<any>({});
   const [buttonEnabled, setButtonEnabled] = useState<boolean>(false);
   const onSubmit = () => {
-    // TODO: Implement
+    // TODO: Implement verification of email
     console.log('FormRef: ', formRef.current?.value);
     router.push('/login');
   };
@@ -44,7 +44,7 @@ const VerifyEmail = () => {
   }, []);
 
   const handleResend = () => {
-    // TODO: Implement
+    // TODO: Implement resend of verification code
     console.log('Resend');
   };
 

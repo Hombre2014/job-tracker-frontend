@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { RiContactsLine } from 'react-icons/ri';
 import { RiFolder2Line } from 'react-icons/ri';
@@ -24,11 +25,18 @@ import {
 
 const Sidebar = () => {
   const [showTrash, setShowTrash] = useState(false);
+  const router = useRouter();
   const toggleTrashIcon = () => {
     setTimeout(() => {
       setShowTrash((prev) => !prev);
     }, 300);
   };
+
+  const userLogout = () => {
+    localStorage.clear();
+    router.push('/');
+  };
+
   return (
     <div className="flex flex-col h-full justify-between border-r border-slate-200 text-[14px]">
       <div className="flex flex-col h-full">
@@ -94,7 +102,7 @@ const Sidebar = () => {
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent>
-          <DropdownMenuItem>Log out</DropdownMenuItem>
+          <DropdownMenuItem onClick={userLogout}>Log out</DropdownMenuItem>
           <DropdownMenuItem>Personal Account Settings</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -36,27 +36,49 @@ const Login = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof LoginSchema>) => {
+  const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
     setError('');
     setSuccess('');
-
-    const { email, password } = values;
     startTransition(async () => {
-      const res = await client.post('/auth/login', {
-        email,
-        password,
-      });
-      if (res.status === 200) {
+      try {
+        const res = await client.post('/auth/login', values);
+        if (res.status === 200) {
+          form.reset();
+          const accessToken = res.data.accessToken;
+          const refreshToken = res.data.refreshToken;
+          localStorage.setItem('accessToken', accessToken);
+          localStorage.setItem('refreshToken', refreshToken);
+          setSuccess('Login successful');
+          router.push('/home');
+        }
+      } catch (error) {
+        console.log('Error: ', error);
+        setError('Email or password is incorrect');
         form.reset();
-        localStorage.setItem('userTokens', JSON.stringify(res.data));
-        router.push('/home');
-        setSuccess(res.data.message);
-      } else {
-        console.log('Error Response: ', res.statusText);
-        form.reset();
-        setError(res.data.message);
       }
     });
+
+    // try {
+    //   const { email, password } = values;
+    //   const res = await client.post('/auth/login', {
+    //     email,
+    //     password,
+    //   });
+
+    //   if (res.status === 200) {
+    //     form.reset();
+    //     const accessToken = res.data.accessToken;
+    //     const refreshToken = res.data.refreshToken;
+    //     localStorage.setItem('accessToken', accessToken);
+    //     localStorage.setItem('refreshToken', refreshToken);
+    //     setSuccess('Login successful');
+    //     router.push('/home');
+    //   }
+    // } catch (error) {
+    //   console.log('Error: ', error);
+    //   setError('Email or password is incorrect');
+    //   form.reset();
+    // }
   };
 
   return (
