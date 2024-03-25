@@ -51,9 +51,9 @@ const SignUp = () => {
           localStorage.setItem('user', JSON.stringify({ userId, email, role }));
           router.push('/verify-email');
         }
-      } catch (error) {
-        console.log('Error: ', error);
-        setError('Something went wrong');
+      } catch (error: any) {
+        const err = error.response.data.message;
+        setError(err);
         form.reset();
       }
     });

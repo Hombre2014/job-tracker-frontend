@@ -57,28 +57,6 @@ const Login = () => {
         form.reset();
       }
     });
-
-    // try {
-    //   const { email, password } = values;
-    //   const res = await client.post('/auth/login', {
-    //     email,
-    //     password,
-    //   });
-
-    //   if (res.status === 200) {
-    //     form.reset();
-    //     const accessToken = res.data.accessToken;
-    //     const refreshToken = res.data.refreshToken;
-    //     localStorage.setItem('accessToken', accessToken);
-    //     localStorage.setItem('refreshToken', refreshToken);
-    //     setSuccess('Login successful');
-    //     router.push('/home');
-    //   }
-    // } catch (error) {
-    //   console.log('Error: ', error);
-    //   setError('Email or password is incorrect');
-    //   form.reset();
-    // }
   };
 
   return (
