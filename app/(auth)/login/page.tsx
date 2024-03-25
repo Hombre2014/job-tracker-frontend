@@ -2,6 +2,7 @@
 
 import * as z from 'zod';
 import client from '@/api/client';
+import jwt from 'jsonwebtoken';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
@@ -46,13 +47,19 @@ const Login = () => {
           form.reset();
           const accessToken = res.data.accessToken;
           const refreshToken = res.data.refreshToken;
+          const decoded = jwt.decode(accessToken);
+
           localStorage.setItem('accessToken', accessToken);
           localStorage.setItem('refreshToken', refreshToken);
+
+          if (decoded) {
+            localStorage.setItem('user', JSON.stringify(decoded));
+          }
+
           setSuccess('Login successful');
           router.push('/home');
         }
       } catch (error) {
-        console.log('Error: ', error);
         setError('Email or password is incorrect');
         form.reset();
       }

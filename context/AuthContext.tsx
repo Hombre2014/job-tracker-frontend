@@ -16,24 +16,24 @@ export const AuthProvider = ({ children }: any) => {
     setUser(null);
   };
 
-  useEffect(() => {
-    const user = localStorage.getItem('user');
-    if (user) {
-      setUser(JSON.parse(user));
-    }
-    setLoading(false);
-  }, []);
-
   const isLoggedIn = () => {
-    const accessToken = localStorage.getItem('accessToken');
-    const refreshToken = localStorage.getItem('refreshToken');
+    const accessToken = localStorage.getItem('accessToken') || '';
+    const refreshToken = localStorage.getItem('refreshToken') || '';
+    const user = localStorage.getItem('user') || '';
 
     if (accessToken && refreshToken && user) {
+      setUser(JSON.parse(user));
       return true;
     } else {
       return false;
     }
   };
+
+  useEffect(() => {
+    if (isLoggedIn()) {
+      setLoading(false);
+    }
+  }, []);
 
   return (
     <AuthContext.Provider
@@ -45,9 +45,12 @@ export const AuthProvider = ({ children }: any) => {
         setLoading,
         error,
         setError,
+        logout,
       }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
+
+export default AuthProvider;

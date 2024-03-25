@@ -1,15 +1,17 @@
 'use client';
 
 import * as z from 'zod';
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useState, useTransition } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 import client from '@/api/client';
 import { RegisterSchema } from '@/schemas';
 import { Input } from '@/components/ui/input';
-
+import { Button } from '@/components/ui/button';
+import { FormError } from '@/components/Forms/form-error';
 import {
   Form,
   FormControl,
@@ -18,9 +20,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
-import { FormError } from '@/components/Forms/form-error';
-import Link from 'next/link';
 
 const SignUp = () => {
   const router = useRouter();
@@ -47,8 +46,6 @@ const SignUp = () => {
         });
         if (res.status === 201) {
           form.reset();
-          const userId = res.data.id;
-          localStorage.setItem('user', JSON.stringify({ userId, email, role }));
           router.push('/verify-email');
         }
       } catch (error: any) {
