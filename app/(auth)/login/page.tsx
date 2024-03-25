@@ -2,6 +2,7 @@
 
 import * as z from 'zod';
 import client from '@/api/client';
+import jwt from 'jsonwebtoken';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
@@ -36,25 +37,31 @@ const Login = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof LoginSchema>) => {
+  const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
     setError('');
     setSuccess('');
-
-    const { email, password } = values;
     startTransition(async () => {
-      const res = await client.post('/auth/login', {
-        email,
-        password,
-      });
-      if (res.status === 200) {
+      try {
+        const res = await client.post('/auth/login', values);
+        if (res.status === 200) {
+          form.reset();
+          const accessToken = res.data.accessToken;
+          const refreshToken = res.data.refreshToken;
+          const decoded = jwt.decode(accessToken);
+
+          localStorage.setItem('accessToken', accessToken);
+          localStorage.setItem('refreshToken', refreshToken);
+
+          if (decoded) {
+            localStorage.setItem('user', JSON.stringify(decoded));
+          }
+
+          setSuccess('Login successful');
+          router.push('/home');
+        }
+      } catch (error) {
+        setError('Email or password is incorrect');
         form.reset();
-        localStorage.setItem('userTokens', JSON.stringify(res.data));
-        router.push('/home');
-        setSuccess(res.data.message);
-      } else {
-        console.log('Error Response: ', res.statusText);
-        form.reset();
-        setError(res.data.message);
       }
     });
   };
