@@ -5,7 +5,7 @@ import client from '@/api/client';
 import jwt from 'jsonwebtoken';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 
@@ -28,7 +28,9 @@ import Link from 'next/link';
 
 const Login = () => {
   const dispatch = useAppDispatch();
-  // const { userId } = useAppSelector((state) => state.user);
+  const { userId, status, accessToken, email, role } = useAppSelector(
+    (state) => state.user
+  );
   const router = useRouter();
   const [error, setError] = useState<string | undefined>('');
   const [success, setSuccess] = useState<string | undefined>('');
@@ -41,52 +43,34 @@ const Login = () => {
     },
   });
 
+  useEffect(() => {
+    if (status === 'idle') {
+      setError('');
+      setSuccess('');
+    }
+
+    if (status === 'loading') {
+      setError('');
+      setSuccess('');
+    }
+
+    if (status === 'succeeded') {
+      console.log('UserId: ', userId);
+      accessToken && router.push('/home');
+    }
+
+    if (status === 'failed') {
+      setError('Email or password is incorrect');
+    }
+  }, [status, accessToken, router, userId]);
+
   const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
     setError('');
     setSuccess('');
 
     const { email, password } = values;
-    console.log('Email: ', email, 'Password: ', password);
     dispatch(login({ email, password }));
-
-    const accessToken = localStorage.getItem('accessToken');
-    const decoded = jwt.decode(accessToken || '');
-
-    if (decoded) {
-      console.log('Decoded:', decoded);
-      localStorage.setItem('user', JSON.stringify(decoded));
-    }
-
-    if (accessToken) {
-      router.push('/home');
-    }
-
     form.reset();
-
-    // startTransition(async () => {
-    //   try {
-    //     const res = await client.post('/auth/login', values);
-    //     if (res.status === 200) {
-    //       form.reset();
-    //       const accessToken = res.data.accessToken;
-    //       const refreshToken = res.data.refreshToken;
-    //       const decoded = jwt.decode(accessToken);
-
-    //       localStorage.setItem('accessToken', accessToken);
-    //       localStorage.setItem('refreshToken', refreshToken);
-
-    //       if (decoded) {
-    //         localStorage.setItem('user', JSON.stringify(decoded));
-    //       }
-
-    //       setSuccess('Login successful');
-    //       router.push('/home');
-    //     }
-    //   } catch (error) {
-    //     setError('Email or password is incorrect');
-    //     form.reset();
-    //   }
-    // });
   };
 
   return (
