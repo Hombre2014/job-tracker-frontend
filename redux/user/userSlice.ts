@@ -1,12 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { login, logout } from './userThunk';
 import { RootState } from '../store';
-import jwt from 'jsonwebtoken';
 
-// Define a type for the slice state
 interface UserState {
   email: string;
-  role: 'user' | 'admin';
   accessToken?: string;
   refreshToken?: string;
   userId: string | null;
@@ -14,12 +11,10 @@ interface UserState {
   error: string | null;
 }
 
-// Define the initial state using that type
 const initialState: UserState = {
   accessToken: '',
   refreshToken: '',
   email: '',
-  role: 'user',
   userId: null,
   status: 'idle',
   error: null,
@@ -27,7 +22,6 @@ const initialState: UserState = {
 
 export const userSlice = createSlice({
   name: 'user',
-  // `createSlice` will infer the state type from the `initialState` argument
   initialState,
   reducers: {},
   extraReducers: (builder) => {
@@ -37,18 +31,16 @@ export const userSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.accessToken = action.payload.accessToken;
-        state.refreshToken = action.payload.refreshToken;
-        const decoded = jwt.decode(action.payload.accessToken);
-        console.log('Decoded in Thunk: ', decoded);
-        if (decoded) {
-          state.email = decoded.email;
-          state.userId = decoded.sub as string;
+        state.accessToken = action.payload?.data.accessToken;
+        state.refreshToken = action.payload?.data.refreshToken;
+        state.userId = action.payload?.decoded.sub as string;
+        if (
+          typeof action.payload?.decoded === 'object' &&
+          action.payload?.decoded !== null
+        ) {
+          state.email = action.payload?.decoded.email;
         }
-        // state.email = action.payload.email;
-        // state.role = action.payload.role;
-        console.log('Action Payload: ', action.payload);
-        // state.userId = action.payload.userId;
+        state.error = null;
       })
       .addCase(login.rejected, (state, action) => {
         state.status = 'failed';
@@ -58,12 +50,12 @@ export const userSlice = createSlice({
         state.status = 'loading';
       })
       .addCase(logout.fulfilled, (state) => {
-        state.status = 'succeeded';
+        state.status = 'idle';
         state.accessToken = '';
         state.refreshToken = '';
         state.email = '';
-        state.role = 'user';
         state.userId = null;
+        state.error = null;
       })
       .addCase(logout.rejected, (state, action) => {
         state.status = 'failed';

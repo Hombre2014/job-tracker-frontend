@@ -36,11 +36,7 @@ const Sidebar = () => {
   };
 
   const userLogout = () => {
-    // localStorage.removeItem('accessToken');
-    // localStorage.removeItem('refreshToken');
-    // localStorage.removeItem('user');
     dispatch(logout());
-    localStorage.clear();
     router.push('/');
   };
 

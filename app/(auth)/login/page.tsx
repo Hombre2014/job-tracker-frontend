@@ -1,17 +1,12 @@
 'use client';
 
 import * as z from 'zod';
-import client from '@/api/client';
-import jwt from 'jsonwebtoken';
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect, useState, useTransition } from 'react';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-
-import { LoginSchema } from '@/schemas';
-import { Input } from '@/components/ui/input';
-import { login } from '@/redux/user/userThunk';
 
 import {
   Form,
@@ -21,20 +16,20 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { LoginSchema } from '@/schemas';
+import { Input } from '@/components/ui/input';
+import { login } from '@/redux/user/userThunk';
 import { Button } from '@/components/ui/button';
 import { FormError } from '@/components/Forms/form-error';
 import { FormSuccess } from '@/components/Forms/form-success';
-import Link from 'next/link';
 
 const Login = () => {
-  const dispatch = useAppDispatch();
-  const { userId, status, accessToken, email, role } = useAppSelector(
-    (state) => state.user
-  );
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | undefined>('');
   const [success, setSuccess] = useState<string | undefined>('');
-  const [isPending, startTransition] = useTransition();
+  const { userId, status, accessToken } = useAppSelector((state) => state.user);
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
@@ -55,18 +50,22 @@ const Login = () => {
     }
 
     if (status === 'succeeded') {
-      console.log('UserId: ', userId);
+      setSuccess('Logged in successfully');
       accessToken && router.push('/home');
     }
 
     if (status === 'failed') {
-      setError('Email or password is incorrect');
+      setSuccess('');
+      setError('Invalid email or password');
+      setTimeout(() => setError(''), 3000);
     }
   }, [status, accessToken, router, userId]);
 
   const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
-    setError('');
-    setSuccess('');
+    startTransition(() => {
+      setError('');
+      setSuccess('');
+    });
 
     const { email, password } = values;
     dispatch(login({ email, password }));
