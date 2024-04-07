@@ -22,8 +22,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useAppDispatch } from '@/redux/hooks';
+import { logout } from '@/redux/user/userThunk';
 
 const Sidebar = () => {
+  const dispatch = useAppDispatch();
   const [showTrash, setShowTrash] = useState(false);
   const router = useRouter();
   const toggleTrashIcon = () => {
@@ -33,7 +36,7 @@ const Sidebar = () => {
   };
 
   const userLogout = () => {
-    localStorage.clear();
+    dispatch(logout());
     router.push('/');
   };
 

@@ -1,15 +1,12 @@
 'use client';
 
 import * as z from 'zod';
-import client from '@/api/client';
-import jwt from 'jsonwebtoken';
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-
-import { LoginSchema } from '@/schemas';
-import { Input } from '@/components/ui/input';
+import { useEffect, useState, useTransition } from 'react';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 
 import {
   Form,
@@ -19,16 +16,20 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { LoginSchema } from '@/schemas';
+import { Input } from '@/components/ui/input';
+import { login } from '@/redux/user/userThunk';
 import { Button } from '@/components/ui/button';
 import { FormError } from '@/components/Forms/form-error';
 import { FormSuccess } from '@/components/Forms/form-success';
-import Link from 'next/link';
 
 const Login = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | undefined>('');
   const [success, setSuccess] = useState<string | undefined>('');
-  const [isPending, startTransition] = useTransition();
+  const { userId, status, accessToken } = useAppSelector((state) => state.user);
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
@@ -37,33 +38,38 @@ const Login = () => {
     },
   });
 
+  useEffect(() => {
+    if (status === 'idle') {
+      setError('');
+      setSuccess('');
+    }
+
+    if (status === 'loading') {
+      setError('');
+      setSuccess('');
+    }
+
+    if (status === 'succeeded') {
+      setSuccess('Logged in successfully');
+      accessToken && router.push('/home');
+    }
+
+    if (status === 'failed') {
+      setSuccess('');
+      setError('Invalid email or password');
+      setTimeout(() => setError(''), 3000);
+    }
+  }, [status, accessToken, router, userId]);
+
   const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
-    setError('');
-    setSuccess('');
-    startTransition(async () => {
-      try {
-        const res = await client.post('/auth/login', values);
-        if (res.status === 200) {
-          form.reset();
-          const accessToken = res.data.accessToken;
-          const refreshToken = res.data.refreshToken;
-          const decoded = jwt.decode(accessToken);
-
-          localStorage.setItem('accessToken', accessToken);
-          localStorage.setItem('refreshToken', refreshToken);
-
-          if (decoded) {
-            localStorage.setItem('user', JSON.stringify(decoded));
-          }
-
-          setSuccess('Login successful');
-          router.push('/home');
-        }
-      } catch (error) {
-        setError('Email or password is incorrect');
-        form.reset();
-      }
+    startTransition(() => {
+      setError('');
+      setSuccess('');
     });
+
+    const { email, password } = values;
+    dispatch(login({ email, password }));
+    form.reset();
   };
 
   return (
