@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { login, logout } from './userThunk';
+import { login, logout, isLoggedIn } from './userThunk';
 import { RootState } from '../store';
 
 interface UserState {
@@ -44,7 +44,7 @@ export const userSlice = createSlice({
       })
       .addCase(login.rejected, (state, action) => {
         state.status = 'failed';
-        state.error = action.error.message || 'Something went wrong';
+        state.error = action.error.message || 'Invalid email or password';
       })
       .addCase(logout.pending, (state) => {
         state.status = 'loading';
@@ -60,6 +60,21 @@ export const userSlice = createSlice({
       .addCase(logout.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message || 'Something went wrong';
+      })
+      .addCase(isLoggedIn.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(isLoggedIn.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.accessToken = action.payload?.accessToken;
+        state.refreshToken = action.payload?.refreshToken;
+        state.userId = action.payload?.user.sub;
+        state.email = action.payload?.user.email;
+        state.error = null;
+      })
+      .addCase(isLoggedIn.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message || 'User not logged in';
       });
   },
 });

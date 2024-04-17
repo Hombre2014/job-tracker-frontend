@@ -40,3 +40,23 @@ export const logout = createAsyncThunk('user/logout', async () => {
     error: null,
   };
 });
+
+export const isLoggedIn = createAsyncThunk(
+  'user/isLoggedIn',
+  async (_, thunkAPI) => {
+    const accessToken = localStorage.getItem('accessToken');
+    const refreshToken = localStorage.getItem('refreshToken');
+    const user = localStorage.getItem('user');
+    if (accessToken && refreshToken && user) {
+      return {
+        accessToken,
+        refreshToken,
+        user: JSON.parse(user),
+        status: 'succeeded',
+        error: null,
+      };
+    } else {
+      return thunkAPI.rejectWithValue('User is not logged in');
+    }
+  }
+);
