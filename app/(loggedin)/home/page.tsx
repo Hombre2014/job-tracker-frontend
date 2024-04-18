@@ -17,27 +17,23 @@ const HomePage = () => {
     }
   }, [isLoggedInStatus, dispatch]);
 
-  const { userId, email, accessToken, refreshToken } = useAppSelector(
-    (state) => state.user
-  );
+  // const { userId, email, accessToken, refreshToken } = useAppSelector(
+  //   (state) => state.user
+  // );
 
   return (
     <div className="flex h-full">
-      <aside className="w-52">
+      <aside className="min-w-52">
         <Sidebar />
       </aside>
-      <section className="flex w-5/6">
-        <div className="flex flex-col">
-          <nav>
+      <section className="flex w-full">
+        <div className="flex flex-col w-full">
+          <nav className="w-full">
             <HomeNavbar />
           </nav>
           <main>
             <BoardColumn />
           </main>
-          <p>User ID: {userId}</p>
-          <p>Email: {email}</p>
-          <p>AccessToken: {accessToken}</p>
-          <p>RefreshToken: {refreshToken}</p>
         </div>
       </section>
     </div>
