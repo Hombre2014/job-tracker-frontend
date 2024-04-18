@@ -39,12 +39,7 @@ const Login = () => {
   });
 
   useEffect(() => {
-    if (status === 'idle') {
-      setError('');
-      setSuccess('');
-    }
-
-    if (status === 'loading') {
+    if (status === 'idle' || status === 'loading') {
       setError('');
       setSuccess('');
     }
@@ -54,10 +49,15 @@ const Login = () => {
       accessToken && router.push('/home');
     }
 
+    console.log('Status: ', status);
+
     if (status === 'failed') {
-      setSuccess('');
       setError('Invalid email or password');
-      setTimeout(() => setError(''), 3000);
+      const timeout = setTimeout(() => setError(''), 2000);
+
+      return () => {
+        clearTimeout(timeout);
+      };
     }
   }, [status, accessToken, router, userId]);
 

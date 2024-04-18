@@ -68,8 +68,8 @@ export const userSlice = createSlice({
         state.status = 'succeeded';
         state.accessToken = action.payload?.accessToken;
         state.refreshToken = action.payload?.refreshToken;
-        state.userId = action.payload?.user.sub;
-        state.email = action.payload?.user.email;
+        state.userId = action.payload?.userId;
+        state.email = action.payload?.email;
         state.error = null;
       })
       .addCase(isLoggedIn.rejected, (state, action) => {

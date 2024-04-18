@@ -1,15 +1,17 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { RiContactsLine } from 'react-icons/ri';
-import { RiFolder2Line } from 'react-icons/ri';
-import { RiQuestionMark } from 'react-icons/ri';
-import { RiAddBoxLine } from 'react-icons/ri';
-import { RiAccountPinBoxLine } from 'react-icons/ri';
-import { RiDeleteBinLine } from 'react-icons/ri';
-import { RiSettings2Line } from 'react-icons/ri';
+import {
+  RiContactsLine,
+  RiFolder2Line,
+  RiQuestionMark,
+  RiAddBoxLine,
+  RiAccountPinBoxLine,
+  RiDeleteBinLine,
+  RiSettings2Line,
+} from 'react-icons/ri';
 import {
   Tooltip,
   TooltipContent,
@@ -22,13 +24,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useAppDispatch } from '@/redux/hooks';
+
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { logout } from '@/redux/user/userThunk';
 
 const Sidebar = () => {
   const dispatch = useAppDispatch();
   const [showTrash, setShowTrash] = useState(false);
   const router = useRouter();
+  const { status } = useAppSelector((state) => state.user);
+
+  console.log('Status from Sidebar.tsx:', status);
+
   const toggleTrashIcon = () => {
     setTimeout(() => {
       setShowTrash((prev) => !prev);

@@ -23,8 +23,8 @@ import {
 
 const SignUp = () => {
   const router = useRouter();
-  const [error, setError] = useState<string | undefined>('');
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | undefined>('');
 
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),

@@ -29,12 +29,10 @@ export const logout = createAsyncThunk('user/logout', async () => {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('user');
-
   return {
     accessToken: '',
     refreshToken: '',
     email: '',
-    role: 'user',
     userId: null,
     status: 'idle',
     error: null,
@@ -51,7 +49,8 @@ export const isLoggedIn = createAsyncThunk(
       return {
         accessToken,
         refreshToken,
-        user: JSON.parse(user),
+        userId: JSON.parse(user).sub,
+        email: JSON.parse(user).email,
         status: 'succeeded',
         error: null,
       };

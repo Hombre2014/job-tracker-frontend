@@ -17,10 +17,6 @@ const HomePage = () => {
     }
   }, [isLoggedInStatus, dispatch]);
 
-  // const { userId, email, accessToken, refreshToken } = useAppSelector(
-  //   (state) => state.user
-  // );
-
   return (
     <div className="flex h-full">
       <aside className="min-w-52">
