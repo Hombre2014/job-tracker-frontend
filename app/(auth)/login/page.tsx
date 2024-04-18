@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/form';
 import { LoginSchema } from '@/schemas';
 import { Input } from '@/components/ui/input';
-import { login } from '@/redux/user/userThunk';
+import { login, logout } from '@/redux/user/userThunk';
 import { Button } from '@/components/ui/button';
 import { FormError } from '@/components/Forms/form-error';
 import { FormSuccess } from '@/components/Forms/form-success';
@@ -37,6 +37,10 @@ const Login = () => {
       password: '',
     },
   });
+
+  useEffect(() => {
+    dispatch(logout());
+  }, [dispatch]);
 
   useEffect(() => {
     if (status === 'idle' || status === 'loading') {
