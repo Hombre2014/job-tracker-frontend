@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/form';
 import { LoginSchema } from '@/schemas';
 import { Input } from '@/components/ui/input';
-import { login } from '@/redux/user/userThunk';
+import { login, logout } from '@/redux/user/userThunk';
 import { Button } from '@/components/ui/button';
 import { FormError } from '@/components/Forms/form-error';
 import { FormSuccess } from '@/components/Forms/form-success';
@@ -39,12 +39,11 @@ const Login = () => {
   });
 
   useEffect(() => {
-    if (status === 'idle') {
-      setError('');
-      setSuccess('');
-    }
+    dispatch(logout());
+  }, [dispatch]);
 
-    if (status === 'loading') {
+  useEffect(() => {
+    if (status === 'idle' || status === 'loading') {
       setError('');
       setSuccess('');
     }
@@ -54,10 +53,15 @@ const Login = () => {
       accessToken && router.push('/home');
     }
 
+    console.log('Status: ', status);
+
     if (status === 'failed') {
-      setSuccess('');
       setError('Invalid email or password');
-      setTimeout(() => setError(''), 3000);
+      const timeout = setTimeout(() => setError(''), 2000);
+
+      return () => {
+        clearTimeout(timeout);
+      };
     }
   }, [status, accessToken, router, userId]);
 
