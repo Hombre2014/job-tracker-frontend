@@ -24,9 +24,9 @@ const HomePage = () => {
       </aside>
       <section className="flex w-full">
         <div className="flex flex-col w-full">
-          <nav className="w-full">
+          <div className="w-full">
             <HomeNavbar />
-          </nav>
+          </div>
           <main>
             <BoardColumn />
           </main>
