@@ -6,7 +6,7 @@
 
 - Major languages: TypeScript
 - Framework: Next.js
-- Libraries: Auth.js, React
+- Libraries: React
 
 ## Backend repository
 
@@ -41,14 +41,6 @@ Not yet deployed.
 - GitHub: [@Hombre2014](https://github.com/Hombre2014)
 - Twitter: [@Chamkoriyski](https://twitter.com/Chamkoriyski)
 - LinkedIn: [axebit](https://linkedin.com/in/axebit)
-
-## Design
-
-👤 **Amadu Kamara (Amkam)**
-
-- GitHub: [@AmaduKamara](https://github.com/AmaduKamara)
-- Twitter: [@DevAmkam](https://twitter.com/DevAmkam)
-- LinkedIn: [Amadu Kamara](https://amadu-kamara-3b60a25b)
 
 ## 🤝 Contributing
 
