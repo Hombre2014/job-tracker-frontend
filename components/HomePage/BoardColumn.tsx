@@ -3,7 +3,7 @@
 import { HiOutlineHandThumbDown } from 'react-icons/hi2';
 import { SlEnvolopeLetter } from 'react-icons/sl';
 import { RiInbox2Line } from 'react-icons/ri';
-import { PiBriefcase } from 'react-icons/pi';
+import { SlBriefcase } from 'react-icons/sl';
 import { BsThreeDots } from 'react-icons/bs';
 import { GoTrophy } from 'react-icons/go';
 import { BsPlusLg } from 'react-icons/bs';
@@ -17,7 +17,7 @@ const returnProperIcon = (id: number) => {
     case 2:
       return <SlEnvolopeLetter />;
     case 3:
-      return <PiBriefcase />;
+      return <SlBriefcase />;
     case 4:
       return <GoTrophy />;
     case 5:
@@ -29,13 +29,13 @@ const returnProperIcon = (id: number) => {
 
 const BoardColumn = () => {
   return (
-    <div className="w-full flex h-screen">
+    <div className="w-full flex h-full">
       {boardColumns.map((column) => (
         <section
           key={column.id}
-          className="w-1/5 flex flex-col border-r border-slate-200"
+          className="flex flex-col border-r border-slate-200 w-1/5"
         >
-          <div className="w-full flex items-center justify-between px-16 pt-8">
+          <div className="flex items-center justify-between px-16 pt-8">
             {returnProperIcon(column.id)}
             <h2 className="text-lg font-bold hover:bg-slate-200 px-10 py-1 rounded-md cursor-text transition duration-300 delay-150">
               {column.name.toUpperCase()}

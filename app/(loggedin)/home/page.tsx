@@ -27,7 +27,7 @@ const HomePage = () => {
           <div className="w-full">
             <HomeNavbar />
           </div>
-          <main>
+          <main className="h-full">
             <BoardColumn />
           </main>
         </div>
