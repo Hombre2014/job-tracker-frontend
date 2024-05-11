@@ -35,6 +35,8 @@ const VerifyEmail = () => {
   const onSubmit = () => {
     // TODO: Implement verification of email
     console.log('FormRef: ', formRef.current?.value);
+
+    // TODO: Create a user's board
     router.push('/login');
   };
 
