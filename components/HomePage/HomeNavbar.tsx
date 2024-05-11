@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { PiBriefcaseLight } from 'react-icons/pi';
 import {
-  RiMore2Fill,
   RiSearchLine,
   RiContactsLine,
   RiFolder2Line,
@@ -24,8 +23,7 @@ const HomeNavbar = () => {
   return (
     <nav className="flex justify-between items-center w-full pt-2 border-b border-slate-200 pb-2">
       <div className="flex justify-between items-center">
-        <div className="flex space-x-1 items-center mr-2">
-          <RiMore2Fill />
+        <div className="flex space-x-1 items-center mx-2">
           <ComboBox />
         </div>
         <div className="flex items-center relative">

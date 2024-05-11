@@ -44,6 +44,7 @@ const SignUp = () => {
           password,
           role,
         });
+
         if (res.status === 201) {
           form.reset();
           router.push('/verify-email');
