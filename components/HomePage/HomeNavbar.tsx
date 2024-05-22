@@ -75,15 +75,15 @@ const HomeNavbar = () => {
           <NavigationMenu className="mr-4">
             <NavigationMenuList>
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="bg-blue-500">
+                <NavigationMenuTrigger className="!bg-blue-500 !text-white">
                   + Create
                 </NavigationMenuTrigger>
                 <NavigationMenuContent className="bg-blue-500 p-2">
-                  <NavigationMenuLink className="flex items-center py-2 px-4 mt-1 cursor-pointer hover:bg-blue-400 rounded-md">
+                  <NavigationMenuLink className="flex items-center py-2 px-4 mt-1 cursor-pointer hover:bg-blue-400 rounded-md text-white">
                     <PiBriefcaseLight />
                     <span className="ml-2">Job</span>
                   </NavigationMenuLink>
-                  <NavigationMenuLink className="flex items-center py-2 px-4 cursor-pointer hover:bg-blue-400 rounded-md mb-1">
+                  <NavigationMenuLink className="flex items-center py-2 px-4 cursor-pointer hover:bg-blue-400 rounded-md mb-1 text-white">
                     <RiContactsLine />
                     <span className="ml-2">Contact</span>
                   </NavigationMenuLink>
