@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useParams, usePathname } from 'next/navigation';
 import { PiBriefcaseLight } from 'react-icons/pi';
 import {
   RiSearchLine,
@@ -18,8 +19,12 @@ import {
 } from '@/components/ui/navigation-menu';
 
 import { ComboBox } from './ComboBox';
+import { cn } from '@/lib/utils';
 
 const HomeNavbar = () => {
+  const { board_id } = useParams();
+  const pathname = usePathname();
+  console.log(pathname);
   return (
     <nav className="flex justify-between items-center w-full pt-2 border-b border-slate-200 pb-2">
       <div className="flex justify-between items-center">
@@ -40,8 +45,13 @@ const HomeNavbar = () => {
       <ul className="flex gap-4">
         <li>
           <Link
-            href="/board"
-            className="flex items-center cursor-pointer p-1 hover:rounded-md hover:border hover:border-slate-300 transition duration-300 delay-150 border-transparent border rounded-md"
+            href={`/home/boards/${board_id}/board`}
+            className={cn(
+              'flex items-center cursor-pointer p-1 hover:rounded-md hover:border hover:border-slate-300 transition duration-300 delay-150 border-transparent border rounded-md',
+              pathname === `/home/boards/${board_id}/board`
+                ? 'border border-slate-400 rounded-md p-1'
+                : ''
+            )}
           >
             <PiBriefcaseLight />
             <span className="ml-2">Board</span>
@@ -49,8 +59,13 @@ const HomeNavbar = () => {
         </li>
         <li className="flex items-center">
           <Link
-            href="/board"
-            className="flex items-center cursor-pointer p-1 hover:rounded-md hover:border hover:border-slate-300 transition duration-300 delay-150 border-transparent border rounded-md"
+            href={`/home/boards/${board_id}/contacts`}
+            className={cn(
+              'flex items-center cursor-pointer p-1 hover:rounded-md hover:border hover:border-slate-300 transition duration-300 delay-150 border-transparent border rounded-md',
+              pathname === `/home/boards/${board_id}/contacts`
+                ? 'border border-slate-400 rounded-md p-1'
+                : ''
+            )}
           >
             <RiContactsLine />
             <span className="ml-2">Contacts</span>
@@ -58,8 +73,13 @@ const HomeNavbar = () => {
         </li>
         <li className="flex items-center">
           <Link
-            href="/board"
-            className="flex items-center cursor-pointer p-1 hover:rounded-md hover:border hover:border-slate-300 transition duration-300 delay-150 border-transparent border rounded-md"
+            href={`/home/boards/${board_id}/documents`}
+            className={cn(
+              'flex items-center cursor-pointer p-1 hover:rounded-md hover:border hover:border-slate-300 transition duration-300 delay-150 border-transparent border rounded-md',
+              pathname === `/home/boards/${board_id}/documents`
+                ? 'border border-slate-400 rounded-md p-1'
+                : ''
+            )}
           >
             <RiFolder2Line />
             <span className="ml-2">Documents</span>

@@ -1,5 +1,11 @@
+import BoardColumn from '@/components/HomePage/BoardColumn';
+
 const BoardKanban = () => {
-  return <div>BoardKanban</div>;
+  return (
+    <div className="h-full">
+      <BoardColumn />
+    </div>
+  );
 };
 
 export default BoardKanban;

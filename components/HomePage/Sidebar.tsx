@@ -32,9 +32,6 @@ const Sidebar = () => {
   const dispatch = useAppDispatch();
   const [showTrash, setShowTrash] = useState(false);
   const router = useRouter();
-  const { status } = useAppSelector((state) => state.user);
-
-  console.log('Status from Sidebar.tsx:', status);
 
   const toggleTrashIcon = () => {
     setTimeout(() => {
@@ -51,20 +48,26 @@ const Sidebar = () => {
     <div className="flex flex-col h-full justify-between border-r border-slate-200 text-[14px]">
       <div className="flex flex-col h-full">
         <div className="flex flex-col gap-2 border-b min-w-full border-slate-200 h-[120px] pt-6 pl-2">
-          <div className="flex items-center gap-2 py-2 cursor-pointer hover:bg-slate-100 pl-2 mr-2 rounded-md hover:text-slate-700">
+          <Link
+            className="flex items-center gap-2 py-2 cursor-pointer hover:bg-slate-100 pl-2 mr-2 rounded-md hover:text-slate-700"
+            href="/home/contacts"
+          >
             <RiContactsLine className="h-5 w-5" />
             <p>Contacts</p>
-          </div>
-          <div className="flex items-center gap-2 py-2 cursor-pointer hover:bg-slate-100 pl-2 mr-2 rounded-md hover:text-slate-700">
+          </Link>
+          <Link
+            className="flex items-center gap-2 py-2 cursor-pointer hover:bg-slate-100 pl-2 mr-2 rounded-md hover:text-slate-700"
+            href="/home/documents"
+          >
             <RiFolder2Line className="h-5 w-5" />
             <p>Documents</p>
-          </div>
+          </Link>
         </div>
         <div className="border-b border-slate-200 h-[120px]">
           <div className="flex justify-between items-center pl-4 mt-4">
             <div className="flex items-center gap-1">
               <p className="hover:underline mr-1">
-                <Link href="/boards">My Job Tracker</Link>
+                <Link href="/home/boards">My Job Tracker</Link>
               </p>
               <TooltipProvider>
                 <Tooltip>
