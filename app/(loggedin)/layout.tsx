@@ -1,5 +1,6 @@
 'use client';
 
+import Sidebar from '@/components/HomePage/Sidebar';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -16,13 +17,16 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   }, [router]);
 
   return (
-    <>
+    <div className="flex h-full">
+      <aside className="min-w-52">
+        <Sidebar />
+      </aside>
       {accessToken && (
         <div className="mx-auto w-full h-full text-slate-700 dark:text-slate-300">
           {children}
         </div>
       )}
-    </>
+    </div>
   );
 };
 
