@@ -1,14 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { useParams, usePathname } from 'next/navigation';
 import { PiBriefcaseLight } from 'react-icons/pi';
+import { useParams, usePathname } from 'next/navigation';
 import {
   RiSearchLine,
   RiContactsLine,
   RiFolder2Line,
   RiShareLine,
 } from 'react-icons/ri';
+
+import { cn } from '@/lib/utils';
+import boards from '@/data/boards';
+import { ComboBox } from './ComboBox';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -18,9 +22,6 @@ import {
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
 
-import { ComboBox } from './ComboBox';
-import { cn } from '@/lib/utils';
-
 const HomeNavbar = () => {
   const { board_id } = useParams();
   const pathname = usePathname();
@@ -29,7 +30,7 @@ const HomeNavbar = () => {
     <nav className="flex justify-between items-center w-full pt-2 border-b border-slate-200 pb-2">
       <div className="flex justify-between items-center">
         <div className="flex space-x-1 items-center mx-2">
-          <ComboBox />
+          <ComboBox items={boards} />
         </div>
         <div className="flex items-center relative">
           <RiSearchLine className="absolute left-1" />
