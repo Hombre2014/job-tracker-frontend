@@ -21,7 +21,15 @@ import {
 
 type ComboBoxInput = { value: string; label: string };
 
-export function ComboBox({ items }: { items: ComboBoxInput[] }) {
+export function ComboBox({
+  items,
+  searchItem,
+  initialString,
+}: {
+  items: ComboBoxInput[];
+  searchItem: string;
+  initialString: string;
+}) {
   const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState('');
 
@@ -32,26 +40,28 @@ export function ComboBox({ items }: { items: ComboBoxInput[] }) {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="w-fit justify-between"
         >
-          {value
-            ? items.find((item) => item.value === value)?.label
-            : 'Job Search 2024'}
+          {initialString !== ''
+            ? initialString
+            : value
+            ? items.find((item) => item.value === value)?.value
+            : `${items[0].value}`}
           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className="w-fit p-0">
         <Command>
-          <CommandInput placeholder="Search item..." className="h-9" />
+          <CommandInput placeholder={`Search ${searchItem}`} className="h-9" />
           <CommandList>
-            <CommandEmpty>No item found.</CommandEmpty>
+            <CommandEmpty>Nothing found.</CommandEmpty>
             <CommandGroup>
               {items.map((item) => (
                 <CommandItem
                   key={item.value}
                   value={item.value}
-                  onSelect={(currentValue) => {
-                    setValue(currentValue === value ? '' : currentValue);
+                  onSelect={() => {
+                    setValue(item.value);
                     setOpen(false);
                   }}
                 >
@@ -61,7 +71,10 @@ export function ComboBox({ items }: { items: ComboBoxInput[] }) {
                       value === item.value ? 'opacity-100' : 'opacity-0'
                     )}
                   />
-                  {item.label}
+                  <div>
+                    <span>{item.value}&nbsp;</span>
+                    <span className="opacity-40">{item.label}</span>
+                  </div>
                 </CommandItem>
               ))}
             </CommandGroup>

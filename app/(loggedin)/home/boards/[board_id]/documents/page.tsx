@@ -1,4 +1,6 @@
+import documents from '@/data/documents';
 import { Button } from '@/components/ui/button';
+import { ComboBox } from '@/components/HomePage/ComboBox';
 
 const BoardDocuments = () => {
   return (
@@ -9,12 +11,11 @@ const BoardDocuments = () => {
             All
           </div>
           <div className="flex gap-4">
-            <Button
-              variant="outlineNew"
-              className="hover:shadow-md transition-all duration-150"
-            >
-              + Link Document
-            </Button>
+            <ComboBox
+              items={documents}
+              searchItem="Documents"
+              initialString="+ Link Document"
+            />
             <Button variant="normal">+ Upload</Button>
           </div>
         </div>

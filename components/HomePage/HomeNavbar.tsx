@@ -25,12 +25,12 @@ import {
 const HomeNavbar = () => {
   const { board_id } = useParams();
   const pathname = usePathname();
-  console.log(pathname);
+
   return (
     <nav className="flex justify-between items-center w-full pt-2 border-b border-slate-200 pb-2">
       <div className="flex justify-between items-center">
         <div className="flex space-x-1 items-center mx-2">
-          <ComboBox items={boards} />
+          <ComboBox items={boards} searchItem="Boards" initialString="" />
         </div>
         <div className="flex items-center relative">
           <RiSearchLine className="absolute left-1" />

@@ -1,12 +1,12 @@
 'use client';
 
-import { HiOutlineHandThumbDown } from 'react-icons/hi2';
-import { SlEnvolopeLetter } from 'react-icons/sl';
-import { RiInbox2Line } from 'react-icons/ri';
-import { SlBriefcase } from 'react-icons/sl';
-import { BsThreeDots } from 'react-icons/bs';
-import { GoTrophy } from 'react-icons/go';
 import { BsPlusLg } from 'react-icons/bs';
+import { GoTrophy } from 'react-icons/go';
+import { BsThreeDots } from 'react-icons/bs';
+import { SlBriefcase } from 'react-icons/sl';
+import { RiInbox2Line } from 'react-icons/ri';
+import { SlEnvolopeLetter } from 'react-icons/sl';
+import { HiOutlineThumbDown } from 'react-icons/hi';
 
 import boardColumns from '@/data/board-columns';
 
@@ -21,7 +21,7 @@ const returnProperIcon = (id: number) => {
     case 4:
       return <GoTrophy />;
     case 5:
-      return <HiOutlineHandThumbDown />;
+      return <HiOutlineThumbDown />;
     default:
       return null;
   }
