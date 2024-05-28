@@ -1,4 +1,4 @@
-import HomeNavbar from '@/components/HomePage/HomeNavbar';
+import HomeNavbar from '@/components/HomePage/HomeNavbar/HomeNavbar';
 
 const BoardLayout = ({ children }: { children: React.ReactNode }) => {
   return (

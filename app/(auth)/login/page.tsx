@@ -8,6 +8,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState, useTransition } from 'react';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 
+import { LoginSchema } from '@/schemas';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { login, logout } from '@/redux/user/userThunk';
+import { FormError } from '@/components/Forms/form-error';
+import { FormSuccess } from '@/components/Forms/form-success';
 import {
   Form,
   FormControl,
@@ -16,12 +22,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { LoginSchema } from '@/schemas';
-import { Input } from '@/components/ui/input';
-import { login, logout } from '@/redux/user/userThunk';
-import { Button } from '@/components/ui/button';
-import { FormError } from '@/components/Forms/form-error';
-import { FormSuccess } from '@/components/Forms/form-success';
 
 const Login = () => {
   const router = useRouter();
@@ -50,10 +50,9 @@ const Login = () => {
 
     if (status === 'succeeded') {
       setSuccess('Logged in successfully');
-      accessToken && router.push('/home');
+      // TODO: When login for first time redirect to first board automatically created. When several boards, redirect to home/boards
+      accessToken && router.push('/home/boards');
     }
-
-    console.log('Status: ', status);
 
     if (status === 'failed') {
       setError('Invalid email or password');

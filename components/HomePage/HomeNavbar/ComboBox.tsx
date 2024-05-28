@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import { useState } from 'react';
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 
 import { cn } from '@/lib/utils';
@@ -30,8 +30,8 @@ export function ComboBox({
   searchItem: string;
   initialString: string;
 }) {
-  const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState('');
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState('');
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

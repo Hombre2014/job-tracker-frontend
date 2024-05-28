@@ -1,6 +1,6 @@
 import documents from '@/data/documents';
 import { Button } from '@/components/ui/button';
-import { ComboBox } from '@/components/HomePage/ComboBox';
+import { ComboBox } from '@/components/HomePage/HomeNavbar/ComboBox';
 
 const BoardDocuments = () => {
   return (
