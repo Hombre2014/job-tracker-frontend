@@ -1,4 +1,4 @@
-import BoardColumn from '@/components/HomePage/BoardColumn';
+import BoardColumn from '@/components/HomePage/Kanban/BoardColumn';
 
 const BoardKanban = () => {
   return (
