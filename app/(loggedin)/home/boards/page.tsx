@@ -19,7 +19,7 @@ const UserBoards = () => {
   };
 
   return (
-    <div className="w-full md:w-3/4 xl:w-2/3 2xl:w-1/2 mx-auto">
+    <div className="w-full md:w-3/4 lg:w-2/3 2xl:w-7/12 mx-auto">
       <div className="flex items-center mx-auto border-b gap-4 pt-32 pb-4">
         <SlUser />
         <p className="font-semibold">My Job Tracking Boards</p>
@@ -30,7 +30,7 @@ const UserBoards = () => {
           view archived
         </Link>
       </div>
-      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
         {boards.map((board) => (
           <Link
             href={`/home/boards/${board.value}/board`}
