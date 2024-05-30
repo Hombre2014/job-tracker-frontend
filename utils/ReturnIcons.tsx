@@ -1,14 +1,14 @@
 import { GoTrophy } from 'react-icons/go';
 import { SlBriefcase } from 'react-icons/sl';
-import { SlEnvolopeLetter } from 'react-icons/sl';
 import { PiBriefcaseLight } from 'react-icons/pi';
 import { HiOutlineThumbDown } from 'react-icons/hi';
-import { RiContactsLine, RiFolder2Line, RiInbox2Line } from 'react-icons/ri';
+import { SlEnvolopeLetter, SlMagicWand } from 'react-icons/sl';
+import { RiContactsLine, RiFolder2Line } from 'react-icons/ri';
 
 export const returnBoardIcon = (id: number) => {
   switch (id) {
     case 1:
-      return <RiInbox2Line />;
+      return <SlMagicWand />;
     case 2:
       return <SlEnvolopeLetter />;
     case 3:
