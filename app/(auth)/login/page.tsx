@@ -51,6 +51,7 @@ const Login = () => {
     if (status === 'succeeded') {
       setSuccess('Logged in successfully');
       // TODO: When login for first time redirect to first board automatically created. When several boards, redirect to home/boards
+
       accessToken && router.push('/home/boards');
     }
 
