@@ -10,6 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { VerifyEmailSchema } from '@/schemas';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import client from '@/api/client';
 
 import {
   Form,
@@ -32,18 +33,46 @@ const VerifyEmail = () => {
 
   const [user, setUser] = useState<any>({});
   const [buttonEnabled, setButtonEnabled] = useState<boolean>(false);
-  const onSubmit = () => {
-    // TODO: Implement verification of email
-    console.log('FormRef: ', formRef.current?.value);
-
-    // TODO: Create a user's board
-    router.push('/login');
-  };
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     setUser(user);
+    console.log('User: ', user);
   }, []);
+
+  const verifyCodeAndEmail = async () => {
+    const code = formRef.current?.value;
+    const email = user.email;
+
+    console.log('Code: ', code);
+    console.log('Email: ', email);
+
+    if (!code || !email) {
+      console.log('Code or email is missing');
+      return;
+    }
+
+    const res = await client.post('/users/verification/verify-email-code', {
+      code,
+      email,
+    });
+
+    console.log('Response: ', res);
+
+    if (res.status === 201) {
+      console.log('Code verification successful');
+      router.push('/login');
+    } else {
+      console.log('Code verification failed');
+      router.push('/verify-email');
+    }
+
+    console.log('FormRef: ', formRef.current?.value);
+  };
+
+  const onSubmit = () => {
+    verifyCodeAndEmail();
+  };
 
   const handleResend = () => {
     // TODO: Implement resend of verification code
