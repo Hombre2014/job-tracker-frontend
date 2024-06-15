@@ -4,13 +4,15 @@ import * as z from 'zod';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect, useState, useRef, startTransition } from 'react';
 
+import client from '@/api/client';
 import { VerifyEmailSchema } from '@/schemas';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-
+import { FormError } from '@/components/Forms/form-error';
+import { FormSuccess } from '@/components/Forms/form-success';
 import {
   Form,
   FormControl,
@@ -22,7 +24,10 @@ import {
 
 const VerifyEmail = () => {
   const router = useRouter();
-  const formRef = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState<string | undefined>('');
+  const [success, setSuccess] = useState<string | undefined>('');
+  // const formRef = useRef<HTMLInputElement>(null);
+
   const form = useForm<z.infer<typeof VerifyEmailSchema>>({
     resolver: zodResolver(VerifyEmailSchema),
     defaultValues: {
@@ -32,33 +37,72 @@ const VerifyEmail = () => {
 
   const [user, setUser] = useState<any>({});
   const [buttonEnabled, setButtonEnabled] = useState<boolean>(false);
-  const onSubmit = () => {
-    // TODO: Implement verification of email
-    console.log('FormRef: ', formRef.current?.value);
-
-    // TODO: Create a user's board
-    router.push('/login');
-  };
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     setUser(user);
+    console.log('User: ', user);
   }, []);
+
+  // useEffect(() => {
+  //   if (formRef.current?.value.length === 6) {
+  //     if (/^[0-9]+$/.test(formRef.current.value)) {
+  //       setButtonEnabled(true);
+  //     }
+  //   } else {
+  //     setButtonEnabled(false);
+  //   }
+  // }, [formRef.current?.value]);
+
+  const onSubmit = async (values: z.infer<typeof VerifyEmailSchema>) => {
+    setError('');
+    const { code } = values;
+    const email = user.email;
+
+    console.log('Code: ', code);
+    console.log('Email: ', email);
+
+    if (!code || !email) {
+      console.log('Code or email is missing');
+      setError('Code or email is missing');
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        const res = await client.post('/users/verification/verify-email-code', {
+          code,
+          email,
+        });
+
+        if (res.status === 201) {
+          form.reset();
+          setSuccess('Code verification successful');
+          router.push('/login');
+        }
+      } catch (error: any) {
+        const err = error.response.data.message;
+        setError(err);
+        form.reset();
+        router.push('/verify-email');
+      }
+    });
+  };
 
   const handleResend = () => {
     // TODO: Implement resend of verification code
     console.log('Resend');
   };
 
-  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.value.length === 6) {
-      if (/^[0-9]+$/.test(e.target.value)) {
-        setButtonEnabled(true);
-      }
-    } else {
-      setButtonEnabled(false);
-    }
-  };
+  // const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (e.target.value.length === 6) {
+  //     if (/^[0-9]+$/.test(e.target.value)) {
+  //       setButtonEnabled(true);
+  //     }
+  //   } else {
+  //     setButtonEnabled(false);
+  //   }
+  // };
 
   return (
     <div className="flex flex-col md:flex-row items-center justify-center gap-y-10 mx-4">
@@ -73,17 +117,17 @@ const VerifyEmail = () => {
               <FormField
                 control={form.control}
                 name="code"
-                render={() => (
+                render={({ field }) => (
                   <FormItem>
                     <FormLabel>Verification code</FormLabel>
                     <FormControl>
                       <Input
-                        maxLength={6}
-                        minLength={6}
-                        pattern="[0-9]*"
-                        name="code"
-                        ref={formRef}
-                        onChange={handleInput}
+                        // maxLength={6}
+                        // minLength={6}
+                        // pattern="[0-9]*"
+                        // ref={formRef}
+                        {...field}
+                        // onChange={handleInput}
                         type="text"
                         placeholder="Enter 6 digits code"
                       />
@@ -93,8 +137,10 @@ const VerifyEmail = () => {
                 )}
               />
             </div>
+            <FormError message={error} />
+            <FormSuccess message={success} />
             <Button
-              disabled={!buttonEnabled}
+              // disabled={!buttonEnabled}
               type="submit"
               className="w-full bg-blue-500 transition duration-300 delay-100 hover:bg-blue-600 dark:text-white"
             >

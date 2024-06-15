@@ -47,6 +47,7 @@ const SignUp = () => {
 
         if (res.status === 201) {
           form.reset();
+          localStorage.setItem('user', JSON.stringify(res.data));
           router.push('/verify-email');
         }
       } catch (error: any) {
