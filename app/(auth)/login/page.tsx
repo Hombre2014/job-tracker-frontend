@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState, useTransition } from 'react';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 
+import client from '@/api/client';
 import { LoginSchema } from '@/schemas';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -50,9 +51,28 @@ const Login = () => {
 
     if (status === 'succeeded') {
       setSuccess('Logged in successfully');
-      // TODO: When login for first time redirect to first board automatically created. When several boards, redirect to home/boards
+      const accessToken = localStorage.getItem('accessToken');
+      const getBoards = async () => {
+        const res = await client.get('/boards', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        const data = await res.data;
 
-      accessToken && router.push('/home/boards');
+        if (data.length === 0) {
+          console.log('No boards found. Something is wrong!');
+          router.push('/home/boards');
+        }
+
+        if (data.length === 1) {
+          router.push(`/home/boards/${data[0].id}/board`);
+        } else {
+          router.push('/home/boards');
+        }
+      };
+
+      getBoards();
     }
 
     if (status === 'failed') {
