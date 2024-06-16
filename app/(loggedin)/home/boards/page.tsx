@@ -6,8 +6,8 @@ import { BsPencil } from 'react-icons/bs';
 import { useRouter } from 'next/navigation';
 import { ChangeEvent, useState } from 'react';
 
-import boards from '@/data/boards';
 import { Input } from '@/components/ui/input';
+import { useAppSelector } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -21,10 +21,12 @@ import {
 
 const UserBoards = () => {
   const router = useRouter();
+  const [boardName, setBoardName] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  const [boardName, setBoardName] = useState(''); // TODO: Get the board name from the database
-  const [createNewBoardName, setCreateNewBoardName] = useState('');
+  const { email } = useAppSelector((state) => state.user);
+  const { boards } = useAppSelector((state) => state.boards);
   const [buttonIsDisabled, setButtonIsDisabled] = useState(true);
+  const [createNewBoardName, setCreateNewBoardName] = useState('');
 
   const submitForm = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -62,12 +64,12 @@ const UserBoards = () => {
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
         {boards.map((board) => (
           <Link
-            href={`/home/boards/${board.value}/board`}
-            key={board.value}
+            href={`/home/boards/${board.id}/board`}
+            key={board.id}
             className="border rounded-sm px-6 py-5"
             title="board name"
           >
-            <div className="relative">
+            <div className="relative w-full h-full">
               <BsPencil
                 z-index={1000}
                 className="absolute top-0 right-0"
@@ -80,10 +82,10 @@ const UserBoards = () => {
                 <label htmlFor="board" />
                 <input
                   name="board"
-                  id={board.value}
+                  id={board.id}
                   title="board name"
                   type="submit"
-                  value={board.value}
+                  value={board.name}
                   onChange={(ev) => {
                     ev.preventDefault();
                     setIsEditing(true);
@@ -93,11 +95,11 @@ const UserBoards = () => {
                   className="font-semibold bg-white outline-none border-none !pl-0"
                 />
               </form>
-              <p className="text-slate-700 text-sm">{board.label}</p>
-              <p className="text-slate-400 text-xs">user@email.com</p>
-              <p className="text-slate-400 text-xs pt-8">
-                created 4 months ago
-              </p>
+              {/* Bellow line is the user's name, which we do not have so far */}
+              {/* TODO: Resolve the issue with user's name! */}
+              {/* <p className="text-slate-700 text-sm">{board.label}</p> */}
+              <p className="text-slate-400 text-xs">{email}</p>
+              {/* TODO: Created at or how many days/weeks/months ago? */}
             </div>
           </Link>
         ))}

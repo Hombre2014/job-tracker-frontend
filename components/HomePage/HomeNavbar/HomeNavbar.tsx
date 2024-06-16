@@ -1,14 +1,15 @@
 'use client';
 
-import boards from '@/data/boards';
 import SearchBox from './SearchBox';
 import { ComboBox } from './ComboBox';
 import CreateMenu from './CreateMenu';
 import menuItems from '@/data/menu-items';
 import NavbarMenuItem from './NavbarMenuItem';
+import { useAppSelector } from '@/redux/hooks';
 import { returnMenuIcon } from '@/utils/ReturnIcons';
 
 const HomeNavbar = () => {
+  const { boards } = useAppSelector((state) => state.boards);
   return (
     <div className="flex justify-between items-center w-full pt-2 border-b border-slate-200 pb-2">
       <div className="flex justify-between items-center">

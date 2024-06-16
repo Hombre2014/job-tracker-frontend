@@ -18,15 +18,14 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-
-type ComboBoxInput = { value: string; label: string };
+import Link from 'next/link';
 
 export function ComboBox({
   items,
   searchItem,
   initialString,
 }: {
-  items: ComboBoxInput[];
+  items: Board[];
   searchItem: string;
   initialString: string;
 }) {
@@ -45,8 +44,8 @@ export function ComboBox({
           {initialString !== ''
             ? initialString
             : value
-            ? items.find((item) => item.value === value)?.value
-            : `${items[0].value}`}
+            ? items.find((item) => item.name === value)?.name
+            : `${items[0].name}`}
           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -58,23 +57,27 @@ export function ComboBox({
             <CommandGroup>
               {items.map((item) => (
                 <CommandItem
-                  key={item.value}
-                  value={item.value}
+                  key={item.name}
+                  value={item.name}
                   onSelect={() => {
-                    setValue(item.value);
+                    setValue(item.name);
                     setOpen(false);
                   }}
                 >
                   <CheckIcon
                     className={cn(
                       'mr-2 h-4 w-4',
-                      value === item.value ? 'opacity-100' : 'opacity-0'
+                      value === item.name ? 'opacity-100' : 'opacity-0'
                     )}
                   />
-                  <div>
-                    <span>{item.value}&nbsp;</span>
-                    <span className="opacity-40">{item.label}</span>
-                  </div>
+                  <Link href={`/home/boards/${item.id}/board`}>
+                    <div>
+                      <span>{item.name}&nbsp;</span>
+                      {/* Bellow line is the user's name, which we do not have so far */}
+                      {/* TODO: Resolve the issue with user's name! */}
+                      {/* <span className="opacity-40">{item.label}</span> */}
+                    </div>
+                  </Link>
                 </CommandItem>
               ))}
             </CommandGroup>

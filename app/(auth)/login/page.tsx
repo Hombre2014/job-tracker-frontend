@@ -12,6 +12,7 @@ import { LoginSchema } from '@/schemas';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { login, logout } from '@/redux/user/userThunk';
+import { getBoards } from '@/redux/boards/boardsThunk';
 import { FormError } from '@/components/Forms/form-error';
 import { FormSuccess } from '@/components/Forms/form-success';
 import {
@@ -29,7 +30,9 @@ const Login = () => {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | undefined>('');
   const [success, setSuccess] = useState<string | undefined>('');
+  const { boards, boardsStatus } = useAppSelector((state) => state.boards);
   const { userId, status, accessToken } = useAppSelector((state) => state.user);
+
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
@@ -50,9 +53,17 @@ const Login = () => {
 
     if (status === 'succeeded') {
       setSuccess('Logged in successfully');
-      // TODO: When login for first time redirect to first board automatically created. When several boards, redirect to home/boards
+      const accessToken = localStorage.getItem('accessToken');
+      dispatch(getBoards(accessToken));
 
-      accessToken && router.push('/home/boards');
+      if (boards.length === 0) {
+        console.log('No boards found. Something is wrong!');
+        router.push('/home/boards');
+      } else if (boards.length === 1) {
+        router.push(`/home/boards/${boards[0].id}/board`);
+      } else {
+        router.push('/home/boards');
+      }
     }
 
     if (status === 'failed') {
@@ -63,7 +74,7 @@ const Login = () => {
         clearTimeout(timeout);
       };
     }
-  }, [status, accessToken, router, userId]);
+  }, [status, accessToken, router, userId, dispatch, boards]);
 
   const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
     startTransition(() => {
@@ -122,6 +133,7 @@ const Login = () => {
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
+          {boardsStatus === 'loading' && <p>Loading boards...</p>}
           <Button
             disabled={isPending}
             type="submit"
