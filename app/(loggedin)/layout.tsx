@@ -1,8 +1,9 @@
 'use client';
 
-import Sidebar from '@/components/HomePage/SideBar/Sidebar';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+import Sidebar from '@/components/HomePage/SideBar/Sidebar';
 
 const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();

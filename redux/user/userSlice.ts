@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { login, logout, isLoggedIn } from './userThunk';
+
 import { RootState } from '../store';
+import { login, logout, isLoggedIn } from './userThunk';
 
 interface UserState {
   email: string;
