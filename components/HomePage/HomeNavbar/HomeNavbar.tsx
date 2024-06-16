@@ -5,8 +5,8 @@ import { ComboBox } from './ComboBox';
 import CreateMenu from './CreateMenu';
 import menuItems from '@/data/menu-items';
 import NavbarMenuItem from './NavbarMenuItem';
-import { returnMenuIcon } from '@/utils/ReturnIcons';
 import { useAppSelector } from '@/redux/hooks';
+import { returnMenuIcon } from '@/utils/ReturnIcons';
 
 const HomeNavbar = () => {
   const { boards } = useAppSelector((state) => state.boards);

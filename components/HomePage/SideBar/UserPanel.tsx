@@ -25,6 +25,7 @@ const UserPanel = () => {
         <div className="flex justify-between items-center border border-slate-400 rounded-md p-2 mb-6 mx-2 cursor-pointer dark:border-slate-500 dark:text-white">
           <div className="flex items-center gap-1">
             <RiAccountPinBoxLine className="h-5 w-5" />
+            {/* TODO: Below line is about user's name. Resolve it! */}
             <p>John Doe</p>
           </div>
           <div>

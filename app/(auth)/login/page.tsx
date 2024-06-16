@@ -8,13 +8,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState, useTransition } from 'react';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 
-import client from '@/api/client';
 import { LoginSchema } from '@/schemas';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { login, logout } from '@/redux/user/userThunk';
-import { FormError } from '@/components/Forms/form-error';
 import { getBoards } from '@/redux/boards/boardsThunk';
+import { FormError } from '@/components/Forms/form-error';
 import { FormSuccess } from '@/components/Forms/form-success';
 import {
   Form,
@@ -30,9 +29,10 @@ const Login = () => {
   const dispatch = useAppDispatch();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | undefined>('');
-  const { boards, boardsStatus } = useAppSelector((state) => state.boards);
   const [success, setSuccess] = useState<string | undefined>('');
+  const { boards, boardsStatus } = useAppSelector((state) => state.boards);
   const { userId, status, accessToken } = useAppSelector((state) => state.user);
+
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
@@ -54,29 +54,6 @@ const Login = () => {
     if (status === 'succeeded') {
       setSuccess('Logged in successfully');
       const accessToken = localStorage.getItem('accessToken');
-
-      // const getBoards = async () => {
-      //   const res = await client.get('/boards', {
-      //     headers: {
-      //       Authorization: `Bearer ${accessToken}`,
-      //     },
-      //   });
-      //   const data = await res.data;
-
-      //   if (data.length === 0) {
-      //     console.log('No boards found. Something is wrong!');
-      //     router.push('/home/boards');
-      //   }
-
-      //   if (data.length === 1) {
-      //     router.push(`/home/boards/${data[0].id}/board`);
-      //   } else {
-      //     router.push('/home/boards');
-      //   }
-      // };
-
-      // getBoards();
-
       dispatch(getBoards(accessToken));
 
       if (boards.length === 0) {

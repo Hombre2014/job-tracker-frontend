@@ -18,6 +18,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
+import Link from 'next/link';
 
 export function ComboBox({
   items,
@@ -69,12 +70,14 @@ export function ComboBox({
                       value === item.name ? 'opacity-100' : 'opacity-0'
                     )}
                   />
-                  <div>
-                    <span>{item.name}&nbsp;</span>
-                    {/* Bellow line is the user's name, which we do not have so far */}
-                    {/* TODO: Resolve the issue with user's name! */}
-                    {/* <span className="opacity-40">{item.label}</span> */}
-                  </div>
+                  <Link href={`/home/boards/${item.id}/board`}>
+                    <div>
+                      <span>{item.name}&nbsp;</span>
+                      {/* Bellow line is the user's name, which we do not have so far */}
+                      {/* TODO: Resolve the issue with user's name! */}
+                      {/* <span className="opacity-40">{item.label}</span> */}
+                    </div>
+                  </Link>
                 </CommandItem>
               ))}
             </CommandGroup>
