@@ -3,19 +3,6 @@ import { createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import { getBoards } from './boardsThunk';
 
-interface Column {
-  id: string;
-  name: string;
-  order: number;
-  boardId: string;
-}
-
-interface Board {
-  id: string;
-  name: string;
-  columns: Column[] | null;
-}
-
 interface BoardsState {
   boards: Board[];
   boardsStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
