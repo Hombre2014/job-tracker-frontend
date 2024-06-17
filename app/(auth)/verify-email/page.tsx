@@ -74,8 +74,24 @@ const VerifyEmail = () => {
     });
   };
 
-  const handleResend = () => {
-    // TODO: Implement resend of verification code
+  const handleResend = async () => {
+    try {
+      const res = await client.post(
+        '/users/verification/create-email-verification-code',
+        {
+          email: user.email,
+        }
+      );
+
+      if (res.status === 201) {
+        setSuccess('Code resent successfully');
+        setTimeout(() => setSuccess(''), 2000);
+      }
+    } catch (error: any) {
+      const err = error.response.data.errorCode;
+      setError(err);
+      setTimeout(() => setError(''), 2000);
+    }
     console.log('Resend');
   };
 
