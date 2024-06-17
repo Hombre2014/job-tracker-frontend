@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState, useRef, startTransition } from 'react';
+import { useEffect, useState, startTransition } from 'react';
 
 import client from '@/api/client';
 import { VerifyEmailSchema } from '@/schemas';
@@ -26,7 +26,6 @@ const VerifyEmail = () => {
   const router = useRouter();
   const [error, setError] = useState<string | undefined>('');
   const [success, setSuccess] = useState<string | undefined>('');
-  // const formRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof VerifyEmailSchema>>({
     resolver: zodResolver(VerifyEmailSchema),
@@ -36,31 +35,16 @@ const VerifyEmail = () => {
   });
 
   const [user, setUser] = useState<any>({});
-  const [buttonEnabled, setButtonEnabled] = useState<boolean>(false);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     setUser(user);
-    console.log('User: ', user);
   }, []);
-
-  // useEffect(() => {
-  //   if (formRef.current?.value.length === 6) {
-  //     if (/^[0-9]+$/.test(formRef.current.value)) {
-  //       setButtonEnabled(true);
-  //     }
-  //   } else {
-  //     setButtonEnabled(false);
-  //   }
-  // }, [formRef.current?.value]);
 
   const onSubmit = async (values: z.infer<typeof VerifyEmailSchema>) => {
     setError('');
     const { code } = values;
     const email = user.email;
-
-    console.log('Code: ', code);
-    console.log('Email: ', email);
 
     if (!code || !email) {
       console.log('Code or email is missing');
@@ -81,7 +65,7 @@ const VerifyEmail = () => {
           router.push('/login');
         }
       } catch (error: any) {
-        const err = error.response.data.message;
+        const err = error.response.data.errorCode;
         setError(err);
         form.reset();
         router.push('/verify-email');
@@ -93,16 +77,6 @@ const VerifyEmail = () => {
     // TODO: Implement resend of verification code
     console.log('Resend');
   };
-
-  // const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (e.target.value.length === 6) {
-  //     if (/^[0-9]+$/.test(e.target.value)) {
-  //       setButtonEnabled(true);
-  //     }
-  //   } else {
-  //     setButtonEnabled(false);
-  //   }
-  // };
 
   return (
     <div className="flex flex-col md:flex-row items-center justify-center gap-y-10 mx-4">
@@ -122,12 +96,7 @@ const VerifyEmail = () => {
                     <FormLabel>Verification code</FormLabel>
                     <FormControl>
                       <Input
-                        // maxLength={6}
-                        // minLength={6}
-                        // pattern="[0-9]*"
-                        // ref={formRef}
                         {...field}
-                        // onChange={handleInput}
                         type="text"
                         placeholder="Enter 6 digits code"
                       />
@@ -140,7 +109,6 @@ const VerifyEmail = () => {
             <FormError message={error} />
             <FormSuccess message={success} />
             <Button
-              // disabled={!buttonEnabled}
               type="submit"
               className="w-full bg-blue-500 transition duration-300 delay-100 hover:bg-blue-600 dark:text-white"
             >
