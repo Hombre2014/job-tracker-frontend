@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 
@@ -18,7 +19,6 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import Link from 'next/link';
 
 export function ComboBox({
   items,

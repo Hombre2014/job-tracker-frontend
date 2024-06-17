@@ -31,7 +31,7 @@ const Login = () => {
   const [error, setError] = useState<string | undefined>('');
   const [success, setSuccess] = useState<string | undefined>('');
   const { boards, boardsStatus } = useAppSelector((state) => state.boards);
-  const { userId, status, accessToken } = useAppSelector((state) => state.user);
+  const { status } = useAppSelector((state) => state.user);
 
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
@@ -55,15 +55,6 @@ const Login = () => {
       setSuccess('Logged in successfully');
       const accessToken = localStorage.getItem('accessToken');
       dispatch(getBoards(accessToken));
-
-      if (boards.length === 0) {
-        console.log('No boards found. Something is wrong!');
-        router.push('/home/boards');
-      } else if (boards.length === 1) {
-        router.push(`/home/boards/${boards[0].id}/board`);
-      } else {
-        router.push('/home/boards');
-      }
     }
 
     if (status === 'failed') {
@@ -74,7 +65,20 @@ const Login = () => {
         clearTimeout(timeout);
       };
     }
-  }, [status, accessToken, router, userId, dispatch, boards]);
+  }, [status, dispatch]);
+
+  useEffect(() => {
+    if (boardsStatus === 'succeeded') {
+      if (boards.length === 0) {
+        console.log('No boards found. Something is wrong!');
+        router.push('/home/boards');
+      } else if (boards.length === 1) {
+        router.push(`/home/boards/${boards[0].id}/board`);
+      } else {
+        router.push('/home/boards');
+      }
+    }
+  }, [boardsStatus, boards, router]);
 
   const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
     startTransition(() => {

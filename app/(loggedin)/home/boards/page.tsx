@@ -92,7 +92,7 @@ const UserBoards = () => {
                     setBoardName(ev.target.value);
                   }}
                   disabled={!isEditing}
-                  className="font-semibold bg-white outline-none border-none !pl-0"
+                  className="font-semibold bg-white outline-none border-none !pl-0 dark:bg-slate-900 dark:text-white"
                 />
               </form>
               {/* Bellow line is the user's name, which we do not have so far */}
