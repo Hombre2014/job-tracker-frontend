@@ -24,6 +24,7 @@ import {
 
 const VerifyEmail = () => {
   const router = useRouter();
+  const [user, setUser] = useState<any>({});
   const [error, setError] = useState<string | undefined>('');
   const [success, setSuccess] = useState<string | undefined>('');
 
@@ -33,8 +34,6 @@ const VerifyEmail = () => {
       code: '',
     },
   });
-
-  const [user, setUser] = useState<any>({});
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -92,7 +91,6 @@ const VerifyEmail = () => {
       setError(err);
       setTimeout(() => setError(''), 2000);
     }
-    console.log('Resend');
   };
 
   return (
