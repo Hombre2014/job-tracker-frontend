@@ -68,6 +68,7 @@ const VerifyEmail = () => {
         const err = error.response.data.errorCode;
         setError(err);
         form.reset();
+        setTimeout(() => setError(''), 2000);
         router.push('/verify-email');
       }
     });
