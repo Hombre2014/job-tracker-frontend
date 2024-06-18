@@ -4,13 +4,16 @@ import Link from 'next/link';
 import { SlUser } from 'react-icons/sl';
 import { BsPencil } from 'react-icons/bs';
 import { useRouter } from 'next/navigation';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 
+import client from '@/api/client';
 import { Input } from '@/components/ui/input';
-import { useAppSelector } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
+import { useAppSelector, useAppDispatch } from '@/redux/hooks';
+import { createBoard, getBoards } from '@/redux/boards/boardsThunk';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -21,12 +24,23 @@ import {
 
 const UserBoards = () => {
   const router = useRouter();
-  const [boardName, setBoardName] = useState('');
+  const dispatch = useAppDispatch();
   const [isEditing, setIsEditing] = useState(false);
   const { email } = useAppSelector((state) => state.user);
-  const { boards } = useAppSelector((state) => state.boards);
+  const { boards, boardsStatus } = useAppSelector((state) => state.boards);
   const [buttonIsDisabled, setButtonIsDisabled] = useState(true);
   const [createNewBoardName, setCreateNewBoardName] = useState('');
+
+  const accessToken = localStorage.getItem('accessToken');
+
+  console.log('Access Token: ', accessToken);
+  console.log('Boards Status: ', boardsStatus);
+
+  useEffect(() => {
+    dispatch(getBoards(accessToken as string));
+  }, [accessToken, dispatch]);
+
+  console.log('Boards at the Boards page: ', boards);
 
   const submitForm = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -42,11 +56,28 @@ const UserBoards = () => {
     setButtonIsDisabled(e.target.value === '');
   };
 
-  const createNewBoard = () => {
-    // TODO: Create a new board in the database
+  const createNewBoard = async () => {
+    const name = createNewBoardName;
+    const values = { accessToken, name };
+    console.log('Values: ', values);
 
-    console.log('Creating new board');
-    router.push('/home/boards/new-board/board');
+    try {
+      const res = await client.post('/boards', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        data: {
+          name,
+        },
+      });
+      const data = await res.data;
+
+      console.log('Data from Boards page: ', data);
+    } catch (err: any) {
+      console.log('Error creating new board: ', err.response.data);
+    }
+
+    router.push('/home/boards/');
   };
 
   return (
@@ -89,7 +120,6 @@ const UserBoards = () => {
                   onChange={(ev) => {
                     ev.preventDefault();
                     setIsEditing(true);
-                    setBoardName(ev.target.value);
                   }}
                   disabled={!isEditing}
                   className="font-semibold bg-white outline-none border-none !pl-0 dark:bg-slate-900 dark:text-white"
@@ -112,15 +142,15 @@ const UserBoards = () => {
               <DialogHeader className="pb-2">
                 <DialogTitle className="mx-auto">New Board</DialogTitle>
                 <DialogDescription className="border-t pt-4">
-                  <div className="flex flex-col py-4 bg-yellow-200 rounded-md">
-                    <p className="font-semibold px-4">
+                  <span className="flex flex-col py-4 bg-yellow-200 rounded-md">
+                    <span className="font-semibold px-4">
                       Are you sure you want to create a new board?
-                    </p>
-                    <p className="px-4">
+                    </span>
+                    <span className="px-4">
                       We suggest having only one board per job search throughout
                       your career.
-                    </p>
-                  </div>
+                    </span>
+                  </span>
                 </DialogDescription>
               </DialogHeader>
               <div className="flex">
@@ -133,15 +163,17 @@ const UserBoards = () => {
                 />
               </div>
               <DialogFooter className="w-full">
-                <Button
-                  type="submit"
-                  variant="normal"
-                  className="w-full"
-                  disabled={buttonIsDisabled}
-                  onClick={createNewBoard}
-                >
-                  Create Board
-                </Button>
+                <DialogClose asChild>
+                  <Button
+                    type="submit"
+                    variant="normal"
+                    className="w-full"
+                    disabled={buttonIsDisabled}
+                    onClick={createNewBoard}
+                  >
+                    Create Board
+                  </Button>
+                </DialogClose>
               </DialogFooter>
             </DialogContent>
           </Dialog>

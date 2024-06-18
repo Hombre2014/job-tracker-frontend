@@ -3,7 +3,7 @@ import client from '@/api/client';
 
 export const getBoards = createAsyncThunk(
   'boards/getBoards',
-  async (accessToken: string | null, thunkAPI) => {
+  async (accessToken: string, thunkAPI) => {
     try {
       const res = await client.get('/boards', {
         headers: {
@@ -16,6 +16,30 @@ export const getBoards = createAsyncThunk(
         console.log('No boards found. Something is wrong!');
         return thunkAPI.rejectWithValue('No boards found');
       }
+
+      return data;
+    } catch (err: any) {
+      console.log('Error fetching boards: ', err.response.data);
+      return thunkAPI.rejectWithValue(err.response.data);
+    }
+  }
+);
+
+export const createBoard = createAsyncThunk(
+  'boards/createBoard',
+  async (values: any, thunkAPI) => {
+    try {
+      const res = await client.post('/boards', {
+        headers: {
+          Authorization: `Bearer ${values.accessToken}`,
+        },
+        data: {
+          name: values.name,
+        },
+      });
+
+      const data = await res.data;
+      console.log('Data from CreateBoard Thunk: ', data);
 
       return data;
     } catch (err: any) {

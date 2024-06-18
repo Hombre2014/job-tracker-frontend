@@ -45,7 +45,8 @@ export function ComboBox({
             ? initialString
             : value
             ? items.find((item) => item.name === value)?.name
-            : `${items[0].name}`}
+            : `${items[0].name}`}{' '}
+          {/* This line is the default value and when 2 or more boards it is not correct! TODO: Must be fixed! */}
           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -65,6 +66,7 @@ export function ComboBox({
                   }}
                 >
                   <CheckIcon
+                    key={item.name}
                     className={cn(
                       'mr-2 h-4 w-4',
                       value === item.name ? 'opacity-100' : 'opacity-0'
