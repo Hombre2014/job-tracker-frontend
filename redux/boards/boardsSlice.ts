@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 import { RootState } from '../store';
-import { getBoards } from './boardsThunk';
+import { getBoards, createBoard } from './boardsThunk';
 
 interface BoardsState {
   boards: Board[];
@@ -32,6 +32,18 @@ export const boardsSlice = createSlice({
       .addCase(getBoards.rejected, (state, action) => {
         state.boardsStatus = 'failed';
         state.error = action.error.message || 'Failed to fetch boards';
+      })
+      .addCase(createBoard.pending, (state) => {
+        state.boardsStatus = 'loading';
+      })
+      .addCase(createBoard.fulfilled, (state, action) => {
+        state.boardsStatus = 'succeeded';
+        state.boards.push(action.payload);
+        state.error = null;
+      })
+      .addCase(createBoard.rejected, (state, action) => {
+        state.boardsStatus = 'failed';
+        state.error = action.error.message || 'Failed to create board';
       });
   },
 });
