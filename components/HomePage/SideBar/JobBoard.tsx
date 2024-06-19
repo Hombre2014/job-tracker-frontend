@@ -12,7 +12,6 @@ const JobBoard = () => {
   const [showTrash, setShowTrash] = useState(false);
   const { boards } = useAppSelector((state) => state.boards);
   const { accessToken } = useAppSelector((state) => state.user);
-  // const accessToken = localStorage.getItem('accessToken');
 
   useEffect(() => {
     dispatch(getBoards(accessToken as string));

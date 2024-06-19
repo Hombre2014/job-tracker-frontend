@@ -20,7 +20,11 @@ import {
   CommandList,
 } from '@/components/ui/command';
 
-export function ComboBox({ items, searchItem, initialString }: ComboBoxProps) {
+export function LinkDocument({
+  docs,
+  searchItem,
+  initialString,
+}: LinkDocumentProps) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState('');
 
@@ -36,8 +40,8 @@ export function ComboBox({ items, searchItem, initialString }: ComboBoxProps) {
           {initialString !== ''
             ? initialString
             : value
-            ? items.find((item) => item.name === value)?.name
-            : `${items[0].name}`}{' '}
+            ? docs.find((doc: { title: string }) => doc.title === value)?.title
+            : `${docs[0].title}`}{' '}
           {/* This line is the default value and when 2 or more boards it is not correct! TODO: Must be fixed! */}
           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
@@ -48,28 +52,26 @@ export function ComboBox({ items, searchItem, initialString }: ComboBoxProps) {
           <CommandList>
             <CommandEmpty>Nothing found.</CommandEmpty>
             <CommandGroup>
-              {items.map((item) => (
+              {docs.map((doc) => (
                 <CommandItem
-                  key={item.name}
-                  value={item.id}
+                  key={doc.id}
+                  value={doc.title}
                   onSelect={() => {
-                    setValue(item.name);
+                    setValue(doc.title);
                     setOpen(false);
                   }}
                 >
                   <CheckIcon
-                    key={item.id}
+                    key={doc.id}
                     className={cn(
                       'mr-2 h-4 w-4',
-                      value === item.name ? 'opacity-100' : 'opacity-0'
+                      value === doc.title ? 'opacity-100' : 'opacity-0'
                     )}
                   />
-                  <Link href={`/home/boards/${item.id}/board`}>
+                  <Link href={`/home/boards/${doc.id}/board`}>
                     <div>
-                      <span>{item.name}&nbsp;</span>
-                      {/* Bellow line is the user's name, which we do not have so far */}
-                      {/* TODO: Resolve the issue with user's name! */}
-                      {/* <span className="opacity-40">{item.label}</span> */}
+                      <span>{doc.title}&nbsp;</span>
+                      <span className="opacity-40">{doc.category}</span>
                     </div>
                   </Link>
                 </CommandItem>

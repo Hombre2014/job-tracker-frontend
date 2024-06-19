@@ -6,7 +6,6 @@ import { BsPencil } from 'react-icons/bs';
 import { useRouter } from 'next/navigation';
 import { ChangeEvent, useEffect, useState } from 'react';
 
-import client from '@/api/client';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useAppSelector, useAppDispatch } from '@/redux/hooks';
@@ -25,22 +24,19 @@ import {
 const UserBoards = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const user = localStorage.getItem('user');
+  const email = user ? JSON.parse(user).email : '';
   const [isEditing, setIsEditing] = useState(false);
-  const { email } = useAppSelector((state) => state.user);
-  const { boards, boardsStatus } = useAppSelector((state) => state.boards);
-  const [buttonIsDisabled, setButtonIsDisabled] = useState(true);
-  const [createNewBoardName, setCreateNewBoardName] = useState('');
-
+  const [newBoardName, setNewBoardName] = useState('');
   const accessToken = localStorage.getItem('accessToken');
-
-  console.log('Access Token: ', accessToken);
-  console.log('Boards Status: ', boardsStatus);
+  const [buttonIsDisabled, setButtonIsDisabled] = useState(true);
+  const { boards, boardsStatus } = useAppSelector((state) => state.boards);
 
   useEffect(() => {
-    dispatch(getBoards(accessToken as string));
-  }, [accessToken, dispatch]);
-
-  console.log('Boards at the Boards page: ', boards);
+    if (boardsStatus === 'succeeded') {
+      dispatch(getBoards(accessToken as string));
+    }
+  }, [dispatch, accessToken]);
 
   const submitForm = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -52,30 +48,31 @@ const UserBoards = () => {
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    setCreateNewBoardName(e.target.value);
+    setNewBoardName(e.target.value);
     setButtonIsDisabled(e.target.value === '');
   };
 
   const createNewBoard = async () => {
-    const name = createNewBoardName;
-    const values = { accessToken, name };
+    const name = newBoardName;
+    const values = { name, accessToken };
     console.log('Values: ', values);
+    dispatch(createBoard(values));
+    // try {
+    //   const res = await client.post(
+    //     '/boards',
+    //     {
+    //       name,
+    //     },
+    //     {
+    //       headers: { Authorization: `Bearer ${accessToken}` },
+    //     }
+    //   );
+    //   const data = await res.data;
 
-    try {
-      const res = await client.post('/boards', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        data: {
-          name,
-        },
-      });
-      const data = await res.data;
-
-      console.log('Data from Boards page: ', data);
-    } catch (err: any) {
-      console.log('Error creating new board: ', err.response.data);
-    }
+    //   console.log('Data from Boards page: ', data);
+    // } catch (err: any) {
+    //   console.log('Error creating new board: ', err.response.data);
+    // }
 
     router.push('/home/boards/');
   };
@@ -157,7 +154,7 @@ const UserBoards = () => {
                 <Input
                   id="name"
                   placeholder="Board name (e.g., Job Search 2024)"
-                  value={createNewBoardName}
+                  value={newBoardName}
                   onChange={(e) => handleInputChange(e)}
                   className="focus:border-blue-500"
                 />
