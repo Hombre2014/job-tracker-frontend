@@ -1,4 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
+
 import client from '@/api/client';
 
 export const getBoards = createAsyncThunk(
@@ -28,19 +29,18 @@ export const getBoards = createAsyncThunk(
 export const createBoard = createAsyncThunk(
   'boards/createBoard',
   async (values: any, thunkAPI) => {
+    const { accessToken } = values;
+    const { name } = values;
+    const postData = { name: name };
     try {
-      const res = await client.post('/boards', {
+      const res = await client.post('/boards', postData, {
         headers: {
-          Authorization: `Bearer ${values.accessToken}`,
-        },
-        data: {
-          name: values.name,
+          Authorization: `Bearer ${accessToken}`,
         },
       });
 
       const data = await res.data;
       console.log('Data from CreateBoard Thunk: ', data);
-
       return data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.response.data);

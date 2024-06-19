@@ -15,3 +15,25 @@ interface Board {
   name: string;
   columns: Column[] | null;
 }
+
+interface WorkDocument {
+  id: string;
+  userId: string;
+  title: string;
+  category: string;
+  description?: string;
+  url: string;
+  boardId: string;
+}
+
+interface ComboBoxProps {
+  items: Board[];
+  searchItem: string;
+  initialString: string;
+}
+
+interface LinkDocumentProps {
+  docs: WorkDocument[];
+  searchItem: string;
+  initialString: string;
+}

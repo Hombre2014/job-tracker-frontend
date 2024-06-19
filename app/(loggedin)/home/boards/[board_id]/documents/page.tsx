@@ -1,6 +1,6 @@
 import documents from '@/data/documents';
 import { Button } from '@/components/ui/button';
-import { ComboBox } from '@/components/HomePage/HomeNavbar/ComboBox';
+import { LinkDocument } from '@/components/HomePage/HomeNavbar/LinkDocument';
 
 const BoardDocuments = () => {
   return (
@@ -11,8 +11,8 @@ const BoardDocuments = () => {
             All
           </div>
           <div className="flex gap-4">
-            <ComboBox
-              items={documents}
+            <LinkDocument
+              docs={documents}
               searchItem="Documents"
               initialString="+ Link Document"
             />

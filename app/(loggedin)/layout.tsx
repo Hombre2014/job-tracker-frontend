@@ -1,21 +1,28 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
+import { useAppDispatch } from '@/redux/hooks';
+import { getBoards } from '@/redux/boards/boardsThunk';
 import Sidebar from '@/components/HomePage/SideBar/Sidebar';
 
 const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const accessToken = localStorage.getItem('accessToken');
 
   useEffect(() => {
-    const accessToken = localStorage.getItem('accessToken');
     if (!accessToken) {
       router.push('/login');
     }
-    setAccessToken(accessToken);
-  }, [router]);
+  }, [accessToken, router]);
+
+  useEffect(() => {
+    if (accessToken) {
+      dispatch(getBoards(accessToken));
+    }
+  }, [accessToken, dispatch]);
 
   return (
     <div className="flex h-full">
