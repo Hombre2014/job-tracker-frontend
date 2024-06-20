@@ -28,10 +28,10 @@ const Login = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [isPending, startTransition] = useTransition();
+  const { status } = useAppSelector((state) => state.user);
   const [error, setError] = useState<string | undefined>('');
   const [success, setSuccess] = useState<string | undefined>('');
   const { boards, boardsStatus } = useAppSelector((state) => state.boards);
-  const { status } = useAppSelector((state) => state.user);
 
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
@@ -54,7 +54,7 @@ const Login = () => {
     if (status === 'succeeded') {
       setSuccess('Logged in successfully');
       const accessToken = localStorage.getItem('accessToken');
-      dispatch(getBoards(accessToken));
+      dispatch(getBoards(accessToken as string));
     }
 
     if (status === 'failed') {
