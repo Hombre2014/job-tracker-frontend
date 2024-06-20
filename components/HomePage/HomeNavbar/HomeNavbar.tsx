@@ -10,7 +10,7 @@ import { returnMenuIcon } from '@/utils/ReturnIcons';
 
 const HomeNavbar = () => {
   const { boards } = useAppSelector((state) => state.boards);
-  console.log('Boards from HomeNavbar: ', boards);
+
   return (
     <div className="flex justify-between items-center w-full pt-2 border-b border-slate-200 pb-2">
       <div className="flex justify-between items-center">
