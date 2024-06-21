@@ -64,10 +64,10 @@ const VerifyEmail = () => {
           router.push('/login');
         }
       } catch (error: any) {
-        const err = error.response.data.errorCode;
+        const err = error.response.data.userFriendlyMessage;
         setError(err);
         form.reset();
-        setTimeout(() => setError(''), 2000);
+        setTimeout(() => setError(''), 3000);
         router.push('/verify-email');
       }
     });

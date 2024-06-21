@@ -36,7 +36,7 @@ const UserBoards = () => {
     if (boardsStatus === 'succeeded') {
       dispatch(getBoards(accessToken as string));
     }
-  }, [dispatch, accessToken]);
+  }, [dispatch, accessToken, boardsStatus]);
 
   const submitForm = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -57,23 +57,6 @@ const UserBoards = () => {
     const values = { name, accessToken };
     console.log('Values: ', values);
     dispatch(createBoard(values));
-    // try {
-    //   const res = await client.post(
-    //     '/boards',
-    //     {
-    //       name,
-    //     },
-    //     {
-    //       headers: { Authorization: `Bearer ${accessToken}` },
-    //     }
-    //   );
-    //   const data = await res.data;
-
-    //   console.log('Data from Boards page: ', data);
-    // } catch (err: any) {
-    //   console.log('Error creating new board: ', err.response.data);
-    // }
-
     router.push('/home/boards/');
   };
 

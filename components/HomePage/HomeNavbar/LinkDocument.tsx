@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 
@@ -68,12 +67,13 @@ export function LinkDocument({
                       value === doc.title ? 'opacity-100' : 'opacity-0'
                     )}
                   />
-                  <Link href={`/home/boards/${doc.id}/board`}>
-                    <div>
-                      <span>{doc.title}&nbsp;</span>
-                      <span className="opacity-40">{doc.category}</span>
-                    </div>
-                  </Link>
+                  {/* <Link href={`/home/boards/${doc.id}/board`}> */}
+                  {/* Clicking on one of these should trigger a file upload. TODO: Implement it. */}
+                  <div>
+                    <span>{doc.title}&nbsp;</span>
+                    <span className="opacity-40">{doc.category}</span>
+                  </div>
+                  {/* </Link> */}
                 </CommandItem>
               ))}
             </CommandGroup>

@@ -29,9 +29,9 @@ const JobTrackers = () => {
           </Tooltip>
         </TooltipProvider>
       </div>
-      <div className="mr-2 cursor-pointer">
+      {/* <div className="mr-2 cursor-pointer">
         <RiAddBoxLine className="h-5 w-5 hover:transform hover:scale-110 transition duration-300 delay-100" />
-      </div>
+      </div> */}
     </div>
   );
 };

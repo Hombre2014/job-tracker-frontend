@@ -3,26 +3,24 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { useAppDispatch } from '@/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getBoards } from '@/redux/boards/boardsThunk';
 import Sidebar from '@/components/HomePage/SideBar/Sidebar';
 
 const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const accessToken = localStorage.getItem('accessToken');
+  const { accessToken } = useAppSelector((state) => state.user);
+  // const accessToken = localStorage.getItem('accessToken');
+  console.log('accessToken in loggedIn layout', accessToken);
 
   useEffect(() => {
     if (!accessToken) {
       router.push('/login');
-    }
-  }, [accessToken, router]);
-
-  useEffect(() => {
-    if (accessToken) {
+    } else {
       dispatch(getBoards(accessToken));
     }
-  }, [accessToken, dispatch]);
+  }, [accessToken, router, dispatch]);
 
   return (
     <div className="flex h-full">
