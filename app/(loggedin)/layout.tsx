@@ -10,9 +10,10 @@ import Sidebar from '@/components/HomePage/SideBar/Sidebar';
 const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { accessToken } = useAppSelector((state) => state.user);
-  // const accessToken = localStorage.getItem('accessToken');
-  console.log('accessToken in loggedIn layout', accessToken);
+  const { accessToken: reduxAccessToken } = useAppSelector(
+    (state) => state.user
+  );
+  const accessToken = reduxAccessToken || localStorage.getItem('accessToken');
 
   useEffect(() => {
     if (!accessToken) {

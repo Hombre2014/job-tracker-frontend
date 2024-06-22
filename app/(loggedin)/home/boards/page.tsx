@@ -36,7 +36,7 @@ const UserBoards = () => {
     if (boardsStatus === 'succeeded') {
       dispatch(getBoards(accessToken as string));
     }
-  }, [dispatch, accessToken, boardsStatus]);
+  }, [dispatch, accessToken]);
 
   const submitForm = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

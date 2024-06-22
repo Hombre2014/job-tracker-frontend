@@ -16,7 +16,7 @@ const UserPanel = () => {
 
   const userLogout = () => {
     dispatch(logout());
-    router.push('/');
+    router.push('/login');
   };
 
   return (

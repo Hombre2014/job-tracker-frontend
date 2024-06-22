@@ -51,7 +51,7 @@ const SignUp = () => {
           router.push('/verify-email');
         }
       } catch (error: any) {
-        const err = error.response.data.message;
+        const err = error.response.data.userFriendlyMessage;
         setError(err);
         form.reset();
       }

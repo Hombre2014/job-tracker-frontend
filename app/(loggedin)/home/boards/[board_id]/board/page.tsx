@@ -1,3 +1,5 @@
+'use client';
+
 import BoardColumn from '@/components/HomePage/Kanban/BoardColumn';
 
 const BoardKanban = () => {
