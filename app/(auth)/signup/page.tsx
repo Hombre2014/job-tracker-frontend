@@ -28,8 +28,6 @@ const SignUp = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>('');
 
-  console.log('Loading: ', loading);
-
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
@@ -56,7 +54,7 @@ const SignUp = () => {
           router.push('/verify-email');
         }
       } catch (error: any) {
-        const err = error.response.data.userFriendlyMessage;
+        const err = error.response.data.details;
         setError(err);
         form.reset();
       }
@@ -64,11 +62,7 @@ const SignUp = () => {
   };
 
   useEffect(() => {
-    if (isPending) {
-      setLoading(true);
-    } else {
-      setLoading(false);
-    }
+    if (isPending) setLoading(true);
   }, [loading, isPending]);
 
   return (
