@@ -1,5 +1,4 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-
 import client from '@/api/client';
 
 export const getBoards = createAsyncThunk(
@@ -11,7 +10,7 @@ export const getBoards = createAsyncThunk(
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      const data = await res.data;
+      const data = res.data;
 
       if (data.length === 0) {
         console.log('No boards found. Something is wrong!');
@@ -20,8 +19,10 @@ export const getBoards = createAsyncThunk(
 
       return data;
     } catch (err: any) {
-      console.log('Error fetching boards: ', err.response.data);
-      return thunkAPI.rejectWithValue(err.response.data);
+      console.log('Error fetching boards: ', err.response?.data);
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error fetching boards'
+      );
     }
   }
 );
@@ -29,9 +30,8 @@ export const getBoards = createAsyncThunk(
 export const createBoard = createAsyncThunk(
   'boards/createBoard',
   async (values: any, thunkAPI) => {
-    const { accessToken } = values;
-    const { name } = values;
-    const postData = { name: name };
+    const { accessToken, name } = values;
+    const postData = { name };
     try {
       const res = await client.post('/boards', postData, {
         headers: {
@@ -39,11 +39,12 @@ export const createBoard = createAsyncThunk(
         },
       });
 
-      const data = await res.data;
-      console.log('Data from CreateBoard Thunk: ', data);
+      const data = res.data;
       return data;
     } catch (err: any) {
-      return thunkAPI.rejectWithValue(err.response.data);
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error creating board'
+      );
     }
   }
 );

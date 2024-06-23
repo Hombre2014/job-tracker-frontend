@@ -1,3 +1,5 @@
+'use client';
+
 import HomeNavbar from '@/components/HomePage/HomeNavbar/HomeNavbar';
 
 const BoardLayout = ({ children }: { children: React.ReactNode }) => {
