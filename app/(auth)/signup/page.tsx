@@ -4,7 +4,7 @@ import * as z from 'zod';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import client from '@/api/client';
@@ -20,10 +20,12 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import Loader from '@/components/Misc/Loader';
 
 const SignUp = () => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>('');
 
   const form = useForm<z.infer<typeof RegisterSchema>>({
@@ -37,6 +39,7 @@ const SignUp = () => {
   const onSubmit = async (values: z.infer<typeof RegisterSchema>) => {
     setError('');
     const { email, password, role = 'user' } = values;
+    console.log('isPending: ', isPending);
     startTransition(async () => {
       try {
         const res = await client.post('/users', {
@@ -51,12 +54,16 @@ const SignUp = () => {
           router.push('/verify-email');
         }
       } catch (error: any) {
-        const err = error.response.data.userFriendlyMessage;
+        const err = error.response.data.details;
         setError(err);
         form.reset();
       }
     });
   };
+
+  useEffect(() => {
+    if (isPending) setLoading(true);
+  }, [loading, isPending]);
 
   return (
     <div>
@@ -109,6 +116,7 @@ const SignUp = () => {
             number, 1 upper, 1 lower.
           </p>
           <FormError message={error} />
+          {loading && <Loader title="Loading" />}
           <Button
             disabled={isPending}
             type="submit"
