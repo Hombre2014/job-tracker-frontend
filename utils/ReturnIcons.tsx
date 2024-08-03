@@ -4,18 +4,19 @@ import { PiBriefcaseLight } from 'react-icons/pi';
 import { HiOutlineThumbDown } from 'react-icons/hi';
 import { SlEnvolopeLetter, SlMagicWand } from 'react-icons/sl';
 import { RiContactsLine, RiFolder2Line } from 'react-icons/ri';
+import { BoardIcons, MenuIcons } from '@/enums';
 
 export const returnBoardIcon = (id: number) => {
   switch (id) {
-    case 1:
+    case BoardIcons.SlMagicWand:
       return <SlMagicWand />;
-    case 2:
+    case BoardIcons.SlEnvolopeLetter:
       return <SlEnvolopeLetter />;
-    case 3:
+    case BoardIcons.SlBriefcase:
       return <SlBriefcase />;
-    case 4:
+    case BoardIcons.GoTrophy:
       return <GoTrophy />;
-    case 5:
+    case BoardIcons.HiOutlineThumbDown:
       return <HiOutlineThumbDown />;
     default:
       return null;
@@ -24,11 +25,11 @@ export const returnBoardIcon = (id: number) => {
 
 export const returnMenuIcon = (icon: string) => {
   switch (icon) {
-    case 'RiContactsLine':
+    case MenuIcons.RiContactsLine:
       return <RiContactsLine />;
-    case 'RiFolder2Line':
+    case MenuIcons.RiFolder2Line:
       return <RiFolder2Line />;
-    case 'PiBriefcaseLight':
+    case MenuIcons.PiBriefcaseLight:
       return <PiBriefcaseLight />;
     default:
       return null;
