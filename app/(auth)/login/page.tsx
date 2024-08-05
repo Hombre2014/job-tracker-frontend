@@ -9,6 +9,7 @@ import { useEffect, useState, useTransition } from 'react';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 
 import { LoginSchema } from '@/schemas';
+import Loader from '@/components/Misc/Loader';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { login, logout } from '@/redux/user/userThunk';
@@ -65,7 +66,7 @@ const Login = () => {
         clearTimeout(timeout);
       };
     }
-  }, [status, dispatch]);
+  }, [status, dispatch, accessToken]);
 
   useEffect(() => {
     if (boardsStatus === 'succeeded') {
@@ -137,7 +138,7 @@ const Login = () => {
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
-          {boardsStatus === 'loading' && <p>Loading boards...</p>}
+          {boardsStatus === 'loading' && <Loader title="Loading boards" />}
           <Button
             disabled={isPending}
             type="submit"
