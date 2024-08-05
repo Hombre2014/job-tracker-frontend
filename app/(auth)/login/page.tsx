@@ -31,7 +31,7 @@ const Login = () => {
   const [isPending, startTransition] = useTransition();
   const { status } = useAppSelector((state) => state.user);
   const [error, setError] = useState<string | undefined>('');
-  const { accessToken, refreshToken } = useAppSelector((state) => state.user);
+  const { accessToken } = useAppSelector((state) => state.user);
   const [success, setSuccess] = useState<string | undefined>('');
   const { boards, boardsStatus } = useAppSelector((state) => state.boards);
 
@@ -71,13 +71,12 @@ const Login = () => {
   useEffect(() => {
     if (boardsStatus === 'succeeded') {
       if (boards.length === 0) {
-        console.log('No boards found. Something is wrong!');
+        setError('No boards found. Something is wrong!');
         router.push('/home/boards');
-      } else if (boards.length === 1) {
-        router.push(`/home/boards/${boards[0].id}/board`);
-      } else {
-        router.push('/home/boards');
-      }
+      } else
+        boards.length === 1
+          ? router.push(`/home/boards/${boards[0].id}/board`)
+          : router.push('/home/boards');
     }
   }, [boardsStatus, boards, router]);
 
