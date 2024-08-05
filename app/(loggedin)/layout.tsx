@@ -3,17 +3,14 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getBoards } from '@/redux/boards/boardsThunk';
 import Sidebar from '@/components/HomePage/SideBar/Sidebar';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 
 const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { accessToken: reduxAccessToken } = useAppSelector(
-    (state) => state.user
-  );
-  const accessToken = reduxAccessToken || localStorage.getItem('accessToken');
+  const { accessToken } = useAppSelector((state) => state.user);
 
   useEffect(() => {
     if (!accessToken) {

@@ -34,7 +34,7 @@ const UserBoards = () => {
     if (boardsStatus === 'succeeded') {
       dispatch(getBoards(accessToken as string));
     }
-  }, [dispatch, accessToken]);
+  });
 
   const submitForm = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -53,7 +53,6 @@ const UserBoards = () => {
   const createNewBoard = async () => {
     const name = newBoardName;
     const values = { name, accessToken };
-    console.log('Values: ', values);
     dispatch(createBoard(values));
     router.push('/home/boards/');
   };
