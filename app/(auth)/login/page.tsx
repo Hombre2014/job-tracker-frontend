@@ -9,6 +9,7 @@ import { useEffect, useState, useTransition } from 'react';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 
 import { LoginSchema } from '@/schemas';
+import Loader from '@/components/Misc/Loader';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { login, logout } from '@/redux/user/userThunk';
@@ -30,6 +31,7 @@ const Login = () => {
   const [isPending, startTransition] = useTransition();
   const { status } = useAppSelector((state) => state.user);
   const [error, setError] = useState<string | undefined>('');
+  const { accessToken } = useAppSelector((state) => state.user);
   const [success, setSuccess] = useState<string | undefined>('');
   const { boards, boardsStatus } = useAppSelector((state) => state.boards);
 
@@ -53,7 +55,6 @@ const Login = () => {
 
     if (status === 'succeeded') {
       setSuccess('Logged in successfully');
-      const accessToken = localStorage.getItem('accessToken');
       dispatch(getBoards(accessToken as string));
     }
 
@@ -65,18 +66,17 @@ const Login = () => {
         clearTimeout(timeout);
       };
     }
-  }, [status, dispatch]);
+  }, [status, dispatch, accessToken]);
 
   useEffect(() => {
     if (boardsStatus === 'succeeded') {
       if (boards.length === 0) {
-        console.log('No boards found. Something is wrong!');
+        setError('No boards found. Something is wrong!');
         router.push('/home/boards');
-      } else if (boards.length === 1) {
-        router.push(`/home/boards/${boards[0].id}/board`);
-      } else {
-        router.push('/home/boards');
-      }
+      } else
+        boards.length === 1
+          ? router.push(`/home/boards/${boards[0].id}/board`)
+          : router.push('/home/boards');
     }
   }, [boardsStatus, boards, router]);
 
@@ -137,7 +137,7 @@ const Login = () => {
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
-          {boardsStatus === 'loading' && <p>Loading boards...</p>}
+          {boardsStatus === 'loading' && <Loader title="Loading boards" />}
           <Button
             disabled={isPending}
             type="submit"

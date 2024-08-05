@@ -56,6 +56,7 @@ const SignUp = () => {
       } catch (error: any) {
         const err = error.response.data.details;
         setError(err);
+        setLoading(false);
         form.reset();
       }
     });

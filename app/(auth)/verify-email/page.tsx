@@ -46,7 +46,6 @@ const VerifyEmail = () => {
     const email = user.email;
 
     if (!code || !email) {
-      console.log('Code or email is missing');
       setError('Code or email is missing');
       return;
     }
@@ -61,6 +60,7 @@ const VerifyEmail = () => {
         if (res.status === 201) {
           form.reset();
           setSuccess('Code verification successful');
+          localStorage.removeItem('user');
           router.push('/login');
         }
       } catch (error: any) {
