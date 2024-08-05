@@ -117,7 +117,7 @@ const SignUp = () => {
             number, 1 upper, 1 lower.
           </p>
           <FormError message={error} />
-          {loading && <Loader title="Loading" />}
+          {loading && <Loader title="Creating Account" />}
           <Button
             disabled={isPending}
             type="submit"
