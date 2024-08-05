@@ -24,12 +24,10 @@ import {
 const UserBoards = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const user = localStorage.getItem('user');
-  const email = user ? JSON.parse(user).email : '';
   const [isEditing, setIsEditing] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
-  const accessToken = localStorage.getItem('accessToken');
   const [buttonIsDisabled, setButtonIsDisabled] = useState(true);
+  const { accessToken, email } = useAppSelector((state) => state.user);
   const { boards, boardsStatus } = useAppSelector((state) => state.boards);
 
   useEffect(() => {
