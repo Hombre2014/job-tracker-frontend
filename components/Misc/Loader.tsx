@@ -1,4 +1,4 @@
-const Loader = (title: any) => {
+const Loader = ({ title }: { title: string }) => {
   return (
     <div className="flex justify-center items-center gap-4">
       <p className="text-center">{title}...</p>
