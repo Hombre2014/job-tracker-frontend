@@ -1,11 +1,11 @@
 'use client';
 
-import BoardColumn from '@/components/HomePage/Kanban/BoardColumn';
+import BoardColumns from '@/components/HomePage/Kanban/BoardColumns';
 
 const BoardKanban = () => {
   return (
     <div className="h-full">
-      <BoardColumn />
+      <BoardColumns />
     </div>
   );
 };
