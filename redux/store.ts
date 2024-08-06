@@ -1,4 +1,6 @@
+import { WebStorage } from 'redux-persist/lib/types';
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
+import createWebStorage from 'redux-persist/lib/storage/createWebStorage';
 import {
   persistStore,
   persistReducer,
@@ -12,9 +14,6 @@ import {
 
 import userSlice from './user/userSlice';
 import boardsSlice from './boards/boardsSlice';
-
-import createWebStorage from 'redux-persist/lib/storage/createWebStorage';
-import { WebStorage } from 'redux-persist/lib/types';
 
 export function createPersistStorage(): WebStorage {
   const isServer = typeof window === 'undefined';
@@ -40,7 +39,7 @@ export function createPersistStorage(): WebStorage {
 const persistConfig = {
   key: 'root',
   storage: createPersistStorage(),
-  whitelist: ['user'],
+  whitelist: ['user', 'boards'],
   version: 1,
 };
 
