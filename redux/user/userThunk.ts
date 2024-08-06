@@ -12,10 +12,13 @@ export const login = createAsyncThunk(
       const data = res.data;
 
       if (res.status === 200) {
-        const { accessToken } = res.data;
+        const { accessToken, refreshToken } = res.data;
         const decoded = jwt.decode(accessToken);
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
 
         if (decoded) {
+          localStorage.setItem('user', JSON.stringify(decoded));
           return { data, decoded };
         } else {
           return thunkAPI.rejectWithValue('Token decoding failed');
@@ -30,6 +33,10 @@ export const login = createAsyncThunk(
 );
 
 export const logout = createAsyncThunk('user/logout', async () => {
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+  localStorage.removeItem('user');
+
   return {
     accessToken: '',
     refreshToken: '',

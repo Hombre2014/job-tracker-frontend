@@ -24,17 +24,19 @@ import {
 const UserBoards = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const user = localStorage.getItem('user');
+  const email = user ? JSON.parse(user).email : '';
   const [isEditing, setIsEditing] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
+  const accessToken = localStorage.getItem('accessToken');
   const [buttonIsDisabled, setButtonIsDisabled] = useState(true);
-  const { accessToken, email } = useAppSelector((state) => state.user);
   const { boards, boardsStatus } = useAppSelector((state) => state.boards);
 
   useEffect(() => {
     if (boardsStatus === 'succeeded') {
       dispatch(getBoards(accessToken as string));
     }
-  });
+  }, [dispatch, accessToken]);
 
   const submitForm = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -74,7 +76,7 @@ const UserBoards = () => {
           <Link
             href={`/home/boards/${board.id}/board`}
             key={board.id}
-            className="border rounded-sm px-6 py-5"
+            className="border rounded-sm px-6 py-5 min-h-[160px]"
             title="board name"
           >
             <div className="relative w-full h-full">
@@ -110,7 +112,7 @@ const UserBoards = () => {
             </div>
           </Link>
         ))}
-        <div className="border rounded-sm px-6 py-5 flex items-center justify-center h-[174px]">
+        <div className="border rounded-sm px-6 py-5 flex items-center justify-center h-[160px]">
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline">+ New Board</Button>
