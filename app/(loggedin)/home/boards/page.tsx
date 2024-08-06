@@ -55,7 +55,6 @@ const UserBoards = () => {
   const createNewBoard = async () => {
     const name = newBoardName;
     const values = { name, accessToken };
-    console.log('Values: ', values);
     dispatch(createBoard(values));
     router.push('/home/boards/');
   };
@@ -77,7 +76,7 @@ const UserBoards = () => {
           <Link
             href={`/home/boards/${board.id}/board`}
             key={board.id}
-            className="border rounded-sm px-6 py-5"
+            className="border rounded-sm px-6 py-5 min-h-[160px]"
             title="board name"
           >
             <div className="relative w-full h-full">
@@ -113,7 +112,7 @@ const UserBoards = () => {
             </div>
           </Link>
         ))}
-        <div className="border rounded-sm px-6 py-5 flex items-center justify-center h-[174px]">
+        <div className="border rounded-sm px-6 py-5 flex items-center justify-center h-[160px]">
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline">+ New Board</Button>
