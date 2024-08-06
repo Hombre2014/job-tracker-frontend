@@ -24,17 +24,19 @@ import {
 const UserBoards = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const user = localStorage.getItem('user');
+  const email = user ? JSON.parse(user).email : '';
   const [isEditing, setIsEditing] = useState(false);
   const [newBoardName, setNewBoardName] = useState('');
+  const accessToken = localStorage.getItem('accessToken');
   const [buttonIsDisabled, setButtonIsDisabled] = useState(true);
-  const { accessToken, email } = useAppSelector((state) => state.user);
   const { boards, boardsStatus } = useAppSelector((state) => state.boards);
 
   useEffect(() => {
     if (boardsStatus === 'succeeded') {
       dispatch(getBoards(accessToken as string));
     }
-  });
+  }, [dispatch, accessToken]);
 
   const submitForm = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -53,6 +55,7 @@ const UserBoards = () => {
   const createNewBoard = async () => {
     const name = newBoardName;
     const values = { name, accessToken };
+    console.log('Values: ', values);
     dispatch(createBoard(values));
     router.push('/home/boards/');
   };
