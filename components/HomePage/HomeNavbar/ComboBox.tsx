@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useParams } from 'next/navigation';
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 
 import { cn } from '@/lib/utils';
@@ -22,9 +23,11 @@ import {
 } from '@/components/ui/command';
 
 export function ComboBox({ items, searchItem, initialString }: ComboBoxProps) {
+  const { board_id } = useParams();
   const [value, setValue] = useState('');
   const [open, setOpen] = useState(false);
   const { boardsStatus } = useAppSelector((state) => state.boards);
+  const currentBoardName = items.find((item) => item.id === board_id)?.name;
 
   return (
     boardsStatus === 'succeeded' && (
@@ -36,12 +39,7 @@ export function ComboBox({ items, searchItem, initialString }: ComboBoxProps) {
             aria-expanded={open}
             className="w-fit justify-between"
           >
-            {initialString !== ''
-              ? initialString
-              : value
-              ? items.find((item) => item.name === value)?.name
-              : `${items[0].name}`}{' '}
-            {/* This line is the default value and when 2 or more boards it is not correct! TODO: Must be fixed! */}
+            {currentBoardName}{' '}
             <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -56,8 +54,8 @@ export function ComboBox({ items, searchItem, initialString }: ComboBoxProps) {
               <CommandGroup>
                 {items.map((item) => (
                   <CommandItem
-                    key={item.name}
-                    value={item.id}
+                    key={item.id}
+                    value={item.name}
                     onSelect={() => {
                       setValue(item.name);
                       setOpen(false);

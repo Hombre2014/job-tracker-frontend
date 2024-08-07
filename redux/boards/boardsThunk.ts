@@ -48,3 +48,25 @@ export const createBoard = createAsyncThunk(
     }
   }
 );
+
+export const renameBoard = createAsyncThunk(
+  'boards/renameBoard',
+  async (values: any, thunkAPI) => {
+    const { accessToken, name, id } = values;
+    const patchData = { name };
+    try {
+      const res = await client.patch(`/boards/${id}`, patchData, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error renaming board'
+      );
+    }
+  }
+);

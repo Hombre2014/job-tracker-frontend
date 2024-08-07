@@ -3,33 +3,22 @@
 import Link from 'next/link';
 import { SlUser } from 'react-icons/sl';
 import { BsPencil } from 'react-icons/bs';
-import { useRouter } from 'next/navigation';
 import { ChangeEvent, useEffect, useState } from 'react';
 
+import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { useAppSelector, useAppDispatch } from '@/redux/hooks';
-import { createBoard, getBoards } from '@/redux/boards/boardsThunk';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { getBoards, renameBoard } from '@/redux/boards/boardsThunk';
+import CreateNewBoard from '@/components/HomePage/Boards/CreateNewBoard';
 
 const UserBoards = () => {
-  const router = useRouter();
   const dispatch = useAppDispatch();
   const user = localStorage.getItem('user');
   const email = user ? JSON.parse(user).email : '';
   const [isEditing, setIsEditing] = useState(false);
-  const [newBoardName, setNewBoardName] = useState('');
   const accessToken = localStorage.getItem('accessToken');
-  const [buttonIsDisabled, setButtonIsDisabled] = useState(true);
+  const [currentBoardId, setCurrentBoardId] = useState('');
+  const [renamedBoardName, setRenamedBoardName] = useState('');
   const { boards, boardsStatus } = useAppSelector((state) => state.boards);
 
   useEffect(() => {
@@ -38,25 +27,33 @@ const UserBoards = () => {
     }
   }, [dispatch, accessToken]);
 
-  const submitForm = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    console.log('Form submitted');
+  useEffect(() => {
+    if (isEditing) {
+      const currentInputElement = document.getElementById(currentBoardId);
+      if (currentBoardId === currentInputElement!.id) {
+        currentInputElement!.focus();
+        currentInputElement!.select();
+      }
+    }
+  }, [isEditing, currentBoardId]);
 
-    // TODO: Implement board name change functionality
-    // TODO: Update the board name in the database
-  };
-
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleBoardNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    setNewBoardName(e.target.value);
-    setButtonIsDisabled(e.target.value === '');
+    setRenamedBoardName(e.target.value);
   };
 
-  const createNewBoard = async () => {
-    const name = newBoardName;
-    const values = { name, accessToken };
-    dispatch(createBoard(values));
-    router.push('/home/boards/');
+  const confirmBoardNameChange = () => {
+    setIsEditing(false);
+    dispatch(
+      renameBoard({ name: renamedBoardName, accessToken, id: currentBoardId })
+    );
+    setCurrentBoardId('');
+  };
+
+  const checkForEnter = (e: any) => {
+    if (e.key === 'Enter') {
+      confirmBoardNameChange();
+    }
   };
 
   return (
@@ -76,7 +73,10 @@ const UserBoards = () => {
           <Link
             href={`/home/boards/${board.id}/board`}
             key={board.id}
-            className="border rounded-sm px-6 py-5 min-h-[160px]"
+            className={cn(
+              isEditing ? 'pointer-events-none border-2 border-blue-500' : '',
+              'border rounded-sm px-6 py-5 flex items-center justify-center h-[160px]'
+            )}
             title="board name"
           >
             <div className="relative w-full h-full">
@@ -86,24 +86,24 @@ const UserBoards = () => {
                 onClick={(e) => {
                   e.preventDefault();
                   setIsEditing(true);
+                  setCurrentBoardId(board.id);
+                  setRenamedBoardName(board.name);
                 }}
               />
-              <form onSubmit={submitForm}>
-                <label htmlFor="board" />
-                <input
-                  name="board"
+              {isEditing && currentBoardId === board.id ? (
+                <Input
                   id={board.id}
-                  title="board name"
-                  type="submit"
-                  value={board.name}
-                  onChange={(ev) => {
-                    ev.preventDefault();
-                    setIsEditing(true);
-                  }}
-                  disabled={!isEditing}
-                  className="font-semibold bg-white outline-none border-none !pl-0 dark:bg-slate-900 dark:text-white"
+                  placeholder="Board name (e.g., Job Search 2024)"
+                  value={renamedBoardName}
+                  type="text"
+                  onChange={(e) => handleBoardNameChange(e)}
+                  onKeyDown={(e) => checkForEnter(e)}
+                  onBlur={confirmBoardNameChange}
+                  className="focus:border-blue-500"
                 />
-              </form>
+              ) : (
+                <p className="text-lg font-semibold">{board.name}</p>
+              )}
               {/* Bellow line is the user's name, which we do not have so far */}
               {/* TODO: Resolve the issue with user's name! */}
               {/* <p className="text-slate-700 text-sm">{board.label}</p> */}
@@ -113,49 +113,7 @@ const UserBoards = () => {
           </Link>
         ))}
         <div className="border rounded-sm px-6 py-5 flex items-center justify-center h-[160px]">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline">+ New Board</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader className="pb-2">
-                <DialogTitle className="mx-auto">New Board</DialogTitle>
-                <DialogDescription className="border-t pt-4">
-                  <span className="flex flex-col py-4 bg-yellow-200 rounded-md">
-                    <span className="font-semibold px-4">
-                      Are you sure you want to create a new board?
-                    </span>
-                    <span className="px-4">
-                      We suggest having only one board per job search throughout
-                      your career.
-                    </span>
-                  </span>
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex">
-                <Input
-                  id="name"
-                  placeholder="Board name (e.g., Job Search 2024)"
-                  value={newBoardName}
-                  onChange={(e) => handleInputChange(e)}
-                  className="focus:border-blue-500"
-                />
-              </div>
-              <DialogFooter className="w-full">
-                <DialogClose asChild>
-                  <Button
-                    type="submit"
-                    variant="normal"
-                    className="w-full"
-                    disabled={buttonIsDisabled}
-                    onClick={createNewBoard}
-                  >
-                    Create Board
-                  </Button>
-                </DialogClose>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <CreateNewBoard buttonLabel="New Board" />
         </div>
       </div>
     </div>

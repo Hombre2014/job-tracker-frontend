@@ -1,6 +1,7 @@
 import Link from 'next/link';
-import { RiAddBoxLine, RiQuestionMark } from 'react-icons/ri';
+import { RiQuestionMark } from 'react-icons/ri';
 
+import CreateNewBoard from '../Boards/CreateNewBoard';
 import {
   Tooltip,
   TooltipContent,
@@ -29,9 +30,12 @@ const JobTrackers = () => {
           </Tooltip>
         </TooltipProvider>
       </div>
-      {/* <div className="mr-2 cursor-pointer">
-        <RiAddBoxLine className="h-5 w-5 hover:transform hover:scale-110 transition duration-300 delay-100" />
-      </div> */}
+      <div className="mr-2 cursor-pointer">
+        <CreateNewBoard
+          buttonLabel=""
+          styling="max-w-0 max-h-0 p-3 font-bold"
+        />
+      </div>
     </div>
   );
 };

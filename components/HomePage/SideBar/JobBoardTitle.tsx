@@ -1,9 +1,13 @@
 import Link from 'next/link';
 import { useState } from 'react';
+import { useParams } from 'next/navigation';
 import { RiAccountPinBoxLine, RiDeleteBinLine } from 'react-icons/ri';
+
+import { cn } from '@/lib/utils';
 
 const JobBoardTitle = (board: Board) => {
   const [showTrash, setShowTrash] = useState(false);
+  const { board_id } = useParams();
 
   const toggleTrashIcon = () => {
     setTimeout(() => {
@@ -16,8 +20,12 @@ const JobBoardTitle = (board: Board) => {
       onMouseEnter={toggleTrashIcon}
       onMouseLeave={toggleTrashIcon}
       key={board.id}
-      className="flex justify-between items-center border border-slate-400 rounded-md bg-slate-200 p-2 mt-4 mx-2 cursor-pointer
-        dark:bg-slate-700 dark:border-slate-500 dark:text-white"
+      className={cn(
+        board_id === board.id
+          ? 'bg-blue-100 hover:bg-blue-100'
+          : 'hover:bg-slate-100',
+        'flex justify-between items-center p-2 mt-4 mx-2 rounded-md cursor-pointer'
+      )}
     >
       <div className="flex items-center gap-1">
         <RiAccountPinBoxLine className="h-5 w-5" />
