@@ -3,40 +3,22 @@
 import Link from 'next/link';
 import { SlUser } from 'react-icons/sl';
 import { BsPencil } from 'react-icons/bs';
-import { useRouter } from 'next/navigation';
 import { ChangeEvent, useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { useAppSelector, useAppDispatch } from '@/redux/hooks';
-import {
-  createBoard,
-  getBoards,
-  renameBoard,
-} from '@/redux/boards/boardsThunk';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { getBoards, renameBoard } from '@/redux/boards/boardsThunk';
+import CreateNewBoard from '@/components/HomePage/Boards/CreateNewBoard';
 
 const UserBoards = () => {
-  const router = useRouter();
   const dispatch = useAppDispatch();
   const user = localStorage.getItem('user');
   const email = user ? JSON.parse(user).email : '';
   const [isEditing, setIsEditing] = useState(false);
-  const [newBoardName, setNewBoardName] = useState('');
   const accessToken = localStorage.getItem('accessToken');
   const [currentBoardId, setCurrentBoardId] = useState('');
   const [renamedBoardName, setRenamedBoardName] = useState('');
-  const [buttonIsDisabled, setButtonIsDisabled] = useState(true);
   const { boards, boardsStatus } = useAppSelector((state) => state.boards);
 
   useEffect(() => {
@@ -44,20 +26,6 @@ const UserBoards = () => {
       dispatch(getBoards(accessToken as string));
     }
   }, [dispatch, accessToken]);
-
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    setNewBoardName(e.target.value);
-    setButtonIsDisabled(e.target.value === '');
-  };
-
-  const createNewBoard = async () => {
-    const name = newBoardName;
-    const values = { name, accessToken };
-    dispatch(createBoard(values));
-    router.push('/home/boards/');
-    newBoardName && setNewBoardName('');
-  };
 
   useEffect(() => {
     if (isEditing) {
@@ -145,49 +113,7 @@ const UserBoards = () => {
           </Link>
         ))}
         <div className="border rounded-sm px-6 py-5 flex items-center justify-center h-[160px]">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline">+ New Board</Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader className="pb-2">
-                <DialogTitle className="mx-auto">New Board</DialogTitle>
-                <DialogDescription className="border-t pt-4">
-                  <span className="flex flex-col py-4 bg-yellow-200 rounded-md">
-                    <span className="font-semibold px-4">
-                      Are you sure you want to create a new board?
-                    </span>
-                    <span className="px-4">
-                      We suggest having only one board per job search throughout
-                      your career.
-                    </span>
-                  </span>
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex">
-                <Input
-                  id="name"
-                  placeholder="Board name (e.g., Job Search 2024)"
-                  value={newBoardName}
-                  onChange={(e) => handleInputChange(e)}
-                  className="focus:border-blue-500"
-                />
-              </div>
-              <DialogFooter className="w-full">
-                <DialogClose asChild>
-                  <Button
-                    type="submit"
-                    variant="normal"
-                    className="w-full"
-                    disabled={buttonIsDisabled}
-                    onClick={createNewBoard}
-                  >
-                    Create Board
-                  </Button>
-                </DialogClose>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <CreateNewBoard buttonLabel="New Board" />
         </div>
       </div>
     </div>
