@@ -4,12 +4,16 @@ import Link from 'next/link';
 import { SlUser } from 'react-icons/sl';
 import { BsPencil } from 'react-icons/bs';
 import { useRouter } from 'next/navigation';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useRef, useEffect, useState } from 'react';
 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useAppSelector, useAppDispatch } from '@/redux/hooks';
-import { createBoard, getBoards } from '@/redux/boards/boardsThunk';
+import {
+  createBoard,
+  getBoards,
+  renameBoard,
+} from '@/redux/boards/boardsThunk';
 import {
   Dialog,
   DialogClose,
@@ -20,6 +24,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
 
 const UserBoards = () => {
   const router = useRouter();
@@ -27,28 +32,33 @@ const UserBoards = () => {
   const user = localStorage.getItem('user');
   const email = user ? JSON.parse(user).email : '';
   const [isEditing, setIsEditing] = useState(false);
+  const [currentBoardId, setCurrentBoardId] = useState('');
   const [newBoardName, setNewBoardName] = useState('');
   const accessToken = localStorage.getItem('accessToken');
+  const [renamedBoardName, setRenamedBoardName] = useState('new name');
   const [buttonIsDisabled, setButtonIsDisabled] = useState(true);
   const { boards, boardsStatus } = useAppSelector((state) => state.boards);
+
+  const inputElement = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (boardsStatus === 'succeeded') {
       dispatch(getBoards(accessToken as string));
     }
-  }, [dispatch, accessToken, boardsStatus]);
+  }, [dispatch, accessToken]);
 
-  const submitForm = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    console.log('Form submitted');
+  // const submitForm = (event: React.FormEvent<HTMLFormElement>) => {
+  //   event.preventDefault();
+  //   console.log('Form submitted');
 
-    // TODO: Implement board name change functionality
-    // TODO: Update the board name in the database
-  };
+  //   // TODO: Implement board name change functionality
+  //   // TODO: Update the board name in the database
+  // };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     setNewBoardName(e.target.value);
+    console.log('newBoardName: ', newBoardName);
     setButtonIsDisabled(e.target.value === '');
   };
 
@@ -57,6 +67,40 @@ const UserBoards = () => {
     const values = { name, accessToken };
     dispatch(createBoard(values));
     router.push('/home/boards/');
+    newBoardName && setNewBoardName('');
+  };
+
+  useEffect(() => {
+    if (isEditing) {
+      const currentInputElement = document.getElementById(currentBoardId);
+      console.log('currentInputElement: ', currentInputElement);
+      if (currentBoardId === currentInputElement!.id) {
+        currentInputElement!.focus();
+        currentInputElement!.select();
+      }
+    }
+  }, [isEditing, currentBoardId]);
+
+  const handleBoardNameChange = (
+    e: ChangeEvent<HTMLInputElement>,
+    id: string
+  ) => {
+    e.preventDefault();
+    setRenamedBoardName(e.target.value);
+  };
+
+  const confirmBoardNameChange = () => {
+    setIsEditing(false);
+    dispatch(
+      renameBoard({ name: renamedBoardName, accessToken, id: currentBoardId })
+    );
+    setCurrentBoardId('');
+  };
+
+  const checkForEnter = (e: any) => {
+    if (e.key === 'Enter') {
+      confirmBoardNameChange();
+    }
   };
 
   return (
@@ -73,44 +117,52 @@ const UserBoards = () => {
       </div>
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
         {boards.map((board) => (
-          <Link
-            href={`/home/boards/${board.id}/board`}
-            key={board.id}
-            className="border rounded-sm px-6 py-5 min-h-[160px]"
-            title="board name"
-          >
-            <div className="relative w-full h-full">
-              <BsPencil
-                z-index={1000}
-                className="absolute top-0 right-0"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setIsEditing(true);
-                }}
+          // <Link
+          //   href={`/home/boards/${board.id}/board`}
+          //   key={board.id}
+          //   className={cn(
+          //     isEditing ? 'pointer-events-none border-2 border-blue-500' : '',
+          //     'border rounded-sm px-6 py-5 flex items-center justify-center h-[160px]'
+          //   )}
+          //   title="board name"
+          // >
+          <div className="relative w-full h-full" key={board.id}>
+            <BsPencil
+              z-index={1000}
+              className="absolute top-0 right-0"
+              onClick={(e) => {
+                e.preventDefault();
+                setIsEditing(true);
+                setCurrentBoardId(board.id);
+                setRenamedBoardName(board.name);
+              }}
+            />
+            {isEditing && currentBoardId === board.id ? (
+              // <form onSubmit={submitForm}>
+              <Input
+                ref={inputElement}
+                id={board.id}
+                placeholder="Board name (e.g., Job Search 2024)"
+                value={renamedBoardName}
+                // type="submit"
+                // onChange={(e) => console.log('Event: ', e.target.value)}
+                onChange={(e) => handleBoardNameChange(e, board.id)}
+                onKeyDown={(e) => checkForEnter(e)}
+                // onChange={(e) => setRenamedBoardName(e.target.value)}
+                onBlur={confirmBoardNameChange}
+                className="focus:border-blue-500"
               />
-              <form onSubmit={submitForm}>
-                <label htmlFor="board" />
-                <input
-                  name="board"
-                  id={board.id}
-                  title="board name"
-                  type="submit"
-                  value={board.name}
-                  onChange={(ev) => {
-                    ev.preventDefault();
-                    setIsEditing(true);
-                  }}
-                  disabled={!isEditing}
-                  className="font-semibold bg-white outline-none border-none !pl-0 dark:bg-slate-900 dark:text-white"
-                />
-              </form>
-              {/* Bellow line is the user's name, which we do not have so far */}
-              {/* TODO: Resolve the issue with user's name! */}
-              {/* <p className="text-slate-700 text-sm">{board.label}</p> */}
-              <p className="text-slate-400 text-xs">{email}</p>
-              {/* TODO: Created at or how many days/weeks/months ago? */}
-            </div>
-          </Link>
+            ) : (
+              // </form>
+              <p className="text-lg font-semibold">{board.name}</p>
+            )}
+            {/* Bellow line is the user's name, which we do not have so far */}
+            {/* TODO: Resolve the issue with user's name! */}
+            {/* <p className="text-slate-700 text-sm">{board.label}</p> */}
+            <p className="text-slate-400 text-xs">{email}</p>
+            {/* TODO: Created at or how many days/weeks/months ago? */}
+          </div>
+          // </Link>
         ))}
         <div className="border rounded-sm px-6 py-5 flex items-center justify-center h-[160px]">
           <Dialog>

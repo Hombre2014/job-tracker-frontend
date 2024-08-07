@@ -53,9 +53,9 @@ export const renameBoard = createAsyncThunk(
   'boards/renameBoard',
   async (values: any, thunkAPI) => {
     const { accessToken, name, id } = values;
-    const putData = { name };
+    const patchData = { name };
     try {
-      const res = await client.patch(`/boards/${id}`, putData, {
+      const res = await client.patch(`/boards/${id}`, patchData, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
