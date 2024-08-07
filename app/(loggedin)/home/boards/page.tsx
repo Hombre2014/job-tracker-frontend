@@ -43,7 +43,7 @@ const UserBoards = () => {
     if (boardsStatus === 'succeeded') {
       dispatch(getBoards(accessToken as string));
     }
-  }, [dispatch, accessToken, boardsStatus]);
+  }, [dispatch, accessToken]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
