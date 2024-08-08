@@ -75,3 +75,30 @@ export const renameBoard = createAsyncThunk(
     }
   }
 );
+
+export const archiveBoard = createAsyncThunk(
+  'boards/archiveBoard',
+  async (values: any, thunkAPI) => {
+    const { accessToken, id } = values;
+    try {
+      const res = await client.patch(
+        `/boards/${id}`,
+        {
+          isArchived: true,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error archiving board'
+      );
+    }
+  }
+);
