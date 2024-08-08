@@ -22,7 +22,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 
-export function ComboBox({ items, searchItem, initialString }: ComboBoxProps) {
+export function ComboBox({ items, searchItem }: ComboBoxProps) {
   const { board_id } = useParams();
   const [value, setValue] = useState('');
   const [open, setOpen] = useState(false);

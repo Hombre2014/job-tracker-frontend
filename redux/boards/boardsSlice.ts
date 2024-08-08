@@ -1,7 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 import { RootState } from '../store';
-import { getBoards, createBoard, renameBoard } from './boardsThunk';
+import {
+  getBoards,
+  createBoard,
+  renameBoard,
+  archiveBoard,
+} from './boardsThunk';
 
 interface BoardsState {
   boards: Board[];
@@ -58,6 +63,20 @@ export const boardsSlice = createSlice({
       .addCase(renameBoard.rejected, (state, action) => {
         state.boardsStatus = 'failed';
         state.error = action.error.message || 'Failed to rename board';
+      })
+      .addCase(archiveBoard.pending, (state) => {
+        state.boardsStatus = 'loading';
+      })
+      .addCase(archiveBoard.fulfilled, (state, action) => {
+        state.boardsStatus = 'succeeded';
+        state.boards = state.boards.map((board) =>
+          board.id === action.payload.id ? action.payload : board
+        );
+        state.error = null;
+      })
+      .addCase(archiveBoard.rejected, (state, action) => {
+        state.boardsStatus = 'failed';
+        state.error = action.error.message || 'Failed to archive board';
       });
   },
 });

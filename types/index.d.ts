@@ -29,11 +29,21 @@ interface WorkDocument {
 interface ComboBoxProps {
   items: Board[];
   searchItem: string;
-  initialString: string;
+  initialString?: string;
 }
 
 interface LinkDocumentProps {
   docs: WorkDocument[];
   searchItem: string;
   initialString: string;
+}
+
+interface AlertDialogProps {
+  buttonLabel?: React.ReactNode;
+  dialogTitle: string;
+  dialogText: string;
+  buttonConfirm: string;
+  buttonCancel: string;
+  actionFunction: () => void;
+  stylings?: string;
 }

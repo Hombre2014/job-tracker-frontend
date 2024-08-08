@@ -3,9 +3,9 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getBoards } from '@/redux/boards/boardsThunk';
 import Sidebar from '@/components/HomePage/SideBar/Sidebar';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 
 const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
@@ -25,7 +25,7 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="flex h-full">
-      <aside className="min-w-52">
+      <aside className="min-w-56">
         <Sidebar />
       </aside>
       {accessToken && (
