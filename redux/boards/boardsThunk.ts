@@ -17,7 +17,12 @@ export const getBoards = createAsyncThunk(
         return thunkAPI.rejectWithValue('No boards found');
       }
 
-      return data;
+      // return only the boards that have isArchived set to false
+
+      if (data.length > 0) {
+        const filteredData = data.filter((board: any) => !board.isArchived);
+        return filteredData;
+      }
     } catch (err: any) {
       console.log('Error fetching boards: ', err.response?.data);
       return thunkAPI.rejectWithValue(
