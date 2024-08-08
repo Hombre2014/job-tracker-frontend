@@ -29,7 +29,7 @@ interface WorkDocument {
 interface ComboBoxProps {
   items: Board[];
   searchItem: string;
-  initialString: string;
+  initialString?: string;
 }
 
 interface LinkDocumentProps {
