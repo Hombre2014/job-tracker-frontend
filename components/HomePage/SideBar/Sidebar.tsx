@@ -15,7 +15,7 @@ const Sidebar = () => {
           <SideBarMenuItem linkName="Contacts" icon={<RiContactsLine />} />
           <SideBarMenuItem linkName="Documents" icon={<RiFolder2Line />} />
         </div>
-        <div className="border-b border-slate-200 h-[120px]">
+        <div className="border-b border-slate-200 h-auto pb-6">
           <JobTrackers />
           <JobBoard />
         </div>
