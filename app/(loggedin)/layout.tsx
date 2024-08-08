@@ -25,7 +25,7 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="flex h-full">
-      <aside className="min-w-52">
+      <aside className="min-w-56">
         <Sidebar />
       </aside>
       {accessToken && (

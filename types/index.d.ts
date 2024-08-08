@@ -37,3 +37,13 @@ interface LinkDocumentProps {
   searchItem: string;
   initialString: string;
 }
+
+interface AlertDialogProps {
+  buttonLabel?: React.ReactNode;
+  dialogTitle: string;
+  dialogText: string;
+  buttonConfirm: string;
+  buttonCancel: string;
+  actionFunction: () => void;
+  stylings?: string;
+}
