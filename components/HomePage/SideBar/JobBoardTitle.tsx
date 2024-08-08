@@ -1,13 +1,12 @@
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
 import { RiAccountPinBoxLine, RiDeleteBinLine } from 'react-icons/ri';
 
 import { cn } from '@/lib/utils';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { archiveBoard, getBoards } from '@/redux/boards/boardsThunk';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import Loader from '@/components/Misc/Loader';
 
 const JobBoardTitle = (board: Board) => {
   const dispatch = useAppDispatch();
@@ -25,16 +24,11 @@ const JobBoardTitle = (board: Board) => {
   };
 
   const handleArchiveBoard = (accessToken: string, boardId: string) => {
-    if (pathName === `/home/boards`) {
-      dispatch(archiveBoard({ accessToken, id: boardId }));
-      setTimeout(() => {
-        dispatch(getBoards(accessToken));
-      }, 2000);
-      router.push('/home/boards');
-      return;
-    }
-    if (boards.length === 1 || board_id === boardId) {
-      console.log('Deleting the last board or the current board');
+    if (
+      pathName === `/home/boards` ||
+      boards.length === 1 ||
+      board_id === boardId
+    ) {
       dispatch(archiveBoard({ accessToken, id: boardId }));
       setTimeout(() => {
         dispatch(getBoards(accessToken));
