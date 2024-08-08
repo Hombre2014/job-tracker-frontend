@@ -11,12 +11,14 @@ import {
 
 interface BoardsState {
   boards: Board[];
+  archivedBoards: Board[];
   boardsStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
 }
 
 const initialState: BoardsState = {
   boards: [],
+  archivedBoards: [],
   boardsStatus: 'idle',
   error: null,
 };
@@ -84,7 +86,7 @@ export const boardsSlice = createSlice({
       })
       .addCase(getArchivedBoards.fulfilled, (state, action) => {
         state.boardsStatus = 'succeeded';
-        state.boards = action.payload;
+        state.archivedBoards = action.payload;
         state.error = null;
       })
       .addCase(getArchivedBoards.rejected, (state, action) => {

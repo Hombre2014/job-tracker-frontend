@@ -63,7 +63,7 @@ const UserBoards = () => {
         <p className="font-semibold">My Job Tracking Boards</p>
         <Link
           href="/home/archived-boards"
-          className="text-slate-400 border rounded-sm px-1"
+          className="text-slate-400 border rounded-sm px-2 transition-all delay-300 ease-in-out hover:bg-slate-100"
         >
           view archived
         </Link>
