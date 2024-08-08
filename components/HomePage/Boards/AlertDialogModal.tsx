@@ -32,14 +32,18 @@ const AlertDialogModal = ({
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{dialogTitle}</AlertDialogTitle>
-          <AlertDialogDescription>{dialogText}</AlertDialogDescription>
+          <AlertDialogTitle className="text-center border-b pb-4 mb-2">
+            {dialogTitle}
+          </AlertDialogTitle>
+          <AlertDialogDescription className="text-center pb-4 border-b">
+            {dialogText}
+          </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>{buttonCancel}</AlertDialogCancel>
           <AlertDialogAction onClick={actionFunction}>
             {buttonConfirm}
           </AlertDialogAction>
+          <AlertDialogCancel>{buttonCancel}</AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

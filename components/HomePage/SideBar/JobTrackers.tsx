@@ -11,7 +11,7 @@ import {
 
 const JobTrackers = () => {
   return (
-    <div className="flex justify-between items-center pl-4 my-4">
+    <div className="flex justify-between items-center pl-4 mt-4 mb-2">
       <div className="flex items-center gap-1">
         <p className="hover:underline mr-1">
           <Link href="/home/boards">My Job Tracker</Link>

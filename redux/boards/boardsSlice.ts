@@ -7,6 +7,7 @@ import {
   renameBoard,
   archiveBoard,
   getArchivedBoards,
+  unarchiveBoard,
 } from './boardsThunk';
 
 interface BoardsState {
@@ -92,6 +93,20 @@ export const boardsSlice = createSlice({
       .addCase(getArchivedBoards.rejected, (state, action) => {
         state.boardsStatus = 'failed';
         state.error = action.error.message || 'Failed to fetch archived boards';
+      })
+      .addCase(unarchiveBoard.pending, (state) => {
+        state.boardsStatus = 'loading';
+      })
+      .addCase(unarchiveBoard.fulfilled, (state, action) => {
+        state.boardsStatus = 'succeeded';
+        state.archivedBoards = state.archivedBoards.filter(
+          (board) => board.id !== action.payload.id
+        );
+        state.error = null;
+      })
+      .addCase(unarchiveBoard.rejected, (state, action) => {
+        state.boardsStatus = 'failed';
+        state.error = action.error.message || 'Failed to unarchive board';
       });
   },
 });
