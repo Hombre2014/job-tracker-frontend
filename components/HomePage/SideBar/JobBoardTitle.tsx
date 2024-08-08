@@ -52,20 +52,18 @@ const JobBoardTitle = (board: Board) => {
       key={board.id}
       className={cn(
         board_id === board.id
-          ? 'bg-blue-100 hover:bg-blue-100'
+          ? 'bg-blue-100 hover:bg-blue-100 font-semibold'
           : 'hover:bg-slate-100',
-        'flex justify-between items-center p-2 mt-4 mx-2 rounded-md cursor-pointer'
+        'flex justify-between items-center mx-2 my-1 rounded-md cursor-pointer'
       )}
     >
-      <div className="">
-        <Link
-          href={`/home/boards/${board.id}/board`}
-          className="flex items-center gap-1"
-        >
-          <RiAccountPinBoxLine className="h-5 w-5" />
-          <p>{board.name}</p>
-        </Link>
-      </div>
+      <Link
+        href={`/home/boards/${board.id}/board`}
+        className="flex items-center gap-1 p-2 w-full"
+      >
+        <RiAccountPinBoxLine className="h-5 w-5" />
+        <p className="pr-20px">{board.name}</p>
+      </Link>
       <div>
         {showTrash ? (
           <RiDeleteBinLine className="h-5 w-5 absolute m-2" />
