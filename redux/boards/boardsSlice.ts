@@ -6,16 +6,20 @@ import {
   createBoard,
   renameBoard,
   archiveBoard,
+  getArchivedBoards,
+  unarchiveBoard,
 } from './boardsThunk';
 
 interface BoardsState {
   boards: Board[];
+  archivedBoards: Board[];
   boardsStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
 }
 
 const initialState: BoardsState = {
   boards: [],
+  archivedBoards: [],
   boardsStatus: 'idle',
   error: null,
 };
@@ -77,6 +81,32 @@ export const boardsSlice = createSlice({
       .addCase(archiveBoard.rejected, (state, action) => {
         state.boardsStatus = 'failed';
         state.error = action.error.message || 'Failed to archive board';
+      })
+      .addCase(getArchivedBoards.pending, (state) => {
+        state.boardsStatus = 'loading';
+      })
+      .addCase(getArchivedBoards.fulfilled, (state, action) => {
+        state.boardsStatus = 'succeeded';
+        state.archivedBoards = action.payload;
+        state.error = null;
+      })
+      .addCase(getArchivedBoards.rejected, (state, action) => {
+        state.boardsStatus = 'failed';
+        state.error = action.error.message || 'Failed to fetch archived boards';
+      })
+      .addCase(unarchiveBoard.pending, (state) => {
+        state.boardsStatus = 'loading';
+      })
+      .addCase(unarchiveBoard.fulfilled, (state, action) => {
+        state.boardsStatus = 'succeeded';
+        state.archivedBoards = state.archivedBoards.filter(
+          (board) => board.id !== action.payload.id
+        );
+        state.error = null;
+      })
+      .addCase(unarchiveBoard.rejected, (state, action) => {
+        state.boardsStatus = 'failed';
+        state.error = action.error.message || 'Failed to unarchive board';
       });
   },
 });

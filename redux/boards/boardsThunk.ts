@@ -17,8 +17,6 @@ export const getBoards = createAsyncThunk(
         return thunkAPI.rejectWithValue('No boards found');
       }
 
-      // return only the boards that have isArchived set to false
-
       if (data.length > 0) {
         const filteredData = data.filter((board: any) => !board.isArchived);
         return filteredData;
@@ -98,6 +96,62 @@ export const archiveBoard = createAsyncThunk(
     } catch (err: any) {
       return thunkAPI.rejectWithValue(
         err.response?.data || 'Error archiving board'
+      );
+    }
+  }
+);
+
+export const getArchivedBoards = createAsyncThunk(
+  'boards/getArchivedBoards',
+  async (accessToken: string, thunkAPI) => {
+    try {
+      const res = await client.get('/boards', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = res.data;
+
+      if (data.length === 0) {
+        console.log('No boards found. Something is wrong!');
+        return thunkAPI.rejectWithValue('No boards found');
+      }
+
+      if (data.length > 0) {
+        const filteredData = data.filter((board: any) => board.isArchived);
+        return filteredData;
+      }
+    } catch (err: any) {
+      console.log('Error fetching boards: ', err.response?.data);
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error fetching boards'
+      );
+    }
+  }
+);
+
+export const unarchiveBoard = createAsyncThunk(
+  'boards/unarchiveBoard',
+  async (values: any, thunkAPI) => {
+    const { accessToken, id } = values;
+    try {
+      const res = await client.patch(
+        `/boards/${id}`,
+        {
+          isArchived: false,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Failed to unarchive board'
       );
     }
   }
