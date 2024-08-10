@@ -156,3 +156,24 @@ export const unarchiveBoard = createAsyncThunk(
     }
   }
 );
+
+export const getBoardWithColumns = createAsyncThunk(
+  'boards/getBoardWithColumns',
+  async (values: any, thunkAPI) => {
+    const { accessToken, boardId } = values;
+    try {
+      const res = await client.get(`/boards/${boardId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error fetching columns'
+      );
+    }
+  }
+);

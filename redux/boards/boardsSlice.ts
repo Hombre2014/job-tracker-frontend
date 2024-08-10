@@ -8,6 +8,7 @@ import {
   archiveBoard,
   getArchivedBoards,
   unarchiveBoard,
+  getBoardWithColumns,
 } from './boardsThunk';
 
 interface BoardsState {
@@ -107,6 +108,21 @@ export const boardsSlice = createSlice({
       .addCase(unarchiveBoard.rejected, (state, action) => {
         state.boardsStatus = 'failed';
         state.error = action.error.message || 'Failed to unarchive board';
+      })
+      .addCase(getBoardWithColumns.pending, (state) => {
+        state.boardsStatus = 'loading';
+      })
+      .addCase(getBoardWithColumns.fulfilled, (state, action) => {
+        state.boardsStatus = 'succeeded';
+        state.boards = state.boards.map((board) =>
+          board.id === action.payload.id ? action.payload : board
+        );
+        state.error = null;
+      })
+      .addCase(getBoardWithColumns.rejected, (state, action) => {
+        state.boardsStatus = 'failed';
+        state.error =
+          action.error.message || 'Failed to fetch board with columns';
       });
   },
 });
