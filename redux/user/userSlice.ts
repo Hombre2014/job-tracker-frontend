@@ -24,7 +24,11 @@ const initialState: UserState = {
 export const userSlice = createSlice({
   name: 'user',
   initialState,
-  reducers: {},
+  reducers: {
+    setStatusToIdle: (state) => {
+      state.status = 'idle';
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(login.pending, (state) => {
@@ -81,4 +85,5 @@ export const userSlice = createSlice({
 });
 
 export const selectUser = (state: RootState) => state.user;
+export const { setStatusToIdle } = userSlice.actions;
 export default userSlice.reducer;

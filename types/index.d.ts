@@ -13,7 +13,6 @@ interface Column {
 interface Board {
   id: string;
   name: string;
-  updated_at: string;
   columns: Column[] | null;
 }
 

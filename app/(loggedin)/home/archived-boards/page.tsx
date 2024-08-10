@@ -49,7 +49,7 @@ const ArchivedBoards = () => {
               </div>
               <div>
                 <p className="text-slate-400 text-xs pt-8">
-                  Last updated: {board.updated_at}
+                  Last updated: 4 days ago
                 </p>
                 <AlertDialogModal
                   buttonLabel="Unarchive"
