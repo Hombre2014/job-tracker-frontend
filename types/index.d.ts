@@ -7,13 +7,15 @@ interface Column {
   id: string;
   name: string;
   order: number;
-  boardId: string;
+  board_id: string;
 }
 
 interface Board {
   id: string;
   name: string;
-  columns: Column[] | null;
+  columns: Column[];
+  isArchived: boolean;
+  userId: string;
 }
 
 interface WorkDocument {

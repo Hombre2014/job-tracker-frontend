@@ -2,20 +2,23 @@
 
 import { BsPlusLg } from 'react-icons/bs';
 
-import boardColumns from '@/data/board-columns';
-import { returnBoardIcon } from '@/utils/ReturnIcons';
 import ThreeDotsMenu from './ThreeDotsMenu';
+import { useAppSelector } from '@/redux/hooks';
+import { returnBoardIcon } from '@/utils/ReturnIcons';
 
 const BoardColumns = () => {
+  const { boards } = useAppSelector((state) => state.boards);
+  const boardColumns = boards[0].columns;
+
   return (
     <div className="w-full flex h-full">
       {boardColumns.map((column) => (
         <section
-          key={column.id}
+          key={column.order + 1}
           className="flex flex-col border-r border-slate-200 w-1/5"
         >
           <div className="flex items-center justify-between px-4 pt-8">
-            {returnBoardIcon(column.id)}
+            {returnBoardIcon(column.order + 1)}
             <h2 className="text-lg font-bold hover:bg-slate-200 px-2 py-1 rounded-md cursor-text transition duration-300 delay-150">
               {column.name.toUpperCase()}
             </h2>
