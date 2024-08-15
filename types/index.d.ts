@@ -3,17 +3,33 @@ type MenuItemProps = {
   icon: JSX.Element;
 };
 
+type JobApplication = {
+  id: string;
+  column_id: string;
+  title: string;
+  post_url: string;
+  salary: string;
+  location: string;
+  description: string;
+  color: string;
+  deadline: string;
+  company_id: string;
+};
+
 interface Column {
   id: string;
   name: string;
   order: number;
-  boardId: string;
+  board_id: string;
+  jobApplications: JobApplication[];
 }
 
 interface Board {
   id: string;
   name: string;
-  columns: Column[] | null;
+  columns: Column[];
+  isArchived: boolean;
+  userId: string;
 }
 
 interface WorkDocument {
