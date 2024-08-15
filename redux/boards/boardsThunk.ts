@@ -5,7 +5,7 @@ export const getBoards = createAsyncThunk(
   'boards/getBoards',
   async (accessToken: string, thunkAPI) => {
     try {
-      const res = await client.get('/boards', {
+      const res = await client.get('/boards-all', {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
