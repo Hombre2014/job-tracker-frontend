@@ -9,6 +9,7 @@ import {
   getArchivedBoards,
   unarchiveBoard,
   getBoardWithColumns,
+  updateColumnName,
 } from './boardsThunk';
 
 interface BoardsState {
@@ -123,6 +124,20 @@ export const boardsSlice = createSlice({
         state.boardsStatus = 'failed';
         state.error =
           action.error.message || 'Failed to fetch board with columns';
+      })
+      .addCase(updateColumnName.pending, (state) => {
+        state.boardsStatus = 'loading';
+      })
+      .addCase(updateColumnName.fulfilled, (state, action) => {
+        state.boardsStatus = 'succeeded';
+        state.boards = state.boards.map((board) =>
+          board.id === action.payload.id ? action.payload : board
+        );
+        state.error = null;
+      })
+      .addCase(updateColumnName.rejected, (state, action) => {
+        state.boardsStatus = 'failed';
+        state.error = action.error.message || 'Failed to update column name';
       });
   },
 });

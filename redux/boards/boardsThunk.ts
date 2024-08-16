@@ -177,3 +177,25 @@ export const getBoardWithColumns = createAsyncThunk(
     }
   }
 );
+
+export const updateColumnName = createAsyncThunk(
+  'boards/updateColumnName',
+  async (values: any, thunkAPI) => {
+    const { accessToken, name, id } = values;
+    const patchData = { name };
+    try {
+      const res = await client.patch(`/board-columns/${id}`, patchData, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error updating column name'
+      );
+    }
+  }
+);
