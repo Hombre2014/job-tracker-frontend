@@ -9,15 +9,15 @@ import { BoardIcons, MenuIcons } from '@/enums';
 export const returnBoardIcon = (id: number) => {
   switch (id) {
     case BoardIcons.SlMagicWand:
-      return <SlMagicWand />;
+      return <SlMagicWand className="w-8 h-8" />;
     case BoardIcons.SlEnvolopeLetter:
-      return <SlEnvolopeLetter />;
+      return <SlEnvolopeLetter className="w-8 h-8" />;
     case BoardIcons.SlBriefcase:
-      return <SlBriefcase />;
+      return <SlBriefcase className="w-8 h-8" />;
     case BoardIcons.GoTrophy:
-      return <GoTrophy />;
+      return <GoTrophy className="w-8 h-8" />;
     case BoardIcons.HiOutlineThumbDown:
-      return <HiOutlineThumbDown />;
+      return <HiOutlineThumbDown className="w-8 h-8" />;
     default:
       return null;
   }

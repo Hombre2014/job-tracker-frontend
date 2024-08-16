@@ -2,19 +2,62 @@
 
 import { BsPlusLg } from 'react-icons/bs';
 import { useParams } from 'next/navigation';
+import { ChangeEvent, useEffect, useState } from 'react';
 
 import ThreeDotsMenu from './ThreeDotsMenu';
-import { useAppSelector } from '@/redux/hooks';
+import { Input } from '@/components/ui/input';
 import { returnBoardIcon } from '@/utils/ReturnIcons';
+import { useAppSelector, useAppDispatch } from '@/redux/hooks';
+import { getBoards, updateColumnName } from '@/redux/boards/boardsThunk';
 
 const BoardColumns = () => {
   const { board_id } = useParams();
+  const dispatch = useAppDispatch();
+  const [isEditing, setIsEditing] = useState(false);
+  const accessToken = localStorage.getItem('accessToken');
+  const [currentColumnId, setCurrentColumnId] = useState('');
   const { boards } = useAppSelector((state) => state.boards);
+  const [renamedColumnName, setRenamedColumnName] = useState('');
   const currentBoard = boards.find((board) => board.id === board_id);
+
+  useEffect(() => {
+    if (isEditing) {
+      const currentInputElement = document.getElementById(currentColumnId);
+      if (currentColumnId === currentInputElement!.id) {
+        currentInputElement!.focus();
+        currentInputElement!.select();
+      }
+    } else {
+      dispatch(getBoards(accessToken as string));
+    }
+  }, [isEditing, currentColumnId, accessToken, dispatch]);
 
   if (!currentBoard) return null;
 
   const { columns: boardColumns } = currentBoard;
+
+  const handleColumnNameChange = (e: ChangeEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    setRenamedColumnName(e.target.value);
+  };
+
+  const confirmColumnNameChange = () => {
+    setIsEditing(false);
+    dispatch(
+      updateColumnName({
+        accessToken,
+        name: renamedColumnName,
+        id: currentColumnId,
+      })
+    );
+    dispatch(getBoards(accessToken as string));
+  };
+
+  const checkForEnter = (e: any) => {
+    if (e.key === 'Enter') {
+      confirmColumnNameChange();
+    }
+  };
 
   return (
     <div className="w-full flex h-full">
@@ -25,9 +68,26 @@ const BoardColumns = () => {
         >
           <div className="flex items-center justify-between px-4 pt-8">
             {returnBoardIcon(column.order + 1)}
-            <h2 className="text-lg font-bold hover:bg-slate-200 px-2 py-1 rounded-md cursor-text transition duration-300 delay-150">
-              {column.name.toUpperCase()}
-            </h2>
+            <p className="hover:bg-slate-200 px-2 py-1 rounded-md cursor-text transition duration-300 delay-150 mx-2">
+              <Input
+                id={column.id}
+                value={
+                  column.id === currentColumnId
+                    ? renamedColumnName.toUpperCase()
+                    : column.name.toUpperCase()
+                }
+                className="text-lg font-semibold text-center w-full border-none outline-none shadow-none active:outline-none active:shadow-none active:border-none"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsEditing(true);
+                  setRenamedColumnName(column.name);
+                  setCurrentColumnId(column.id);
+                }}
+                onChange={(e) => handleColumnNameChange(e)}
+                onKeyDown={(e) => checkForEnter(e)}
+                onBlur={confirmColumnNameChange}
+              />
+            </p>
             <ThreeDotsMenu />
           </div>
           <div className="w-full flex justify-center">
