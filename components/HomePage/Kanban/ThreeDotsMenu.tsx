@@ -1,18 +1,34 @@
 'use client';
 
+import { useParams } from 'next/navigation';
 import { RiDragMove2Fill } from 'react-icons/ri';
 import { BsThreeDots, BsPencil } from 'react-icons/bs';
 
 import AlertDialogModal from '../Boards/AlertDialogModal';
+import { useAppSelector } from '@/redux/hooks';
 
 const handleMoveList = () => {
   console.log('Move List');
 };
 
-const ThreeDotsMenu = () => {
+const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
+  const { board_id } = useParams();
+  const { boards } = useAppSelector((state) => state.boards);
+  const currentBoard = boards.find((board) => board.id === board_id);
+  const currentBoardColumns = currentBoard?.columns;
+  console.log('boards: ', boards);
+  console.log('currentBoard: ', currentBoard);
+  console.log('currentBoardColumns: ', currentBoardColumns);
+
+  const col = currentBoardColumns?.find(
+    (column) => column.order === columnOrder
+  );
+
+  console.log('col: ', col);
+
   return (
     <div className="dropdown">
-      <div tabIndex={0} role="button" title="trigger" className="btn m-1">
+      <div tabIndex={0} role="button" title="trigger" className="!px-1">
         <BsThreeDots className="cursor-pointer" />
       </div>
       <ul
@@ -30,7 +46,29 @@ const ThreeDotsMenu = () => {
               actionFunction={handleMoveList}
               stylings="bg-none hover:!bg-gray-200 p-0 m-0 active:!bg-gray-800 active:text-gray-200"
             >
-              <div>DropDown</div>
+              <select
+                className="select select-bordered w-full max-w-xs"
+                title="chose order"
+              >
+                <option disabled selected>
+                  <div>
+                    <span>
+                      Position {columnOrder + 1} - {col?.name} (Current)
+                    </span>
+                  </div>
+                </option>
+                {currentBoardColumns
+                  ?.filter((column) => column.order !== columnOrder)
+                  .map((column) => (
+                    <option key={column.order} value={column.order}>
+                      <div>
+                        <span>
+                          Position {column.order + 1} - {column.name}
+                        </span>
+                      </div>
+                    </option>
+                  ))}
+              </select>
             </AlertDialogModal>
             <RiDragMove2Fill className="w-4 h-4" />
           </div>
