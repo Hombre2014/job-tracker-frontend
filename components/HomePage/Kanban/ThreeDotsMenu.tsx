@@ -19,9 +19,33 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
     (column) => column.order === columnOrder
   );
 
+  const range = (from: number, to: number) => {
+    return from > to
+      ? []
+      : Array.from({ length: to - from + 1 }, (value, idx) => idx + from);
+  };
+
+  const moveColumn = (numCols: number, from: number, to: number) => {
+    return from < to
+      ? [
+          ...range(0, from - 1),
+          ...range(from + 1, to),
+          from,
+          ...range(to + 1, numCols - 1),
+        ]
+      : [
+          ...range(0, to - 1),
+          from,
+          ...range(to, from - 1),
+          ...range(from + 1, numCols - 1),
+        ];
+  };
+
   const handleMoveList = () => {
-    console.log('Order I want to move from : ', columnOrder);
-    console.log('Order I have to move to: ', selectedColumn);
+    console.log('Order_id I want to move from : ', columnOrder);
+    console.log('Order_id I have to move to: ', selectedColumn);
+
+    console.log(moveColumn(5, columnOrder, selectedColumn));
   };
 
   const handleSelected = (e: ChangeEvent<HTMLSelectElement>) => {
