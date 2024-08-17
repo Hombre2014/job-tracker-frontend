@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, ChangeEvent } from 'react';
 import { useParams } from 'next/navigation';
 import { RiDragMove2Fill } from 'react-icons/ri';
 import { BsThreeDots, BsPencil } from 'react-icons/bs';
@@ -7,24 +8,28 @@ import { BsThreeDots, BsPencil } from 'react-icons/bs';
 import AlertDialogModal from '../Boards/AlertDialogModal';
 import { useAppSelector } from '@/redux/hooks';
 
-const handleMoveList = () => {
-  console.log('Move List');
-};
-
 const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
   const { board_id } = useParams();
+  const [selectedColumn, setSelectedColumn] = useState<number>(0);
   const { boards } = useAppSelector((state) => state.boards);
   const currentBoard = boards.find((board) => board.id === board_id);
   const currentBoardColumns = currentBoard?.columns;
-  console.log('boards: ', boards);
-  console.log('currentBoard: ', currentBoard);
-  console.log('currentBoardColumns: ', currentBoardColumns);
 
   const col = currentBoardColumns?.find(
     (column) => column.order === columnOrder
   );
 
-  console.log('col: ', col);
+  const handleMoveList = () => {
+    console.log('Order I want to move from : ', columnOrder);
+    console.log('Order I have to move to: ', selectedColumn);
+  };
+
+  const handleSelected = (e: ChangeEvent<HTMLSelectElement>) => {
+    e.preventDefault();
+    setSelectedColumn(parseInt(e.currentTarget.value));
+    console.log('Column Clicked: ', columnOrder);
+    console.log('Selected Column: ', e.target.value);
+  };
 
   return (
     <div className="dropdown">
@@ -48,24 +53,19 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
             >
               <select
                 className="select select-bordered w-full max-w-xs"
+                name="columns"
                 title="chose order"
+                defaultValue={columnOrder + 1 + '-' + col?.name + '(Current)'}
+                onChange={(e) => handleSelected(e)}
               >
-                <option disabled selected>
-                  <div>
-                    <span>
-                      Position {columnOrder + 1} - {col?.name} (Current)
-                    </span>
-                  </div>
+                <option>
+                  Position {columnOrder + 1} - {col?.name} (Current)
                 </option>
                 {currentBoardColumns
                   ?.filter((column) => column.order !== columnOrder)
                   .map((column) => (
                     <option key={column.order} value={column.order}>
-                      <div>
-                        <span>
-                          Position {column.order + 1} - {column.name}
-                        </span>
-                      </div>
+                      Position {column.order + 1} - {column.name}
                     </option>
                   ))}
               </select>

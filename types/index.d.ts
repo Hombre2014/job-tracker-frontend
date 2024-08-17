@@ -71,7 +71,7 @@ interface AlertDialogProps {
   dialogText?: string;
   buttonConfirm: string;
   buttonCancel: string;
-  actionFunction: () => void;
+  actionFunction?: () => void;
   stylings?: string;
   children?: React.ReactNode;
 }
