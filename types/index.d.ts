@@ -56,10 +56,22 @@ interface LinkDocumentProps {
 
 interface AlertDialogProps {
   buttonLabel?: React.ReactNode;
+  buttonVariant?:
+    | 'link'
+    | 'default'
+    | 'destructive'
+    | 'outline'
+    | 'outlineNew'
+    | 'secondary'
+    | 'ghost'
+    | 'normal'
+    | null
+    | undefined;
   dialogTitle: string;
-  dialogText: string;
+  dialogText?: string;
   buttonConfirm: string;
   buttonCancel: string;
   actionFunction: () => void;
   stylings?: string;
+  children?: React.ReactNode;
 }
