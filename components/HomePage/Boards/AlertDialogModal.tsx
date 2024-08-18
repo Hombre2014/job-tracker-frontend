@@ -16,17 +16,19 @@ import { cn } from '@/lib/utils';
 
 const AlertDialogModal = ({
   buttonLabel,
+  buttonVariant,
   dialogTitle,
   dialogText,
   buttonCancel,
   buttonConfirm,
   actionFunction,
   stylings,
+  children,
 }: AlertDialogProps) => {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="outline" className={cn(stylings)}>
+        <Button variant={buttonVariant} className={cn(stylings)}>
           {buttonLabel}
         </Button>
       </AlertDialogTrigger>
@@ -36,6 +38,7 @@ const AlertDialogModal = ({
             {dialogTitle}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-center pb-4 border-b">
+            {children}
             {dialogText}
           </AlertDialogDescription>
         </AlertDialogHeader>

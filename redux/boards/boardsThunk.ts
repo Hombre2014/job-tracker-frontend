@@ -199,3 +199,28 @@ export const updateColumnName = createAsyncThunk(
     }
   }
 );
+
+export const rearrangeColumns = createAsyncThunk(
+  'boards/rearrangeColumns',
+  async (values: any, thunkAPI) => {
+    const { accessToken, boardId, columns_id } = values;
+    try {
+      const res = await client.put(
+        `/board-columns/${boardId}/rearrange`,
+        columns_id,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error rearranging columns'
+      );
+    }
+  }
+);

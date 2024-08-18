@@ -10,6 +10,7 @@ import {
   unarchiveBoard,
   getBoardWithColumns,
   updateColumnName,
+  rearrangeColumns,
 } from './boardsThunk';
 
 interface BoardsState {
@@ -138,6 +139,20 @@ export const boardsSlice = createSlice({
       .addCase(updateColumnName.rejected, (state, action) => {
         state.boardsStatus = 'failed';
         state.error = action.error.message || 'Failed to update column name';
+      })
+      .addCase(rearrangeColumns.pending, (state) => {
+        state.boardsStatus = 'loading';
+      })
+      .addCase(rearrangeColumns.fulfilled, (state, action) => {
+        state.boardsStatus = 'succeeded';
+        state.boards = state.boards.map((board) =>
+          board.id === action.payload.id ? action.payload : board
+        );
+        state.error = null;
+      })
+      .addCase(rearrangeColumns.rejected, (state, action) => {
+        state.boardsStatus = 'failed';
+        state.error = action.error.message || 'Failed to rearrange columns';
       });
   },
 });

@@ -88,7 +88,7 @@ const BoardColumns = () => {
                 onBlur={confirmColumnNameChange}
               />
             </p>
-            <ThreeDotsMenu />
+            <ThreeDotsMenu columnOrder={column.order} />
           </div>
           <div className="w-full flex justify-center">
             <p className="mb-8 text-center">
