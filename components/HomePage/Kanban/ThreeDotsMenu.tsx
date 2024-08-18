@@ -6,13 +6,13 @@ import { RiDragMove2Fill } from 'react-icons/ri';
 import { BsThreeDots, BsPencil } from 'react-icons/bs';
 
 import { useAppSelector } from '@/redux/hooks';
+import { moveColumn } from '@/utils/moveColumn';
 import AlertDialogModal from '../Boards/AlertDialogModal';
 import {
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
@@ -27,28 +27,6 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
   const columnData = currentBoardColumns?.find(
     (column) => column.order === columnOrder
   );
-
-  const range = (from: number, to: number) => {
-    return from > to
-      ? []
-      : Array.from({ length: to - from + 1 }, (value, idx) => idx + from);
-  };
-
-  const moveColumn = (numCols: number, from: number, to: number) => {
-    return from < to
-      ? [
-          ...range(0, from - 1),
-          ...range(from + 1, to),
-          from,
-          ...range(to + 1, numCols - 1),
-        ]
-      : [
-          ...range(0, to - 1),
-          from,
-          ...range(to, from - 1),
-          ...range(from + 1, numCols - 1),
-        ];
-  };
 
   const handleMoveList = () => {
     console.log('Order_id I want to move from : ', columnOrder);
