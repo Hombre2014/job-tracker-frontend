@@ -15,7 +15,7 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
   const currentBoard = boards.find((board) => board.id === board_id);
   const currentBoardColumns = currentBoard?.columns;
 
-  const col = currentBoardColumns?.find(
+  const columnData = currentBoardColumns?.find(
     (column) => column.order === columnOrder
   );
 
@@ -44,8 +44,22 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
   const handleMoveList = () => {
     console.log('Order_id I want to move from : ', columnOrder);
     console.log('Order_id I have to move to: ', selectedColumn);
+    const columnsArray = moveColumn(5, columnOrder, selectedColumn);
+    console.log(columnsArray);
 
-    console.log(moveColumn(5, columnOrder, selectedColumn));
+    const columns = currentBoardColumns?.map((column) => column.id);
+    console.log('Columns in order: ', columns);
+
+    const columnIdsMap = {
+      '0': columns![0],
+      '1': columns![1],
+      '2': columns![2],
+      '3': columns![3],
+      '4': columns![4],
+    };
+    const columnIds = columnsArray.map((v) => columnIdsMap[v]);
+
+    console.log('Column Ids: ', columnIds);
   };
 
   const handleSelected = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -53,6 +67,7 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
     setSelectedColumn(parseInt(e.currentTarget.value));
     console.log('Column Clicked: ', columnOrder);
     console.log('Selected Column: ', e.target.value);
+    console.log('Col: ', columnData);
   };
 
   return (
@@ -79,11 +94,13 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
                 className="select select-bordered w-full max-w-xs"
                 name="columns"
                 title="chose order"
-                defaultValue={columnOrder + 1 + '-' + col?.name + '(Current)'}
+                defaultValue={
+                  columnOrder + 1 + '-' + columnData?.name + '(Current)'
+                }
                 onChange={(e) => handleSelected(e)}
               >
                 <option>
-                  Position {columnOrder + 1} - {col?.name} (Current)
+                  Position {columnOrder + 1} - {columnData?.name} (Current)
                 </option>
                 {currentBoardColumns
                   ?.filter((column) => column.order !== columnOrder)
