@@ -78,13 +78,13 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
               stylings="bg-none hover:!bg-gray-200 py-4 !pl-0 pr-[72px] m-0 active:!bg-gray-800 active:text-gray-200"
             >
               <Select onValueChange={(e) => setSelectedColumn(parseInt(e))}>
-                <SelectTrigger className="w-[250px] mx-auto">
+                <SelectTrigger className="w-[264px] mx-auto">
                   <SelectValue
                     placeholder={
                       'Position ' +
                       (columnOrder + 1) +
                       ' - ' +
-                      columnData?.name +
+                      columnData?.name.toUpperCase() +
                       ' (Current)'
                     }
                   />
@@ -98,7 +98,8 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
                           key={column.order}
                           value={column.order.toString()}
                         >
-                          Position {column.order + 1} - {column.name}
+                          Position {column.order + 1} -{' '}
+                          {column.name.toUpperCase()}
                         </SelectItem>
                       ))}
                   </SelectGroup>
