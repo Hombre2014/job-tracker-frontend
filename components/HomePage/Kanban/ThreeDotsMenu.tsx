@@ -21,11 +21,11 @@ import {
 const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
+  const [isEditing, setIsEditing] = useState(false);
+  const accessToken = localStorage.getItem('accessToken');
   const { boards } = useAppSelector((state) => state.boards);
   const [selectedColumn, setSelectedColumn] = useState<number>(0);
   const currentBoard = boards.find((board) => board.id === board_id);
-  const accessToken = localStorage.getItem('accessToken');
-  const [isEditing, setIsEditing] = useState(false);
   const currentBoardColumns = currentBoard?.columns;
 
   const columnData = currentBoardColumns?.find(
@@ -43,6 +43,7 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
       '3': columns![3],
       '4': columns![4],
     };
+
     const columnIds = columnsArray.map((v) => columnIdsMap[v]);
 
     dispatch(

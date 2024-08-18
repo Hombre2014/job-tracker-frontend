@@ -36,6 +36,11 @@ Not yet deployed.
 - Twitter: [@ibekingsley2](https://twitter.com/ibekingsley2)
 - LinkedIn: [Kingsley Ibe](https://linkedin.com/in/kingsley-ibe-5669a5134)
 
+👤 **Bohdan Shcherbak**
+
+- GitHub: [@akucintavalent](https://github.com/akucintavalent)
+- LinkedIn: [Bohdan Shcherbak](https://www.linkedin.com/in/bohdan-shcherbak/)
+
 👤 **Yuriy Chamkoriyski**
 
 - GitHub: [@Hombre2014](https://github.com/Hombre2014)
