@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { BsThreeDots } from 'react-icons/bs';
 import { RiDragMove2Fill } from 'react-icons/ri';
 
-import { useAppSelector } from '@/redux/hooks';
+import { useAppSelector, useAppDispatch } from '@/redux/hooks';
 import { moveColumn } from '@/utils/moveColumn';
+import { getBoards, rearrangeColumns } from '@/redux/boards/boardsThunk';
 import AlertDialogModal from '../Boards/AlertDialogModal';
 import {
   Select,
@@ -19,9 +20,11 @@ import {
 
 const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
   const { board_id } = useParams();
+  const dispatch = useAppDispatch();
   const { boards } = useAppSelector((state) => state.boards);
   const [selectedColumn, setSelectedColumn] = useState<number>(0);
   const currentBoard = boards.find((board) => board.id === board_id);
+  const accessToken = localStorage.getItem('accessToken');
   const currentBoardColumns = currentBoard?.columns;
 
   const columnData = currentBoardColumns?.find(
@@ -48,6 +51,15 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
 
     console.log('Column Ids: ', columnIds);
 
+    dispatch(
+      rearrangeColumns({
+        accessToken: accessToken,
+        boardId: board_id,
+        columns_id: columnIds,
+      })
+    );
+
+    dispatch(getBoards(accessToken as string));
     // console.log('Column Clicked: ', columnOrder);
     // console.log('Clicked Col: ', columnData);
   };
