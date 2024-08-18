@@ -5,10 +5,10 @@ import { useParams } from 'next/navigation';
 import { BsThreeDots } from 'react-icons/bs';
 import { RiDragMove2Fill } from 'react-icons/ri';
 
-import { useAppSelector, useAppDispatch } from '@/redux/hooks';
 import { moveColumn } from '@/utils/moveColumn';
-import { getBoards, rearrangeColumns } from '@/redux/boards/boardsThunk';
 import AlertDialogModal from '../Boards/AlertDialogModal';
+import { useAppSelector, useAppDispatch } from '@/redux/hooks';
+import { getBoards, rearrangeColumns } from '@/redux/boards/boardsThunk';
 import {
   Select,
   SelectContent,
@@ -25,6 +25,7 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
   const [selectedColumn, setSelectedColumn] = useState<number>(0);
   const currentBoard = boards.find((board) => board.id === board_id);
   const accessToken = localStorage.getItem('accessToken');
+  const [isEditing, setIsEditing] = useState(false);
   const currentBoardColumns = currentBoard?.columns;
 
   const columnData = currentBoardColumns?.find(
@@ -32,13 +33,8 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
   );
 
   const handleMoveList = () => {
-    // console.log('Order_id I want to move from : ', columnOrder);
-    // console.log('Order_id I have to move to: ', selectedColumn);
     const columnsArray = moveColumn(5, columnOrder, selectedColumn);
-    // console.log(columnsArray);
-
     const columns = currentBoardColumns?.map((column) => column.id);
-    // console.log('Columns in order: ', columns);
 
     const columnIdsMap = {
       '0': columns![0],
@@ -49,8 +45,6 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
     };
     const columnIds = columnsArray.map((v) => columnIdsMap[v]);
 
-    console.log('Column Ids: ', columnIds);
-
     dispatch(
       rearrangeColumns({
         accessToken: accessToken,
@@ -58,11 +52,13 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
         columns_id: columnIds,
       })
     );
-
-    dispatch(getBoards(accessToken as string));
-    // console.log('Column Clicked: ', columnOrder);
-    // console.log('Clicked Col: ', columnData);
+    setIsEditing(true);
   };
+
+  useEffect(() => {
+    dispatch(getBoards(accessToken as string));
+    setIsEditing(false);
+  }, [dispatch, accessToken, isEditing]);
 
   return (
     <div className="dropdown">
@@ -121,12 +117,6 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
             <RiDragMove2Fill className="w-4 h-4" />
           </div>
         </li>
-        {/* <li>
-          <div className="flex !justify-between h-12">
-            <a>Rename List</a>
-            <BsPencil className="w-4 h-4" />
-          </div>
-        </li> */}
       </ul>
     </div>
   );

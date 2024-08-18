@@ -204,11 +204,10 @@ export const rearrangeColumns = createAsyncThunk(
   'boards/rearrangeColumns',
   async (values: any, thunkAPI) => {
     const { accessToken, boardId, columns_id } = values;
-    const putData = { columns_id };
     try {
       const res = await client.put(
         `/board-columns/${boardId}/rearrange`,
-        putData,
+        columns_id,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
