@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
+import { BsThreeDots } from 'react-icons/bs';
 import { RiDragMove2Fill } from 'react-icons/ri';
-import { BsThreeDots, BsPencil } from 'react-icons/bs';
 
 import { useAppSelector } from '@/redux/hooks';
 import { moveColumn } from '@/utils/moveColumn';
@@ -29,13 +29,13 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
   );
 
   const handleMoveList = () => {
-    console.log('Order_id I want to move from : ', columnOrder);
-    console.log('Order_id I have to move to: ', selectedColumn);
+    // console.log('Order_id I want to move from : ', columnOrder);
+    // console.log('Order_id I have to move to: ', selectedColumn);
     const columnsArray = moveColumn(5, columnOrder, selectedColumn);
-    console.log(columnsArray);
+    // console.log(columnsArray);
 
     const columns = currentBoardColumns?.map((column) => column.id);
-    console.log('Columns in order: ', columns);
+    // console.log('Columns in order: ', columns);
 
     const columnIdsMap = {
       '0': columns![0],
@@ -47,18 +47,19 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
     const columnIds = columnsArray.map((v) => columnIdsMap[v]);
 
     console.log('Column Ids: ', columnIds);
-  };
 
-  const handleSelected = (e: any) => {
-    setSelectedColumn(parseInt(e));
-    console.log('Column Clicked: ', columnOrder);
-    console.log('Selected Column: ', e);
-    console.log('Clicked Col: ', columnData);
+    // console.log('Column Clicked: ', columnOrder);
+    // console.log('Clicked Col: ', columnData);
   };
 
   return (
     <div className="dropdown">
-      <div tabIndex={0} role="button" title="trigger" className="!px-1">
+      <div
+        tabIndex={0}
+        role="button"
+        title="trigger"
+        className="!px-3 !py-2 rounded-md hover:bg-gray-200"
+      >
         <BsThreeDots className="cursor-pointer" />
       </div>
       <ul
@@ -66,7 +67,7 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
         className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
       >
         <li>
-          <div className="flex !justify-between h-12 mb-1">
+          <div className="flex !justify-between h-12 mb-1 p-4 w-full">
             <AlertDialogModal
               buttonLabel="Move List"
               buttonVariant="ghost"
@@ -74,9 +75,9 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
               buttonCancel="Discard"
               buttonConfirm="Move"
               actionFunction={handleMoveList}
-              stylings="bg-none hover:!bg-gray-200 p-0 m-0 active:!bg-gray-800 active:text-gray-200"
+              stylings="bg-none hover:!bg-gray-200 py-4 !pl-0 pr-[72px] m-0 active:!bg-gray-800 active:text-gray-200"
             >
-              <Select onValueChange={(e) => handleSelected(e)}>
+              <Select onValueChange={(e) => setSelectedColumn(parseInt(e))}>
                 <SelectTrigger className="w-[250px] mx-auto">
                   <SelectValue
                     placeholder={
@@ -107,12 +108,12 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
             <RiDragMove2Fill className="w-4 h-4" />
           </div>
         </li>
-        <li>
+        {/* <li>
           <div className="flex !justify-between h-12">
             <a>Rename List</a>
             <BsPencil className="w-4 h-4" />
           </div>
-        </li>
+        </li> */}
       </ul>
     </div>
   );
