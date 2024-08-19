@@ -34,6 +34,8 @@ const UserBoards = () => {
         currentInputElement!.focus();
         currentInputElement!.select();
       }
+    } else {
+      dispatch(getBoards(accessToken as string));
     }
   }, [isEditing, currentBoardId]);
 
