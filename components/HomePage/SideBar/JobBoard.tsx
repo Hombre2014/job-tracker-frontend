@@ -23,6 +23,8 @@ const JobBoard = () => {
           id={board.id}
           name={board.name}
           columns={[]}
+          isArchived={board.isArchived}
+          userId={board.userId}
         />
       ))}
     </div>
