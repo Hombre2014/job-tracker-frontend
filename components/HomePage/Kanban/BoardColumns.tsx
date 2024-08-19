@@ -93,7 +93,7 @@ const BoardColumns = () => {
             </div>
             <div className="w-full flex justify-center">
               <p className="mb-8 text-center">
-                {column.jobApplications.length} JOBS
+                {column.jobApplications && column.jobApplications.length} JOBS
               </p>
             </div>
             <div className="w-11/12 flex justify-center border py-3 mx-auto rounded-md hover:border-blue-500 transition duration-300 delay-150 cursor-pointer">
