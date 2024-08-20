@@ -43,12 +43,12 @@ const Login = () => {
     },
   });
 
-  console.log('Is Pending: ', isPending);
-  console.log('Success: ', success);
-
   useEffect(() => {
     dispatch(logout());
   }, [dispatch]);
+
+  console.log('Status: ', status);
+  console.log('Is pending: ', isPending);
 
   useEffect(() => {
     if (status === 'idle' || status === 'loading') {
@@ -140,7 +140,7 @@ const Login = () => {
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
-          {success !== '' && <Loader title="Logging in" />}
+          {success !== '' && <Loader title="Loading user's data..." />}
           <Button
             disabled={isPending}
             type="submit"

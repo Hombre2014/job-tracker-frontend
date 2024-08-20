@@ -26,6 +26,9 @@ export const ForgotPasswordSchema = z.object({
 });
 
 export const ResetPasswordSchema = z.object({
+  // email: z.string().email({
+  //   message: 'Email is required',
+  // }),
   code: z.string().regex(/^\d{6}$/, {
     message: 'The code must be exactly 6 digits',
   }),

@@ -2,17 +2,18 @@
 
 import * as z from 'zod';
 import Link from 'next/link';
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { RiQuestionMark } from 'react-icons/ri';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect, useState, startTransition } from 'react';
 
+import client from '@/api/client';
 import { Input } from '@/components/ui/input';
-import { useAppDispatch } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
 import { FormError } from '@/components/Forms/form-error';
-import { forgotPasswordSendCode } from '@/redux/user/userThunk';
+import { FormSuccess } from '@/components/Forms/form-success';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { ForgotPasswordSchema, ResetPasswordSchema } from '@/schemas';
 import {
   Tooltip,
@@ -32,8 +33,12 @@ import {
 const ForgotPassword: React.FC = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
+  const [userEmail, setUserEmail] = useState<string>('');
+  const { status } = useAppSelector((state) => state.user);
   const [error, setError] = useState<string | undefined>('');
+  const [success, setSuccess] = useState<string | undefined>('');
   const [buttonClicked, setButtonClicked] = useState<boolean>(false);
+
   const form = useForm<z.infer<typeof ForgotPasswordSchema>>({
     resolver: zodResolver(ForgotPasswordSchema),
     defaultValues: {
@@ -51,16 +56,41 @@ const ForgotPassword: React.FC = () => {
 
   const onSubmit = (values: z.infer<typeof ForgotPasswordSchema>) => {
     const { email } = values;
-    console.log('Email: ', { email });
-    dispatch(forgotPasswordSendCode({ email }));
+
+    startTransition(async () => {
+      try {
+        const res = await client.post(
+          '/users/reset-password/create-verification-code',
+          { email }
+        );
+
+        if (res.status === 200) {
+          setUserEmail(email);
+          newForm.reset();
+          setButtonClicked(true);
+        }
+      } catch (error: any) {
+        const err =
+          error.response.data.userFriendlyMessage ||
+          'User not found. Email field is invalid.';
+        setError(err);
+        form.reset();
+        setTimeout(() => setError(''), 3000);
+        setButtonClicked(false);
+        router.push('/forgot-password');
+      }
+    });
+    setUserEmail(email);
     setButtonClicked(true);
   };
 
-  const resetPassword = async (values: z.infer<typeof ResetPasswordSchema>) => {
-    setError('');
+  const resetPassword = (values: z.infer<typeof ResetPasswordSchema>) => {
     const { code, newPassword } = values;
-    console.log('Code: ', code);
-    console.log('Password: ', newPassword);
+
+    if (!code || !newPassword) {
+      setError('Code or password is missing');
+      return;
+    }
 
     if (code.length !== 6) {
       setError('Invalid code');
@@ -72,11 +102,49 @@ const ForgotPassword: React.FC = () => {
       return;
     }
 
-    // TODO: Implement reset password
+    startTransition(async () => {
+      try {
+        const res = await client.post('/users/reset-password', {
+          email: userEmail,
+          code,
+          newPassword,
+        });
 
-    setButtonClicked(false);
-    router.push('/login');
+        if (res.status === 201) {
+          newForm.reset();
+          setSuccess('Password reset successful');
+          router.push('/login');
+        }
+      } catch (error: any) {
+        const err = error.response.data.userFriendlyMessage;
+        setError(err);
+        form.reset();
+        setTimeout(() => setError(''), 3000);
+        router.push('/forgot-password');
+        setButtonClicked(true);
+      }
+    });
   };
+
+  useEffect(() => {
+    if (status === 'idle' || status === 'loading') {
+      setError('');
+      setSuccess('');
+    }
+
+    if (status === 'succeeded') {
+      setSuccess('Password reset successful');
+    }
+
+    if (status === 'failed') {
+      setError('Invalid code or password');
+      const timeout = setTimeout(() => setError(''), 2000);
+
+      return () => {
+        clearTimeout(timeout);
+      };
+    }
+  }, [status, dispatch]);
 
   return (
     <div className="flex flex-col items-left justify-center h-full min-w-[330px] mx-4">
@@ -108,7 +176,6 @@ const ForgotPassword: React.FC = () => {
                     </div>
                     <FormControl>
                       <Input
-                        // disabled={isPending}
                         type="text"
                         placeholder="Enter 6 digit code"
                         {...field}
@@ -126,7 +193,6 @@ const ForgotPassword: React.FC = () => {
                     <FormLabel>New Password</FormLabel>
                     <FormControl>
                       <Input
-                        // disabled={isPending}
                         type="password"
                         placeholder="Your new password"
                         {...field}
@@ -142,8 +208,8 @@ const ForgotPassword: React.FC = () => {
               number, 1 upper, 1 lower.
             </p>
             <FormError message={error} />
+            <FormSuccess message={success} />
             <Button
-              // disabled={isPending}
               type="submit"
               className="w-full bg-blue-500 transition duration-300 delay-100 hover:bg-blue-600 dark:text-white"
             >
@@ -176,6 +242,8 @@ const ForgotPassword: React.FC = () => {
                   )}
                 />
               </div>
+              <FormError message={error} />
+              <FormSuccess message={success} />
               <Button
                 type="submit"
                 className="w-full bg-blue-500 transition duration-300 delay-100 hover:bg-blue-600 dark:text-white"
