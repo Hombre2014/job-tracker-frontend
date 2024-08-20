@@ -13,16 +13,14 @@ import {
 } from '@/redux/boards/boardsThunk';
 
 const ArchivedBoards = () => {
-  const dispatch = useAppDispatch();
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const accessToken = localStorage.getItem('accessToken');
   const { archivedBoards } = useAppSelector((state) => state.boards);
 
   const handleUnarchiveBoard = (accessToken: string, boardId: string) => {
     dispatch(unarchiveBoard({ accessToken, id: boardId }));
-    setTimeout(() => {
-      dispatch(getBoards(accessToken));
-    }, 2000);
+    dispatch(getBoards(accessToken));
     dispatch(getArchivedBoards(accessToken));
     router.push('/home/boards');
   };

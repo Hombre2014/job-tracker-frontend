@@ -43,6 +43,9 @@ const Login = () => {
     },
   });
 
+  console.log('Is Pending: ', isPending);
+  console.log('Success: ', success);
+
   useEffect(() => {
     dispatch(logout());
   }, [dispatch]);
@@ -137,7 +140,7 @@ const Login = () => {
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
-          {boardsStatus === 'loading' && <Loader title="Loading boards" />}
+          {success !== '' && <Loader title="Logging in" />}
           <Button
             disabled={isPending}
             type="submit"
