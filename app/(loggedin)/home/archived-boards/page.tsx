@@ -13,8 +13,8 @@ import {
 } from '@/redux/boards/boardsThunk';
 
 const ArchivedBoards = () => {
-  const dispatch = useAppDispatch();
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const accessToken = localStorage.getItem('accessToken');
   const { archivedBoards } = useAppSelector((state) => state.boards);
 
@@ -27,7 +27,7 @@ const ArchivedBoards = () => {
 
   useEffect(() => {
     dispatch(getArchivedBoards(accessToken as string));
-  }, [dispatch, accessToken, archivedBoards]);
+  }, [dispatch, accessToken]);
 
   return (
     <div className="w-full md:w-3/4 xl:w-2/3 2xl:w-1/2 mx-auto">

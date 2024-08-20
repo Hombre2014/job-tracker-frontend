@@ -9,12 +9,12 @@ import { archiveBoard, getBoards } from '@/redux/boards/boardsThunk';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 
 const JobBoardTitle = (board: Board) => {
-  const dispatch = useAppDispatch();
-  const pathName = usePathname();
   const router = useRouter();
-  const accessToken = localStorage.getItem('accessToken');
-  const [showTrash, setShowTrash] = useState(false);
+  const pathName = usePathname();
   const { board_id } = useParams();
+  const dispatch = useAppDispatch();
+  const [showTrash, setShowTrash] = useState(false);
+  const accessToken = localStorage.getItem('accessToken');
   const { boards } = useAppSelector((state) => state.boards);
 
   const toggleTrashIcon = () => {
@@ -36,7 +36,6 @@ const JobBoardTitle = (board: Board) => {
       router.push('/home/boards');
       return;
     } else {
-      console.log('Deleting a different board, staying on the same page');
       dispatch(archiveBoard({ accessToken, id: boardId }));
       setTimeout(() => {
         dispatch(getBoards(accessToken));
