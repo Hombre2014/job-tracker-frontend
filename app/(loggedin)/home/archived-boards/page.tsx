@@ -20,16 +20,14 @@ const ArchivedBoards = () => {
 
   const handleUnarchiveBoard = (accessToken: string, boardId: string) => {
     dispatch(unarchiveBoard({ accessToken, id: boardId }));
-    setTimeout(() => {
-      dispatch(getBoards(accessToken));
-    }, 2000);
+    dispatch(getBoards(accessToken));
     dispatch(getArchivedBoards(accessToken));
     router.push('/home/boards');
   };
 
   useEffect(() => {
     dispatch(getArchivedBoards(accessToken as string));
-  }, [dispatch, accessToken]);
+  }, [dispatch, accessToken, archivedBoards]);
 
   return (
     <div className="w-full md:w-3/4 xl:w-2/3 2xl:w-1/2 mx-auto">
