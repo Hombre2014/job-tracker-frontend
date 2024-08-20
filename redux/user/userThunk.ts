@@ -67,3 +67,50 @@ export const isLoggedIn = createAsyncThunk(
     }
   }
 );
+
+export const forgotPasswordSendCode = createAsyncThunk(
+  'user/forgotPasswordSendCode',
+  async (values: any, thunkAPI) => {
+    const { email } = values;
+    try {
+      const res = await client.post(
+        '/users/reset-password/create-verification-code',
+        { email }
+      );
+      const data = res.data;
+
+      if (res.status === 200) {
+        console.log('Data: ', data);
+        return data;
+      } else {
+        return thunkAPI.rejectWithValue(data);
+      }
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(err.response?.data || 'Request failed');
+    }
+  }
+);
+
+export const forgotPasswordResetPassword = createAsyncThunk(
+  'user/forgotPasswordResetPassword',
+  async (values: any, thunkAPI) => {
+    const { email, code, newPassword } = values;
+    try {
+      const res = await client.post('/users/reset-password', {
+        email,
+        code,
+        newPassword,
+      });
+      const data = res.data;
+
+      if (res.status === 200) {
+        console.log('Data: ', data);
+        return data;
+      } else {
+        return thunkAPI.rejectWithValue(data);
+      }
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(err.response?.data || 'Request failed');
+    }
+  }
+);

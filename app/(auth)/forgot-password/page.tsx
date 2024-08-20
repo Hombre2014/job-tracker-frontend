@@ -5,12 +5,21 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
+import { RiQuestionMark } from 'react-icons/ri';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { ForgotPasswordSchema, ResetPasswordSchema } from '@/schemas';
-import { FormError } from '@/components/Forms/form-error';
 import { Input } from '@/components/ui/input';
+import { useAppDispatch } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
+import { FormError } from '@/components/Forms/form-error';
+import { forgotPasswordSendCode } from '@/redux/user/userThunk';
+import { ForgotPasswordSchema, ResetPasswordSchema } from '@/schemas';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import {
   Form,
   FormControl,
@@ -19,16 +28,10 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { RiQuestionMark } from 'react-icons/ri';
 
 const ForgotPassword: React.FC = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const [error, setError] = useState<string | undefined>('');
   const [buttonClicked, setButtonClicked] = useState<boolean>(false);
   const form = useForm<z.infer<typeof ForgotPasswordSchema>>({
@@ -48,7 +51,8 @@ const ForgotPassword: React.FC = () => {
 
   const onSubmit = (values: z.infer<typeof ForgotPasswordSchema>) => {
     const { email } = values;
-    console.log('Email: ', email);
+    console.log('Email: ', { email });
+    dispatch(forgotPasswordSendCode({ email }));
     setButtonClicked(true);
   };
 

@@ -1,7 +1,13 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 import { RootState } from '../store';
-import { login, logout, isLoggedIn } from './userThunk';
+import {
+  login,
+  logout,
+  isLoggedIn,
+  forgotPasswordSendCode,
+  forgotPasswordResetPassword,
+} from './userThunk';
 
 interface UserState {
   email: string;
@@ -80,6 +86,28 @@ export const userSlice = createSlice({
       .addCase(isLoggedIn.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message || 'User not logged in';
+      })
+      .addCase(forgotPasswordSendCode.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(forgotPasswordSendCode.fulfilled, (state) => {
+        state.status = 'succeeded';
+        state.error = null;
+      })
+      .addCase(forgotPasswordSendCode.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message || 'Failed to send code';
+      })
+      .addCase(forgotPasswordResetPassword.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(forgotPasswordResetPassword.fulfilled, (state) => {
+        state.status = 'succeeded';
+        state.error = null;
+      })
+      .addCase(forgotPasswordResetPassword.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message || 'Failed to reset password';
       });
   },
 });
