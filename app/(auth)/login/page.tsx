@@ -47,9 +47,6 @@ const Login = () => {
     dispatch(logout());
   }, [dispatch]);
 
-  console.log('Status: ', status);
-  console.log('Is pending: ', isPending);
-
   useEffect(() => {
     if (status === 'idle' || status === 'loading') {
       setError('');
