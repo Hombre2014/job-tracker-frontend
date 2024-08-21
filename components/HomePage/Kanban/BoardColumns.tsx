@@ -1,14 +1,15 @@
 'use client';
 
-import { BsPlusLg } from 'react-icons/bs';
 import { useParams } from 'next/navigation';
 import { ChangeEvent, useEffect, useState } from 'react';
 
 import ThreeDotsMenu from './ThreeDotsMenu';
 import { Input } from '@/components/ui/input';
 import { returnBoardIcon } from '@/utils/ReturnIcons';
+import AlertDialogModal from '../Boards/AlertDialogModal';
 import { useAppSelector, useAppDispatch } from '@/redux/hooks';
 import { getBoards, updateColumnName } from '@/redux/boards/boardsThunk';
+import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
 
 const BoardColumns = () => {
   const { board_id } = useParams();
@@ -96,9 +97,17 @@ const BoardColumns = () => {
                 {column.jobApplications && column.jobApplications.length} JOBS
               </p>
             </div>
-            <div className="w-11/12 flex justify-center border py-3 mx-auto rounded-md hover:border-blue-500 transition duration-300 delay-150 cursor-pointer">
-              <BsPlusLg />
-            </div>
+            <AlertDialogModal
+              buttonLabel="+"
+              buttonVariant="outline"
+              dialogTitle="Add Job"
+              buttonCancel="Discard"
+              buttonConfirm="Save Job"
+              actionFunction={() => console.log('Adding job to column')}
+              stylings="w-11/12 flex justify-center text-2xl border py-3 mx-auto rounded-md hover:border-blue-500 transition duration-300 delay-150 cursor-pointer"
+            >
+              <AddJobShortForm columnOrder={column.order} />
+            </AlertDialogModal>
           </section>
         ))}
     </div>

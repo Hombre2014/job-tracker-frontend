@@ -54,6 +54,13 @@ interface LinkDocumentProps {
   initialString: string;
 }
 
+interface ComboBoardListBoxProps {
+  items: Board[] | Column[];
+  itemsType?: 'boards' | 'columns';
+  searchItem: string;
+  initialString: string;
+}
+
 interface AlertDialogProps {
   buttonLabel?: React.ReactNode;
   buttonVariant?:

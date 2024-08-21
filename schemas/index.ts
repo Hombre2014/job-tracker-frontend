@@ -26,9 +26,6 @@ export const ForgotPasswordSchema = z.object({
 });
 
 export const ResetPasswordSchema = z.object({
-  // email: z.string().email({
-  //   message: 'Email is required',
-  // }),
   code: z.string().regex(/^\d{6}$/, {
     message: 'The code must be exactly 6 digits',
   }),
@@ -40,5 +37,20 @@ export const ResetPasswordSchema = z.object({
 export const VerifyEmailSchema = z.object({
   code: z.string().regex(/^\d{6}$/, {
     message: 'Invalid verification code',
+  }),
+});
+
+export const AddJobSchemaShort = z.object({
+  jobTitle: z.string().min(1, {
+    message: 'Job title is required',
+  }),
+  company: z.string().min(1, {
+    message: 'Company name is required',
+  }),
+  board: z.string().min(1, {
+    message: 'Board is required',
+  }),
+  list: z.string().min(1, {
+    message: 'List is required',
   }),
 });
