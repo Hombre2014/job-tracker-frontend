@@ -9,6 +9,7 @@ import { returnBoardIcon } from '@/utils/ReturnIcons';
 import AlertDialogModal from '../Boards/AlertDialogModal';
 import { useAppSelector, useAppDispatch } from '@/redux/hooks';
 import { getBoards, updateColumnName } from '@/redux/boards/boardsThunk';
+import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
 
 const BoardColumns = () => {
   const { board_id } = useParams();
@@ -105,18 +106,8 @@ const BoardColumns = () => {
               actionFunction={() => console.log('Adding job to column')}
               stylings="w-11/12 flex justify-center text-2xl border py-3 mx-auto rounded-md hover:border-blue-500 transition duration-300 delay-150 cursor-pointer"
             >
-              <div>
-                <p>Job Title</p>
-                <Input
-                  className="w-full"
-                  placeholder="Enter job title"
-                  type="text"
-                />
-              </div>
+              <AddJobShortForm columnOrder={column.order} />
             </AlertDialogModal>
-            {/* <div className="w-11/12 flex justify-center border py-3 mx-auto rounded-md hover:border-blue-500 transition duration-300 delay-150 cursor-pointer">
-              <BsPlusLg />
-            </div> */}
           </section>
         ))}
     </div>
