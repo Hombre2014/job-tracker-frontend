@@ -37,12 +37,10 @@ const AlertDialogModal = ({
           <AlertDialogTitle className="text-center border-b pb-4 mb-2">
             {dialogTitle}
           </AlertDialogTitle>
-          <div className="text-center pb-4 border-b">
+          <AlertDialogDescription className="text-center pb-4 border-b">
             {children}
             {dialogText}
-          </div>
-          {/* <AlertDialogDescription className="text-center pb-4 border-b"> */}
-          {/* </AlertDialogDescription> */}
+          </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogAction onClick={actionFunction}>

@@ -53,7 +53,9 @@ const ComboBoardListBox = ({
             aria-expanded={open}
             className="w-full justify-between"
           >
-            {currentBoardName || initialString}{' '}
+            {value
+              ? items.find((item) => item.name === value)?.name
+              : `${initialString}`}
             <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -87,6 +89,9 @@ const ComboBoardListBox = ({
                     />
                     <div>
                       <span>{item.name}&nbsp;</span>
+                      {/* Bellow line is the user's name, which we do not have so far */}
+                      {/* TODO: Resolve the issue with user's name! */}
+                      {/* <span className="opacity-40">{item.label}</span> */}
                     </div>
                   </CommandItem>
                 ))}
