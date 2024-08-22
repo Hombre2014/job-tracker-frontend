@@ -61,14 +61,12 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                 </FormLabel>
                 <FormLabel className="text-gray-400">Required</FormLabel>
               </span>
-              {/* <FormControl> */}
               <Input
                 placeholder="Company name"
                 {...field}
                 value={company}
                 onChange={(e) => handleCompanyChange(e)}
               />
-              {/* </FormControl> */}
               <FormMessage />
             </FormItem>
           )}
@@ -84,20 +82,17 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                 </FormLabel>
                 <FormLabel className="text-gray-400">Required</FormLabel>
               </span>
-              {/* <FormControl> */}
               <Input
                 placeholder="Job Title"
                 {...field}
                 value={jobTitle}
                 onChange={(e) => handleJobTitleChange(e)}
               />
-              {/* </FormControl> */}
               <FormMessage />
             </FormItem>
           )}
         />
         <span className="flex justify-between gap-4 pb-4">
-          {/* <div className="w-1/2"> */}
           <FormField
             control={form.control}
             name="board"
@@ -109,7 +104,6 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                   </FormLabel>
                   <FormLabel className="text-gray-400">Required</FormLabel>
                 </span>
-                {/* <FormControl> */}
                 <ComboBoardListBox
                   itemsType="boards"
                   items={boards}
@@ -117,13 +111,10 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                   initialString={currentBoardName}
                   {...field}
                 />
-                {/* </FormControl> */}
                 <FormMessage />
               </FormItem>
             )}
           />
-          {/* </div> */}
-          {/* <div className="w-1/2"> */}
           <FormField
             control={form.control}
             name="list"
@@ -135,7 +126,6 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                   </FormLabel>
                   <FormLabel className="text-gray-400">Required</FormLabel>
                 </span>
-                {/* <FormControl> */}
                 <ComboBoardListBox
                   itemsType="columns"
                   items={boardColumns}
@@ -143,13 +133,11 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                   initialString={currenColumnName}
                   {...field}
                 />
-                {/* </FormControl> */}
                 <FormMessage />
               </FormItem>
             )}
           />
         </span>
-        {/* </div> */}
       </form>
     </Form>
   );
