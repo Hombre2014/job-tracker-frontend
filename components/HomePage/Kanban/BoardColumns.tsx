@@ -60,6 +60,20 @@ const BoardColumns = () => {
     }
   };
 
+  const createJobApplication = () => {
+    console.log('Create Job Application');
+    console.log(
+      'Company: ',
+      localStorage.getItem('company'),
+      'Job Title: ',
+      localStorage.getItem('jobTitle'),
+      'Board: ',
+      localStorage.getItem('chosenBoard'),
+      'List: ',
+      localStorage.getItem('chosenColumn')
+    );
+  };
+
   return (
     <div className="w-full flex h-full">
       {boardColumns &&
@@ -103,7 +117,7 @@ const BoardColumns = () => {
               dialogTitle="Add Job"
               buttonCancel="Discard"
               buttonConfirm="Save Job"
-              actionFunction={() => console.log('Adding job to column')}
+              actionFunction={createJobApplication}
               stylings="w-11/12 flex justify-center text-2xl border py-3 mx-auto rounded-md hover:border-blue-500 transition duration-300 delay-150 cursor-pointer"
             >
               <AddJobShortForm columnOrder={column.order} />

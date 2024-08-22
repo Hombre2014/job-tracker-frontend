@@ -1,6 +1,6 @@
 'use client';
 
-import { z } from 'zod';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,9 +20,12 @@ import {
 
 const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
   const { board_id } = useParams();
+  const [company, setCompany] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
   const { boards } = useAppSelector((state) => state.boards);
   const boardColumns = boards.find((board) => board.id === board_id)!.columns;
   const currenColumnName = boardColumns![columnOrder].name;
+  const currentBoardName = boards.find((board) => board.id === board_id)!.name;
 
   const form = useForm({
     resolver: zodResolver(AddJobSchemaShort),
@@ -34,13 +37,19 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof AddJobSchemaShort>) => {
-    console.log(values);
+  const handleCompanyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCompany(e.target.value);
+    localStorage.setItem('company', e.target.value);
+  };
+
+  const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setJobTitle(e.target.value);
+    localStorage.setItem('jobTitle', e.target.value);
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form className="space-y-8">
         <FormField
           control={form.control}
           name="company"
@@ -50,11 +59,14 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                 <FormLabel className="text-gray-800 font-semibold">
                   Company
                 </FormLabel>
-                <FormLabel>Required</FormLabel>
+                <FormLabel className="text-gray-400">Required</FormLabel>
               </span>
-              <FormControl>
-                <Input placeholder="Company name" {...field} />
-              </FormControl>
+              <Input
+                placeholder="Company name"
+                {...field}
+                value={company}
+                onChange={(e) => handleCompanyChange(e)}
+              />
               <FormMessage />
             </FormItem>
           )}
@@ -68,16 +80,19 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                 <FormLabel className="text-gray-800 font-semibold">
                   Job Title
                 </FormLabel>
-                <FormLabel>Required</FormLabel>
+                <FormLabel className="text-gray-400">Required</FormLabel>
               </span>
-              <FormControl>
-                <Input placeholder="Job Title" {...field} />
-              </FormControl>
+              <Input
+                placeholder="Job Title"
+                {...field}
+                value={jobTitle}
+                onChange={(e) => handleJobTitleChange(e)}
+              />
               <FormMessage />
             </FormItem>
           )}
         />
-        <div className="flex justify-between gap-4 pb-8">
+        <span className="flex justify-between gap-4 pb-4">
           <FormField
             control={form.control}
             name="board"
@@ -87,17 +102,15 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                   <FormLabel className="text-gray-800 font-semibold">
                     Board
                   </FormLabel>
-                  <FormLabel>Required</FormLabel>
+                  <FormLabel className="text-gray-400">Required</FormLabel>
                 </span>
-                <FormControl>
-                  <ComboBoardListBox
-                    itemsType="boards"
-                    items={boards}
-                    searchItem="Boards"
-                    initialString=""
-                    {...field}
-                  />
-                </FormControl>
+                <ComboBoardListBox
+                  itemsType="boards"
+                  items={boards}
+                  searchItem="Boards"
+                  initialString={currentBoardName}
+                  {...field}
+                />
                 <FormMessage />
               </FormItem>
             )}
@@ -111,22 +124,20 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                   <FormLabel className="text-gray-800 font-semibold">
                     List
                   </FormLabel>
-                  <FormLabel>Required</FormLabel>
+                  <FormLabel className="text-gray-400">Required</FormLabel>
                 </span>
-                <FormControl>
-                  <ComboBoardListBox
-                    itemsType="columns"
-                    items={boardColumns}
-                    searchItem="Lists"
-                    initialString={currenColumnName}
-                    {...field}
-                  />
-                </FormControl>
+                <ComboBoardListBox
+                  itemsType="columns"
+                  items={boardColumns}
+                  searchItem="Lists"
+                  initialString={currenColumnName}
+                  {...field}
+                />
                 <FormMessage />
               </FormItem>
             )}
           />
-        </div>
+        </span>
       </form>
     </Form>
   );
