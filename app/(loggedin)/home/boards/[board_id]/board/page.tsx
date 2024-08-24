@@ -14,6 +14,7 @@ const KanbanBoard = () => {
   useEffect(() => {
     dispatch(setStatusToIdle());
     dispatch(getBoards(accessToken as string));
+    console.log('Home/boards/boardid/board page getBoards dispatched');
   }, [dispatch, accessToken]);
 
   return (

@@ -24,13 +24,15 @@ import {
 
 const SignUp = () => {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
   const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | undefined>('');
 
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
+      firstName: '',
+      lastName: '',
       email: '',
       password: '',
     },
@@ -38,11 +40,13 @@ const SignUp = () => {
 
   const onSubmit = async (values: z.infer<typeof RegisterSchema>) => {
     setError('');
-    const { email, password, role = 'user' } = values;
+    const { email, password, firstName, lastName, role = 'user' } = values;
     setLoading(true);
     startTransition(async () => {
       try {
         const res = await client.post('/users', {
+          firstName,
+          lastName,
           email,
           password,
           role,
@@ -75,6 +79,44 @@ const SignUp = () => {
       </p>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="flex justify-between gap-4">
+            <FormField
+              control={form.control}
+              name="firstName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>First Name</FormLabel>
+                  <FormControl>
+                    <Input
+                      disabled={isPending}
+                      type="text"
+                      placeholder="John"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="lastName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Last Name</FormLabel>
+                  <FormControl>
+                    <Input
+                      disabled={isPending}
+                      type="text"
+                      placeholder="Doe"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           <div className="space-y-4">
             <FormField
               control={form.control}

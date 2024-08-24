@@ -13,6 +13,7 @@ const JobBoard = () => {
 
   useEffect(() => {
     dispatch(getBoards(accessToken as string));
+    console.log('HomePage/SideBar/Job Board useEffect getBoards dispatched');
   }, [accessToken, dispatch]);
 
   return (

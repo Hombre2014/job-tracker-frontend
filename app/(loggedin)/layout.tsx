@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { getBoards } from '@/redux/boards/boardsThunk';
 import Sidebar from '@/components/HomePage/SideBar/Sidebar';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { getUser } from '@/redux/user/userThunk';
 
 const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
@@ -20,6 +21,9 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
       router.push('/login');
     } else {
       dispatch(getBoards(accessToken));
+      console.log('Layout home page, getBoards dispatched');
+      dispatch(getUser(accessToken as string));
+      console.log('accessToken, getUSer dispatched', accessToken);
     }
   }, [accessToken, router, dispatch]);
 

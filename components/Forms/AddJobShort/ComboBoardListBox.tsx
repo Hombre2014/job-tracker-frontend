@@ -30,10 +30,12 @@ const ComboBoardListBox = ({
   const { board_id } = useParams();
   const [value, setValue] = useState('');
   const [open, setOpen] = useState(false);
-  const currentBoardName = items.find((item) => item.id === board_id)?.name;
+  const { lastName } = useAppSelector((state) => state.user);
+  const { firstName } = useAppSelector((state) => state.user);
   const [chosenColumn, setChosenColumn] = useState(initialString);
-  const [chosenBoard, setChosenBoard] = useState(currentBoardName);
   const { boardsStatus } = useAppSelector((state) => state.boards);
+  const currentBoardName = items.find((item) => item.id === board_id)?.name;
+  const [chosenBoard, setChosenBoard] = useState(currentBoardName);
 
   useEffect(() => {
     if (itemsType === 'boards') {
@@ -89,9 +91,9 @@ const ComboBoardListBox = ({
                     />
                     <div>
                       <span>{item.name}&nbsp;</span>
-                      {/* Bellow line is the user's name, which we do not have so far */}
-                      {/* TODO: Resolve the issue with user's name! */}
-                      {/* <span className="opacity-40">{item.label}</span> */}
+                      <span className="opacity-40">
+                        {firstName} {lastName}
+                      </span>
                     </div>
                   </CommandItem>
                 ))}

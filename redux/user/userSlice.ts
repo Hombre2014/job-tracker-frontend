@@ -1,10 +1,12 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 import { RootState } from '../store';
-import { login, logout, isLoggedIn } from './userThunk';
+import { login, logout, isLoggedIn, getUser } from './userThunk';
 
 interface UserState {
   email: string;
+  firstName: string;
+  lastName: string;
   accessToken?: string;
   refreshToken?: string;
   userId: string | null;
@@ -15,6 +17,8 @@ interface UserState {
 const initialState: UserState = {
   accessToken: '',
   refreshToken: '',
+  firstName: '',
+  lastName: '',
   email: '',
   userId: null,
   status: 'idle',
@@ -80,6 +84,21 @@ export const userSlice = createSlice({
       .addCase(isLoggedIn.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message || 'User not logged in';
+      })
+      .addCase(getUser.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(getUser.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.email = action.payload?.email;
+        state.firstName = action.payload?.firstName;
+        state.lastName = action.payload?.lastName;
+        state.userId = action.payload?.userId;
+        state.error = null;
+      })
+      .addCase(getUser.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message || 'User not found';
       });
   },
 });

@@ -18,12 +18,15 @@ const UserBoards = () => {
   const [isEditing, setIsEditing] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const [currentBoardId, setCurrentBoardId] = useState('');
+  const { lastName } = useAppSelector((state) => state.user);
+  const { firstName } = useAppSelector((state) => state.user);
   const [renamedBoardName, setRenamedBoardName] = useState('');
   const { boards, boardsStatus } = useAppSelector((state) => state.boards);
 
   useEffect(() => {
     if (boardsStatus === 'succeeded') {
       dispatch(getBoards(accessToken as string));
+      console.log('Home/boards first useEffect getBoards dispatched');
     }
   }, [dispatch, accessToken]);
 
@@ -36,6 +39,7 @@ const UserBoards = () => {
       }
     } else {
       dispatch(getBoards(accessToken as string));
+      console.log('Home/boards second useEffect getBoards dispatched');
     }
   }, [isEditing, currentBoardId]);
 
@@ -106,9 +110,9 @@ const UserBoards = () => {
               ) : (
                 <p className="text-lg font-semibold">{board.name}</p>
               )}
-              {/* Bellow line is the user's name, which we do not have so far */}
-              {/* TODO: Resolve the issue with user's name! */}
-              {/* <p className="text-slate-700 text-sm">{board.label}</p> */}
+              <p className="text-slate-700 text-sm mb-2">
+                {firstName} {lastName}
+              </p>
               <p className="text-slate-400 text-xs">{email}</p>
               {/* TODO: Created at or how many days/weeks/months ago? */}
             </div>

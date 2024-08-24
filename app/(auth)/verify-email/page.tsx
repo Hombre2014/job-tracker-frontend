@@ -60,7 +60,7 @@ const VerifyEmail = () => {
         if (res.status === 201) {
           form.reset();
           setSuccess('Code verification successful');
-          localStorage.removeItem('user');
+          // localStorage.removeItem('user');
           router.push('/login');
         }
       } catch (error: any) {

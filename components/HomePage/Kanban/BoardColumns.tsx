@@ -30,6 +30,7 @@ const BoardColumns = () => {
       }
     } else {
       dispatch(getBoards(accessToken as string));
+      console.log('Board Columns useEffect getBoards dispatched');
     }
   }, [isEditing, currentColumnId, accessToken, dispatch]);
 

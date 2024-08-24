@@ -12,10 +12,10 @@ import { LoginSchema } from '@/schemas';
 import Loader from '@/components/Misc/Loader';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { login, logout } from '@/redux/user/userThunk';
 import { getBoards } from '@/redux/boards/boardsThunk';
 import { FormError } from '@/components/Forms/form-error';
 import { FormSuccess } from '@/components/Forms/form-success';
+import { getUser, login, logout } from '@/redux/user/userThunk';
 import {
   Form,
   FormControl,
@@ -71,7 +71,6 @@ const Login = () => {
   useEffect(() => {
     if (boardsStatus === 'succeeded') {
       if (boards.length === 0) {
-        setError('No boards found. Something is wrong!');
         router.push('/home/boards');
       } else
         boards.length === 1
