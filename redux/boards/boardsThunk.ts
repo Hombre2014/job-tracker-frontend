@@ -4,6 +4,7 @@ import client from '@/api/client';
 export const getBoards = createAsyncThunk(
   'boards/getBoards',
   async (accessToken: string, thunkAPI) => {
+    // console.log('Getting Boards', new Error().stack);
     try {
       const res = await client.get('/boards-all', {
         headers: {

@@ -32,6 +32,7 @@ const JobBoardTitle = (board: Board) => {
       dispatch(archiveBoard({ accessToken, id: boardId }));
       setTimeout(() => {
         dispatch(getBoards(accessToken));
+        console.log('JobBoard Title HandleArchievBoard getBoards dispatched');
       }, 2000);
       router.push('/home/boards');
       return;

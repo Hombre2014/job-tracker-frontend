@@ -36,15 +36,15 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
     const columnsArray = moveColumn(5, columnOrder, selectedColumn);
     const columns = currentBoardColumns?.map((column) => column.id);
 
-    const columnIdsMap = {
-      '0': columns![0],
-      '1': columns![1],
-      '2': columns![2],
-      '3': columns![3],
-      '4': columns![4],
-    };
+    // const columnIdsMap = {
+    //   '0': columns![0],
+    //   '1': columns![1],
+    //   '2': columns![2],
+    //   '3': columns![3],
+    //   '4': columns![4],
+    // };
 
-    const columnIds = columnsArray.map((v) => columnIdsMap[v]);
+    const columnIds = columnsArray.map((v) => columns![v]);
 
     dispatch(
       rearrangeColumns({
@@ -58,6 +58,7 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
 
   useEffect(() => {
     dispatch(getBoards(accessToken as string));
+    console.log('Three Dots Menu useEffect getBoards dispatched');
     setIsEditing(false);
   }, [dispatch, accessToken, isEditing]);
 

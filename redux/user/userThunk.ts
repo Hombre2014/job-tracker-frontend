@@ -67,3 +67,25 @@ export const isLoggedIn = createAsyncThunk(
     }
   }
 );
+
+export const getUser = createAsyncThunk(
+  'user/getUser',
+  async (accessToken: string, thunkAPI) => {
+    try {
+      const res = await client.get('/users', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (res.status === 200) {
+        console.log('User data from getUser thunk', res.data);
+        return res.data;
+      } else {
+        return thunkAPI.rejectWithValue('User not found');
+      }
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(err.response?.data || 'User not found');
+    }
+  }
+);

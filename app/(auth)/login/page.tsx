@@ -12,10 +12,10 @@ import { LoginSchema } from '@/schemas';
 import Loader from '@/components/Misc/Loader';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { login, logout } from '@/redux/user/userThunk';
 import { getBoards } from '@/redux/boards/boardsThunk';
 import { FormError } from '@/components/Forms/form-error';
 import { FormSuccess } from '@/components/Forms/form-success';
+import { getUser, login, logout } from '@/redux/user/userThunk';
 import {
   Form,
   FormControl,
