@@ -38,6 +38,7 @@ const AlertDialogModal = ({
             {dialogTitle}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-center pb-4 border-b">
+            {/* Above parent is a <p> element, can't have a Form inside */}
             {children}
             {dialogText}
           </AlertDialogDescription>

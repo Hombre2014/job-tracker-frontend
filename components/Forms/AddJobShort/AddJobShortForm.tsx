@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { AddJobSchemaShort } from '@/schemas';
 import { Input } from '@/components/ui/input';
-import { useAppSelector } from '@/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import ComboBoardListBox from '@/components/Forms/AddJobShort/ComboBoardListBox';
 import {
   Form,
@@ -17,11 +17,14 @@ import {
   FormControl,
   FormMessage,
 } from '@/components/ui/form';
+import { getBoards } from '@/redux/boards/boardsThunk';
 
 const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
   const { board_id } = useParams();
+  const dispatch = useAppDispatch();
   const [company, setCompany] = useState('');
   const [jobTitle, setJobTitle] = useState('');
+  const accessToken = localStorage.getItem('accessToken');
   const { boards } = useAppSelector((state) => state.boards);
   const boardColumns = boards.find((board) => board.id === board_id)!.columns;
   const currenColumnName = boardColumns![columnOrder].name;
@@ -46,6 +49,10 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
     setJobTitle(e.target.value);
     localStorage.setItem('jobTitle', e.target.value);
   };
+
+  useEffect(() => {
+    dispatch(getBoards(accessToken as string));
+  }, [dispatch, accessToken]);
 
   return (
     <Form {...form}>
