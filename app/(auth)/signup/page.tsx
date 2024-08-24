@@ -24,8 +24,8 @@ import {
 
 const SignUp = () => {
   const router = useRouter();
-  const [isPending, startTransition] = useTransition();
   const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | undefined>('');
 
   const form = useForm<z.infer<typeof RegisterSchema>>({
@@ -55,7 +55,6 @@ const SignUp = () => {
         if (res.status === 201) {
           form.reset();
           localStorage.setItem('user', JSON.stringify(res.data));
-          console.log('User', res.data);
           router.push('/verify-email');
         }
       } catch (error: any) {

@@ -1,8 +1,8 @@
 import { useRouter } from 'next/navigation';
 import { RiAccountPinBoxLine, RiSettings2Line } from 'react-icons/ri';
 
-import { logout } from '@/redux/user/userThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { logout } from '@/redux/user/userThunk';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,15 +13,10 @@ import {
 const UserPanel = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { lastName } = useAppSelector((state) => state.user);
   const { firstName } = useAppSelector((state) => state.user);
-  const { email } = useAppSelector((state) => state.user);
-  const { userId } = useAppSelector((state) => state.user);
+  const { lastName } = useAppSelector((state) => state.user);
 
-  console.log('firstName', firstName);
-  console.log('lastName', lastName);
-  console.log('email', email);
-  console.log('userId', userId);
+  console.log('Names: ', firstName, lastName);
 
   const userLogout = () => {
     dispatch(logout());

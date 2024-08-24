@@ -71,7 +71,6 @@ const Login = () => {
   useEffect(() => {
     if (boardsStatus === 'succeeded') {
       if (boards.length === 0) {
-        setError('No boards found. Something is wrong!');
         router.push('/home/boards');
       } else
         boards.length === 1
