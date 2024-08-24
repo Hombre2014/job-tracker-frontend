@@ -14,7 +14,7 @@ const KanbanBoard = () => {
   useEffect(() => {
     dispatch(setStatusToIdle());
     dispatch(getBoards(accessToken as string));
-  }, [dispatch]);
+  }, [dispatch, accessToken]);
 
   return (
     <div className="h-full">

@@ -72,6 +72,7 @@ interface AlertDialogProps {
     | 'secondary'
     | 'ghost'
     | 'normal'
+    | 'none'
     | null
     | undefined;
   dialogTitle: string;

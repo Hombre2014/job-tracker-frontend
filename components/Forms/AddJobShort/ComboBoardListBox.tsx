@@ -31,8 +31,8 @@ const ComboBoardListBox = ({
   const [value, setValue] = useState('');
   const [open, setOpen] = useState(false);
   const currentBoardName = items.find((item) => item.id === board_id)?.name;
-  const [chosenBoard, setChosenBoard] = useState(currentBoardName);
   const [chosenColumn, setChosenColumn] = useState(initialString);
+  const [chosenBoard, setChosenBoard] = useState(currentBoardName);
   const { boardsStatus } = useAppSelector((state) => state.boards);
 
   useEffect(() => {
