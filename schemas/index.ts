@@ -8,6 +8,12 @@ export const RegisterSchema = z.object({
     message: 'Minimum 8 characters required',
   }),
   role: z.string().optional(),
+  firstName: z.string().min(2, {
+    message: 'Name is required',
+  }),
+  lastName: z.string().min(2, {
+    message: 'Name is required',
+  }),
 });
 
 export const LoginSchema = z.object({
