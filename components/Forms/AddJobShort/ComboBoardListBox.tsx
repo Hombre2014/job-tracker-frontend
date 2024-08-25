@@ -92,7 +92,9 @@ const ComboBoardListBox = ({
                     <div>
                       <span>{item.name}&nbsp;</span>
                       <span className="opacity-40">
-                        {firstName} {lastName}
+                        {itemsType === 'boards'
+                          ? `${firstName} ${lastName}`
+                          : ''}
                       </span>
                     </div>
                   </CommandItem>
