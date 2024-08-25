@@ -35,15 +35,6 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
   const handleMoveList = () => {
     const columnsArray = moveColumn(5, columnOrder, selectedColumn);
     const columns = currentBoardColumns?.map((column) => column.id);
-
-    // const columnIdsMap = {
-    //   '0': columns![0],
-    //   '1': columns![1],
-    //   '2': columns![2],
-    //   '3': columns![3],
-    //   '4': columns![4],
-    // };
-
     const columnIds = columnsArray.map((v) => columns![v]);
 
     dispatch(
@@ -101,17 +92,16 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {currentBoardColumns
-                      ?.filter((column) => column.order !== columnOrder)
-                      .map((column) => (
-                        <SelectItem
-                          key={column.order}
-                          value={column.order.toString()}
-                        >
-                          Position {column.order + 1} -{' '}
-                          {column.name.toUpperCase()}
-                        </SelectItem>
-                      ))}
+                    {currentBoardColumns?.map((column) => (
+                      <SelectItem
+                        key={column.order}
+                        value={column.order.toString()}
+                      >
+                        Position {column.order + 1} -{' '}
+                        {column.name.toUpperCase()}{' '}
+                        {column.order === columnOrder && '(Current)'}
+                      </SelectItem>
+                    ))}
                   </SelectGroup>
                 </SelectContent>
               </Select>
