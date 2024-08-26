@@ -12,15 +12,19 @@ import {
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
 
-const createJobApplication = () => {
+const clearDropDown = () => {
   document
-    .querySelector('#close-the-mother')!
+    .querySelector('#close-dropdown')!
     .children[0].children[0].children[0].children[0].children[0].click();
+};
+
+const createJobApplication = () => {
+  clearDropDown();
 };
 
 const CreateMenu = () => {
   return (
-    <div id="close-the-mother" className="flex gap-4 mr-4 items-center">
+    <div id="close-dropdown" className="flex gap-4 mr-4 items-center">
       <NavigationMenu className="mr-4">
         <NavigationMenuList>
           <NavigationMenuItem>
@@ -30,12 +34,12 @@ const CreateMenu = () => {
             <NavigationMenuContent className="bg-blue-500 p-2">
               <ul>
                 <li>
-                  <div className="flex items-center py-2 px-4 mt-1 cursor-pointer hover:bg-blue-400 rounded-md text-white">
+                  <div className="flex items-center px-4 mt-1 pb-1 cursor-pointer hover:bg-blue-400 rounded-md text-white">
                     <AlertDialogModal
                       buttonLabel={
                         <>
                           <PiBriefcaseLight />
-                          <span className="ml-2">Job</span>
+                          <span className="ml-2 text-base">Job</span>
                         </>
                       }
                       buttonVariant="none"
@@ -43,7 +47,7 @@ const CreateMenu = () => {
                       buttonCancel="Discard"
                       buttonConfirm="Save Job"
                       actionFunction={createJobApplication}
-                      stylings="m-0 p-0 !items-left rounded-md hover:bg-blue-400 cursor-pointer inline-flex"
+                      stylings="m-0 pl-0 pr-8 !items-left rounded-md hover:bg-blue-400 cursor-pointer inline-flex w-full"
                     >
                       <AddJobShortForm columnOrder={0} />
                     </AlertDialogModal>
@@ -52,7 +56,7 @@ const CreateMenu = () => {
                 <li>
                   <NavigationMenuLink className="flex items-center py-2 px-4 cursor-pointer hover:bg-blue-400 rounded-md mb-1 text-white">
                     <RiContactsLine />
-                    <span className="ml-2">Contact</span>
+                    <span className="ml-2 text-base">Contact</span>
                   </NavigationMenuLink>
                 </li>
               </ul>
