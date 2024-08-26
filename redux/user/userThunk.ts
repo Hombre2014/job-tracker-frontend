@@ -79,7 +79,6 @@ export const getUser = createAsyncThunk(
       });
 
       if (res.status === 200) {
-        console.log('User data from getUser thunk', res.data);
         return res.data;
       } else {
         return thunkAPI.rejectWithValue('User not found');

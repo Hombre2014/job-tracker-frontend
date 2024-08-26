@@ -16,8 +16,6 @@ const UserPanel = () => {
   const { firstName } = useAppSelector((state) => state.user);
   const { lastName } = useAppSelector((state) => state.user);
 
-  console.log('Names: ', firstName, lastName);
-
   const userLogout = () => {
     dispatch(logout());
     router.push('/login');
