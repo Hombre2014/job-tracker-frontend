@@ -7,7 +7,7 @@ import ThreeDotsMenu from './ThreeDotsMenu';
 import { Input } from '@/components/ui/input';
 import { returnBoardIcon } from '@/utils/ReturnIcons';
 import AlertDialogModal from '../Boards/AlertDialogModal';
-import { useAppSelector, useAppDispatch } from '@/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getBoards, updateColumnName } from '@/redux/boards/boardsThunk';
 import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
 
@@ -30,7 +30,6 @@ const BoardColumns = () => {
       }
     } else {
       dispatch(getBoards(accessToken as string));
-      console.log('Board Columns useEffect getBoards dispatched');
     }
   }, [isEditing, currentColumnId, accessToken, dispatch]);
 
@@ -63,16 +62,6 @@ const BoardColumns = () => {
 
   const createJobApplication = () => {
     console.log('Create Job Application');
-    console.log(
-      'Company: ',
-      localStorage.getItem('company'),
-      'Job Title: ',
-      localStorage.getItem('jobTitle'),
-      'Board: ',
-      localStorage.getItem('chosenBoard'),
-      'List: ',
-      localStorage.getItem('chosenColumn')
-    );
   };
 
   return (

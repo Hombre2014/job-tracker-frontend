@@ -24,8 +24,9 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
   const [isEditing, setIsEditing] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const { boards } = useAppSelector((state) => state.boards);
-  const [selectedColumn, setSelectedColumn] = useState<number>(0);
+  const { boardsStatus } = useAppSelector((state) => state.boards);
   const currentBoard = boards.find((board) => board.id === board_id);
+  const [selectedColumn, setSelectedColumn] = useState<number>(columnOrder);
   const currentBoardColumns = currentBoard?.columns;
 
   const columnData = currentBoardColumns?.find(
@@ -36,6 +37,8 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
     const columnsArray = moveColumn(5, columnOrder, selectedColumn);
     const columns = currentBoardColumns?.map((column) => column.id);
     const columnIds = columnsArray.map((v) => columns![v]);
+
+    if (columnOrder === selectedColumn) return;
 
     dispatch(
       rearrangeColumns({
@@ -48,10 +51,11 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
   };
 
   useEffect(() => {
-    dispatch(getBoards(accessToken as string));
-    console.log('Three Dots Menu useEffect getBoards dispatched');
-    setIsEditing(false);
-  }, [dispatch, accessToken, isEditing]);
+    if (boardsStatus === 'succeeded' && isEditing) {
+      dispatch(getBoards(accessToken as string));
+      setIsEditing(false);
+    }
+  }, [dispatch, accessToken, isEditing, boardsStatus]);
 
   return (
     <div className="dropdown">
