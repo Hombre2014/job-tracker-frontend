@@ -51,6 +51,15 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
   };
 
   useEffect(() => {
+    if (currenColumnName) {
+      const columnId = boardColumns!.find(
+        (column) => column.name === currenColumnName
+      )?.id;
+      localStorage.setItem('columnId', columnId as string);
+    }
+  }, [currenColumnName, boardColumns]);
+
+  useEffect(() => {
     dispatch(getBoards(accessToken as string));
   }, [dispatch, accessToken]);
 

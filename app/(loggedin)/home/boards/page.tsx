@@ -26,7 +26,6 @@ const UserBoards = () => {
   useEffect(() => {
     if (boardsStatus === 'succeeded') {
       dispatch(getBoards(accessToken as string));
-      console.log('Home/boards first useEffect getBoards dispatched');
     }
   }, [dispatch, accessToken]);
 
@@ -39,9 +38,8 @@ const UserBoards = () => {
       }
     } else {
       dispatch(getBoards(accessToken as string));
-      console.log('Home/boards second useEffect getBoards dispatched');
     }
-  }, [isEditing, currentBoardId]);
+  }, [isEditing, currentBoardId, accessToken, dispatch]);
 
   const handleBoardNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
