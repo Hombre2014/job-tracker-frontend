@@ -32,6 +32,14 @@ interface Board {
   userId: string;
 }
 
+interface JobPostShort {
+  id: string;
+  title: string;
+  companyName: string;
+  description: string;
+  columnId: string;
+}
+
 interface WorkDocument {
   id: string;
   userId: string;

@@ -13,6 +13,7 @@ import {
 } from 'redux-persist';
 
 import userSlice from './user/userSlice';
+import jobsSlice from './jobs/jobsSlice';
 import boardsSlice from './boards/boardsSlice';
 
 export function createPersistStorage(): WebStorage {
@@ -39,13 +40,14 @@ export function createPersistStorage(): WebStorage {
 const persistConfig = {
   key: 'root',
   storage: createPersistStorage(),
-  whitelist: ['user', 'boards'],
+  whitelist: ['user', 'boards', 'jobs'],
   version: 1,
 };
 
 const rootReducer = combineReducers({
   user: userSlice,
   boards: boardsSlice,
+  jobs: jobsSlice,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
