@@ -46,8 +46,8 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   user: userSlice,
-  boards: boardsSlice,
   jobs: jobsSlice,
+  boards: boardsSlice,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

@@ -6,6 +6,7 @@ import { ChangeEvent, useEffect, useState } from 'react';
 import ThreeDotsMenu from './ThreeDotsMenu';
 import { Input } from '@/components/ui/input';
 import { returnBoardIcon } from '@/utils/ReturnIcons';
+import { createJobPost } from '@/redux/jobs/jobsThunk';
 import AlertDialogModal from '../Boards/AlertDialogModal';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getBoards, updateColumnName } from '@/redux/boards/boardsThunk';
@@ -60,8 +61,18 @@ const BoardColumns = () => {
     }
   };
 
+  console.log('Current Column ID', currentColumnId);
+
   const createJobApplication = () => {
-    console.log('Create Job Application');
+    const jobPost = {
+      title: localStorage.getItem('jobTitle'),
+      companyName: localStorage.getItem('company'),
+      description: '',
+      columnId: localStorage.getItem('columnId'),
+      accessToken: accessToken as string,
+    };
+    dispatch(createJobPost(jobPost));
+    console.log('Create Job Application', jobPost);
   };
 
   return (
