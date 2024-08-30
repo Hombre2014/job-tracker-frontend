@@ -1,10 +1,15 @@
-import { GoTrophy } from 'react-icons/go';
 import { SlBriefcase } from 'react-icons/sl';
 import { PiBriefcaseLight } from 'react-icons/pi';
-import { HiOutlineThumbDown } from 'react-icons/hi';
+import { GoTrophy, GoInbox } from 'react-icons/go';
+import { BoardIcons, MenuIcons, JobPostIcons } from '@/enums';
 import { SlEnvolopeLetter, SlMagicWand } from 'react-icons/sl';
 import { RiContactsLine, RiFolder2Line } from 'react-icons/ri';
-import { BoardIcons, MenuIcons } from '@/enums';
+import {
+  HiOutlineThumbDown,
+  HiOutlinePlusCircle,
+  HiOutlineClock,
+  HiOutlineFolder,
+} from 'react-icons/hi';
 
 export const returnBoardIcon = (id: number) => {
   switch (id) {
@@ -31,6 +36,25 @@ export const returnMenuIcon = (icon: string) => {
       return <RiFolder2Line />;
     case MenuIcons.PiBriefcaseLight:
       return <PiBriefcaseLight />;
+    default:
+      return null;
+  }
+};
+
+export const returnJobPostIcon = (icon: string) => {
+  switch (icon) {
+    case JobPostIcons.PiBriefcaseLight:
+      return <PiBriefcaseLight />;
+    case JobPostIcons.HiOutlinePlusCircle:
+      return <HiOutlinePlusCircle />;
+    case JobPostIcons.HiOutlineClock:
+      return <HiOutlineClock />;
+    case JobPostIcons.HiOutlineFolder:
+      return <HiOutlineFolder />;
+    case JobPostIcons.GoInbox:
+      return <GoInbox />;
+    case JobPostIcons.GoTrophy:
+      return <GoTrophy />;
     default:
       return null;
   }
