@@ -44,17 +44,17 @@ export const returnMenuIcon = (icon: string) => {
 export const returnJobPostIcon = (icon: string) => {
   switch (icon) {
     case JobPostIcons.PiBriefcaseLight:
-      return <PiBriefcaseLight />;
+      return <PiBriefcaseLight className="h-6 w-6" />;
     case JobPostIcons.HiOutlinePlusCircle:
-      return <HiOutlinePlusCircle />;
+      return <HiOutlinePlusCircle className="h-6 w-6" />;
     case JobPostIcons.HiOutlineClock:
-      return <HiOutlineClock />;
+      return <HiOutlineClock className="h-6 w-6" />;
     case JobPostIcons.HiOutlineFolder:
-      return <HiOutlineFolder />;
+      return <HiOutlineFolder className="h-6 w-6" />;
     case JobPostIcons.GoInbox:
-      return <GoInbox />;
+      return <GoInbox className="h-6 w-6" />;
     case JobPostIcons.GoTrophy:
-      return <GoTrophy />;
+      return <GoTrophy className="h-6 w-6" />;
     default:
       return null;
   }

@@ -1,15 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { FiPlusCircle } from 'react-icons/fi';
 import { LiaLinkSolid } from 'react-icons/lia';
 import { RiDeleteBinLine } from 'react-icons/ri';
 
+import { returnJobPostIcon } from '@/utils/ReturnIcons';
 import {
   Card,
-  CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -20,7 +18,12 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-const JobPostCard = () => {
+const JobPostCard = ({
+  title,
+  companyName,
+  status,
+  timeStamp,
+}: JobPostCardProps) => {
   const [showIcons, setShowIcons] = useState(false);
 
   const toggleIcons = () => {
@@ -37,8 +40,10 @@ const JobPostCard = () => {
     >
       <div className="flex h-[90px]">
         <CardHeader className="w-3/4">
-          <CardTitle className="!p-0 !m-0">Front end Developer</CardTitle>
-          <CardDescription className="text-white">Amazon</CardDescription>
+          <CardTitle className="!p-0 !m-0">{title}</CardTitle>
+          <CardDescription className="text-white">
+            {companyName}
+          </CardDescription>
         </CardHeader>
         <div className="flex flex-col gap-1 py-1 pr-2 items-end w-1/4 mt-1">
           {showIcons ? (
@@ -61,14 +66,28 @@ const JobPostCard = () => {
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>
-                    <span>Job Created</span>
+                    <span>{status}</span>
                     <span> | </span>
-                    <span>August 30th 2024, 10:44 am</span>
+                    <span>{timeStamp}</span>
                   </p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            <FiPlusCircle className="h-[24px] w-[24px] rounded-md p-[1px]" />
+            {returnJobPostIcon(
+              status === 'Job Created'
+                ? 'HiOutlinePlusCircle'
+                : status === 'Deadline'
+                ? 'HiOutlineClock'
+                : status === 'Applied'
+                ? 'HiOutlineFolder'
+                : status === 'Interview'
+                ? 'PiBriefcaseLight'
+                : status === 'Offer Received'
+                ? 'GoTrophy'
+                : status === 'Job Moved'
+                ? 'GoInbox'
+                : 'HiOutlinePlusCircle'
+            )}
           </div>
         </div>
       </div>

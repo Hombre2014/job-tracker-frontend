@@ -124,7 +124,12 @@ const BoardColumns = () => {
             >
               <AddJobShortForm columnOrder={column.order} />
             </AlertDialogModal>
-            <JobPostCard />
+            <JobPostCard
+              title="Frontend Developer"
+              companyName="Amazon"
+              status="Job Moved"
+              timeStamp="August 30th 2024, 10:44 am"
+            />
           </section>
         ))}
     </div>
