@@ -40,6 +40,13 @@ interface JobPostShort {
   columnId: string;
 }
 
+interface JobPostCardProps {
+  title: string;
+  companyName: string;
+  status: string;
+  timeStamp: string;
+}
+
 interface WorkDocument {
   id: string;
   userId: string;

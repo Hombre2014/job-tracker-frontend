@@ -5,9 +5,18 @@ export enum BoardIcons {
   GoTrophy = 4,
   HiOutlineThumbDown = 5,
 }
-  
+
 export enum MenuIcons {
-  RiContactsLine = 'RiContactsLine',
   RiFolder2Line = 'RiFolder2Line',
+  RiContactsLine = 'RiContactsLine',
   PiBriefcaseLight = 'PiBriefcaseLight',
+}
+
+export enum JobPostIcons {
+  GoInbox = 'GoInbox',
+  GoTrophy = 'GoTrophy',
+  HiOutlineClock = 'HiOutlineClock',
+  HiOutlineFolder = 'HiOutlineFolder',
+  PiBriefcaseLight = 'PiBriefcaseLight',
+  HiOutlinePlusCircle = 'HiOutlinePlusCircle',
 }

@@ -5,6 +5,7 @@ import { ChangeEvent, useEffect, useState } from 'react';
 
 import ThreeDotsMenu from './ThreeDotsMenu';
 import { Input } from '@/components/ui/input';
+import JobPostCard from './JobPosts/JobPostCard';
 import { returnBoardIcon } from '@/utils/ReturnIcons';
 import { createJobPost } from '@/redux/jobs/jobsThunk';
 import AlertDialogModal from '../Boards/AlertDialogModal';
@@ -119,10 +120,16 @@ const BoardColumns = () => {
               buttonCancel="Discard"
               buttonConfirm="Save Job"
               actionFunction={createJobApplication}
-              stylings="w-11/12 flex justify-center text-2xl border py-3 mx-auto rounded-md hover:border-blue-500 transition duration-300 delay-150 cursor-pointer"
+              stylings="w-11/12 flex justify-center text-2xl border py-3 mb-4 mx-auto rounded-md hover:border-blue-500 transition duration-300 delay-150 cursor-pointer"
             >
               <AddJobShortForm columnOrder={column.order} />
             </AlertDialogModal>
+            <JobPostCard
+              title="Frontend Developer"
+              companyName="Amazon"
+              status="Job Moved"
+              timeStamp="August 30th 2024, 10:44 am"
+            />
           </section>
         ))}
     </div>
