@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 import { RootState } from '../store';
-import { createJobPost } from './jobsThunk';
+import { createJobPost, getAllJobPostsPerColumn } from './jobsThunk';
 
 interface JobPostShortState {
   jobPosts: JobPostShort[];
@@ -32,6 +32,18 @@ export const jobsSlice = createSlice({
       .addCase(createJobPost.rejected, (state, action) => {
         state.jobPostsStatus = 'failed';
         state.error = action.error.message || 'Failed to create job post';
+      })
+      .addCase(getAllJobPostsPerColumn.pending, (state) => {
+        state.jobPostsStatus = 'loading';
+      })
+      .addCase(getAllJobPostsPerColumn.fulfilled, (state, action) => {
+        state.jobPostsStatus = 'succeeded';
+        state.jobPosts = action.payload;
+        state.error = null;
+      })
+      .addCase(getAllJobPostsPerColumn.rejected, (state, action) => {
+        state.jobPostsStatus = 'failed';
+        state.error = action.error.message || 'Failed to fetch job posts';
       });
   },
 });

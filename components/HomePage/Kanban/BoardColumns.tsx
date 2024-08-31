@@ -7,11 +7,12 @@ import ThreeDotsMenu from './ThreeDotsMenu';
 import { Input } from '@/components/ui/input';
 import JobPostCard from './JobPosts/JobPostCard';
 import { returnBoardIcon } from '@/utils/ReturnIcons';
-import { createJobPost } from '@/redux/jobs/jobsThunk';
 import AlertDialogModal from '../Boards/AlertDialogModal';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
 import { getBoards, updateColumnName } from '@/redux/boards/boardsThunk';
 import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
+import { createJobPost } from '@/redux/jobs/jobsThunk';
 
 const BoardColumns = () => {
   const { board_id } = useParams();
@@ -124,12 +125,19 @@ const BoardColumns = () => {
             >
               <AddJobShortForm columnOrder={column.order} />
             </AlertDialogModal>
-            <JobPostCard
-              title="Frontend Developer"
-              companyName="Amazon"
-              status="Job Moved"
-              timeStamp="August 30th 2024, 10:44 am"
-            />
+            {column.jobApplications &&
+              column.jobApplications.map((job) => (
+                <JobPostCard
+                  key={job.id}
+                  title={job.title}
+                  companyName="Amazon"
+                  status="Job Moved"
+                  timeStamp="August 30th 2024, 10:44 am"
+                  // companyName={job.company_id.name}
+                  // status={job.jobPostStatus}
+                  // timeStamp={job.statusChangedAt}
+                />
+              ))}
           </section>
         ))}
     </div>

@@ -3,6 +3,14 @@ type MenuItemProps = {
   icon: JSX.Element;
 };
 
+type Company = {
+  id: string;
+  name: string;
+  description: string;
+  url: string;
+  industry: string;
+};
+
 type JobApplication = {
   id: string;
   column_id: string;
@@ -14,6 +22,14 @@ type JobApplication = {
   color: string;
   deadline: string;
   company_id: string;
+  jobPostStatus:
+    | 'Job Created'
+    | 'Deadline'
+    | 'Applied'
+    | 'Interview'
+    | 'Offer Received'
+    | 'Job Moved';
+  statusChangedAt: string;
 };
 
 interface Column {
