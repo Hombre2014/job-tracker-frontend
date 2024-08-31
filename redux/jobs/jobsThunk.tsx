@@ -22,3 +22,25 @@ export const createJobPost = createAsyncThunk(
     }
   }
 );
+
+export const getAllJobPostsPerColumn = createAsyncThunk(
+  'jobs/getAllJobPostsPerColumn',
+  async (values: any, thunkAPI) => {
+    const { accessToken, columnId } = values;
+    try {
+      const res = await client.get(`/job-applications/${columnId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const data = res.data;
+      console.log('Data', data);
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error fetching job posts'
+      );
+    }
+  }
+);
