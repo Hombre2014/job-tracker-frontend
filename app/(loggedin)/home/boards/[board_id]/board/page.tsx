@@ -12,9 +12,14 @@ const KanbanBoard = () => {
   const accessToken = localStorage.getItem('accessToken');
 
   useEffect(() => {
-    dispatch(setStatusToIdle());
     dispatch(getBoards(accessToken as string));
   }, [dispatch, accessToken]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(setStatusToIdle());
+    };
+  }, [dispatch]);
 
   return (
     <div className="h-full">
