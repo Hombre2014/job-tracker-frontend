@@ -1,40 +1,38 @@
 'use client';
 
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
-import Modal from '@/components/Misc/Modal';
-import { useAppSelector } from '@/redux/hooks';
-import { useState } from 'react';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { cn } from '@/lib/utils';
-import { AccountSettingsSchema } from '@/schemas';
+import Modal from '@/components/Misc/Modal';
 import { Input } from '@/components/ui/input';
+import { useAppSelector } from '@/redux/hooks';
+import { useAppDispatch } from '@/redux/hooks';
+import { updateUser } from '@/redux/user/userThunk';
 
 const Settings = () => {
-  const { firstName } = useAppSelector((state) => state.user);
-  const { lastName } = useAppSelector((state) => state.user);
-  const { email } = useAppSelector((state) => state.user);
-  const [newFirstName, setNewFirstName] = useState(firstName);
-  const [newLastName, setNewLastName] = useState(lastName);
+  const dispatch = useAppDispatch();
   const [open, setOpen] = useState(true);
+  const accessToken = localStorage.getItem('accessToken');
+  const { email } = useAppSelector((state) => state.user);
+  const { lastName } = useAppSelector((state) => state.user);
+  const { firstName } = useAppSelector((state) => state.user);
+  const [newLastName, setNewLastName] = useState(lastName);
+  const [newFirstName, setNewFirstName] = useState(firstName);
 
-  const handleSubmit = () => {
-    console.log('submit');
-  };
+  useEffect(() => {
+    dispatch(
+      updateUser({
+        accessToken,
+        firstName: newFirstName,
+        lastName: newLastName,
+      })
+    );
+  }, [newFirstName, newLastName, dispatch, accessToken]);
 
   return (
     <Modal>
-      <div className="flex mx-auto bg-white w-full h-auto">
+      <div className="flex mx-auto bg-white w-full h-auto rounded-md">
         <section className="w-full">
           <div className="flex flex-col items-start p-6">
             <Image
@@ -44,10 +42,10 @@ const Settings = () => {
               height={50}
               className="rounded-full"
             />
-            <h1 className="text-2xl font-bold">
+            <p className="text-xl font-bold">
               {newFirstName} {newLastName}
-            </h1>
-            <button className="btn btn-sm btn-ghost pl-0">{email}</button>
+            </p>
+            <span className="btn btn-sm btn-ghost pl-0">{email}</span>
           </div>
           <div
             role="tablist"
@@ -66,12 +64,9 @@ const Settings = () => {
                 aria-label="My Account"
                 defaultChecked
               />
-              <div
-                role="tabpanel"
-                className="tab-content bg-base-100 rounded-box p-6 w-auto min-h-[600px] ml-60 mt-[-360px] border-b"
-              >
+              <div className="tab-content bg-base-100 rounded-box p-6 w-auto min-h-[600px] ml-64 mt-[-360px] border-b">
                 <div className="w-full border-b pb-2">General Info</div>
-                <div className="flex gap-8">
+                <div className="flex gap-6">
                   <div className="w-1/4">
                     <Image
                       src="/images/Yuriy.jpg"
@@ -83,7 +78,7 @@ const Settings = () => {
                     <p>Profile photo</p>
                   </div>
                   <div className="w-3/4">
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form className="space-y-6">
                       <div className="flex flex-col gap-4">
                         <label>First Name</label>
                         <Input
@@ -114,10 +109,7 @@ const Settings = () => {
                 aria-label="Notes & Notifications"
                 onClick={() => setOpen(false)}
               />
-              <div
-                role="tabpanel"
-                className="tab-content bg-base-100 rounded-box p-6 w-auto min-h-[600px] ml-60 mt-[-360px]"
-              >
+              <div className="tab-content bg-base-100 rounded-box p-6 w-auto min-h-[600px] ml-64 mt-[-360px]">
                 Email Subscriptions
               </div>
             </div>
