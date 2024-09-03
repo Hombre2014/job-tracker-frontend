@@ -4,7 +4,7 @@ import Image from 'next/image';
 
 import Modal from '@/components/Misc/Modal';
 import { useAppSelector } from '@/redux/hooks';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import {
   Form,
   FormControl,
@@ -16,6 +16,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { cn } from '@/lib/utils';
 import { AccountSettingsSchema } from '@/schemas';
 import { Input } from '@/components/ui/input';
 
@@ -23,19 +24,12 @@ const Settings = () => {
   const { firstName } = useAppSelector((state) => state.user);
   const { lastName } = useAppSelector((state) => state.user);
   const { email } = useAppSelector((state) => state.user);
-  const [isPending, startTransition] = useTransition();
+  const [newFirstName, setNewFirstName] = useState(firstName);
+  const [newLastName, setNewLastName] = useState(lastName);
   const [open, setOpen] = useState(true);
 
-  const form = useForm<z.infer<typeof AccountSettingsSchema>>({
-    resolver: zodResolver(AccountSettingsSchema),
-    defaultValues: {
-      firstName: '',
-      lastName: '',
-    },
-  });
-
-  const onSubmit = (data: z.infer<typeof AccountSettingsSchema>) => {
-    console.log(data);
+  const handleSubmit = () => {
+    console.log('submit');
   };
 
   return (
@@ -51,7 +45,7 @@ const Settings = () => {
               className="rounded-full"
             />
             <h1 className="text-2xl font-bold">
-              {firstName} {lastName}
+              {newFirstName} {newLastName}
             </h1>
             <button className="btn btn-sm btn-ghost pl-0">{email}</button>
           </div>
@@ -64,13 +58,13 @@ const Settings = () => {
                 type="radio"
                 name="my_tabs_2"
                 role="tab"
-                className="tab focus:!bg-blue-500 !rounded-md ml-2 focus:!text-white"
+                className={cn(
+                  'tab focus:!bg-blue-500 !rounded-md ml-2 focus:!text-white',
+                  open ? 'bg-blue-500 text-white' : 'bg-white text-black',
+                  open ? 'text-white' : 'text-black'
+                )}
                 aria-label="My Account"
                 defaultChecked
-                style={{
-                  backgroundColor: open ? '#3b82f6' : 'white',
-                  color: open ? 'white' : 'black',
-                }}
               />
               <div
                 role="tabpanel"
@@ -89,51 +83,24 @@ const Settings = () => {
                     <p>Profile photo</p>
                   </div>
                   <div className="w-3/4">
-                    <Form {...form}>
-                      <form
-                        onSubmit={form.handleSubmit(onSubmit)}
-                        className="space-y-6"
-                      >
-                        <div className="flex flex-col gap-4">
-                          <FormField
-                            control={form.control}
-                            name="firstName"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>First Name</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    disabled={isPending}
-                                    type="text"
-                                    placeholder="John"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name="lastName"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Last Name</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    disabled={isPending}
-                                    type="text"
-                                    placeholder="Doe"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </form>
-                    </Form>
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      <div className="flex flex-col gap-4">
+                        <label>First Name</label>
+                        <Input
+                          type="text"
+                          placeholder="John"
+                          value={newFirstName}
+                          onChange={(e) => setNewFirstName(e.target.value)}
+                        />
+                        <label>Last Name</label>
+                        <Input
+                          type="text"
+                          placeholder="Doe"
+                          value={newLastName}
+                          onChange={(e) => setNewLastName(e.target.value)}
+                        />
+                      </div>
+                    </form>
                   </div>
                 </div>
               </div>

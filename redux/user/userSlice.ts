@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 import { RootState } from '../store';
-import { login, logout, isLoggedIn, getUser } from './userThunk';
+import { login, logout, isLoggedIn, getUser, updateUser } from './userThunk';
 
 interface UserState {
   email: string;
@@ -99,6 +99,19 @@ export const userSlice = createSlice({
       .addCase(getUser.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message || 'User not found';
+      })
+      .addCase(updateUser.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(updateUser.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.firstName = action.payload?.firstName;
+        state.lastName = action.payload?.lastName;
+        state.error = null;
+      })
+      .addCase(updateUser.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message || 'Error updating user';
       });
   },
 });

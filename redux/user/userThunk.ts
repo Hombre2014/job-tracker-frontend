@@ -88,3 +88,28 @@ export const getUser = createAsyncThunk(
     }
   }
 );
+
+export const updateUser = createAsyncThunk(
+  'user/updateUser',
+  async (values: any, thunkAPI) => {
+    const { accessToken, firstName, lastName } = values;
+    const postData = { firstName, lastName };
+    try {
+      const res = await client.patch('/users', postData, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (res.status === 200) {
+        return res.data;
+      } else {
+        return thunkAPI.rejectWithValue('Error updating user');
+      }
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error updating user'
+      );
+    }
+  }
+);

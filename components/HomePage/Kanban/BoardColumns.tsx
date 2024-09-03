@@ -63,8 +63,6 @@ const BoardColumns = () => {
     }
   };
 
-  console.log('Current Column ID', currentColumnId);
-
   const createJobApplication = () => {
     const jobPost = {
       title: localStorage.getItem('jobTitle'),
