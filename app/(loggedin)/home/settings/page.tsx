@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { useAppSelector } from '@/redux/hooks';
 import { useAppDispatch } from '@/redux/hooks';
 import { updateUser } from '@/redux/user/userThunk';
+import { Button } from '@/components/ui/button';
 
 const Settings = () => {
   const dispatch = useAppDispatch();
@@ -29,6 +30,14 @@ const Settings = () => {
       })
     );
   }, [newFirstName, newLastName, dispatch, accessToken]);
+
+  const handleWeeklyDigest = () => {
+    console.log('Weekly Digest');
+  };
+
+  const handleDailyDigest = () => {
+    console.log('Daily Digest');
+  };
 
   return (
     <Modal>
@@ -110,7 +119,43 @@ const Settings = () => {
                 onClick={() => setOpen(false)}
               />
               <div className="tab-content bg-base-100 rounded-box p-6 w-auto min-h-[600px] ml-64 mt-[-360px]">
-                Email Subscriptions
+                <div className="w-full border-b pb-2">Email Subscriptions</div>
+                <div className="form-control">
+                  <label className="label cursor-pointer">
+                    <span className="label-text">Weekly Digest</span>
+                    <input
+                      type="checkbox"
+                      defaultChecked
+                      className="checkbox"
+                      onClick={handleWeeklyDigest}
+                    />
+                  </label>
+                </div>
+                <div className="form-control">
+                  <label className="label cursor-pointer">
+                    <span className="label-text">Daily Digest</span>
+                    <input
+                      type="checkbox"
+                      className="checkbox"
+                      defaultChecked
+                      onClick={handleDailyDigest}
+                    />
+                  </label>
+                </div>
+              </div>
+              <div className="flex flex-col w-fit">
+                <Button
+                  variant="none"
+                  className="relative bottom-20 ml-2 text-gray-600 hover:!bg-none"
+                >
+                  Download my data
+                </Button>
+                <Button
+                  variant="none"
+                  className="relative bottom-20 ml-2 text-red-600 hover:!bg-none"
+                >
+                  Delete my account
+                </Button>
               </div>
             </div>
           </div>
