@@ -1,8 +1,8 @@
 import { useRouter } from 'next/navigation';
 import { RiAccountPinBoxLine, RiSettings2Line } from 'react-icons/ri';
 
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { logout } from '@/redux/user/userThunk';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +19,10 @@ const UserPanel = () => {
   const userLogout = () => {
     dispatch(logout());
     router.push('/login');
+  };
+
+  const userSettings = () => {
+    router.push('/home/settings');
   };
 
   return (
@@ -38,7 +42,9 @@ const UserPanel = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuItem onClick={userLogout}>Log out</DropdownMenuItem>
-        <DropdownMenuItem>Personal Account Settings</DropdownMenuItem>
+        <DropdownMenuItem onClick={userSettings}>
+          Personal Account Settings
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
