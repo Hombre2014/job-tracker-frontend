@@ -16,15 +16,6 @@ export const RegisterSchema = z.object({
   }),
 });
 
-// export const AccountSettingsSchema = z.object({
-//   firstName: z.string().min(2, {
-//     message: 'Name is required',
-//   }),
-//   lastName: z.string().min(2, {
-//     message: 'Name is required',
-//   }),
-// });
-
 export const LoginSchema = z.object({
   email: z.string().email({
     message: 'Email is required',
