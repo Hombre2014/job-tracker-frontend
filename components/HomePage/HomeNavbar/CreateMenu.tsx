@@ -22,6 +22,10 @@ const createJobApplication = () => {
   clearDropDown();
 };
 
+const createContact = () => {
+  console.log('Contact created');
+};
+
 const CreateMenu = () => {
   return (
     <div id="close-dropdown" className="flex gap-4 mr-4 items-center">
@@ -56,7 +60,9 @@ const CreateMenu = () => {
                 <li>
                   <NavigationMenuLink className="flex items-center py-2 px-4 cursor-pointer hover:bg-blue-400 rounded-md mb-1 text-white">
                     <RiContactsLine />
-                    <span className="ml-2 text-base">Contact</span>
+                    <span className="ml-2 text-base" onClick={createContact}>
+                      Contact
+                    </span>
                   </NavigationMenuLink>
                 </li>
               </ul>

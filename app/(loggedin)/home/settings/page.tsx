@@ -2,14 +2,16 @@
 
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from 'react-toastify';
 
 import { cn } from '@/lib/utils';
 import Modal from '@/components/Misc/Modal';
 import { Input } from '@/components/ui/input';
 import { useAppSelector } from '@/redux/hooks';
 import { useAppDispatch } from '@/redux/hooks';
-import { updateUser } from '@/redux/user/userThunk';
 import { Button } from '@/components/ui/button';
+import { updateUser } from '@/redux/user/userThunk';
 
 const Settings = () => {
   const dispatch = useAppDispatch();
@@ -45,11 +47,19 @@ const Settings = () => {
     const files = e.target.files;
     if (files) {
       setFile(files[0]);
-      console.log('File uploaded');
       setIsFileUploaded(true);
       console.log('File[0]: ', files[0]);
+      toast.info('The file successfully uploaded!', {
+        position: 'bottom-right',
+      });
     }
   };
+
+  useEffect(() => {
+    if (isFileUploaded) {
+      console.log('File uploaded');
+    }
+  }, [isFileUploaded]);
 
   return (
     <Modal>
@@ -183,6 +193,7 @@ const Settings = () => {
           </div>
         </section>
       </div>
+      <ToastContainer autoClose={3000} className="mr-4" />
     </Modal>
   );
 };
