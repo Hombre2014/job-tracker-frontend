@@ -14,12 +14,14 @@ import { Button } from '@/components/ui/button';
 const Settings = () => {
   const dispatch = useAppDispatch();
   const [open, setOpen] = useState(true);
+  const [file, setFile] = useState<File | null>(null);
   const accessToken = localStorage.getItem('accessToken');
   const { email } = useAppSelector((state) => state.user);
   const { lastName } = useAppSelector((state) => state.user);
   const { firstName } = useAppSelector((state) => state.user);
   const [newLastName, setNewLastName] = useState(lastName);
   const [newFirstName, setNewFirstName] = useState(firstName);
+  const [isFileUploaded, setIsFileUploaded] = useState(false);
 
   useEffect(() => {
     dispatch(
@@ -37,6 +39,16 @@ const Settings = () => {
 
   const handleDailyDigest = () => {
     console.log('Daily Digest');
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      setFile(files[0]);
+      console.log('File uploaded');
+      setIsFileUploaded(true);
+      console.log('File[0]: ', files[0]);
+    }
   };
 
   return (
@@ -77,13 +89,23 @@ const Settings = () => {
                 <div className="w-full border-b pb-2">General Info</div>
                 <div className="flex gap-6">
                   <div className="w-1/4">
-                    <Image
-                      src="/images/Yuriy.jpg"
-                      alt="User profile picture"
-                      width={50}
-                      height={50}
-                      className="mt-4 mb-2"
-                    />
+                    <label htmlFor="file-input">
+                      <Image
+                        src="/images/Yuriy.jpg"
+                        alt="User profile picture"
+                        width={50}
+                        height={50}
+                        className="mt-4 mb-2 cursor-pointer"
+                      />
+                      <input
+                        title="file-input"
+                        name="file-input"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileInput}
+                        className="file-input file-input-ghost max-w-xs opacity-0 absolute top-[100px] h-[62px] w-[50px]"
+                      />
+                    </label>
                     <p>Profile photo</p>
                   </div>
                   <div className="w-3/4">
