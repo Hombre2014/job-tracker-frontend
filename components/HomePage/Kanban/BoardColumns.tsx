@@ -7,12 +7,11 @@ import ThreeDotsMenu from './ThreeDotsMenu';
 import { Input } from '@/components/ui/input';
 import JobPostCard from './JobPosts/JobPostCard';
 import { returnBoardIcon } from '@/utils/ReturnIcons';
+import { createJobPost } from '@/redux/jobs/jobsThunk';
 import AlertDialogModal from '../Boards/AlertDialogModal';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
 import { getBoards, updateColumnName } from '@/redux/boards/boardsThunk';
 import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
-import { createJobPost } from '@/redux/jobs/jobsThunk';
 
 const BoardColumns = () => {
   const { board_id } = useParams();
@@ -127,6 +126,7 @@ const BoardColumns = () => {
               column.jobApplications.map((job) => (
                 <JobPostCard
                   key={job.id}
+                  id={job.id}
                   title={job.title}
                   companyName="Amazon"
                   status="Job Moved"
