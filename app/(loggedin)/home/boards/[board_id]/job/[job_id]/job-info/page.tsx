@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { PiUsers } from 'react-icons/pi';
+import { TwitterPicker } from 'react-color';
 import { useParams } from 'next/navigation';
 import { RxInfoCircled } from 'react-icons/rx';
 import { IoDocumentsOutline } from 'react-icons/io5';
@@ -22,6 +23,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const JobDetails = () => {
   const { job_id } = useParams();
@@ -66,28 +75,115 @@ const JobDetails = () => {
                 Company
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="Job Info">
+            <TabsContent value="Job Info" className="mt-8">
               <Card>
-                <CardHeader>
-                  <CardTitle>Job Info</CardTitle>
-                  <CardDescription>
-                    Make changes to your Job Info here. Click save when you're
-                    done.
-                  </CardDescription>
-                </CardHeader>
                 <CardContent className="space-y-2">
-                  <div className="space-y-1">
-                    <Label htmlFor="name">Name</Label>
-                    <Input id="name" defaultValue="Pedro Duarte" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="username">Username</Label>
-                    <Input id="username" defaultValue="@peduarte" />
+                  <div className="flex gap-4 items-start">
+                    <div className="flex w-2/3 pt-8">
+                      <div className="flex flex-col w-full gap-4">
+                        <div className="flex gap-2">
+                          <div className="space-y-1 w-1/2">
+                            <Label htmlFor="company">Company</Label>
+                            <Input id="company" defaultValue="Amazon" />
+                          </div>
+                          <div className="space-y-1 w-1/2">
+                            <Label htmlFor="job-title" className="pb-2">
+                              Job Title
+                            </Label>
+                            <Input
+                              id="job-title"
+                              defaultValue="Full Stack Web Developer"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <div className="space-y-1 w-2/3">
+                            <Label htmlFor="post-url">Post URL</Label>
+                            <Input
+                              id="post-url"
+                              defaultValue=""
+                              placeholder="+ add URL"
+                            />
+                          </div>
+                          <div className="space-y-1 w-1/3">
+                            <Label htmlFor="salary" className="pb-2">
+                              Salary
+                            </Label>
+                            <Input
+                              id="salary"
+                              defaultValue=""
+                              placeholder="+ add Salary"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <div className="space-y-1 w-2/3">
+                            <Label htmlFor="location">Location</Label>
+                            <Input
+                              id="location"
+                              defaultValue=""
+                              placeholder="+ add location"
+                            />
+                          </div>
+                          <div className="space-y-1 w-1/3 flex flex-col">
+                            <Label htmlFor="color" className="pb-2">
+                              Color
+                            </Label>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    id="color"
+                                    variant="none"
+                                    className="!bg-blue-700 !w-full !h-[34px] !rounded-md mt-[2px]"
+                                  ></Button>
+                                </DropdownMenuTrigger>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent>
+                                <DropdownMenuItem>
+                                  <TwitterPicker />
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem>
+                                  <Button variant="outline" className="w-full">
+                                    Reset company color
+                                  </Button>
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <div className="space-y-1 w-2/3">
+                            <Label htmlFor="description">Description</Label>
+                            <Input id="description" />
+                          </div>
+                          <div className="space-y-1 w-1/3">
+                            <Label htmlFor="salary" className="pb-2">
+                              Salary
+                            </Label>
+                            <Input
+                              id="salary"
+                              defaultValue=""
+                              placeholder="+ add Salary"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="w-1/3 pt-8">
+                      <Label htmlFor="deadline">Deadline</Label>
+                      <Input
+                        className="mt-1"
+                        id="deadline"
+                        defaultValue=""
+                        placeholder="Deadline + set date"
+                      />
+                    </div>
                   </div>
                 </CardContent>
-                <CardFooter>
-                  <Button>Save changes</Button>
-                </CardFooter>
               </Card>
             </TabsContent>
             <TabsContent value="Notes">
@@ -142,7 +238,7 @@ const JobDetails = () => {
                 <CardHeader>
                   <CardTitle>Documents</CardTitle>
                   <CardDescription>
-                    Change your Documents here. After saving, you'll be logged
+                    Change your Documents here. After saving, you will be logged
                     out.
                   </CardDescription>
                 </CardHeader>
@@ -166,7 +262,7 @@ const JobDetails = () => {
                 <CardHeader>
                   <CardTitle>Company</CardTitle>
                   <CardDescription>
-                    Change your Company here. After saving, you'll be logged
+                    Change your Company here. After saving, you will be logged
                     out.
                   </CardDescription>
                 </CardHeader>
@@ -187,9 +283,9 @@ const JobDetails = () => {
             </TabsContent>
           </Tabs>
         </CardContent>
-        <CardFooter className="flex justify-between">
-          <Button variant="outline">Cancel</Button>
-          <Button>Deploy</Button>
+        <CardFooter className="flex justify-end gap-4">
+          <Button variant="outline">Close</Button>
+          <Button>Move</Button>
         </CardFooter>
       </Card>
     </Modal>
