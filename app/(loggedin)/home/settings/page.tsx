@@ -12,6 +12,7 @@ import { useAppSelector } from '@/redux/hooks';
 import { useAppDispatch } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
 import { updateUser } from '@/redux/user/userThunk';
+import { set } from 'zod';
 
 const Settings = () => {
   const dispatch = useAppDispatch();
@@ -48,7 +49,6 @@ const Settings = () => {
     if (files) {
       setFile(files[0]);
       setIsFileUploaded(true);
-      console.log('File[0]: ', files[0]);
       toast.info('The file successfully uploaded!', {
         position: 'bottom-right',
       });
@@ -57,9 +57,9 @@ const Settings = () => {
 
   useEffect(() => {
     if (isFileUploaded) {
-      console.log('File uploaded');
+      console.log('File uploaded:0', file);
     }
-  }, [isFileUploaded]);
+  }, [isFileUploaded, file]);
 
   return (
     <Modal>
@@ -73,10 +73,10 @@ const Settings = () => {
               height={50}
               className="rounded-full"
             />
-            <p className="text-xl font-bold">
+            <p className="text-xl font-bold pt-2">
               {newFirstName} {newLastName}
             </p>
-            <span className="btn btn-sm btn-ghost pl-0">{email}</span>
+            <span className="pl-0">{email}</span>
           </div>
           <div
             role="tablist"
