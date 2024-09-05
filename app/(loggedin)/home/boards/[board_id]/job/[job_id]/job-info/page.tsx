@@ -1,12 +1,28 @@
 'use client';
 
-import { useEffect } from 'react';
 import { PiUsers } from 'react-icons/pi';
+import { useEffect, useState } from 'react';
 import { TwitterPicker } from 'react-color';
 import { useParams } from 'next/navigation';
 import { RxInfoCircled } from 'react-icons/rx';
 import { IoDocumentsOutline } from 'react-icons/io5';
 import { SlNotebook, SlBriefcase } from 'react-icons/sl';
+import {
+  BtnBold,
+  BtnItalic,
+  BtnUnderline,
+  Editor,
+  BtnUndo,
+  BtnRedo,
+  createButton,
+  EditorProvider,
+  BtnStrikeThrough,
+  Separator,
+  Toolbar,
+  BtnBulletList,
+  BtnNumberedList,
+  BtnLink,
+} from 'react-simple-wysiwyg';
 
 import Modal from '@/components/Misc/Modal';
 import { Input } from '@/components/ui/input';
@@ -35,12 +51,22 @@ import {
 const JobDetails = () => {
   const { job_id } = useParams();
   const dispatch = useAppDispatch();
+  const [html, setHtml] = useState('my <b>HTML</b>');
 
   // TODO: Get the job details
 
   useEffect(() => {
     dispatch(getAllJobPostsPerColumn(job_id));
   }, [dispatch, job_id]);
+
+  const handleDescription = (e: any) => {
+    setHtml(e.target.value);
+    console.log(e.target.value);
+  };
+
+  const BtnAlignCenter = createButton('Align center', '≡', 'justifyCenter');
+  const BtnAlignRight = createButton('Align right', '⟞', 'justifyRight');
+  const BtnAlignLeft = createButton('Align left', '⟝', 'justifyLeft');
 
   return (
     <Modal stylings="sm:w-11/12 md:w-3/4 lg:w-2/3 xl:w-1/2">
@@ -156,19 +182,36 @@ const JobDetails = () => {
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <div className="space-y-1 w-2/3">
+                          <div className="space-y-1 w-full">
                             <Label htmlFor="description">Description</Label>
-                            <Input id="description" />
-                          </div>
-                          <div className="space-y-1 w-1/3">
-                            <Label htmlFor="salary" className="pb-2">
-                              Salary
-                            </Label>
-                            <Input
-                              id="salary"
-                              defaultValue=""
-                              placeholder="+ add Salary"
-                            />
+                            <EditorProvider>
+                              <Editor
+                                id="description"
+                                value={html}
+                                onChange={handleDescription}
+                                containerProps={{
+                                  style: { resize: 'vertical' },
+                                }}
+                              >
+                                <Toolbar>
+                                  <BtnUndo />
+                                  <BtnRedo />
+                                  <Separator />
+                                  <BtnBold />
+                                  <BtnItalic />
+                                  <BtnUnderline />
+                                  <BtnStrikeThrough />
+                                  <Separator />
+                                  <BtnAlignLeft />
+                                  <BtnAlignCenter />
+                                  <BtnAlignRight />
+                                  <Separator />
+                                  <BtnBulletList />
+                                  <BtnNumberedList />
+                                  <BtnLink />
+                                </Toolbar>
+                              </Editor>
+                            </EditorProvider>
                           </div>
                         </div>
                       </div>
@@ -283,7 +326,7 @@ const JobDetails = () => {
             </TabsContent>
           </Tabs>
         </CardContent>
-        <CardFooter className="flex justify-end gap-4">
+        <CardFooter className="flex justify-end gap-4 pb-8">
           <Button variant="outline">Close</Button>
           <Button>Move</Button>
         </CardFooter>
