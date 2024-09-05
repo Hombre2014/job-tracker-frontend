@@ -61,6 +61,7 @@ interface JobPostCardProps {
   companyName: string;
   status: string;
   timeStamp: string;
+  id: string;
 }
 
 interface WorkDocument {

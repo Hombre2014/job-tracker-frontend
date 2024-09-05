@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { LiaLinkSolid } from 'react-icons/lia';
 import { RiDeleteBinLine } from 'react-icons/ri';
+import { useRouter, useParams } from 'next/navigation';
 
 import { returnJobPostIcon } from '@/utils/ReturnIcons';
 import {
@@ -17,19 +18,25 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-
 const JobPostCard = ({
   title,
+  id,
   companyName,
   status,
   timeStamp,
 }: JobPostCardProps) => {
   const [showIcons, setShowIcons] = useState(false);
-
+  const { board_id } = useParams();
+  const router = useRouter();
   const toggleIcons = () => {
     setTimeout(() => {
       setShowIcons((prev) => !prev);
     }, 200);
+  };
+
+  const handleJobPostClick = (id: string) => {
+    console.log('Job Post Clicked:', id);
+    router.push(`/home/boards/${board_id}/job/${id}/job-info`);
   };
 
   return (
@@ -37,6 +44,9 @@ const JobPostCard = ({
       onMouseEnter={toggleIcons}
       onMouseLeave={toggleIcons}
       className="w-11/12 mx-auto mt-2 rounded-sm bg-violet-500 text-white"
+      onClick={() => {
+        handleJobPostClick(id);
+      }}
     >
       <div className="flex h-[90px]">
         <CardHeader className="w-3/4">

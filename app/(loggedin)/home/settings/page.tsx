@@ -12,7 +12,6 @@ import { useAppSelector } from '@/redux/hooks';
 import { useAppDispatch } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
 import { updateUser } from '@/redux/user/userThunk';
-import { set } from 'zod';
 
 const Settings = () => {
   const dispatch = useAppDispatch();
@@ -62,7 +61,7 @@ const Settings = () => {
   }, [isFileUploaded, file]);
 
   return (
-    <Modal>
+    <Modal stylings="sm:w-5/6 md:w-2/3 lg:w-1/2 xl:w-5/12">
       <div className="flex mx-auto bg-white w-full h-auto rounded-md">
         <section className="w-full">
           <div className="flex flex-col items-start p-6">

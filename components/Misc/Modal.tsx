@@ -1,9 +1,16 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useCallback, useRef, useEffect, MouseEventHandler } from 'react';
 
-const Modal = ({ children }: { children: React.ReactNode }) => {
+const Modal = ({
+  children,
+  stylings,
+}: {
+  children: React.ReactNode;
+  stylings: string;
+}) => {
   const overlay = useRef(null);
   const wrapper = useRef(null);
   const router = useRouter();
@@ -41,7 +48,10 @@ const Modal = ({ children }: { children: React.ReactNode }) => {
     >
       <div
         ref={wrapper}
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 sm:w-10/12 md:w-8/12 lg:w-2/5 xl:3/5 p-6"
+        className={cn(
+          'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-6',
+          stylings
+        )}
       >
         {children}
       </div>
