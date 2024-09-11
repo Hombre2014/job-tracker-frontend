@@ -48,7 +48,7 @@ const JobPostCard = ({
         handleJobPostClick(id);
       }}
     >
-      <div className="flex h-[90px]">
+      <div className="flex h-[90px] hover:cursor-pointer">
         <CardHeader className="w-3/4">
           <CardTitle className="!p-0 !m-0">{title}</CardTitle>
           <CardDescription className="text-white">
