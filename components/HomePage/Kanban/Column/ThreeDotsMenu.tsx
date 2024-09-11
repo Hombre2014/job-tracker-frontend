@@ -6,7 +6,7 @@ import { BsThreeDots } from 'react-icons/bs';
 import { RiDragMove2Fill } from 'react-icons/ri';
 
 import { moveColumn } from '@/utils/moveColumn';
-import AlertDialogModal from '../Boards/AlertDialogModal';
+import AlertDialogModal from '../../Boards/AlertDialogModal';
 import { useAppSelector, useAppDispatch } from '@/redux/hooks';
 import { getBoards, rearrangeColumns } from '@/redux/boards/boardsThunk';
 import {

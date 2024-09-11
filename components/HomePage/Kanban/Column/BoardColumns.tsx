@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import JobPostCard from './JobPosts/JobPostCard';
 import { returnBoardIcon } from '@/utils/ReturnIcons';
 import { createJobPost } from '@/redux/jobs/jobsThunk';
-import AlertDialogModal from '../Boards/AlertDialogModal';
+import AlertDialogModal from '../../Boards/AlertDialogModal';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getBoards, updateColumnName } from '@/redux/boards/boardsThunk';
 import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';

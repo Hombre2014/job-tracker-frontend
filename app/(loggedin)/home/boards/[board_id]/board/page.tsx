@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { useAppDispatch } from '@/redux/hooks';
 import { getBoards } from '@/redux/boards/boardsThunk';
 import { setStatusToIdle } from '@/redux/user/userSlice';
-import BoardColumns from '@/components/HomePage/Kanban/BoardColumns';
+import BoardColumns from '@/components/HomePage/Kanban/Column/BoardColumns';
 
 const KanbanBoard = () => {
   const dispatch = useAppDispatch();
