@@ -20,3 +20,11 @@ export enum JobPostIcons {
   PiBriefcaseLight = 'PiBriefcaseLight',
   HiOutlinePlusCircle = 'HiOutlinePlusCircle',
 }
+
+export enum JobPostMenuItems {
+  JobInfo = 'RxInfoCircled',
+  Notes = 'SlNotebook',
+  Contacts = 'PiUsers',
+  Documents = 'IoDocumentsOutline',
+  Company = 'SlBriefcase',
+}
