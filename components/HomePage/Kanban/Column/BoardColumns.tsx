@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, use, useEffect, useState } from 'react';
 
 import ThreeDotsMenu from './ThreeDotsMenu';
 import { Input } from '@/components/ui/input';
@@ -71,7 +71,7 @@ const BoardColumns = () => {
       accessToken: accessToken as string,
     };
     dispatch(createJobPost(jobPost));
-    console.log('Create Job Application', jobPost);
+    // getJobApplications!();
   };
 
   return (

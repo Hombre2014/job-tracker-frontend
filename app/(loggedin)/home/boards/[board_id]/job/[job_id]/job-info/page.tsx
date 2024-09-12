@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAppDispatch } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
+import jobPostMenuItems from '@/data/job-post-menu-items';
+import { returnJobPostMenuIcon } from '@/utils/ReturnIcons';
 import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import JobInfo from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobEdit/JobInfo';
@@ -45,28 +47,13 @@ const JobDetails = () => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="Job Info" className="w-full">
-            {/* TODO: Refactor the Tablist */}
             <TabsList className="grid w-full grid-cols-5">
-              <TabsTrigger value="Job Info">
-                <RxInfoCircled className="h-5 w-5 mr-2" />
-                Job Info
-              </TabsTrigger>
-              <TabsTrigger value="Notes">
-                <SlNotebook className="h-5 w-5 mr-2" />
-                Notes
-              </TabsTrigger>
-              <TabsTrigger value="Contacts">
-                <PiUsers className="h-5 w-5 mr-2" />
-                Contacts
-              </TabsTrigger>
-              <TabsTrigger value="Documents">
-                <IoDocumentsOutline className="h-5 w-5 mr-2" />
-                Documents
-              </TabsTrigger>
-              <TabsTrigger value="Company">
-                <SlBriefcase className="h-5 w-5 mr-2" />
-                Company
-              </TabsTrigger>
+              {jobPostMenuItems.map((item) => (
+                <TabsTrigger key={item.id} value={item.title}>
+                  {returnJobPostMenuIcon(item.icon)}
+                  {item.title}
+                </TabsTrigger>
+              ))}
             </TabsList>
             <TabsContent value="Job Info" className="mt-8">
               <JobInfo />
@@ -76,7 +63,8 @@ const JobDetails = () => {
                 <CardHeader>
                   <CardTitle>Notes</CardTitle>
                   <CardDescription>
-                    Change your Notes here. After saving, you'll be logged out.
+                    Change your Notes here. After saving, you will be logged
+                    out.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
@@ -99,7 +87,7 @@ const JobDetails = () => {
                 <CardHeader>
                   <CardTitle>Contacts</CardTitle>
                   <CardDescription>
-                    Change your Contacts here. After saving, you'll be logged
+                    Change your Contacts here. After saving, you will be logged
                     out.
                   </CardDescription>
                 </CardHeader>

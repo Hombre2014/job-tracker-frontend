@@ -1,7 +1,7 @@
-import { SlBriefcase } from 'react-icons/sl';
-import { PiBriefcaseLight } from 'react-icons/pi';
+import { SlBriefcase, SlNotebook } from 'react-icons/sl';
+import { PiBriefcaseLight, PiUsers } from 'react-icons/pi';
 import { GoTrophy, GoInbox } from 'react-icons/go';
-import { BoardIcons, MenuIcons, JobPostIcons } from '@/enums';
+import { BoardIcons, MenuIcons, JobPostIcons, JobPostMenuItems } from '@/enums';
 import { SlEnvolopeLetter, SlMagicWand } from 'react-icons/sl';
 import { RiContactsLine, RiFolder2Line } from 'react-icons/ri';
 import {
@@ -10,6 +10,8 @@ import {
   HiOutlineClock,
   HiOutlineFolder,
 } from 'react-icons/hi';
+import { RxInfoCircled } from 'react-icons/rx';
+import { IoDocumentsOutline } from 'react-icons/io5';
 
 export const returnBoardIcon = (id: number) => {
   switch (id) {
@@ -55,6 +57,23 @@ export const returnJobPostIcon = (icon: string) => {
       return <GoInbox className="h-6 w-6" />;
     case JobPostIcons.GoTrophy:
       return <GoTrophy className="h-6 w-6" />;
+    default:
+      return null;
+  }
+};
+
+export const returnJobPostMenuIcon = (icon: string) => {
+  switch (icon) {
+    case JobPostMenuItems.JobInfo:
+      return <RxInfoCircled className="h-5 w-5 mr-2" />;
+    case JobPostMenuItems.Notes:
+      return <IoDocumentsOutline className="h-5 w-5 mr-2" />;
+    case JobPostMenuItems.Contacts:
+      return <PiUsers className="h-5 w-5 mr-2" />;
+    case JobPostMenuItems.Documents:
+      return <IoDocumentsOutline className="h-5 w-5 mr-2" />;
+    case JobPostMenuItems.Company:
+      return <SlBriefcase className="h-5 w-5 mr-2" />;
     default:
       return null;
   }
