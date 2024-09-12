@@ -1,22 +1,20 @@
 'use client';
 
 import { useEffect } from 'react';
-import { PiUsers } from 'react-icons/pi';
 import { useParams } from 'next/navigation';
-import { RxInfoCircled } from 'react-icons/rx';
-import { IoDocumentsOutline } from 'react-icons/io5';
-import { SlNotebook, SlBriefcase } from 'react-icons/sl';
 
 import Modal from '@/components/Misc/Modal';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useAppDispatch } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
 import jobPostMenuItems from '@/data/job-post-menu-items';
 import { returnJobPostMenuIcon } from '@/utils/ReturnIcons';
 import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Notes from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobNotes/Notes';
 import JobInfo from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobEdit/JobInfo';
+import Company from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobCompany/Company';
+import Contacts from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts';
+import Documents from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/Documents';
 import {
   Card,
   CardContent,
@@ -59,100 +57,16 @@ const JobDetails = () => {
               <JobInfo />
             </TabsContent>
             <TabsContent value="Notes">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Notes</CardTitle>
-                  <CardDescription>
-                    Change your Notes here. After saving, you will be logged
-                    out.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="space-y-1">
-                    <Label htmlFor="current">Current Notes</Label>
-                    <Input id="current" type="Notes" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="new">New Notes</Label>
-                    <Input id="new" type="Notes" />
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button>Save Notes</Button>
-                </CardFooter>
-              </Card>
+              <Notes />
             </TabsContent>
             <TabsContent value="Contacts">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Contacts</CardTitle>
-                  <CardDescription>
-                    Change your Contacts here. After saving, you will be logged
-                    out.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="space-y-1">
-                    <Label htmlFor="current">Current Contacts</Label>
-                    <Input id="current" type="Contacts" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="new">New Contacts</Label>
-                    <Input id="new" type="Contacts" />
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button>Save Contacts</Button>
-                </CardFooter>
-              </Card>
+              <Contacts />
             </TabsContent>
             <TabsContent value="Documents">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Documents</CardTitle>
-                  <CardDescription>
-                    Change your Documents here. After saving, you will be logged
-                    out.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="space-y-1">
-                    <Label htmlFor="current">Current Documents</Label>
-                    <Input id="current" type="Documents" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="new">New Documents</Label>
-                    <Input id="new" type="Documents" />
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button>Save Documents</Button>
-                </CardFooter>
-              </Card>
+              <Documents />
             </TabsContent>
             <TabsContent value="Company">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Company</CardTitle>
-                  <CardDescription>
-                    Change your Company here. After saving, you will be logged
-                    out.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="space-y-1">
-                    <Label htmlFor="current">Current Company</Label>
-                    <Input id="current" type="Company" />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="new">New Company</Label>
-                    <Input id="new" type="Company" />
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button>Save Company</Button>
-                </CardFooter>
-              </Card>
+              <Company />
             </TabsContent>
           </Tabs>
         </CardContent>
