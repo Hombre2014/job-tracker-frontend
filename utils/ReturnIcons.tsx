@@ -1,17 +1,22 @@
-import { SlBriefcase, SlNotebook } from 'react-icons/sl';
-import { PiBriefcaseLight, PiUsers } from 'react-icons/pi';
+import { RxInfoCircled } from 'react-icons/rx';
 import { GoTrophy, GoInbox } from 'react-icons/go';
-import { BoardIcons, MenuIcons, JobPostIcons, JobPostMenuItems } from '@/enums';
-import { SlEnvolopeLetter, SlMagicWand } from 'react-icons/sl';
+import { IoDocumentsOutline } from 'react-icons/io5';
+import { PiBriefcaseLight, PiUsers } from 'react-icons/pi';
 import { RiContactsLine, RiFolder2Line } from 'react-icons/ri';
+import { SlEnvolopeLetter, SlMagicWand, SlBriefcase } from 'react-icons/sl';
 import {
   HiOutlineThumbDown,
   HiOutlinePlusCircle,
   HiOutlineClock,
   HiOutlineFolder,
 } from 'react-icons/hi';
-import { RxInfoCircled } from 'react-icons/rx';
-import { IoDocumentsOutline } from 'react-icons/io5';
+
+import { BoardIcons, MenuIcons, JobPostIcons, JobPostMenuItems } from '@/enums';
+import Notes from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobNotes/Notes';
+import JobInfo from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobEdit/JobInfo';
+import Company from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobCompany/Company';
+import Contacts from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts';
+import Documents from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/Documents';
 
 export const returnBoardIcon = (id: number) => {
   switch (id) {
@@ -74,6 +79,23 @@ export const returnJobPostMenuIcon = (icon: string) => {
       return <IoDocumentsOutline className="h-5 w-5 mr-2" />;
     case JobPostMenuItems.Company:
       return <SlBriefcase className="h-5 w-5 mr-2" />;
+    default:
+      return null;
+  }
+};
+
+export const returnMenuComponent = (title: string) => {
+  switch (title) {
+    case 'Job Info':
+      return <JobInfo />;
+    case 'Notes':
+      return <Notes />;
+    case 'Contacts':
+      return <Contacts />;
+    case 'Documents':
+      return <Documents />;
+    case 'Company':
+      return <Company />;
     default:
       return null;
   }
