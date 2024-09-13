@@ -8,16 +8,17 @@ import { useRouter, useParams } from 'next/navigation';
 import { returnJobPostIcon } from '@/utils/ReturnIcons';
 import {
   Card,
-  CardDescription,
-  CardHeader,
   CardTitle,
+  CardHeader,
+  CardDescription,
 } from '@/components/ui/card';
 import {
   Tooltip,
+  TooltipTrigger,
   TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
 } from '@/components/ui/tooltip';
+
 const JobPostCard = ({
   title,
   id,
@@ -36,7 +37,7 @@ const JobPostCard = ({
 
   const handleJobPostClick = (id: string) => {
     console.log('Job Post Clicked:', id);
-    router.push(`/home/boards/${board_id}/job/${id}/job-info`);
+    router.push(`/home/boards/${board_id}/job/${id}/job-details`);
   };
 
   return (

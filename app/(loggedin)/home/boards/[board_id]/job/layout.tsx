@@ -6,13 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Modal from '@/components/Misc/Modal';
 import { useAppDispatch } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
-import jobPostMenuItems from '@/data/job-post-menu-items';
 import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  returnJobPostMenuIcon,
-  returnMenuComponent,
-} from '@/utils/ReturnIcons';
 import {
   Card,
   CardContent,
@@ -22,7 +16,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 
-const JobDetailsLayout = () => {
+const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   const { push } = useRouter();
   const { board_id, job_id } = useParams();
   const dispatch = useAppDispatch();
@@ -43,23 +37,7 @@ const JobDetailsLayout = () => {
           </CardTitle>
           <CardDescription className="mx-4 mt-8 pb-12">Amazon</CardDescription>
         </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="Job Info" className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
-              {jobPostMenuItems.map((item) => (
-                <TabsTrigger key={item.id} value={item.title}>
-                  {returnJobPostMenuIcon(item.icon)}
-                  {item.title}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-            {jobPostMenuItems.map((item) => (
-              <TabsContent key={item.id} value={item.title} className="mt-8">
-                {returnMenuComponent(item.title)}
-              </TabsContent>
-            ))}
-          </Tabs>
-        </CardContent>
+        <CardContent>{children}</CardContent>
         <CardFooter className="flex justify-end gap-4 pb-8">
           <Button variant="outline">Close</Button>
           <Button>Move</Button>
