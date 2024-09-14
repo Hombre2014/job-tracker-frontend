@@ -80,3 +80,37 @@ body,
     @apply bg-background text-foreground;
   }
 }
+
+.rsw-ce ul {
+  list-style: disc;
+  padding-left: 2em;
+}
+
+.rsw-ce ol {
+  list-style: decimal;
+  padding-left: 2em;
+}
+
+.rsw-ce a {
+  color: #3182ce;
+  cursor: pointer;
+}
+
+.rsw-ce a:hover {
+  color: #1569b8;
+}
+
+.rsw-ce h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.rsw-ce h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.rsw-ce pre {
+  font-family: monospace;
+  font-size: 0.875rem;
+}

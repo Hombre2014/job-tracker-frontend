@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import {
   BtnBold,
   BtnItalic,
@@ -16,10 +17,23 @@ import {
   BtnBulletList,
   BtnNumberedList,
   BtnLink,
+  HtmlButton,
+  BtnStyles,
 } from 'react-simple-wysiwyg';
+import { cn } from '@/lib/utils';
 
-const TextEditor = () => {
-  const [html, setHtml] = useState('my <b>HTML</b>');
+const TextEditor = ({
+  backColor,
+  initialText,
+  title,
+  buttonVisibility,
+}: {
+  backColor?: string;
+  initialText?: string;
+  title?: string;
+  buttonVisibility?: boolean;
+}) => {
+  const [html, setHtml] = useState(initialText);
   const handleDescription = (e: any) => {
     setHtml(e.target.value);
     console.log(e.target.value);
@@ -32,14 +46,15 @@ const TextEditor = () => {
   return (
     <div className="flex gap-2">
       <div className="space-y-1 w-full">
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description">{title}</Label>
         <EditorProvider>
           <Editor
             id="description"
             value={html}
+            style={{ backgroundColor: `${backColor}` }}
             onChange={handleDescription}
             containerProps={{
-              style: { resize: 'vertical' },
+              style: { resize: 'vertical', minHeight: '200px' },
             }}
           >
             <Toolbar>
@@ -55,11 +70,25 @@ const TextEditor = () => {
               <BtnAlignCenter />
               <BtnAlignRight />
               <Separator />
-              <BtnBulletList />
               <BtnNumberedList />
+              <BtnBulletList />
+              <Separator />
               <BtnLink />
+              <HtmlButton />
+              <Separator />
+              <BtnStyles />
             </Toolbar>
           </Editor>
+          <Button
+            variant="normal"
+            onClick={() => console.log(html)}
+            className={cn(
+              'relative bottom-[20%] left-[90%] hover:bg-blue-600 cursor-pointer',
+              buttonVisibility ? 'block' : 'hidden'
+            )}
+          >
+            Save
+          </Button>
         </EditorProvider>
       </div>
     </div>

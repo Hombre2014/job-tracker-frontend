@@ -27,9 +27,13 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
     dispatch(getAllJobPostsPerColumn(job_id));
   }, [dispatch, job_id]);
 
+  const closeModal = () => {
+    push(`/home/boards/${board_id}/board`);
+  };
+
   return (
     <Modal stylings="sm:w-11/12 md:w-3/4 lg:w-2/3 xl:w-1/2">
-      <Card className="w-full">
+      <Card className="w-full min-h-[840px]">
         <CardHeader>
           {/* TODO: Get dynamic company name and job title */}
           <CardTitle className="mt-8 mx-4 text-xl font-bold">
@@ -39,7 +43,9 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
         </CardHeader>
         <CardContent>{children}</CardContent>
         <CardFooter className="flex justify-end gap-4 pb-8">
-          <Button variant="outline">Close</Button>
+          <Button variant="outline" onClick={closeModal}>
+            Close
+          </Button>
           <Button>Move</Button>
         </CardFooter>
       </Card>

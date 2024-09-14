@@ -51,7 +51,7 @@ const JobPostCard = ({
     >
       <div className="flex h-[90px] hover:cursor-pointer">
         <CardHeader className="w-3/4">
-          <CardTitle className="!p-0 !m-0">{title}</CardTitle>
+          <CardTitle className="!p-0 !m-0 tracking-normal">{title}</CardTitle>
           <CardDescription className="text-white">
             {companyName}
           </CardDescription>
