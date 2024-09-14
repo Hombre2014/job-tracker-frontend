@@ -50,7 +50,11 @@ const JobInfo = () => {
                 />
                 <ColorPicker />
               </div>
-              <TextEditor />
+              <TextEditor
+                initialText="Type your description here..."
+                title="Description"
+                buttonVisibility={false}
+              />
             </div>
           </div>
           <InputElement
