@@ -1,13 +1,13 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { ChangeEvent, use, useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 
 import ThreeDotsMenu from './ThreeDotsMenu';
 import { Input } from '@/components/ui/input';
 import JobPostCard from './JobPosts/JobPostCard';
 import { returnBoardIcon } from '@/utils/ReturnIcons';
-import { createJobPost } from '@/redux/jobs/jobsThunk';
+import { createJobPost, getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
 import AlertDialogModal from '../../Boards/AlertDialogModal';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getBoards, updateColumnName } from '@/redux/boards/boardsThunk';
@@ -20,6 +20,7 @@ const BoardColumns = () => {
   const accessToken = localStorage.getItem('accessToken');
   const [currentColumnId, setCurrentColumnId] = useState('');
   const { boards } = useAppSelector((state) => state.boards);
+  const { jobPosts } = useAppSelector((state) => state.jobs);
   const [renamedColumnName, setRenamedColumnName] = useState('');
   const currentBoard = boards.find((board) => board.id === board_id);
 
@@ -33,7 +34,7 @@ const BoardColumns = () => {
     } else {
       dispatch(getBoards(accessToken as string));
     }
-  }, [isEditing, currentColumnId, accessToken, dispatch]);
+  }, [isEditing, currentColumnId, accessToken, dispatch, jobPosts]);
 
   if (!currentBoard) return null;
 
@@ -71,7 +72,11 @@ const BoardColumns = () => {
       accessToken: accessToken as string,
     };
     dispatch(createJobPost(jobPost));
-    // getJobApplications!();
+    const jobPostsData = {
+      accessToken: accessToken as string,
+      columnId: localStorage.getItem('columnId'),
+    };
+    dispatch(getAllJobPostsPerColumn(jobPostsData));
   };
 
   return (

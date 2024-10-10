@@ -35,7 +35,6 @@ export const getAllJobPostsPerColumn = createAsyncThunk(
       });
 
       const data = res.data;
-      console.log('Data', data);
       return data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(
