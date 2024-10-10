@@ -1,5 +1,5 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
 import client from '@/api/client';
+import { createAsyncThunk } from '@reduxjs/toolkit';
 
 export const createJobPost = createAsyncThunk(
   'jobs/createJobPost',
