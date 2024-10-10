@@ -1,5 +1,5 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
 import client from '@/api/client';
+import { createAsyncThunk } from '@reduxjs/toolkit';
 
 export const createJobPost = createAsyncThunk(
   'jobs/createJobPost',
@@ -28,14 +28,13 @@ export const getAllJobPostsPerColumn = createAsyncThunk(
   async (values: any, thunkAPI) => {
     const { accessToken, columnId } = values;
     try {
-      const res = await client.get(`/job-applications/${columnId}`, {
+      const res = await client.get(`/job-applications/column/${columnId}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
       });
 
       const data = res.data;
-      console.log('Data', data);
       return data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(
