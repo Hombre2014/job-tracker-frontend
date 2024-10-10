@@ -28,7 +28,7 @@ export const getAllJobPostsPerColumn = createAsyncThunk(
   async (values: any, thunkAPI) => {
     const { accessToken, columnId } = values;
     try {
-      const res = await client.get(`/job-applications/${columnId}`, {
+      const res = await client.get(`/job-applications/column/${columnId}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
