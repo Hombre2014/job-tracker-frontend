@@ -13,7 +13,36 @@ export const getBoards = createAsyncThunk(
       const data = res.data;
 
       if (data.length === 0) {
-        console.log('No boards found. Something is wrong!');
+        console.log('No boards found.');
+        return thunkAPI.rejectWithValue('No boards found');
+      }
+
+      if (data.length > 0) {
+        const filteredData = data.filter((board: any) => !board.isArchived);
+        return filteredData;
+      }
+    } catch (err: any) {
+      console.log('Error fetching boards: ', err.response?.data);
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error fetching boards'
+      );
+    }
+  }
+);
+
+export const getBoardsOnly = createAsyncThunk(
+  'boards/getBoardsOnly',
+  async (accessToken: string, thunkAPI) => {
+    try {
+      const res = await client.get('/boards', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = res.data;
+
+      if (data.length === 0) {
+        console.log('No boards found.');
         return thunkAPI.rejectWithValue('No boards found');
       }
 

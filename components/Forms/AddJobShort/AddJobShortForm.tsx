@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 import { AddJobSchemaShort } from '@/schemas';
 import { Input } from '@/components/ui/input';
+import { getBoards } from '@/redux/boards/boardsThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import ComboBoardListBox from '@/components/Forms/AddJobShort/ComboBoardListBox';
 import {
@@ -17,7 +18,6 @@ import {
   FormControl,
   FormMessage,
 } from '@/components/ui/form';
-import { getBoards } from '@/redux/boards/boardsThunk';
 
 const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
   const { board_id } = useParams();
