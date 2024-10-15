@@ -6,11 +6,12 @@ import {
   createBoard,
   renameBoard,
   archiveBoard,
-  getArchivedBoards,
+  getBoardsOnly,
   unarchiveBoard,
-  getBoardWithColumns,
   updateColumnName,
   rearrangeColumns,
+  getArchivedBoards,
+  getBoardWithColumns,
 } from './boardsThunk';
 
 interface BoardsState {
@@ -153,6 +154,18 @@ export const boardsSlice = createSlice({
       .addCase(rearrangeColumns.rejected, (state, action) => {
         state.boardsStatus = 'failed';
         state.error = action.error.message || 'Failed to rearrange columns';
+      })
+      .addCase(getBoardsOnly.pending, (state) => {
+        state.boardsStatus = 'loading';
+      })
+      .addCase(getBoardsOnly.fulfilled, (state, action) => {
+        state.boardsStatus = 'succeeded';
+        state.boards = action.payload;
+        state.error = null;
+      })
+      .addCase(getBoardsOnly.rejected, (state, action) => {
+        state.boardsStatus = 'failed';
+        state.error = action.error.message || 'Failed to fetch boards';
       });
   },
 });
