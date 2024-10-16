@@ -4,10 +4,16 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 export const createJobPost = createAsyncThunk(
   'jobs/createJobPost',
   async (values: any, thunkAPI) => {
-    const { accessToken, title, companyName, description, columnId } = values;
-    const postData = { title, companyName, description, columnId };
+    const { accessToken, title, companyName, columnId } = values;
+    const body = {
+      title: title,
+      columnId: columnId,
+      company: {
+        name: companyName,
+      },
+    };
     try {
-      const res = await client.post('/job-applications', postData, {
+      const res = await client.post('/job-applications', body, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
