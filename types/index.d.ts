@@ -48,10 +48,18 @@ interface Board {
   userId: string;
 }
 
+interface Company {
+  id: string;
+  name: string;
+  description: string;
+  url: string;
+  industry: string;
+}
+
 interface JobPostShort {
   id: string;
   title: string;
-  companyName: string;
+  company: Company;
   description: string;
   columnId: string;
 }
