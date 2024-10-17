@@ -18,14 +18,19 @@ import {
 
 const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   const { push } = useRouter();
-  const { board_id, job_id } = useParams();
+  const { board_id } = useParams();
   const dispatch = useAppDispatch();
+  const accessToken = localStorage.getItem('accessToken');
 
   // TODO: Get the job details
 
   useEffect(() => {
-    dispatch(getAllJobPostsPerColumn(job_id));
-  }, [dispatch, job_id]);
+    const jobPostsData = {
+      accessToken: accessToken as string,
+      columnId: localStorage.getItem('columnId'),
+    };
+    dispatch(getAllJobPostsPerColumn(jobPostsData));
+  }, [dispatch, accessToken]);
 
   const closeModal = () => {
     push(`/home/boards/${board_id}/board`);
