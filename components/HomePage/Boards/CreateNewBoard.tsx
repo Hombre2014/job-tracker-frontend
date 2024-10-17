@@ -1,13 +1,14 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { createBoard } from '@/redux/boards/boardsThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { getArchivedBoards } from '@/redux/boards/boardsThunk';
 import { AlertDialogFooter } from '@/components/ui/alert-dialog';
 import {
   Dialog,
@@ -32,6 +33,12 @@ const CreateNewBoard = ({
   const accessToken = localStorage.getItem('accessToken');
   const { boards } = useAppSelector((state) => state.boards);
   const [buttonIsDisabled, setButtonIsDisabled] = useState(true);
+  const archivedBoards = useAppSelector((state) => state.boards.archivedBoards);
+
+  useEffect(() => {
+    const accessToken = localStorage.getItem('accessToken');
+    dispatch(getArchivedBoards(accessToken as string));
+  }, [dispatch, accessToken]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -39,9 +46,13 @@ const CreateNewBoard = ({
     setButtonIsDisabled(e.target.value === '');
   };
 
-  const createNewBoard = async () => {
+  const createNewBoard = () => {
     const name = newBoardName;
     const allBoards = boards.map((board) => board.name.toLocaleLowerCase());
+    allBoards.push(
+      ...archivedBoards.map((board) => board.name.toLocaleLowerCase())
+    );
+    console.log('allBoards: ', allBoards);
     if (allBoards.includes(name.toLocaleLowerCase())) {
       alert('Board with that name already exists! Please choose another name.');
       return;
