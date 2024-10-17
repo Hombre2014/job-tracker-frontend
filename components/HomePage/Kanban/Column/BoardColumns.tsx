@@ -67,7 +67,6 @@ const BoardColumns = () => {
     const jobPost = {
       title: localStorage.getItem('jobTitle'),
       companyName: localStorage.getItem('company'),
-      description: '',
       columnId: localStorage.getItem('columnId'),
       accessToken: accessToken as string,
     };
