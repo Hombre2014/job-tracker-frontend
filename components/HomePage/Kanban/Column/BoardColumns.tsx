@@ -7,16 +7,17 @@ import ThreeDotsMenu from './ThreeDotsMenu';
 import { Input } from '@/components/ui/input';
 import JobPostCard from './JobPosts/JobPostCard';
 import { returnBoardIcon } from '@/utils/ReturnIcons';
+import { createJobPost } from '@/redux/jobs/jobsThunk';
 import AlertDialogModal from '../../Boards/AlertDialogModal';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getBoards, updateColumnName } from '@/redux/boards/boardsThunk';
 import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
-import { createJobPost, getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
 
 const BoardColumns = () => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const [isEditing, setIsEditing] = useState(false);
+  const columnId = localStorage.getItem('columnId');
   const accessToken = localStorage.getItem('accessToken');
   const [currentColumnId, setCurrentColumnId] = useState('');
   const { boards } = useAppSelector((state) => state.boards);
@@ -35,6 +36,8 @@ const BoardColumns = () => {
       dispatch(getBoards(accessToken as string));
     }
   }, [isEditing, currentColumnId, accessToken, dispatch, jobPosts]);
+
+  console.log('jobPosts: ', jobPosts);
 
   if (!currentBoard) return null;
 
@@ -67,15 +70,11 @@ const BoardColumns = () => {
     const jobPost = {
       title: localStorage.getItem('jobTitle'),
       companyName: localStorage.getItem('company'),
-      columnId: localStorage.getItem('columnId'),
+      columnId,
       accessToken: accessToken as string,
     };
+
     dispatch(createJobPost(jobPost));
-    const jobPostsData = {
-      accessToken: accessToken as string,
-      columnId: localStorage.getItem('columnId'),
-    };
-    dispatch(getAllJobPostsPerColumn(jobPostsData));
   };
 
   return (
@@ -132,12 +131,12 @@ const BoardColumns = () => {
                   key={job.id}
                   id={job.id}
                   title={job.title}
-                  companyName="Amazon"
+                  companyName={
+                    jobPosts.find((jobPost) => jobPost.id === job.id)?.company
+                      .name!
+                  }
                   status="Job Moved"
                   timeStamp="August 30th 2024, 10:44 am"
-                  // companyName={job.company_id.name}
-                  // status={job.jobPostStatus}
-                  // timeStamp={job.statusChangedAt}
                 />
               ))}
           </section>

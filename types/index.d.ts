@@ -21,7 +21,7 @@ type JobApplication = {
   description: string;
   color: string;
   deadline: string;
-  company_id: string;
+  company: Company;
   jobPostStatus:
     | 'Job Created'
     | 'Deadline'
@@ -46,14 +46,6 @@ interface Board {
   columns: Column[];
   isArchived: boolean;
   userId: string;
-}
-
-interface Company {
-  id: string;
-  name: string;
-  description: string;
-  url: string;
-  industry: string;
 }
 
 interface JobPostShort {
