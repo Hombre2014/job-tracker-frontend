@@ -130,6 +130,7 @@ const BoardColumns = () => {
                 <JobPostCard
                   key={job.id}
                   id={job.id}
+                  columnId={column.id}
                   title={job.title}
                   companyName={
                     jobPosts.find((jobPost) => jobPost.id === job.id)?.company
