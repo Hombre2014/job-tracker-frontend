@@ -30,17 +30,14 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
 
   console.log('jobId: ', job_id);
 
-  // find the column_id of the job_id
+  // const columnId = jobPosts.find((jobPost) => jobPost.id === job_id)?.columnId;
 
-  const columnId = jobPosts.find((jobPost) => jobPost.id === job_id)?.columnId;
-
-  console.log('columnId: ', columnId);
+  // console.log('columnId: ', columnId);
 
   useEffect(() => {
     const jobPostsData = {
       accessToken: accessToken as string,
-
-      // columnId: localStorage.getItem('columnId'),
+      columnId: localStorage.getItem('columnId'),
     };
     dispatch(getAllJobPostsPerColumn(jobPostsData));
   }, [dispatch, accessToken, board_id, job_id]);
@@ -55,7 +52,7 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   console.log('currentBoardId: ', currentBoardId);
 
   const currentJobPost = jobPosts.find((jobPost) => jobPost.id === job_id);
-  console.log('currentJobPost', currentJobPost);
+  console.log('currentJobPost: ', currentJobPost);
 
   return (
     <Modal stylings="sm:w-11/12 md:w-3/4 lg:w-2/3 xl:w-1/2">

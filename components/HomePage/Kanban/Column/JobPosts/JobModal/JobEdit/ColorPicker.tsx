@@ -19,11 +19,11 @@ const ColorPicker = () => {
       <DropdownMenu>
         <DropdownMenuTrigger>
           <DropdownMenuTrigger asChild>
-            <Button
+            <div
               id="color"
-              variant="none"
+              // variant="none"
               className="!bg-blue-700 !w-full !h-[34px] !rounded-md mt-[2px]"
-            ></Button>
+            ></div>
           </DropdownMenuTrigger>
         </DropdownMenuTrigger>
         <DropdownMenuContent>

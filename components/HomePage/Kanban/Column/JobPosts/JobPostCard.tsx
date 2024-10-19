@@ -20,15 +20,16 @@ import {
 } from '@/components/ui/tooltip';
 
 const JobPostCard = ({
-  title,
   id,
-  companyName,
+  title,
   status,
+  columnId,
+  companyName,
   timeStamp,
 }: JobPostCardProps) => {
-  const [showIcons, setShowIcons] = useState(false);
-  const { board_id } = useParams();
   const router = useRouter();
+  const { board_id } = useParams();
+  const [showIcons, setShowIcons] = useState(false);
   const toggleIcons = () => {
     setTimeout(() => {
       setShowIcons((prev) => !prev);
@@ -38,6 +39,7 @@ const JobPostCard = ({
   const handleJobPostClick = (id: string) => {
     console.log('Job Post Clicked:', id);
     router.push(`/home/boards/${board_id}/job/${id}/job-details`);
+    localStorage.setItem('columnId', columnId);
   };
 
   return (

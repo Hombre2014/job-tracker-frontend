@@ -57,11 +57,12 @@ interface JobPostShort {
 }
 
 interface JobPostCardProps {
-  title: string;
-  companyName: string;
-  status: string;
-  timeStamp: string;
   id: string;
+  title: string;
+  status: string;
+  columnId: string;
+  timeStamp: string;
+  companyName: string;
 }
 
 interface WorkDocument {

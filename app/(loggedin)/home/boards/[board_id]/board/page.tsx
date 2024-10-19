@@ -2,18 +2,21 @@
 
 import { useEffect } from 'react';
 
-import { useAppDispatch } from '@/redux/hooks';
 import { getBoards } from '@/redux/boards/boardsThunk';
 import { setStatusToIdle } from '@/redux/user/userSlice';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import BoardColumns from '@/components/HomePage/Kanban/Column/BoardColumns';
 
 const KanbanBoard = () => {
   const dispatch = useAppDispatch();
   const accessToken = localStorage.getItem('accessToken');
+  const { jobPosts } = useAppSelector((state) => state.jobs);
 
   useEffect(() => {
-    dispatch(getBoards(accessToken as string));
-  }, [dispatch, accessToken]);
+    if (jobPosts.length >= 0) {
+      dispatch(getBoards(accessToken as string));
+    }
+  }, [dispatch, accessToken, jobPosts]);
 
   useEffect(() => {
     return () => {
