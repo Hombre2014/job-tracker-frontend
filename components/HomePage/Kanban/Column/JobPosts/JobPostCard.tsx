@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { format } from 'date-fns';
 import { LiaLinkSolid } from 'react-icons/lia';
 import { RiDeleteBinLine } from 'react-icons/ri';
 import { useRouter, useParams } from 'next/navigation';
@@ -29,7 +30,9 @@ const JobPostCard = ({
 }: JobPostCardProps) => {
   const router = useRouter();
   const { board_id } = useParams();
+  const date = new Date(timeStamp);
   const [showIcons, setShowIcons] = useState(false);
+  const formattedDate = format(date, 'MMMM do, yyyy, h:mm a');
   const toggleIcons = () => {
     setTimeout(() => {
       setShowIcons((prev) => !prev);
@@ -81,7 +84,7 @@ const JobPostCard = ({
                   <p>
                     <span>{status}</span>
                     <span> | </span>
-                    <span>{timeStamp}</span>
+                    <span>{formattedDate}</span>
                   </p>
                 </TooltipContent>
               </Tooltip>
