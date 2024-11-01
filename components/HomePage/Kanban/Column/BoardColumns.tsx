@@ -37,11 +37,6 @@ const BoardColumns = () => {
     }
   }, [isEditing, currentColumnId, accessToken, dispatch, jobPosts]);
 
-  console.log(
-    'CompanyName: ',
-    boards[0].columns[0].jobApplications[0].company.name
-  );
-
   if (!currentBoard) return null;
 
   const { columns: boardColumns } = currentBoard;
@@ -138,8 +133,8 @@ const BoardColumns = () => {
                   columnId={column.id}
                   title={job.title}
                   companyName={job.company.name}
-                  status="Job Moved"
-                  timeStamp="August 30th 2024, 10:44 am"
+                  status="Job Created"
+                  timeStamp={job.statusChangedAt}
                 />
               ))}
           </section>
