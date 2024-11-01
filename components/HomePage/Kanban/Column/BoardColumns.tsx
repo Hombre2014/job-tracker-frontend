@@ -37,7 +37,10 @@ const BoardColumns = () => {
     }
   }, [isEditing, currentColumnId, accessToken, dispatch, jobPosts]);
 
-  console.log('jobPosts: ', jobPosts);
+  console.log(
+    'CompanyName: ',
+    boards[0].columns[0].jobApplications[0].company.name
+  );
 
   if (!currentBoard) return null;
 
@@ -76,6 +79,8 @@ const BoardColumns = () => {
 
     dispatch(createJobPost(jobPost));
   };
+
+  console.log('Boards: ', boards);
 
   return (
     <div className="w-full flex h-full">
@@ -132,10 +137,7 @@ const BoardColumns = () => {
                   id={job.id}
                   columnId={column.id}
                   title={job.title}
-                  companyName={
-                    jobPosts.find((jobPost) => jobPost.id === job.id)?.company
-                      .name!
-                  }
+                  companyName={job.company.name}
                   status="Job Moved"
                   timeStamp="August 30th 2024, 10:44 am"
                 />
