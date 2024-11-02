@@ -1,10 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { format } from 'date-fns';
 import { LiaLinkSolid } from 'react-icons/lia';
 import { RiDeleteBinLine } from 'react-icons/ri';
 import { useRouter, useParams } from 'next/navigation';
+import {
+  format,
+  differenceInYears,
+  differenceInMonths,
+  differenceInDays,
+  differenceInHours,
+  differenceInMinutes,
+  differenceInSeconds,
+} from 'date-fns';
 
 import { returnJobPostIcon } from '@/utils/ReturnIcons';
 import {
@@ -38,6 +46,27 @@ const JobPostCard = ({
       setShowIcons((prev) => !prev);
     }, 200);
   };
+
+  function getShortTimeSinceStatusChange(timeStamp: string): string {
+    const date = new Date(timeStamp);
+    const now = new Date();
+
+    const years = differenceInYears(now, date);
+    const months = differenceInMonths(now, date) % 12;
+    const days = differenceInDays(now, date) % 30;
+    const hours = differenceInHours(now, date) % 24;
+    const minutes = differenceInMinutes(now, date) % 60;
+    const seconds = differenceInSeconds(now, date) % 60;
+
+    if (years > 0) return `${years}y`;
+    if (months > 0) return `${months}mo`;
+    if (days > 0) return `${days}d`;
+    if (hours > 0) return `${hours}h`;
+    if (minutes > 0) return `${minutes}m`;
+    return `${seconds}s`;
+  }
+
+  const shortTimeSinceChange = getShortTimeSinceStatusChange(timeStamp);
 
   const handleJobPostClick = (id: string) => {
     console.log('Job Post Clicked:', id);
@@ -78,7 +107,9 @@ const JobPostCard = ({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="text-xs text-white cursor-help">35 d</span>
+                  <span className="text-xs text-white cursor-help">
+                    {shortTimeSinceChange}
+                  </span>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>
