@@ -1,9 +1,17 @@
+import { useParams } from 'next/navigation';
+
 import TextEditor from './TextEditor';
 import ColorPicker from './ColorPicker';
 import InputElement from './InputElement';
+import { useAppSelector } from '@/redux/hooks';
 import { Card, CardContent } from '@/components/ui/card';
 
 const JobInfo = () => {
+  const { jobPosts } = useAppSelector((state) => state.jobs);
+  const { board_id, job_id } = useParams();
+
+  const currentJobPost = jobPosts.find((jobPost) => jobPost.id === job_id);
+
   return (
     <Card>
       <CardContent className="space-y-2">
@@ -15,13 +23,13 @@ const JobInfo = () => {
                   stylings="space-y-1 w-1/2"
                   labelName="Company"
                   id="company"
-                  defaultValue="Amazon"
+                  defaultValue={currentJobPost?.company.name}
                 />
                 <InputElement
                   stylings="space-y-1 w-1/2"
                   labelName="Job Title"
                   id="job-title"
-                  defaultValue="Full Stack Web Developer"
+                  defaultValue={currentJobPost?.title}
                 />
               </div>
               <div className="flex gap-2">
