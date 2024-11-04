@@ -4,7 +4,7 @@ import { RootState } from '../store';
 import { createJobPost, getAllJobPostsPerColumn } from './jobsThunk';
 
 interface JobPostShortState {
-  jobPosts: JobPostShort[];
+  jobPosts: JobApplication[];
   jobPostsStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
 }

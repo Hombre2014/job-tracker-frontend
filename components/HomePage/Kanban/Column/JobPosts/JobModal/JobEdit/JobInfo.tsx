@@ -44,7 +44,7 @@ const JobInfo = () => {
                   stylings="space-y-1 w-1/3"
                   labelName="Salary"
                   id="salary"
-                  defaultValue=""
+                  defaultValue={currentJobPost?.salary}
                   placeholderName="+ add Salary"
                 />
               </div>
