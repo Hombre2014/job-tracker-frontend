@@ -3,13 +3,13 @@ import { createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import { createJobPost, getAllJobPostsPerColumn } from './jobsThunk';
 
-interface JobPostShortState {
+interface JobPostState {
   jobPosts: JobApplication[];
   jobPostsStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
   error: string | null;
 }
 
-const initialState: JobPostShortState = {
+const initialState: JobPostState = {
   jobPosts: [],
   jobPostsStatus: 'idle',
   error: null,

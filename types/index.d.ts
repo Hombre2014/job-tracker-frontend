@@ -48,14 +48,6 @@ interface Board {
   userId: string;
 }
 
-interface JobPostShort {
-  id: string;
-  title: string;
-  company: Company;
-  description: string;
-  columnId: string;
-}
-
 interface JobPostCardProps {
   id: string;
   title: string;
@@ -115,4 +107,14 @@ interface AlertDialogProps {
   actionFunction?: () => void;
   stylings?: string;
   children?: React.ReactNode;
+}
+
+interface InputElementProps {
+  id: string;
+  value?: string;
+  stylings?: string;
+  labelName?: string;
+  defaultValue?: string;
+  placeholderName?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }

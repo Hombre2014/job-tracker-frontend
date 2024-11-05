@@ -2,22 +2,21 @@ import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-interface InputElementProps {
-  id: string;
-  classes?: string;
-  stylings?: string;
-  labelName: string;
-  defaultValue?: string;
-  placeholderName?: string;
-}
-
 const InputElement = ({
   id,
+  value,
   stylings,
   labelName,
   defaultValue,
   placeholderName,
+  onChange,
 }: InputElementProps) => {
+  const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (onChange) {
+      onChange(e);
+    }
+  };
+
   return (
     <div className={cn(stylings)}>
       <Label htmlFor={id}>{labelName}</Label>
@@ -25,6 +24,8 @@ const InputElement = ({
         id={id}
         defaultValue={defaultValue}
         placeholder={placeholderName}
+        value={value}
+        onChange={onChangeHandler}
       />
     </div>
   );
