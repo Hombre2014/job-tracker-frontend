@@ -108,3 +108,13 @@ interface AlertDialogProps {
   stylings?: string;
   children?: React.ReactNode;
 }
+
+interface InputElementProps {
+  id: string;
+  value?: string;
+  stylings?: string;
+  labelName?: string;
+  defaultValue?: string;
+  placeholderName?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
