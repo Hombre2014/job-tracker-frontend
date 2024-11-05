@@ -48,14 +48,6 @@ interface Board {
   userId: string;
 }
 
-interface JobPostShort {
-  id: string;
-  title: string;
-  company: Company;
-  description: string;
-  columnId: string;
-}
-
 interface JobPostCardProps {
   id: string;
   title: string;
