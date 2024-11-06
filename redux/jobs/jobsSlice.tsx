@@ -1,7 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 import { RootState } from '../store';
-import { createJobPost, getAllJobPostsPerColumn } from './jobsThunk';
+import {
+  createJobPost,
+  getAllJobPostsPerColumn,
+  updateJobPost,
+} from './jobsThunk';
 
 interface JobPostState {
   jobPosts: JobApplication[];
@@ -44,6 +48,20 @@ export const jobsSlice = createSlice({
       .addCase(getAllJobPostsPerColumn.rejected, (state, action) => {
         state.jobPostsStatus = 'failed';
         state.error = action.error.message || 'Failed to fetch job posts';
+      })
+      .addCase(updateJobPost.pending, (state) => {
+        state.jobPostsStatus = 'loading';
+      })
+      .addCase(updateJobPost.fulfilled, (state, action) => {
+        state.jobPostsStatus = 'succeeded';
+        state.jobPosts = state.jobPosts.map((jobPost) =>
+          jobPost.id === action.payload.id ? action.payload : jobPost
+        );
+        state.error = null;
+      })
+      .addCase(updateJobPost.rejected, (state, action) => {
+        state.jobPostsStatus = 'failed';
+        state.error = action.error.message || 'Failed to update job post';
       });
   },
 });

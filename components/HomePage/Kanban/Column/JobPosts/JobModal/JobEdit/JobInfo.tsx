@@ -1,16 +1,55 @@
 import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import TextEditor from './TextEditor';
 import ColorPicker from './ColorPicker';
 import InputElement from './InputElement';
-import { useAppSelector } from '@/redux/hooks';
+import { updateJobPost } from '@/redux/jobs/jobsThunk';
 import { Card, CardContent } from '@/components/ui/card';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 
 const JobInfo = () => {
+  const { job_id } = useParams();
+  const dispatch = useAppDispatch();
   const { jobPosts } = useAppSelector((state) => state.jobs);
-  const { board_id, job_id } = useParams();
-
   const currentJobPost = jobPosts.find((jobPost) => jobPost.id === job_id);
+
+  const [editedJobPost, setEditedJobPost] = useState({
+    title: '',
+    company: '',
+    location: '',
+    salary: '',
+    description: '',
+    deadline: '',
+    postUrl: '',
+    color: '#8b5cf6',
+  });
+
+  const handleSalaryChange = (data: string) => {
+    if (data === '') return;
+
+    setEditedJobPost({ ...editedJobPost, salary: data });
+
+    dispatch(
+      updateJobPost({
+        accessToken: localStorage.getItem('accessToken'),
+        title: currentJobPost?.title,
+        companyName: currentJobPost?.company.name,
+        columnId: localStorage.getItem('columnId'),
+        jobPostId: job_id,
+        postUrl: '',
+        salary: data,
+        location: '',
+        color: '',
+        deadline: '',
+        description: '',
+      })
+    );
+  };
+
+  console.log('editedJobPost: ', editedJobPost);
+
+  useEffect(() => {}, []);
 
   return (
     <Card>
@@ -44,7 +83,9 @@ const JobInfo = () => {
                   stylings="space-y-1 w-1/3"
                   labelName="Salary"
                   id="salary"
-                  defaultValue={currentJobPost?.salary}
+                  sendData={handleSalaryChange}
+                  value={editedJobPost.salary}
+                  // defaultValue={currentJobPost?.salary}
                   placeholderName="+ add Salary"
                 />
               </div>
