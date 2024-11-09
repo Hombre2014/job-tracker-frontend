@@ -13,7 +13,7 @@ const InputElement = ({
   placeholderName,
   sendData,
 }: InputElementProps) => {
-  const [inputValue, setInputValue] = useState(value);
+  const [inputValue, setInputValue] = useState(value!);
 
   const handleBlur = () => {
     if (sendData) {

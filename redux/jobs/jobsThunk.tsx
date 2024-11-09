@@ -65,7 +65,6 @@ export const updateJobPost = createAsyncThunk(
       color,
       deadline,
       description,
-      statusChangedAt,
     } = values;
     const body = {
       title: title,
@@ -79,7 +78,6 @@ export const updateJobPost = createAsyncThunk(
       color: color,
       deadline: deadline,
       description: description,
-      statusChangedAt: statusChangedAt,
     };
     try {
       const res = await client.put(`/job-applications/${jobPostId}`, body, {
