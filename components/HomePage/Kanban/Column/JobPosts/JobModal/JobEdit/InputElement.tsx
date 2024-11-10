@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,11 +11,13 @@ const InputElement = ({
   labelName,
   defaultValue,
   placeholderName,
-  onChange,
+  sendData,
 }: InputElementProps) => {
-  const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (onChange) {
-      onChange(e);
+  const [inputValue, setInputValue] = useState(value!);
+
+  const handleBlur = () => {
+    if (sendData) {
+      sendData(inputValue);
     }
   };
 
@@ -24,8 +28,9 @@ const InputElement = ({
         id={id}
         defaultValue={defaultValue}
         placeholder={placeholderName}
-        value={value}
-        onChange={onChangeHandler}
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        onBlur={handleBlur}
       />
     </div>
   );

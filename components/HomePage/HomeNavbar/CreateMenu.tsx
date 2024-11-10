@@ -23,6 +23,7 @@ const createJobApplication = () => {
 };
 
 const createContact = () => {
+  clearDropDown();
   console.log('Contact created');
 };
 

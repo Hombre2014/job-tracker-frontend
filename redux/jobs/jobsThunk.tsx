@@ -49,3 +49,50 @@ export const getAllJobPostsPerColumn = createAsyncThunk(
     }
   }
 );
+
+export const updateJobPost = createAsyncThunk(
+  'jobs/updateJobPost',
+  async (values: any, thunkAPI) => {
+    const {
+      accessToken,
+      title,
+      company: { name: companyName },
+      // columnId,
+      jobPostId,
+      // postUrl,
+      salary,
+      // location,
+      // color,
+      // deadline,
+      // description,
+    } = values;
+    const body = {
+      title: title,
+      // columnId: columnId,
+      company: {
+        name: companyName,
+      },
+      // postUrl: postUrl,
+      salary: salary,
+      // location: location,
+      // color: color,
+      // deadline: deadline,
+      // description: description,
+    };
+    try {
+      const res = await client.put(`/job-applications/${jobPostId}`, body, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const data = res.data;
+      console.log('Data: ', data);
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error updating job post'
+      );
+    }
+  }
+);

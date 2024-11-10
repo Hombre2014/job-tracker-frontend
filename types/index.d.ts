@@ -116,5 +116,5 @@ interface InputElementProps {
   labelName?: string;
   defaultValue?: string;
   placeholderName?: string;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  sendData?: (value: string) => void;
 }
