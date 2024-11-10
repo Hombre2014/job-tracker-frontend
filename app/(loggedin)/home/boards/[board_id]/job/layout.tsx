@@ -41,10 +41,6 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
       columnId: localStorage.getItem('columnId'),
     };
 
-    setTimeout(() => {
-      console.log('jobPosts: ', jobPosts);
-    }, 3000);
-
     dispatch(getAllJobPostsPerColumn(jobPostsData));
   }, [dispatch, accessToken, board_id, job_id]);
 
@@ -59,6 +55,8 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
 
   const currentJobPost = jobPosts.find((jobPost) => jobPost.id === job_id);
   console.log('currentJobPost: ', currentJobPost);
+
+  console.log('jobPostsStatus: ', jobPostsStatus);
 
   return (
     <Modal stylings="sm:w-11/12 md:w-3/4 lg:w-2/3 xl:w-1/2">
