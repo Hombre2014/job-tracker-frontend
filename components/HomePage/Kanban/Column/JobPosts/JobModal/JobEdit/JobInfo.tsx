@@ -15,8 +15,11 @@ const JobInfo = () => {
   const currentJobPost = jobPosts.find((jobPost) => jobPost.id === job_id);
 
   const [editedJobPost, setEditedJobPost] = useState({
-    title: '',
-    company: '',
+    title: currentJobPost?.title,
+    company: {
+      name: currentJobPost?.company.name,
+    },
+    jobPostsId: job_id,
     location: '',
     salary: '',
     description: '',
@@ -34,7 +37,9 @@ const JobInfo = () => {
       updateJobPost({
         accessToken: localStorage.getItem('accessToken'),
         title: currentJobPost?.title,
-        companyName: currentJobPost?.company.name,
+        company: {
+          name: currentJobPost?.company.name,
+        },
         columnId: localStorage.getItem('columnId'),
         jobPostId: job_id,
         postUrl: '',
@@ -48,8 +53,6 @@ const JobInfo = () => {
   };
 
   console.log('editedJobPost: ', editedJobPost);
-
-  useEffect(() => {}, []);
 
   return (
     <Card>
@@ -84,7 +87,7 @@ const JobInfo = () => {
                   labelName="Salary"
                   id="salary"
                   sendData={handleSalaryChange}
-                  value={editedJobPost.salary}
+                  value={currentJobPost?.salary}
                   // defaultValue={currentJobPost?.salary}
                   placeholderName="+ add Salary"
                 />

@@ -54,6 +54,7 @@ export const jobsSlice = createSlice({
       })
       .addCase(updateJobPost.fulfilled, (state, action) => {
         state.jobPostsStatus = 'succeeded';
+        console.log('action.payload: ', action.payload);
         state.jobPosts = state.jobPosts.map((jobPost) =>
           jobPost.id === action.payload.id ? action.payload : jobPost
         );

@@ -56,7 +56,7 @@ export const updateJobPost = createAsyncThunk(
     const {
       accessToken,
       title,
-      companyName,
+      company: { name: companyName },
       columnId,
       jobPostId,
       postUrl,
@@ -87,6 +87,7 @@ export const updateJobPost = createAsyncThunk(
       });
 
       const data = res.data;
+      console.log('Data: ', data);
       return data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(

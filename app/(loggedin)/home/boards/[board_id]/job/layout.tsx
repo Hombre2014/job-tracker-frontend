@@ -22,6 +22,7 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   const dispatch = useAppDispatch();
   const accessToken = localStorage.getItem('accessToken');
   const { jobPosts } = useAppSelector((state) => state.jobs);
+  const { jobPostsStatus } = useAppSelector((state) => state.jobs);
   const selectJobPosts = useAppSelector((state) => state.jobs.jobPosts);
 
   console.log('selectJobPosts: ', selectJobPosts);
@@ -39,6 +40,11 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
       accessToken: accessToken as string,
       columnId: localStorage.getItem('columnId'),
     };
+
+    setTimeout(() => {
+      console.log('jobPosts: ', jobPosts);
+    }, 3000);
+
     dispatch(getAllJobPostsPerColumn(jobPostsData));
   }, [dispatch, accessToken, board_id, job_id]);
 
@@ -62,7 +68,7 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
             {currentJobPost?.title}
           </CardTitle>
           <CardDescription className="mx-4 mt-8 pb-12">
-            {currentJobPost?.company.name}
+            {jobPostsStatus === 'succeeded' && currentJobPost?.company.name}
           </CardDescription>
         </CardHeader>
         <CardContent>{children}</CardContent>
