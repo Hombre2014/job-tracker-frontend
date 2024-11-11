@@ -33,8 +33,8 @@ const JobPostCard = ({
   title,
   status,
   columnId,
-  companyName,
   timeStamp,
+  companyName,
 }: JobPostCardProps) => {
   const router = useRouter();
   const { board_id } = useParams();
@@ -48,13 +48,13 @@ const JobPostCard = ({
   };
 
   function getShortTimeSinceStatusChange(timeStamp: string): string {
-    const date = new Date(timeStamp);
     const now = new Date();
+    const date = new Date(timeStamp);
 
     const years = differenceInYears(now, date);
-    const months = differenceInMonths(now, date) % 12;
     const days = differenceInDays(now, date) % 30;
     const hours = differenceInHours(now, date) % 24;
+    const months = differenceInMonths(now, date) % 12;
     const minutes = differenceInMinutes(now, date) % 60;
     const seconds = differenceInSeconds(now, date) % 60;
 
@@ -69,7 +69,6 @@ const JobPostCard = ({
   const shortTimeSinceChange = getShortTimeSinceStatusChange(timeStamp);
 
   const handleJobPostClick = (id: string) => {
-    console.log('Job Post Clicked:', id);
     router.push(`/home/boards/${board_id}/job/${id}/job-details`);
     localStorage.setItem('columnId', columnId);
   };
