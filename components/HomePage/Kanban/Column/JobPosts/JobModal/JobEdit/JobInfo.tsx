@@ -40,7 +40,7 @@ const JobInfo = () => {
     description: '',
     deadline: '',
     postUrl: '',
-    color: '#8b5cf6',
+    color: currentJobPost?.color,
   });
 
   const handleSalaryChange = (data: string) => {
@@ -58,12 +58,7 @@ const JobInfo = () => {
         },
         columnId: localStorage.getItem('columnId'),
         jobPostId: job_id,
-        postUrl: '',
         salary: data,
-        location: '',
-        color: '',
-        deadline: '',
-        description: '',
       })
     );
   };

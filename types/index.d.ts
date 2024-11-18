@@ -15,7 +15,7 @@ type JobApplication = {
   id: string;
   column_id: string;
   title: string;
-  post_url: string;
+  postUrl: string;
   salary: string;
   location: string;
   description: string;
@@ -30,6 +30,8 @@ type JobApplication = {
     | 'Offer Received'
     | 'Job Moved';
   statusChangedAt: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 interface Column {
@@ -51,10 +53,12 @@ interface Board {
 interface JobPostCardProps {
   id: string;
   title: string;
+  color: string;
   status: string;
   columnId: string;
   timeStamp: string;
   companyName: string;
+  statusChangedTime: string;
 }
 
 interface WorkDocument {

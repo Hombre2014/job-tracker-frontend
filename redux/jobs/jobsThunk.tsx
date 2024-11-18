@@ -11,6 +11,7 @@ export const createJobPost = createAsyncThunk(
       company: {
         name: companyName,
       },
+      color: '#8b5cf6',
     };
     try {
       const res = await client.post('/job-applications', body, {
@@ -20,6 +21,7 @@ export const createJobPost = createAsyncThunk(
       });
 
       const data = res.data;
+      console.log('Create At time from Thunk: ', data.createdAt);
       return data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(
@@ -57,27 +59,27 @@ export const updateJobPost = createAsyncThunk(
       accessToken,
       title,
       company: { name: companyName },
-      // columnId,
+      columnId,
       jobPostId,
-      // postUrl,
+      postUrl,
       salary,
-      // location,
-      // color,
-      // deadline,
-      // description,
+      location,
+      color,
+      deadline,
+      description,
     } = values;
     const body = {
       title: title,
-      // columnId: columnId,
+      columnId: columnId,
       company: {
         name: companyName,
       },
-      // postUrl: postUrl,
+      postUrl: postUrl,
       salary: salary,
-      // location: location,
-      // color: color,
-      // deadline: deadline,
-      // description: description,
+      location: location,
+      color: color,
+      deadline: deadline,
+      description: description,
     };
     try {
       const res = await client.put(`/job-applications/${jobPostId}`, body, {
@@ -87,7 +89,6 @@ export const updateJobPost = createAsyncThunk(
       });
 
       const data = res.data;
-      console.log('Data: ', data);
       return data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(

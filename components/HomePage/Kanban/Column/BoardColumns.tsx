@@ -75,8 +75,6 @@ const BoardColumns = () => {
     dispatch(createJobPost(jobPost));
   };
 
-  console.log('Boards: ', boards);
-
   return (
     <div className="w-full flex h-full">
       {boardColumns &&
@@ -134,7 +132,9 @@ const BoardColumns = () => {
                   title={job.title}
                   companyName={job.company.name}
                   status="Job Created"
-                  timeStamp={job.statusChangedAt}
+                  statusChangedTime={job.statusChangedAt}
+                  timeStamp={job.createdAt}
+                  color={job.color}
                 />
               ))}
           </section>
