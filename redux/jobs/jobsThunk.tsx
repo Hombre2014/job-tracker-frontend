@@ -11,6 +11,7 @@ export const createJobPost = createAsyncThunk(
       company: {
         name: companyName,
       },
+      color: '#8b5cf6',
     };
     try {
       const res = await client.post('/job-applications', body, {
@@ -62,7 +63,7 @@ export const updateJobPost = createAsyncThunk(
       // postUrl,
       salary,
       // location,
-      // color,
+      color,
       // deadline,
       // description,
     } = values;
@@ -75,7 +76,7 @@ export const updateJobPost = createAsyncThunk(
       // postUrl: postUrl,
       salary: salary,
       // location: location,
-      // color: color,
+      color: color,
       // deadline: deadline,
       // description: description,
     };

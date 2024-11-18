@@ -14,6 +14,7 @@ import {
   differenceInSeconds,
 } from 'date-fns';
 
+import { cn } from '@/lib/utils';
 import { returnJobPostIcon } from '@/utils/ReturnIcons';
 import {
   Card,
@@ -31,16 +32,18 @@ import {
 const JobPostCard = ({
   id,
   title,
+  color,
   status,
   columnId,
   timeStamp,
   companyName,
 }: JobPostCardProps) => {
   const router = useRouter();
-  const { board_id } = useParams();
   const date = new Date(timeStamp);
+  const { board_id, job_id } = useParams();
   const [showIcons, setShowIcons] = useState(false);
   const formattedDate = format(date, 'MMMM do, yyyy, h:mm a');
+
   const toggleIcons = () => {
     setTimeout(() => {
       setShowIcons((prev) => !prev);
@@ -77,7 +80,11 @@ const JobPostCard = ({
     <Card
       onMouseEnter={toggleIcons}
       onMouseLeave={toggleIcons}
-      className="w-11/12 mx-auto mt-2 rounded-sm bg-violet-500 text-white"
+      style={{ backgroundColor: color }}
+      className={cn(
+        'w-11/12 mx-auto mt-2 rounded-sm text-white',
+        color === null ? 'bg-[#8b5cf6]' : `bg-[${color}]`
+      )}
       onClick={() => {
         handleJobPostClick(id);
       }}

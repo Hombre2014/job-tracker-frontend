@@ -15,7 +15,7 @@ type JobApplication = {
   id: string;
   column_id: string;
   title: string;
-  post_url: string;
+  postUrl: string;
   salary: string;
   location: string;
   description: string;
@@ -51,6 +51,7 @@ interface Board {
 interface JobPostCardProps {
   id: string;
   title: string;
+  color: string;
   status: string;
   columnId: string;
   timeStamp: string;
