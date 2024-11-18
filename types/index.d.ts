@@ -30,6 +30,8 @@ type JobApplication = {
     | 'Offer Received'
     | 'Job Moved';
   statusChangedAt: string;
+  createdAt: string;
+  updatedAt: string;
 };
 
 interface Column {
@@ -56,6 +58,7 @@ interface JobPostCardProps {
   columnId: string;
   timeStamp: string;
   companyName: string;
+  statusChangedTime: string;
 }
 
 interface WorkDocument {

@@ -132,7 +132,8 @@ const BoardColumns = () => {
                   title={job.title}
                   companyName={job.company.name}
                   status="Job Created"
-                  timeStamp={job.statusChangedAt}
+                  statusChangedTime={job.statusChangedAt}
+                  timeStamp={job.createdAt}
                   color={job.color}
                 />
               ))}

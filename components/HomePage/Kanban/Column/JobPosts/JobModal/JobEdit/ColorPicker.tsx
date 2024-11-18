@@ -75,7 +75,26 @@ const ColorPicker = () => {
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <DropdownMenuItem>
-            <TwitterPicker color={companyColor} onChange={handleColorChange} />
+            <TwitterPicker
+              color={companyColor}
+              onChange={handleColorChange}
+              colors={[
+                '#FF6900',
+                '#FCB900',
+                '#7BDCB5',
+                '#00D084',
+                '#8ED1FC',
+                '#0693E3',
+                '#ABB8C3',
+                '#EB144C',
+                '#F78DA7',
+                '#7c2d12',
+                '#857e28',
+                '#d531e4',
+                '#f04141',
+                '#6a776b',
+              ]}
+            />
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem>

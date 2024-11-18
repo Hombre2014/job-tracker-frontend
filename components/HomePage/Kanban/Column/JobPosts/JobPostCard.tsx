@@ -1,18 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { format } from 'date-fns';
 import { LiaLinkSolid } from 'react-icons/lia';
 import { RiDeleteBinLine } from 'react-icons/ri';
 import { useRouter, useParams } from 'next/navigation';
-import {
-  format,
-  differenceInYears,
-  differenceInMonths,
-  differenceInDays,
-  differenceInHours,
-  differenceInMinutes,
-  differenceInSeconds,
-} from 'date-fns';
 
 import { cn } from '@/lib/utils';
 import { returnJobPostIcon } from '@/utils/ReturnIcons';
@@ -37,10 +29,11 @@ const JobPostCard = ({
   columnId,
   timeStamp,
   companyName,
+  statusChangedTime,
 }: JobPostCardProps) => {
   const router = useRouter();
+  const { board_id } = useParams();
   const date = new Date(timeStamp);
-  const { board_id, job_id } = useParams();
   const [showIcons, setShowIcons] = useState(false);
   const formattedDate = format(date, 'MMMM do, yyyy, h:mm a');
 
@@ -51,22 +44,24 @@ const JobPostCard = ({
   };
 
   function getShortTimeSinceStatusChange(timeStamp: string): string {
-    const now = new Date();
-    const date = new Date(timeStamp);
+    const nowTime = Date.now();
+    const adjustedTimeStamp = new Date(Date.parse(timeStamp) + 60 * 60 * 1000); // Add 1 hour
+    const dateTime = adjustedTimeStamp.getTime();
 
-    const years = differenceInYears(now, date);
-    const days = differenceInDays(now, date) % 30;
-    const hours = differenceInHours(now, date) % 24;
-    const months = differenceInMonths(now, date) % 12;
-    const minutes = differenceInMinutes(now, date) % 60;
-    const seconds = differenceInSeconds(now, date) % 60;
+    const diffInMs = nowTime - dateTime;
+    const diffInSeconds = Math.floor(diffInMs / 1000);
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+    const diffInMonths = Math.floor(diffInDays / 30);
+    const diffInYears = Math.floor(diffInMonths / 12);
 
-    if (years > 0) return `${years}y`;
-    if (months > 0) return `${months}mo`;
-    if (days > 0) return `${days}d`;
-    if (hours > 0) return `${hours}h`;
-    if (minutes > 0) return `${minutes}m`;
-    return `${seconds}s`;
+    if (diffInYears > 0) return `${diffInYears}y`;
+    if (diffInMonths > 0) return `${diffInMonths}mo`;
+    if (diffInDays > 0) return `${diffInDays}d`;
+    if (diffInHours > 0) return `${diffInHours}h`;
+    if (diffInMinutes > 0) return `${diffInMinutes}m`;
+    return `${diffInSeconds}s`;
   }
 
   const shortTimeSinceChange = getShortTimeSinceStatusChange(timeStamp);
@@ -83,7 +78,7 @@ const JobPostCard = ({
       style={{ backgroundColor: color }}
       className={cn(
         'w-11/12 mx-auto mt-2 rounded-sm text-white',
-        color === null ? 'bg-[#8b5cf6]' : `bg-[${color}]`
+        color === null ? 'bg-[#6a776b]' : `bg-[${color}]`
       )}
       onClick={() => {
         handleJobPostClick(id);

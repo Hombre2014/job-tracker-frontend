@@ -30,6 +30,7 @@ export const jobsSlice = createSlice({
       })
       .addCase(createJobPost.fulfilled, (state, action) => {
         state.jobPostsStatus = 'succeeded';
+        console.log('Create At time: ', action.payload.createdAt);
         state.jobPosts.push(action.payload);
         state.error = null;
       })
@@ -54,7 +55,6 @@ export const jobsSlice = createSlice({
       })
       .addCase(updateJobPost.fulfilled, (state, action) => {
         state.jobPostsStatus = 'succeeded';
-        console.log('action.payload: ', action.payload);
         state.jobPosts = state.jobPosts.map((jobPost) =>
           jobPost.id === action.payload.id ? action.payload : jobPost
         );
