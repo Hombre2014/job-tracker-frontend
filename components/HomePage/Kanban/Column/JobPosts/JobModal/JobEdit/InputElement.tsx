@@ -17,7 +17,7 @@ const InputElement = ({
 
   const handleBlur = () => {
     if (sendData) {
-      sendData(inputValue);
+      sendData(id, inputValue);
     }
   };
 

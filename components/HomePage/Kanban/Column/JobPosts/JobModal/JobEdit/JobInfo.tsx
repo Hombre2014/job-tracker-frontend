@@ -40,67 +40,30 @@ const JobInfo = () => {
     description: '',
     deadline: '',
     postUrl: '',
-    color: currentJobPost?.color,
+    color: '',
   });
 
-  const handleSalaryChange = (data: string) => {
-    if (data === '') return;
+  const handleFieldChange = (fieldName: string, value: string) => {
+    if (value === '') return;
 
-    setEditedJobPost({ ...editedJobPost, salary: data });
+    // Update the local state
+    setEditedJobPost({ ...editedJobPost, [fieldName]: value });
     setFirstVisit(false);
 
-    dispatch(
-      updateJobPost({
-        accessToken: localStorage.getItem('accessToken'),
-        title: currentJobPost?.title,
-        company: {
-          name: currentJobPost?.company.name,
-        },
-        columnId: localStorage.getItem('columnId'),
-        jobPostId: job_id,
-        salary: data,
-      })
-    );
-  };
+    // Prepare the payload dynamically
+    const updatePayload = {
+      accessToken: localStorage.getItem('accessToken'),
+      title: currentJobPost?.title,
+      company: {
+        name: currentJobPost?.company.name,
+      },
+      columnId: localStorage.getItem('columnId'),
+      jobPostId: job_id,
+      [fieldName]: value, // Dynamic field
+    };
 
-  const handlePostUrlChange = (data: string) => {
-    if (data === '') return;
-
-    setEditedJobPost({ ...editedJobPost, postUrl: data });
-    setFirstVisit(false);
-
-    dispatch(
-      updateJobPost({
-        accessToken: localStorage.getItem('accessToken'),
-        title: currentJobPost?.title,
-        company: {
-          name: currentJobPost?.company.name,
-        },
-        columnId: localStorage.getItem('columnId'),
-        jobPostId: job_id,
-        postUrl: data,
-      })
-    );
-  };
-
-  const handleLocationChange = (data: string) => {
-    if (data === '') return;
-
-    setEditedJobPost({ ...editedJobPost, location: data });
-    setFirstVisit(false);
-
-    dispatch(
-      updateJobPost({
-        accessToken: localStorage.getItem('accessToken'),
-        title: currentJobPost?.title,
-        company: {
-          name: currentJobPost?.company.name,
-        },
-        columnId: localStorage.getItem('columnId'),
-        jobPostId: job_id,
-        location: data,
-      })
-    );
+    // Dispatch the thunk with the updated payload
+    dispatch(updateJobPost(updatePayload));
   };
 
   useEffect(() => {
@@ -146,10 +109,10 @@ const JobInfo = () => {
                 </div>
                 <div className="flex gap-2">
                   <InputElement
-                    id="post-url"
+                    id="postUrl"
                     labelName="Post URL"
                     stylings="space-y-1 w-2/3"
-                    sendData={handlePostUrlChange}
+                    sendData={handleFieldChange}
                     value={currentJobPost?.postUrl}
                     placeholderName="+ add URL"
                   />
@@ -157,7 +120,7 @@ const JobInfo = () => {
                     id="salary"
                     labelName="Salary"
                     stylings="space-y-1 w-1/3"
-                    sendData={handleSalaryChange}
+                    sendData={handleFieldChange}
                     value={currentJobPost?.salary}
                     placeholderName="+ add Salary"
                   />
@@ -167,7 +130,7 @@ const JobInfo = () => {
                     id="location"
                     labelName="Location"
                     stylings="space-y-1 w-2/3"
-                    sendData={handleLocationChange}
+                    sendData={handleFieldChange}
                     value={currentJobPost?.location}
                     placeholderName="+ add location"
                   />

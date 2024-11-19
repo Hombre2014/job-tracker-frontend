@@ -118,7 +118,8 @@ interface InputElementProps {
   value?: string;
   stylings?: string;
   labelName?: string;
+  fieldName?: string;
   defaultValue?: string;
   placeholderName?: string;
-  sendData?: (value: string) => void;
+  sendData?: (fieldName: string, value: string) => void;
 }
