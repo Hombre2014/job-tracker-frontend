@@ -45,7 +45,7 @@ const JobPostCard = ({
 
   function getShortTimeSinceStatusChange(timeStamp: string): string {
     const nowTime = Date.now();
-    const adjustedTimeStamp = new Date(Date.parse(timeStamp) + 60 * 60 * 1000); // Add 1 hour
+    const adjustedTimeStamp = new Date(Date.parse(timeStamp) + 60 * 60 * 1000); // Add 1 hour due to timezone difference between server Docker container and client
     const dateTime = adjustedTimeStamp.getTime();
 
     const diffInMs = nowTime - dateTime;
@@ -112,7 +112,7 @@ const JobPostCard = ({
                     {shortTimeSinceChange}
                   </span>
                 </TooltipTrigger>
-                <TooltipContent>
+                <TooltipContent className="bg-slate-300 !min-w-[250px] text-gray-900">
                   <p>
                     <span>{status}</span>
                     <span> | </span>

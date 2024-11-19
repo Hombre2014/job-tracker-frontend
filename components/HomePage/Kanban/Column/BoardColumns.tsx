@@ -51,8 +51,8 @@ const BoardColumns = () => {
     dispatch(
       updateColumnName({
         accessToken,
-        name: renamedColumnName,
         id: currentColumnId,
+        name: renamedColumnName,
       })
     );
     dispatch(getBoards(accessToken as string));
@@ -66,10 +66,10 @@ const BoardColumns = () => {
 
   const createJobApplication = () => {
     const jobPost = {
-      title: localStorage.getItem('jobTitle'),
-      companyName: localStorage.getItem('company'),
       columnId,
       accessToken: accessToken as string,
+      title: localStorage.getItem('jobTitle'),
+      companyName: localStorage.getItem('company'),
     };
 
     dispatch(createJobPost(jobPost));
@@ -97,12 +97,12 @@ const BoardColumns = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     setIsEditing(true);
-                    setRenamedColumnName(column.name);
                     setCurrentColumnId(column.id);
+                    setRenamedColumnName(column.name);
                   }}
-                  onChange={(e) => handleColumnNameChange(e)}
-                  onKeyDown={(e) => checkForEnter(e)}
                   onBlur={confirmColumnNameChange}
+                  onKeyDown={(e) => checkForEnter(e)}
+                  onChange={(e) => handleColumnNameChange(e)}
                 />
               </p>
               <ThreeDotsMenu columnOrder={column.order} />
@@ -114,9 +114,9 @@ const BoardColumns = () => {
             </div>
             <AlertDialogModal
               buttonLabel="+"
-              buttonVariant="outline"
               dialogTitle="Add Job"
               buttonCancel="Discard"
+              buttonVariant="outline"
               buttonConfirm="Save Job"
               actionFunction={createJobApplication}
               stylings="w-11/12 flex justify-center text-2xl border py-3 mb-4 mx-auto rounded-md hover:border-blue-500 transition duration-300 delay-150 cursor-pointer"
@@ -126,15 +126,15 @@ const BoardColumns = () => {
             {column.jobApplications &&
               column.jobApplications.map((job) => (
                 <JobPostCard
-                  key={job.id}
                   id={job.id}
-                  columnId={column.id}
+                  key={job.id}
                   title={job.title}
-                  companyName={job.company.name}
-                  status="Job Created"
-                  statusChangedTime={job.statusChangedAt}
-                  timeStamp={job.createdAt}
                   color={job.color}
+                  columnId={column.id}
+                  status="Job Created"
+                  timeStamp={job.createdAt}
+                  companyName={job.company.name}
+                  statusChangedTime={job.statusChangedAt}
                 />
               ))}
           </section>
