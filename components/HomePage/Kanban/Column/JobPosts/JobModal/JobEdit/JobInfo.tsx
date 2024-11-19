@@ -14,6 +14,7 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getAllJobPostsPerColumn, updateJobPost } from '@/redux/jobs/jobsThunk';
 import {
   Popover,
+  PopoverClose,
   PopoverAnchor,
   PopoverContent,
   PopoverTrigger,
@@ -84,6 +85,7 @@ const JobInfo = () => {
 
   const handleSelect = (date: Date) => {
     setDate(date);
+    console.log('Set date: ', date.toLocaleDateString());
   };
 
   return (
@@ -165,12 +167,14 @@ const JobInfo = () => {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={handleSelect}
-                    initialFocus
-                  />
+                  <PopoverClose>
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={handleSelect}
+                      initialFocus
+                    />
+                  </PopoverClose>
                 </PopoverContent>
                 <PopoverAnchor />
               </Popover>
