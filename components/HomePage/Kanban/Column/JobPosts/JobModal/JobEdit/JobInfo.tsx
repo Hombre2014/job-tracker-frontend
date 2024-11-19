@@ -14,7 +14,6 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getAllJobPostsPerColumn, updateJobPost } from '@/redux/jobs/jobsThunk';
 import {
   Popover,
-  PopoverClose,
   PopoverAnchor,
   PopoverContent,
   PopoverTrigger,
@@ -26,6 +25,7 @@ const JobInfo = () => {
   const [date, setDate] = useState<Date | null>(null);
   const [firstVisit, setFirstVisit] = useState(false);
   const { jobPosts } = useAppSelector((state) => state.jobs);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const { jobPostsStatus } = useAppSelector((state) => state.jobs);
   const currentJobPost = jobPosts.find((jobPost) => jobPost.id === job_id);
 
@@ -85,8 +85,14 @@ const JobInfo = () => {
 
   const handleSelect = (date: Date) => {
     setDate(date);
-    console.log('Set date: ', date.toLocaleDateString());
+    const deadline = date.toLocaleDateString();
+    handleFieldChange('deadline', deadline);
+    setIsCalendarOpen(false);
   };
+
+  const formattedDate = currentJobPost?.deadline
+    ? format(currentJobPost?.deadline, 'MMMM do, yyyy')
+    : '';
 
   return (
     <Card>
@@ -150,7 +156,7 @@ const JobInfo = () => {
             </div>
             <div className="mt-8 flex flex-col w-1/3">
               <span>Deadline</span>
-              <Popover>
+              <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant={'outline'}
@@ -162,19 +168,21 @@ const JobInfo = () => {
                     {date ? (
                       format(date, 'PPP')
                     ) : (
-                      <span>Deadline + set date</span>
+                      <span>
+                        {currentJobPost?.deadline
+                          ? formattedDate
+                          : 'Deadline + set date'}
+                      </span>
                     )}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
-                  <PopoverClose>
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={handleSelect}
-                      initialFocus
-                    />
-                  </PopoverClose>
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={handleSelect}
+                    initialFocus
+                  />
                 </PopoverContent>
                 <PopoverAnchor />
               </Popover>
