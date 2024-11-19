@@ -63,6 +63,26 @@ const JobInfo = () => {
     );
   };
 
+  const handlePostUrlChange = (data: string) => {
+    if (data === '') return;
+
+    setEditedJobPost({ ...editedJobPost, postUrl: data });
+    setFirstVisit(false);
+
+    dispatch(
+      updateJobPost({
+        accessToken: localStorage.getItem('accessToken'),
+        title: currentJobPost?.title,
+        company: {
+          name: currentJobPost?.company.name,
+        },
+        columnId: localStorage.getItem('columnId'),
+        jobPostId: job_id,
+        postUrl: data,
+      })
+    );
+  };
+
   useEffect(() => {
     if (!firstVisit) {
       setFirstVisit(true);
@@ -106,16 +126,17 @@ const JobInfo = () => {
                 </div>
                 <div className="flex gap-2">
                   <InputElement
-                    stylings="space-y-1 w-2/3"
-                    labelName="Post URL"
                     id="post-url"
-                    defaultValue=""
+                    labelName="Post URL"
+                    stylings="space-y-1 w-2/3"
+                    sendData={handlePostUrlChange}
+                    value={currentJobPost?.postUrl}
                     placeholderName="+ add URL"
                   />
                   <InputElement
-                    stylings="space-y-1 w-1/3"
-                    labelName="Salary"
                     id="salary"
+                    labelName="Salary"
+                    stylings="space-y-1 w-1/3"
                     sendData={handleSalaryChange}
                     value={currentJobPost?.salary}
                     placeholderName="+ add Salary"
