@@ -83,6 +83,26 @@ const JobInfo = () => {
     );
   };
 
+  const handleLocationChange = (data: string) => {
+    if (data === '') return;
+
+    setEditedJobPost({ ...editedJobPost, location: data });
+    setFirstVisit(false);
+
+    dispatch(
+      updateJobPost({
+        accessToken: localStorage.getItem('accessToken'),
+        title: currentJobPost?.title,
+        company: {
+          name: currentJobPost?.company.name,
+        },
+        columnId: localStorage.getItem('columnId'),
+        jobPostId: job_id,
+        location: data,
+      })
+    );
+  };
+
   useEffect(() => {
     if (!firstVisit) {
       setFirstVisit(true);
@@ -144,10 +164,11 @@ const JobInfo = () => {
                 </div>
                 <div className="flex gap-2">
                   <InputElement
-                    stylings="space-y-1 w-2/3"
-                    labelName="Location"
                     id="location"
-                    defaultValue=""
+                    labelName="Location"
+                    stylings="space-y-1 w-2/3"
+                    sendData={handleLocationChange}
+                    value={currentJobPost?.location}
                     placeholderName="+ add location"
                   />
                   <ColorPicker />
