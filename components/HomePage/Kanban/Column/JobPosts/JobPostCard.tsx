@@ -20,12 +20,14 @@ import {
   TooltipContent,
   TooltipProvider,
 } from '@/components/ui/tooltip';
+import Link from 'next/link';
 
 const JobPostCard = ({
   id,
   title,
   color,
   status,
+  postUrl,
   columnId,
   timeStamp,
   companyName,
@@ -42,6 +44,8 @@ const JobPostCard = ({
       setShowIcons((prev) => !prev);
     }, 200);
   };
+
+  console.log('PostURLL in JobPostCard: ', postUrl);
 
   function getShortTimeSinceStatusChange(timeStamp: string): string {
     const nowTime = Date.now();
@@ -100,7 +104,9 @@ const JobPostCard = ({
             <div className="h-[24px] w-[24px] rounded-md p-[1px]"></div>
           )}
           {showIcons ? (
-            <LiaLinkSolid className="h-[24px] w-[24px] border rounded-md p-[1px] cursor-pointer hover:border-gray-400" />
+            <Link href={postUrl || '#'} rel="noopener" target="_blank">
+              <LiaLinkSolid className="h-[24px] w-[24px] border rounded-md p-[1px] cursor-pointer hover:border-gray-400" />
+            </Link>
           ) : (
             <div className="h-[24px] w-[24px] rounded-md p-[1px]"></div>
           )}
