@@ -14,9 +14,9 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getAllJobPostsPerColumn, updateJobPost } from '@/redux/jobs/jobsThunk';
 import {
   Popover,
+  PopoverAnchor,
   PopoverContent,
   PopoverTrigger,
-  PopoverAnchor,
 } from '@/components/ui/popover';
 
 const JobInfo = () => {
@@ -25,42 +25,46 @@ const JobInfo = () => {
   const [date, setDate] = useState<Date | null>(null);
   const [firstVisit, setFirstVisit] = useState(false);
   const { jobPosts } = useAppSelector((state) => state.jobs);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const { jobPostsStatus } = useAppSelector((state) => state.jobs);
   const currentJobPost = jobPosts.find((jobPost) => jobPost.id === job_id);
 
   const [editedJobPost, setEditedJobPost] = useState({
+    color: '',
+    salary: '',
+    postUrl: '',
+    location: '',
+    deadline: '',
+    description: '',
+    jobPostsId: job_id,
     title: currentJobPost?.title,
+    columnId: localStorage.getItem('columnId'),
     company: {
       name: currentJobPost?.company.name,
     },
-    jobPostsId: job_id,
-    columnId: localStorage.getItem('columnId'),
-    location: '',
-    salary: '',
-    description: '',
-    deadline: '',
-    postUrl: '',
-    color: currentJobPost?.color,
   });
 
-  const handleSalaryChange = (data: string) => {
-    if (data === '') return;
+  const handleFieldChange = (fieldName: string, value: string) => {
+    if (value === '') return;
 
-    setEditedJobPost({ ...editedJobPost, salary: data });
+    // Update the local state
+    setEditedJobPost({ ...editedJobPost, [fieldName]: value });
     setFirstVisit(false);
 
-    dispatch(
-      updateJobPost({
-        accessToken: localStorage.getItem('accessToken'),
-        title: currentJobPost?.title,
-        company: {
-          name: currentJobPost?.company.name,
-        },
-        columnId: localStorage.getItem('columnId'),
-        jobPostId: job_id,
-        salary: data,
-      })
-    );
+    // Prepare the payload dynamically
+    const updatePayload = {
+      accessToken: localStorage.getItem('accessToken'),
+      title: currentJobPost?.title,
+      company: {
+        name: currentJobPost?.company.name,
+      },
+      columnId: localStorage.getItem('columnId'),
+      jobPostId: job_id,
+      [fieldName]: value, // Dynamic field
+    };
+
+    // Dispatch the thunk with the updated payload
+    dispatch(updateJobPost(updatePayload));
   };
 
   useEffect(() => {
@@ -81,7 +85,14 @@ const JobInfo = () => {
 
   const handleSelect = (date: Date) => {
     setDate(date);
+    const deadline = date.toLocaleDateString();
+    handleFieldChange('deadline', deadline);
+    setIsCalendarOpen(false);
   };
+
+  const formattedDate = currentJobPost?.deadline
+    ? format(currentJobPost?.deadline, 'MMMM do, yyyy')
+    : '';
 
   return (
     <Card>
@@ -92,55 +103,60 @@ const JobInfo = () => {
               <div className="flex flex-col w-full gap-4">
                 <div className="flex gap-2">
                   <InputElement
-                    stylings="space-y-1 w-1/2"
-                    labelName="Company"
                     id="company"
+                    labelName="Company"
+                    stylings="space-y-1 w-1/2"
                     defaultValue={currentJobPost?.company.name}
                   />
                   <InputElement
-                    stylings="space-y-1 w-1/2"
-                    labelName="Job Title"
                     id="job-title"
+                    labelName="Job Title"
+                    stylings="space-y-1 w-1/2"
                     defaultValue={currentJobPost?.title}
                   />
                 </div>
                 <div className="flex gap-2">
                   <InputElement
-                    stylings="space-y-1 w-2/3"
+                    id="postUrl"
                     labelName="Post URL"
-                    id="post-url"
-                    defaultValue=""
+                    stylings="space-y-1 w-2/3"
                     placeholderName="+ add URL"
+                    sendData={handleFieldChange}
+                    value={currentJobPost?.postUrl}
                   />
                   <InputElement
-                    stylings="space-y-1 w-1/3"
-                    labelName="Salary"
                     id="salary"
-                    sendData={handleSalaryChange}
+                    labelName="Salary"
+                    stylings="space-y-1 w-1/3"
+                    sendData={handleFieldChange}
                     value={currentJobPost?.salary}
                     placeholderName="+ add Salary"
                   />
                 </div>
                 <div className="flex gap-2">
                   <InputElement
-                    stylings="space-y-1 w-2/3"
-                    labelName="Location"
                     id="location"
-                    defaultValue=""
+                    labelName="Location"
+                    stylings="space-y-1 w-2/3"
+                    sendData={handleFieldChange}
+                    value={currentJobPost?.location}
                     placeholderName="+ add location"
                   />
                   <ColorPicker />
                 </div>
                 <TextEditor
-                  initialText="Type your description here..."
+                  id="description"
                   title="Description"
                   buttonVisibility={false}
+                  sendData={handleFieldChange}
+                  initialText="Add a description"
+                  value={currentJobPost?.description}
                 />
               </div>
             </div>
             <div className="mt-8 flex flex-col w-1/3">
               <span>Deadline</span>
-              <Popover>
+              <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant={'outline'}
@@ -152,7 +168,11 @@ const JobInfo = () => {
                     {date ? (
                       format(date, 'PPP')
                     ) : (
-                      <span>Deadline + set date</span>
+                      <span>
+                        {currentJobPost?.deadline
+                          ? formattedDate
+                          : 'Deadline + set date'}
+                      </span>
                     )}
                   </Button>
                 </PopoverTrigger>

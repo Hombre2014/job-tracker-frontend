@@ -1,47 +1,59 @@
 import { useState } from 'react';
-
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import {
-  BtnBold,
-  BtnItalic,
-  BtnUnderline,
   Editor,
+  BtnBold,
+  Toolbar,
   BtnUndo,
   BtnRedo,
-  createButton,
-  EditorProvider,
-  BtnStrikeThrough,
-  Separator,
-  Toolbar,
-  BtnBulletList,
-  BtnNumberedList,
   BtnLink,
-  HtmlButton,
   BtnStyles,
+  BtnItalic,
+  Separator,
+  HtmlButton,
+  BtnUnderline,
+  createButton,
+  BtnBulletList,
+  EditorProvider,
+  BtnNumberedList,
+  BtnStrikeThrough,
 } from 'react-simple-wysiwyg';
+
 import { cn } from '@/lib/utils';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 
 const TextEditor = ({
+  id,
+  title,
+  value,
   backColor,
   initialText,
-  title,
   buttonVisibility,
+  sendData,
 }: {
+  id: string;
+  title?: string;
+  value?: string;
   backColor?: string;
   initialText?: string;
-  title?: string;
   buttonVisibility?: boolean;
+  sendData?: (id: string, data: string) => void;
 }) => {
-  const [html, setHtml] = useState(initialText);
+  const [html, setHtml] = useState(value || initialText);
   const handleDescription = (e: any) => {
     setHtml(e.target.value);
     console.log(e.target.value);
   };
 
-  const BtnAlignCenter = createButton('Align center', '≡', 'justifyCenter');
-  const BtnAlignRight = createButton('Align right', '⟞', 'justifyRight');
   const BtnAlignLeft = createButton('Align left', '⟝', 'justifyLeft');
+  const BtnAlignRight = createButton('Align right', '⟞', 'justifyRight');
+  const BtnAlignCenter = createButton('Align center', '≡', 'justifyCenter');
+
+  const handleBlur = () => {
+    if (sendData) {
+      sendData(id, html!);
+    }
+  };
 
   return (
     <div className="flex gap-2">
@@ -49,12 +61,18 @@ const TextEditor = ({
         <Label htmlFor="description">{title}</Label>
         <EditorProvider>
           <Editor
-            id="description"
+            id={id}
             value={html}
             style={{ backgroundColor: `${backColor}` }}
             onChange={handleDescription}
+            onBlur={handleBlur}
             containerProps={{
-              style: { resize: 'vertical', minHeight: '200px' },
+              style: {
+                resize: 'vertical',
+                minHeight: '200px',
+                maxHeight: '280px',
+                overflow: 'auto',
+              },
             }}
           >
             <Toolbar>

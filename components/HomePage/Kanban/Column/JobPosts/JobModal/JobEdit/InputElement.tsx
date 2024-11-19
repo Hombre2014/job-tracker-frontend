@@ -17,7 +17,7 @@ const InputElement = ({
 
   const handleBlur = () => {
     if (sendData) {
-      sendData(inputValue);
+      sendData(id, inputValue);
     }
   };
 
@@ -26,11 +26,11 @@ const InputElement = ({
       <Label htmlFor={id}>{labelName}</Label>
       <Input
         id={id}
+        value={inputValue}
         defaultValue={defaultValue}
         placeholder={placeholderName}
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
         onBlur={handleBlur}
+        onChange={(e) => setInputValue(e.target.value)}
       />
     </div>
   );

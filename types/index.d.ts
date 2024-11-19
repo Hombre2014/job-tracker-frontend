@@ -5,23 +5,26 @@ type MenuItemProps = {
 
 type Company = {
   id: string;
-  name: string;
-  description: string;
   url: string;
+  name: string;
   industry: string;
+  description: string;
 };
 
 type JobApplication = {
   id: string;
-  column_id: string;
   title: string;
-  postUrl: string;
-  salary: string;
-  location: string;
-  description: string;
   color: string;
+  salary: string;
+  postUrl: string;
+  location: string;
   deadline: string;
   company: Company;
+  column_id: string;
+  createdAt: string;
+  updatedAt: string;
+  description: string;
+  statusChangedAt: string;
   jobPostStatus:
     | 'Job Created'
     | 'Deadline'
@@ -29,9 +32,6 @@ type JobApplication = {
     | 'Interview'
     | 'Offer Received'
     | 'Job Moved';
-  statusChangedAt: string;
-  createdAt: string;
-  updatedAt: string;
 };
 
 interface Column {
@@ -45,9 +45,9 @@ interface Column {
 interface Board {
   id: string;
   name: string;
+  userId: string;
   columns: Column[];
   isArchived: boolean;
-  userId: string;
 }
 
 interface JobPostCardProps {
@@ -63,12 +63,12 @@ interface JobPostCardProps {
 
 interface WorkDocument {
   id: string;
-  userId: string;
+  url: string;
   title: string;
+  userId: string;
+  boardId: string;
   category: string;
   description?: string;
-  url: string;
-  boardId: string;
 }
 
 interface ComboBoxProps {
@@ -78,39 +78,39 @@ interface ComboBoxProps {
 }
 
 interface LinkDocumentProps {
-  docs: WorkDocument[];
   searchItem: string;
+  docs: WorkDocument[];
   initialString: string;
 }
 
 interface ComboBoardListBoxProps {
-  items: Board[] | Column[];
-  itemsType?: 'boards' | 'columns';
   searchItem: string;
   initialString: string;
+  items: Board[] | Column[];
+  itemsType?: 'boards' | 'columns';
 }
 
 interface AlertDialogProps {
   buttonLabel?: React.ReactNode;
   buttonVariant?:
+    | null
     | 'link'
-    | 'default'
-    | 'destructive'
-    | 'outline'
-    | 'outlineNew'
-    | 'secondary'
+    | 'none'
     | 'ghost'
     | 'normal'
-    | 'none'
-    | null
+    | 'default'
+    | 'outline'
+    | 'secondary'
+    | 'outlineNew'
+    | 'destructive'
     | undefined;
+  stylings?: string;
   dialogTitle: string;
   dialogText?: string;
-  buttonConfirm: string;
   buttonCancel: string;
-  actionFunction?: () => void;
-  stylings?: string;
+  buttonConfirm: string;
   children?: React.ReactNode;
+  actionFunction?: () => void;
 }
 
 interface InputElementProps {
@@ -118,7 +118,8 @@ interface InputElementProps {
   value?: string;
   stylings?: string;
   labelName?: string;
+  fieldName?: string;
   defaultValue?: string;
   placeholderName?: string;
-  sendData?: (value: string) => void;
+  sendData?: (fieldName: string, value: string) => void;
 }
