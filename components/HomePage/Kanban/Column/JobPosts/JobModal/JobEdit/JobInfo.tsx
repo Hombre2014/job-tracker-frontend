@@ -44,17 +44,48 @@ const JobInfo = () => {
     },
   });
 
-  const handleFieldChange = (fieldName: string, value: string) => {
-    if (value === '') return;
+  const validatePostUrl = (url: string) => {
+    const urlPattern =
+      /^(https?:\/\/)(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\S*)?$/;
+
+    if (urlPattern.test(url) || url === '') {
+      return { valid: true, message: 'Valid URL format.' };
+    } else {
+      return {
+        valid: false,
+        message: 'Invalid URL format. Example: https://www.example.com',
+      };
+    }
+  };
+
+  const handleFieldChange = (
+    fieldName: keyof JobApplication,
+    value: string
+  ) => {
+    if (fieldName === 'postUrl') {
+      const urlValidation = validatePostUrl(value);
+      if (!urlValidation.valid) {
+        alert(urlValidation.message);
+        return;
+      }
+    }
 
     // Update the local state
     setEditedJobPost({ ...editedJobPost, [fieldName]: value });
     setFirstVisit(false);
 
+    // Check the payload if it is the same as the current job post data
+
+    if (currentJobPost) {
+      if (currentJobPost[fieldName] === value) {
+        return;
+      }
+    }
+
     // Prepare the payload dynamically
     const updatePayload = {
       accessToken: localStorage.getItem('accessToken'),
-      title: currentJobPost?.title,
+      // title: currentJobPost?.title,
       company: {
         name: currentJobPost?.company.name,
       },
@@ -83,9 +114,9 @@ const JobInfo = () => {
     dispatch(getAllJobPostsPerColumn(jobPostsData));
   }, [dispatch, job_id]);
 
-  const handleSelect = (date: Date) => {
-    setDate(date);
-    const deadline = date.toLocaleDateString();
+  const handleSelectDeadline = (date: Date | undefined) => {
+    setDate(date!);
+    const deadline = date!.toLocaleDateString();
     handleFieldChange('deadline', deadline);
     setIsCalendarOpen(false);
   };
@@ -109,10 +140,11 @@ const JobInfo = () => {
                     defaultValue={currentJobPost?.company.name}
                   />
                   <InputElement
-                    id="job-title"
+                    id="title"
                     labelName="Job Title"
                     stylings="space-y-1 w-1/2"
-                    defaultValue={currentJobPost?.title}
+                    sendData={handleFieldChange}
+                    value={currentJobPost?.title}
                   />
                 </div>
                 <div className="flex gap-2">
@@ -120,9 +152,9 @@ const JobInfo = () => {
                     id="postUrl"
                     labelName="Post URL"
                     stylings="space-y-1 w-2/3"
-                    placeholderName="+ add URL"
                     sendData={handleFieldChange}
                     value={currentJobPost?.postUrl}
+                    placeholderName="+ add URL e.g. https://google.com"
                   />
                   <InputElement
                     id="salary"
@@ -179,8 +211,8 @@ const JobInfo = () => {
                 <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
-                    selected={date}
-                    onSelect={handleSelect}
+                    selected={date!}
+                    onSelect={handleSelectDeadline}
                     initialFocus
                   />
                 </PopoverContent>
