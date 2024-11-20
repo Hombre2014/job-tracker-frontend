@@ -30,19 +30,10 @@ const TextEditor = ({
   initialText,
   buttonVisibility,
   sendData,
-}: {
-  id: string;
-  title?: string;
-  value?: string;
-  backColor?: string;
-  initialText?: string;
-  buttonVisibility?: boolean;
-  sendData?: (id: string, data: string) => void;
-}) => {
+}: TextEditorProps) => {
   const [html, setHtml] = useState(value || initialText);
   const handleDescription = (e: any) => {
     setHtml(e.target.value);
-    console.log(e.target.value);
   };
 
   const BtnAlignLeft = createButton('Align left', '⟝', 'justifyLeft');
@@ -51,7 +42,7 @@ const TextEditor = ({
 
   const handleBlur = () => {
     if (sendData) {
-      sendData(id, html!);
+      sendData(id as keyof JobApplication, html!);
     }
   };
 

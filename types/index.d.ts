@@ -122,5 +122,15 @@ interface InputElementProps {
   fieldName?: string;
   defaultValue?: string;
   placeholderName?: string;
-  sendData?: (fieldName: string, value: string) => void;
+  sendData?: (fieldName: keyof JobApplication, value: string) => void;
+}
+
+interface TextEditorProps {
+  id: string;
+  title?: string;
+  value?: string;
+  backColor?: string;
+  initialText?: string;
+  buttonVisibility?: boolean;
+  sendData?: (fieldName: keyof JobApplication, value: string) => void;
 }
