@@ -48,7 +48,7 @@ const JobInfo = () => {
     const urlPattern =
       /^(https?:\/\/)(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\S*)?$/;
 
-    if (urlPattern.test(url) || url === 'delete') {
+    if (urlPattern.test(url) || url === '') {
       return { valid: true, message: 'Valid URL format.' };
     } else {
       return {
@@ -59,8 +59,6 @@ const JobInfo = () => {
   };
 
   const handleFieldChange = (fieldName: string, value: string) => {
-    if (value === '') return;
-
     if (fieldName === 'postUrl') {
       const urlValidation = validatePostUrl(value);
       if (!urlValidation.valid) {
@@ -144,22 +142,14 @@ const JobInfo = () => {
                     stylings="space-y-1 w-2/3"
                     placeholderName="+ add URL e.g. https://google.com"
                     sendData={handleFieldChange}
-                    value={
-                      currentJobPost?.postUrl === 'delete'
-                        ? ''
-                        : currentJobPost?.postUrl
-                    }
+                    value={currentJobPost?.postUrl}
                   />
                   <InputElement
                     id="salary"
                     labelName="Salary"
                     stylings="space-y-1 w-1/3"
                     sendData={handleFieldChange}
-                    value={
-                      currentJobPost?.salary === 'delete'
-                        ? ''
-                        : currentJobPost?.salary
-                    }
+                    value={currentJobPost?.salary}
                     placeholderName="+ add Salary"
                   />
                 </div>
@@ -169,11 +159,7 @@ const JobInfo = () => {
                     labelName="Location"
                     stylings="space-y-1 w-2/3"
                     sendData={handleFieldChange}
-                    value={
-                      currentJobPost?.location === 'delete'
-                        ? ''
-                        : currentJobPost?.location
-                    }
+                    value={currentJobPost?.location}
                     placeholderName="+ add location"
                   />
                   <ColorPicker />
