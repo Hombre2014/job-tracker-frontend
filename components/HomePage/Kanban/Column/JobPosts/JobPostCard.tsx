@@ -39,13 +39,17 @@ const JobPostCard = ({
   const [showIcons, setShowIcons] = useState(false);
   const formattedDate = format(date, 'MMMM do, yyyy, h:mm a');
 
-  const toggleIcons = () => {
+  const iconsOn = () => {
     setTimeout(() => {
-      setShowIcons((prev) => !prev);
+      setShowIcons(true);
     }, 200);
   };
 
-  console.log('PostURLL in JobPostCard: ', postUrl);
+  const iconsOff = () => {
+    setTimeout(() => {
+      setShowIcons(false);
+    }, 200);
+  };
 
   function getShortTimeSinceStatusChange(timeStamp: string): string {
     const nowTime = Date.now();
@@ -77,8 +81,8 @@ const JobPostCard = ({
 
   return (
     <Card
-      onMouseEnter={toggleIcons}
-      onMouseLeave={toggleIcons}
+      onMouseEnter={iconsOn}
+      onMouseLeave={iconsOff}
       style={{ backgroundColor: color }}
       className={cn(
         'w-11/12 mx-auto mt-2 rounded-sm text-white',
@@ -103,8 +107,8 @@ const JobPostCard = ({
           ) : (
             <div className="h-[24px] w-[24px] rounded-md p-[1px]"></div>
           )}
-          {showIcons ? (
-            <Link href={postUrl || '#'} rel="noopener" target="_blank">
+          {showIcons && postUrl?.length > 6 ? (
+            <Link href={postUrl} rel="noopener" target="_blank">
               <LiaLinkSolid className="h-[24px] w-[24px] border rounded-md p-[1px] cursor-pointer hover:border-gray-400" />
             </Link>
           ) : (

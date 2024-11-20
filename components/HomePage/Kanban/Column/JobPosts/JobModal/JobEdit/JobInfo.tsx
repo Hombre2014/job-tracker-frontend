@@ -120,9 +120,13 @@ const JobInfo = () => {
                     id="postUrl"
                     labelName="Post URL"
                     stylings="space-y-1 w-2/3"
-                    placeholderName="+ add URL"
+                    placeholderName="+ add URL e.g. https://google.com"
                     sendData={handleFieldChange}
-                    value={currentJobPost?.postUrl}
+                    value={
+                      currentJobPost?.postUrl === 'delete'
+                        ? ''
+                        : currentJobPost?.postUrl
+                    }
                   />
                   <InputElement
                     id="salary"

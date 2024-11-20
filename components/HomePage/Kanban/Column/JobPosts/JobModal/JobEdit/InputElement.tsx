@@ -17,6 +17,11 @@ const InputElement = ({
 
   const handleBlur = () => {
     if (sendData) {
+      if (inputValue.length === 0) {
+        setInputValue('');
+        sendData(id, 'delete');
+        return;
+      }
       sendData(id, inputValue);
     }
   };
