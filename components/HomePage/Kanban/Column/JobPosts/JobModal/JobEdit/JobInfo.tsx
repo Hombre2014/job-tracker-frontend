@@ -44,8 +44,30 @@ const JobInfo = () => {
     },
   });
 
+  const validatePostUrl = (url: string) => {
+    const urlPattern =
+      /^(https?:\/\/)(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\S*)?$/;
+
+    if (urlPattern.test(url)) {
+      return { valid: true, message: 'Valid URL format.' };
+    } else {
+      return {
+        valid: false,
+        message: 'Invalid URL format. Example: https://www.example.com',
+      };
+    }
+  };
+
   const handleFieldChange = (fieldName: string, value: string) => {
     if (value === '') return;
+
+    if (fieldName === 'postUrl') {
+      const urlValidation = validatePostUrl(value);
+      if (!urlValidation.valid) {
+        alert(urlValidation.message);
+        return;
+      }
+    }
 
     // Update the local state
     setEditedJobPost({ ...editedJobPost, [fieldName]: value });
@@ -133,7 +155,11 @@ const JobInfo = () => {
                     labelName="Salary"
                     stylings="space-y-1 w-1/3"
                     sendData={handleFieldChange}
-                    value={currentJobPost?.salary}
+                    value={
+                      currentJobPost?.salary === 'delete'
+                        ? ''
+                        : currentJobPost?.salary
+                    }
                     placeholderName="+ add Salary"
                   />
                 </div>
@@ -143,7 +169,11 @@ const JobInfo = () => {
                     labelName="Location"
                     stylings="space-y-1 w-2/3"
                     sendData={handleFieldChange}
-                    value={currentJobPost?.location}
+                    value={
+                      currentJobPost?.location === 'delete'
+                        ? ''
+                        : currentJobPost?.location
+                    }
                     placeholderName="+ add location"
                   />
                   <ColorPicker />
