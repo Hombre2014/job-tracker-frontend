@@ -48,7 +48,7 @@ const JobInfo = () => {
     const urlPattern =
       /^(https?:\/\/)(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\S*)?$/;
 
-    if (urlPattern.test(url)) {
+    if (urlPattern.test(url) || url === 'delete') {
       return { valid: true, message: 'Valid URL format.' };
     } else {
       return {
@@ -105,9 +105,9 @@ const JobInfo = () => {
     dispatch(getAllJobPostsPerColumn(jobPostsData));
   }, [dispatch, job_id]);
 
-  const handleSelect = (date: Date) => {
-    setDate(date);
-    const deadline = date.toLocaleDateString();
+  const handleSelectDeadline = (date: Date | undefined) => {
+    setDate(date!);
+    const deadline = date!.toLocaleDateString();
     handleFieldChange('deadline', deadline);
     setIsCalendarOpen(false);
   };
@@ -213,8 +213,8 @@ const JobInfo = () => {
                 <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
-                    selected={date}
-                    onSelect={handleSelect}
+                    selected={date!}
+                    onSelect={handleSelectDeadline}
                     initialFocus
                   />
                 </PopoverContent>
