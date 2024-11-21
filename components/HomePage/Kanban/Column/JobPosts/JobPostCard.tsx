@@ -37,7 +37,7 @@ const JobPostCard = ({
   const { board_id } = useParams();
   const date = new Date(timeStamp);
   const [showIcons, setShowIcons] = useState(false);
-  const formattedDate = format(date, 'MMMM do, yyyy, h:mm a');
+  const formattedDateHour = format(date, 'MMMM do, yyyy, h:mm a');
 
   const iconsOn = () => {
     setTimeout(() => {
@@ -126,7 +126,7 @@ const JobPostCard = ({
                   <p>
                     <span>{status}</span>
                     <span> | </span>
-                    <span>{formattedDate}</span>
+                    <span>{formattedDateHour}</span>
                   </p>
                 </TooltipContent>
               </Tooltip>

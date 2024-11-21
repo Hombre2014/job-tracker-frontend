@@ -3,9 +3,9 @@ import { useParams } from 'next/navigation';
 import { TwitterPicker } from 'react-color';
 
 import { Label } from '@/components/ui/label';
+import { useAppSelector } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
-import { updateJobPost } from '@/redux/jobs/jobsThunk';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { defaultJobPostColor } from '@/data/constants';
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -14,48 +14,23 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 
-const ColorPicker = () => {
+const ColorPicker = ({ id, sendData }: ColorPickerProps) => {
   const { job_id } = useParams();
-  const dispatch = useAppDispatch();
   const { jobPosts } = useAppSelector((state) => state.jobs);
   const currentJobPost = jobPosts.find((jobPost) => jobPost.id === job_id);
 
   const [companyColor, setCompanyColor] = useState(
-    currentJobPost?.color || '#8b5cf6'
+    currentJobPost?.color || defaultJobPostColor
   );
 
   const handleColorChange = (color: any) => {
     setCompanyColor(color.hex);
-
-    dispatch(
-      updateJobPost({
-        accessToken: localStorage.getItem('accessToken'),
-        title: currentJobPost?.title,
-        company: {
-          name: currentJobPost?.company.name,
-        },
-        columnId: localStorage.getItem('columnId'),
-        jobPostId: job_id,
-        color: color.hex,
-      })
-    );
+    sendData(id as keyof JobApplication, color.hex);
   };
 
   const handleResetColor = () => {
-    setCompanyColor('#8b5cf6');
-
-    dispatch(
-      updateJobPost({
-        accessToken: localStorage.getItem('accessToken'),
-        title: currentJobPost?.title,
-        company: {
-          name: currentJobPost?.company.name,
-        },
-        columnId: localStorage.getItem('columnId'),
-        jobPostId: job_id,
-        color: '#8b5cf6',
-      })
-    );
+    setCompanyColor(defaultJobPostColor);
+    sendData(id as keyof JobApplication, defaultJobPostColor);
   };
 
   return (
@@ -77,7 +52,7 @@ const ColorPicker = () => {
           <DropdownMenuItem>
             <TwitterPicker
               color={companyColor}
-              onChange={handleColorChange}
+              onChangeComplete={handleColorChange}
               colors={[
                 '#FF6900',
                 '#FCB900',

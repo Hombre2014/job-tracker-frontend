@@ -1,5 +1,6 @@
 import client from '@/api/client';
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { defaultJobPostColor } from '@/data/constants';
 
 export const createJobPost = createAsyncThunk(
   'jobs/createJobPost',
@@ -11,7 +12,7 @@ export const createJobPost = createAsyncThunk(
       company: {
         name: companyName,
       },
-      color: '#8b5cf6',
+      color: defaultJobPostColor,
     };
     try {
       const res = await client.post('/job-applications', body, {

@@ -27,7 +27,9 @@ const BoardColumns = () => {
 
   useEffect(() => {
     if (isEditing) {
-      const currentInputElement = document.getElementById(currentColumnId);
+      const currentInputElement = document.getElementById(
+        currentColumnId
+      ) as HTMLInputElement | null;
       if (currentColumnId === currentInputElement!.id) {
         currentInputElement!.focus();
         currentInputElement!.select();
@@ -69,6 +71,7 @@ const BoardColumns = () => {
       columnId,
       accessToken: accessToken as string,
       title: localStorage.getItem('jobTitle'),
+      jobPostStatus: 'Job Created',
       companyName: localStorage.getItem('company'),
     };
 
