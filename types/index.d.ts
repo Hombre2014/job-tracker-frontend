@@ -11,6 +11,14 @@ type Company = {
   description: string;
 };
 
+type jobPostStatus =
+  | 'Job Created'
+  | 'Deadline'
+  | 'Applied'
+  | 'Interview'
+  | 'Offer Received'
+  | 'Job Moved';
+
 type JobApplication = {
   id: string;
   title: string;
@@ -24,14 +32,8 @@ type JobApplication = {
   createdAt: string;
   updatedAt: string;
   description: string;
+  status: jobPostStatus;
   statusChangedAt: string;
-  jobPostStatus:
-    | 'Job Created'
-    | 'Deadline'
-    | 'Applied'
-    | 'Interview'
-    | 'Offer Received'
-    | 'Job Moved';
 };
 
 interface Column {
@@ -54,11 +56,11 @@ interface JobPostCardProps {
   id: string;
   title: string;
   color: string;
-  status: string;
   postUrl: string;
   columnId: string;
   timeStamp: string;
   companyName: string;
+  status: jobPostStatus;
   statusChangedTime: string;
 }
 
@@ -133,4 +135,10 @@ interface TextEditorProps {
   initialText?: string;
   buttonVisibility?: boolean;
   sendData?: (fieldName: keyof JobApplication, value: string) => void;
+}
+
+interface ColorPickerProps {
+  id: string;
+  value?: string;
+  sendData: (fieldName: keyof JobApplication, value: string) => void;
 }

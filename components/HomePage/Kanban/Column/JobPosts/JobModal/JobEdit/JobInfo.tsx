@@ -29,26 +29,11 @@ const JobInfo = () => {
   const { jobPostsStatus } = useAppSelector((state) => state.jobs);
   const currentJobPost = jobPosts.find((jobPost) => jobPost.id === job_id);
 
-  const [editedJobPost, setEditedJobPost] = useState({
-    color: '',
-    salary: '',
-    postUrl: '',
-    location: '',
-    deadline: '',
-    description: '',
-    jobPostsId: job_id,
-    title: currentJobPost?.title,
-    columnId: localStorage.getItem('columnId'),
-    company: {
-      name: currentJobPost?.company.name,
-    },
-  });
-
   const validatePostUrl = (url: string) => {
     const urlPattern =
       /^(https?:\/\/)(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\S*)?$/;
 
-    if (urlPattern.test(url) || url === '') {
+    if (urlPattern.test(url) || url === '' || url === null) {
       return { valid: true, message: 'Valid URL format.' };
     } else {
       return {
@@ -70,12 +55,9 @@ const JobInfo = () => {
       }
     }
 
-    // Update the local state
-    setEditedJobPost({ ...editedJobPost, [fieldName]: value });
     setFirstVisit(false);
 
-    // Check the payload if it is the same as the current job post data
-
+    // Check the payload if it is the same as the current job post data and if so, do not send the request
     if (currentJobPost) {
       if (currentJobPost[fieldName] === value) {
         return;
@@ -85,16 +67,13 @@ const JobInfo = () => {
     // Prepare the payload dynamically
     const updatePayload = {
       accessToken: localStorage.getItem('accessToken'),
-      // title: currentJobPost?.title,
       company: {
         name: currentJobPost?.company.name,
       },
-      columnId: localStorage.getItem('columnId'),
       jobPostId: job_id,
       [fieldName]: value, // Dynamic field
     };
 
-    // Dispatch the thunk with the updated payload
     dispatch(updateJobPost(updatePayload));
   };
 
@@ -174,7 +153,7 @@ const JobInfo = () => {
                     value={currentJobPost?.location}
                     placeholderName="+ add location"
                   />
-                  <ColorPicker />
+                  <ColorPicker id="color" sendData={handleFieldChange} />
                 </div>
                 <TextEditor
                   id="description"
