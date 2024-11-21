@@ -31,7 +31,9 @@ const UserBoards = () => {
 
   useEffect(() => {
     if (isEditing) {
-      const currentInputElement = document.getElementById(currentBoardId);
+      const currentInputElement = document.getElementById(
+        currentBoardId
+      ) as HTMLInputElement | null;
       if (currentBoardId === currentInputElement!.id) {
         currentInputElement!.focus();
         currentInputElement!.select();

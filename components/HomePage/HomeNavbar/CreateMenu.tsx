@@ -13,9 +13,10 @@ import {
 } from '@/components/ui/navigation-menu';
 
 const clearDropDown = () => {
-  document
-    .querySelector('#close-dropdown')!
-    .children[0].children[0].children[0].children[0].children[0].click();
+  const element = document.querySelector('#close-dropdown')!.children[0]
+    .children[0].children[0].children[0].children[0] as HTMLElement;
+
+  element.click();
 };
 
 const createJobApplication = () => {
