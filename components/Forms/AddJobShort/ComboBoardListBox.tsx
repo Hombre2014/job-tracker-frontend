@@ -40,7 +40,7 @@ const ComboBoardListBox = ({
   const currentBoardName = items.find((item) => item.id === board_id)?.name;
   const [chosenBoard, setChosenBoard] = useState(currentBoardName);
 
-  console.log('Board ID in ComboBox: ', chosenBoard);
+  // console.log('Board ID in ComboBox: ', chosenBoard);
 
   // useEffect(() => {
   //   if (itemsType === 'boards') {
@@ -67,8 +67,6 @@ const ComboBoardListBox = ({
       localStorage.setItem('columnId', columnId as string);
     }
   }, [value, chosenBoard, chosenColumn, itemsType]);
-
-  console.log('Value in ComboBox: ', value);
 
   return (
     boardsStatus === 'succeeded' && (

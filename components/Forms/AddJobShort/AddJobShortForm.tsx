@@ -15,7 +15,6 @@ import {
   FormItem,
   FormField,
   FormLabel,
-  FormControl,
   FormMessage,
 } from '@/components/ui/form';
 
@@ -29,9 +28,11 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
   const [boardColumns, setBoardColumns] = useState(
     boards.find((board) => board.id === board_id)!.columns
   );
-  const currenColumnName = boardColumns![columnOrder].name;
-  const currentBoardName = boards.find((board) => board.id === board_id)!.name;
+  const initialColumnName = boardColumns![columnOrder].name;
+  const initialBoardName = boards.find((board) => board.id === board_id)!.name;
+
   const chosenBoard = localStorage.getItem('chosenBoard');
+  const chosenColumn = localStorage.getItem('chosenColumn');
 
   useEffect(() => {
     // Get the board id from the local storage board's name
@@ -42,6 +43,7 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
       accessToken,
       boardId: changedBoardId,
     };
+
     dispatch(getBoardWithColumns(values));
     setBoardColumns(
       boards.find((board) => board.id === changedBoardId)!.columns
@@ -69,20 +71,23 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
   };
 
   useEffect(() => {
-    if (currenColumnName) {
+    if (initialColumnName) {
       const columnId = boardColumns!.find(
-        (column) => column.name === currenColumnName
+        (column) => column.name === initialColumnName
       )?.id;
       localStorage.setItem('columnId', columnId as string);
+      localStorage.setItem('chosenColumn', initialColumnName);
     }
-  }, [currenColumnName, boardColumns]);
+  }, [initialColumnName, boardColumns]);
 
   useEffect(() => {
     dispatch(getBoards(accessToken as string));
   }, [dispatch, accessToken]);
 
-  console.log('currenColumnName: ', currenColumnName);
-  console.log('currentBoardName: ', currentBoardName);
+  console.log('initialColumnName: ', initialColumnName);
+  console.log('initialBoardName: ', initialBoardName);
+  console.log('chosenBoard: ', chosenBoard);
+  console.log('chosenColumn: ', chosenColumn);
 
   return (
     <Form {...form}>
@@ -146,8 +151,7 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                   itemsType="boards"
                   items={boards}
                   searchItem="Boards"
-                  // value={chosenBoard}
-                  initialString={currentBoardName}
+                  initialString={initialBoardName}
                 />
                 <FormMessage />
               </FormItem>
@@ -168,8 +172,7 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                   itemsType="columns"
                   items={boardColumns}
                   searchItem="Lists"
-                  // value={currenColumnName}
-                  initialString={currenColumnName}
+                  initialString={initialColumnName}
                   {...field}
                 />
                 <FormMessage />
