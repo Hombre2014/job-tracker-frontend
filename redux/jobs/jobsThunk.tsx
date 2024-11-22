@@ -98,3 +98,23 @@ export const updateJobPost = createAsyncThunk(
     }
   }
 );
+
+export const deleteJobPost = createAsyncThunk(
+  'jobs/deleteJobPost',
+  async (values: any, thunkAPI) => {
+    const { accessToken, jobPostId } = values;
+    try {
+      await client.delete(`/job-applications/${jobPostId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      return jobPostId;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error deleting job post'
+      );
+    }
+  }
+);
