@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { format } from 'date-fns';
+import { format, toZonedTime } from 'date-fns-tz';
 import { LiaLinkSolid } from 'react-icons/lia';
 import { RiDeleteBinLine } from 'react-icons/ri';
+
 import { useRouter, useParams } from 'next/navigation';
 
 import { cn } from '@/lib/utils';
@@ -36,12 +37,16 @@ const JobPostCard = ({
   statusChangedTime,
 }: JobPostCardProps) => {
   const router = useRouter();
+  const date = new Date(timeStamp);
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const accessToken = localStorage.getItem('accessToken');
-  const date = new Date(timeStamp);
   const [showIcons, setShowIcons] = useState(false);
-  const formattedDateHour = format(date, 'MMMM do, yyyy, h:mm a');
+
+  const zonedDate = toZonedTime(date, 'Europe/Sofia');
+  const formattedDateHour = format(zonedDate, 'dd/MM/yyyy HH:mm, a', {
+    timeZone: 'Europe/Paris',
+  });
 
   const iconsOn = () => {
     setTimeout(() => {
@@ -54,8 +59,6 @@ const JobPostCard = ({
       setShowIcons(false);
     }, 200);
   };
-
-  // console.log('JobPostCard ID: ', id);
 
   function getShortTimeSinceStatusChange(timeStamp: string): string {
     const nowTime = Date.now();
@@ -79,6 +82,8 @@ const JobPostCard = ({
   }
 
   const shortTimeSinceChange = getShortTimeSinceStatusChange(timeStamp);
+
+  console.log('Short time since change: ', shortTimeSinceChange);
 
   const handleJobPostClick = (id: string) => {
     router.push(`/home/boards/${board_id}/job/${id}/job-details`);

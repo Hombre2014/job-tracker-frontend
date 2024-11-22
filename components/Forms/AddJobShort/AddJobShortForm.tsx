@@ -81,8 +81,15 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
   }, [initialColumnName, boardColumns]);
 
   useEffect(() => {
-    dispatch(getBoards(accessToken as string));
-  }, [dispatch, accessToken]);
+    if (initialBoardName) {
+      localStorage.setItem('chosenBoard', initialBoardName);
+      localStorage.setItem('chosenColumn', initialColumnName); // Tht I have change last
+    }
+  }, [initialBoardName]);
+
+  // useEffect(() => {
+  //   dispatch(getBoards(accessToken as string));
+  // }, [dispatch, accessToken]);
 
   console.log('initialColumnName: ', initialColumnName);
   console.log('initialBoardName: ', initialBoardName);
