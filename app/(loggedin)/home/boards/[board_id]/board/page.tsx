@@ -12,6 +12,7 @@ const KanbanBoard = () => {
   const accessToken = localStorage.getItem('accessToken');
   const { jobPosts } = useAppSelector((state) => state.jobs);
 
+  // Check it out. It reduces the number of requests to the server.
   useEffect(() => {
     if (jobPosts.length >= 0) {
       dispatch(getBoards(accessToken as string));

@@ -3,8 +3,9 @@ import { createSlice } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import {
   createJobPost,
-  getAllJobPostsPerColumn,
   updateJobPost,
+  deleteJobPost,
+  getAllJobPostsPerColumn,
 } from './jobsThunk';
 
 interface JobPostState {
@@ -30,7 +31,7 @@ export const jobsSlice = createSlice({
       })
       .addCase(createJobPost.fulfilled, (state, action) => {
         state.jobPostsStatus = 'succeeded';
-        console.log('Create At time: ', action.payload.createdAt);
+        console.log('Create At time from Slice: ', action.payload.createdAt);
         state.jobPosts.push(action.payload);
         state.error = null;
       })
@@ -63,6 +64,20 @@ export const jobsSlice = createSlice({
       .addCase(updateJobPost.rejected, (state, action) => {
         state.jobPostsStatus = 'failed';
         state.error = action.error.message || 'Failed to update job post';
+      })
+      .addCase(deleteJobPost.pending, (state) => {
+        state.jobPostsStatus = 'loading';
+      })
+      .addCase(deleteJobPost.fulfilled, (state, action) => {
+        state.jobPostsStatus = 'succeeded';
+        state.jobPosts = state.jobPosts.filter(
+          (jobPost) => jobPost.id !== action.payload.id
+        );
+        state.error = null;
+      })
+      .addCase(deleteJobPost.rejected, (state, action) => {
+        state.jobPostsStatus = 'failed';
+        state.error = action.error.message || 'Failed to delete job post';
       });
   },
 });

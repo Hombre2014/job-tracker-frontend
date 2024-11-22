@@ -7,6 +7,7 @@ import { RiDeleteBinLine } from 'react-icons/ri';
 import { useRouter, useParams } from 'next/navigation';
 
 import { cn } from '@/lib/utils';
+import { useAppDispatch } from '@/redux/hooks';
 import { returnJobPostIcon } from '@/utils/ReturnIcons';
 import {
   Card,
@@ -21,6 +22,7 @@ import {
   TooltipProvider,
 } from '@/components/ui/tooltip';
 import Link from 'next/link';
+import { deleteJobPost } from '@/redux/jobs/jobsThunk';
 
 const JobPostCard = ({
   id,
@@ -35,6 +37,8 @@ const JobPostCard = ({
 }: JobPostCardProps) => {
   const router = useRouter();
   const { board_id } = useParams();
+  const dispatch = useAppDispatch();
+  const accessToken = localStorage.getItem('accessToken');
   const date = new Date(timeStamp);
   const [showIcons, setShowIcons] = useState(false);
   const formattedDateHour = format(date, 'MMMM do, yyyy, h:mm a');
@@ -50,6 +54,8 @@ const JobPostCard = ({
       setShowIcons(false);
     }, 200);
   };
+
+  console.log('JobPostCard ID: ', id);
 
   function getShortTimeSinceStatusChange(timeStamp: string): string {
     const nowTime = Date.now();
@@ -79,6 +85,19 @@ const JobPostCard = ({
     localStorage.setItem('columnId', columnId);
   };
 
+  const handleDeleteJobPost = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    console.log('Deleted element ID: ', e.currentTarget.parentElement!.id);
+
+    dispatch(
+      deleteJobPost({
+        accessToken,
+        jobPostId: id,
+      })
+    );
+  };
+
   return (
     <Card
       onMouseEnter={iconsOn}
@@ -92,7 +111,7 @@ const JobPostCard = ({
         handleJobPostClick(id);
       }}
     >
-      <div className="flex h-[90px] hover:cursor-pointer">
+      <div className="flex h-[90px]">
         <CardHeader className="w-3/4">
           <CardTitle className="!p-0 !m-0 tracking-normal">{title}</CardTitle>
           <CardDescription className="text-white">
@@ -101,8 +120,14 @@ const JobPostCard = ({
         </CardHeader>
         <div className="flex flex-col gap-1 py-1 pr-2 items-end w-1/4 mt-1">
           {showIcons ? (
-            <div className="h-[24px] w-[24px] rounded-md cursor-pointer border hover:border-gray-400">
-              <RiDeleteBinLine className="h-5 w-5 m-auto" />
+            <div
+              className="h-[24px] w-[24px] rounded-md cursor-pointer border border-transparent p-[1px] hover:border-gray-400 hover:border"
+              id={id}
+            >
+              <RiDeleteBinLine
+                className="h-5 w-5 m-auto"
+                onClick={handleDeleteJobPost}
+              />
             </div>
           ) : (
             <div className="h-[24px] w-[24px] rounded-md p-[1px]"></div>
