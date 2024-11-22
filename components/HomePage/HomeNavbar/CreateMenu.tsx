@@ -12,23 +12,33 @@ import {
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
 
-const clearDropDown = () => {
-  const element = document.querySelector('#close-dropdown')!.children[0]
-    .children[0].children[0].children[0].children[0] as HTMLElement;
-
-  element.click();
-};
-
-const createJobApplication = () => {
-  clearDropDown();
-};
-
-const createContact = () => {
-  clearDropDown();
-  console.log('Contact created');
-};
-
 const CreateMenu = () => {
+  const clearDropDown = () => {
+    const element = document.querySelector('#close-dropdown')!.children[0]
+      .children[0].children[0].children[0].children[0] as HTMLElement;
+
+    element.click();
+  };
+
+  const createJobApplication = () => {
+    clearDropDown();
+
+    // const jobPost = {
+    //   columnId = localStorage.getItem('columnId'),
+    //   accessToken: accessToken as string,
+    //   title: localStorage.getItem('jobTitle'),
+    //   jobPostStatus: 'Job Created',
+    //   companyName: localStorage.getItem('company'),
+    // };
+
+    // dispatch(createJobPost(jobPost));
+  };
+
+  const createContact = () => {
+    clearDropDown();
+    console.log('Contact created');
+  };
+
   return (
     <div id="close-dropdown" className="flex gap-4 mr-4 items-center">
       <NavigationMenu className="mr-4">

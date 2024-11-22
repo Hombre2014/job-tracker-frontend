@@ -7,15 +7,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 
 import { AddJobSchemaShort } from '@/schemas';
 import { Input } from '@/components/ui/input';
-import { getBoards } from '@/redux/boards/boardsThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { getBoards, getBoardWithColumns } from '@/redux/boards/boardsThunk';
 import ComboBoardListBox from '@/components/Forms/AddJobShort/ComboBoardListBox';
 import {
   Form,
   FormItem,
   FormField,
   FormLabel,
-  FormControl,
   FormMessage,
 } from '@/components/ui/form';
 
@@ -26,9 +25,30 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
   const [jobTitle, setJobTitle] = useState('');
   const accessToken = localStorage.getItem('accessToken');
   const { boards } = useAppSelector((state) => state.boards);
-  const boardColumns = boards.find((board) => board.id === board_id)!.columns;
-  const currenColumnName = boardColumns![columnOrder].name;
-  const currentBoardName = boards.find((board) => board.id === board_id)!.name;
+  const [boardColumns, setBoardColumns] = useState(
+    boards.find((board) => board.id === board_id)!.columns
+  );
+  const initialColumnName = boardColumns![columnOrder].name;
+  const initialBoardName = boards.find((board) => board.id === board_id)!.name;
+
+  const chosenBoard = localStorage.getItem('chosenBoard');
+  const chosenColumn = localStorage.getItem('chosenColumn');
+
+  useEffect(() => {
+    // Get the board id from the local storage board's name
+    const changedBoard = boards.find((board) => board.name === chosenBoard);
+    const changedBoardId = changedBoard?.id;
+
+    const values = {
+      accessToken,
+      boardId: changedBoardId,
+    };
+
+    dispatch(getBoardWithColumns(values));
+    setBoardColumns(
+      boards.find((board) => board.id === changedBoardId)!.columns
+    );
+  }, [dispatch, board_id, chosenBoard, accessToken]);
 
   const form = useForm({
     resolver: zodResolver(AddJobSchemaShort),
@@ -51,17 +71,30 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
   };
 
   useEffect(() => {
-    if (currenColumnName) {
+    if (initialColumnName) {
       const columnId = boardColumns!.find(
-        (column) => column.name === currenColumnName
+        (column) => column.name === initialColumnName
       )?.id;
       localStorage.setItem('columnId', columnId as string);
+      localStorage.setItem('chosenColumn', initialColumnName);
     }
-  }, [currenColumnName, boardColumns]);
+  }, [initialColumnName, boardColumns]);
 
   useEffect(() => {
-    dispatch(getBoards(accessToken as string));
-  }, [dispatch, accessToken]);
+    if (initialBoardName) {
+      localStorage.setItem('chosenBoard', initialBoardName);
+      localStorage.setItem('chosenColumn', initialColumnName); // Tht I have change last
+    }
+  }, [initialBoardName]);
+
+  // useEffect(() => {
+  //   dispatch(getBoards(accessToken as string));
+  // }, [dispatch, accessToken]);
+
+  console.log('initialColumnName: ', initialColumnName);
+  console.log('initialBoardName: ', initialBoardName);
+  console.log('chosenBoard: ', chosenBoard);
+  console.log('chosenColumn: ', chosenColumn);
 
   return (
     <Form {...form}>
@@ -121,11 +154,11 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                   <FormLabel className="text-gray-400">Required</FormLabel>
                 </span>
                 <ComboBoardListBox
+                  {...field}
                   itemsType="boards"
                   items={boards}
                   searchItem="Boards"
-                  initialString={currentBoardName}
-                  {...field}
+                  initialString={initialBoardName}
                 />
                 <FormMessage />
               </FormItem>
@@ -146,7 +179,7 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                   itemsType="columns"
                   items={boardColumns}
                   searchItem="Lists"
-                  initialString={currenColumnName}
+                  initialString={initialColumnName}
                   {...field}
                 />
                 <FormMessage />

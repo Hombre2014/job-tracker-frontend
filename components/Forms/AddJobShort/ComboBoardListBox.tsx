@@ -5,8 +5,9 @@ import { useParams } from 'next/navigation';
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 
 import { cn } from '@/lib/utils';
-import { useAppSelector } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
+import { useAppSelector, useAppDispatch } from '@/redux/hooks';
+import { getBoardWithColumns } from '@/redux/boards/boardsThunk';
 import {
   Popover,
   PopoverContent,
@@ -20,6 +21,7 @@ import {
   CommandGroup,
   CommandInput,
 } from '@/components/ui/command';
+import { Item } from '@radix-ui/react-dropdown-menu';
 
 const ComboBoardListBox = ({
   items,
@@ -28,20 +30,46 @@ const ComboBoardListBox = ({
   initialString,
 }: ComboBoardListBoxProps) => {
   const { board_id } = useParams();
+  const dispatch = useAppDispatch();
   const [value, setValue] = useState('');
   const [open, setOpen] = useState(false);
+  const accessToken = localStorage.getItem('accessToken');
   const { lastName } = useAppSelector((state) => state.user);
   const { firstName } = useAppSelector((state) => state.user);
   const [chosenColumn, setChosenColumn] = useState(initialString);
   const { boardsStatus } = useAppSelector((state) => state.boards);
+
+  console.log('ComboBoardListBox items: ', items);
+
   const currentBoardName = items.find((item) => item.id === board_id)?.name;
   const [chosenBoard, setChosenBoard] = useState(currentBoardName);
 
+  // console.log('Board ID in ComboBox: ', chosenBoard);
+
+  // useEffect(() => {
+  //   if (itemsType === 'boards') {
+  //     const values = {
+  //       accessToken,
+  //       boardId: board_id,
+  //     };
+  //     dispatch(getBoardWithColumns(values));
+  //   }
+  // }, [dispatch, board_id, chosenBoard]);
+
   useEffect(() => {
+    console.log('ItemsType: ', itemsType);
     if (itemsType === 'boards') {
       localStorage.setItem('chosenBoard', chosenBoard as string);
+      const values = {
+        accessToken,
+        boardId: board_id,
+      };
+      dispatch(getBoardWithColumns(values));
+      localStorage.setItem('chosenColumn', initialString);
     } else {
       localStorage.setItem('chosenColumn', chosenColumn as string);
+      const columnId = items.find((item) => item.name === chosenColumn)?.id;
+      localStorage.setItem('columnId', columnId as string);
     }
   }, [value, chosenBoard, chosenColumn, itemsType]);
 
@@ -75,10 +103,12 @@ const ComboBoardListBox = ({
                     key={item.id}
                     value={item.name}
                     onSelect={() => {
+                      console.log('Item name: ', item.name);
                       itemsType === 'boards'
                         ? setChosenBoard(item.name)
                         : setChosenColumn(item.name);
                       setValue(item.name);
+                      console.log('Value was set to: ', value);
                       setOpen(false);
                     }}
                   >
