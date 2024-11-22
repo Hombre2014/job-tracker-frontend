@@ -55,7 +55,7 @@ const JobPostCard = ({
     }, 200);
   };
 
-  console.log('JobPostCard ID: ', id);
+  // console.log('JobPostCard ID: ', id);
 
   function getShortTimeSinceStatusChange(timeStamp: string): string {
     const nowTime = Date.now();

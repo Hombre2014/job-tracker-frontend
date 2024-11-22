@@ -5,8 +5,9 @@ import { useParams } from 'next/navigation';
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 
 import { cn } from '@/lib/utils';
-import { useAppSelector } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
+import { useAppSelector, useAppDispatch } from '@/redux/hooks';
+import { getBoardWithColumns } from '@/redux/boards/boardsThunk';
 import {
   Popover,
   PopoverContent,
@@ -28,8 +29,10 @@ const ComboBoardListBox = ({
   initialString,
 }: ComboBoardListBoxProps) => {
   const { board_id } = useParams();
+  const dispatch = useAppDispatch();
   const [value, setValue] = useState('');
   const [open, setOpen] = useState(false);
+  const accessToken = localStorage.getItem('accessToken');
   const { lastName } = useAppSelector((state) => state.user);
   const { firstName } = useAppSelector((state) => state.user);
   const [chosenColumn, setChosenColumn] = useState(initialString);
@@ -37,13 +40,35 @@ const ComboBoardListBox = ({
   const currentBoardName = items.find((item) => item.id === board_id)?.name;
   const [chosenBoard, setChosenBoard] = useState(currentBoardName);
 
+  console.log('Board ID in ComboBox: ', chosenBoard);
+
+  // useEffect(() => {
+  //   if (itemsType === 'boards') {
+  //     const values = {
+  //       accessToken,
+  //       boardId: board_id,
+  //     };
+  //     dispatch(getBoardWithColumns(values));
+  //   }
+  // }, [dispatch, board_id, chosenBoard]);
+
   useEffect(() => {
     if (itemsType === 'boards') {
       localStorage.setItem('chosenBoard', chosenBoard as string);
+      const values = {
+        accessToken,
+        boardId: board_id,
+      };
+      dispatch(getBoardWithColumns(values));
     } else {
       localStorage.setItem('chosenColumn', chosenColumn as string);
+      // Find the column id and set it to localStorage
+      const columnId = items.find((item) => item.name === chosenColumn)?.id;
+      localStorage.setItem('columnId', columnId as string);
     }
   }, [value, chosenBoard, chosenColumn, itemsType]);
+
+  console.log('Value in ComboBox: ', value);
 
   return (
     boardsStatus === 'succeeded' && (
