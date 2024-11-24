@@ -1,29 +1,28 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
+  AlertDialogTitle,
   AlertDialogAction,
   AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialogContent,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { cn } from '@/lib/utils';
 
 const AlertDialogModal = ({
-  buttonLabel,
-  buttonVariant,
-  dialogTitle,
+  children,
+  stylings,
   dialogText,
+  dialogTitle,
+  buttonLabel,
   buttonCancel,
+  buttonVariant,
   buttonConfirm,
   actionFunction,
-  stylings,
-  children,
 }: AlertDialogProps) => {
   return (
     <AlertDialog>

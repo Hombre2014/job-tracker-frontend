@@ -21,7 +21,6 @@ import {
   CommandGroup,
   CommandInput,
 } from '@/components/ui/command';
-import { Item } from '@radix-ui/react-dropdown-menu';
 
 const ComboBoardListBox = ({
   items,
@@ -38,26 +37,10 @@ const ComboBoardListBox = ({
   const { firstName } = useAppSelector((state) => state.user);
   const [chosenColumn, setChosenColumn] = useState(initialString);
   const { boardsStatus } = useAppSelector((state) => state.boards);
-
-  console.log('ComboBoardListBox items: ', items);
-
   const currentBoardName = items.find((item) => item.id === board_id)?.name;
   const [chosenBoard, setChosenBoard] = useState(currentBoardName);
 
-  // console.log('Board ID in ComboBox: ', chosenBoard);
-
-  // useEffect(() => {
-  //   if (itemsType === 'boards') {
-  //     const values = {
-  //       accessToken,
-  //       boardId: board_id,
-  //     };
-  //     dispatch(getBoardWithColumns(values));
-  //   }
-  // }, [dispatch, board_id, chosenBoard]);
-
   useEffect(() => {
-    console.log('ItemsType: ', itemsType);
     if (itemsType === 'boards') {
       localStorage.setItem('chosenBoard', chosenBoard as string);
       const values = {
@@ -103,12 +86,10 @@ const ComboBoardListBox = ({
                     key={item.id}
                     value={item.name}
                     onSelect={() => {
-                      console.log('Item name: ', item.name);
                       itemsType === 'boards'
                         ? setChosenBoard(item.name)
                         : setChosenColumn(item.name);
                       setValue(item.name);
-                      console.log('Value was set to: ', value);
                       setOpen(false);
                     }}
                   >

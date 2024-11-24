@@ -31,7 +31,6 @@ export const jobsSlice = createSlice({
       })
       .addCase(createJobPost.fulfilled, (state, action) => {
         state.jobPostsStatus = 'succeeded';
-        console.log('Create At time from Slice: ', action.payload.createdAt);
         state.jobPosts.push(action.payload);
         state.error = null;
       })

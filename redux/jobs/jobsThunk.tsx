@@ -22,7 +22,6 @@ export const createJobPost = createAsyncThunk(
       });
 
       const data = res.data;
-      console.log('Create At time from Thunk: ', data.createdAt);
       return data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(
