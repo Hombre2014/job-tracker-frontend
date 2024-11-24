@@ -1,14 +1,15 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
-import { format, toZonedTime } from 'date-fns-tz';
 import { LiaLinkSolid } from 'react-icons/lia';
 import { RiDeleteBinLine } from 'react-icons/ri';
-
+import { format, toZonedTime } from 'date-fns-tz';
 import { useRouter, useParams } from 'next/navigation';
 
 import { cn } from '@/lib/utils';
 import { useAppDispatch } from '@/redux/hooks';
+import { deleteJobPost } from '@/redux/jobs/jobsThunk';
 import { returnJobPostIcon } from '@/utils/ReturnIcons';
 import {
   Card,
@@ -22,8 +23,6 @@ import {
   TooltipContent,
   TooltipProvider,
 } from '@/components/ui/tooltip';
-import Link from 'next/link';
-import { deleteJobPost } from '@/redux/jobs/jobsThunk';
 
 const JobPostCard = ({
   id,
@@ -40,10 +39,9 @@ const JobPostCard = ({
   const date = new Date(timeStamp);
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
-  const accessToken = localStorage.getItem('accessToken');
   const [showIcons, setShowIcons] = useState(false);
-
   const zonedDate = toZonedTime(date, 'Europe/Sofia');
+  const accessToken = localStorage.getItem('accessToken');
   const formattedDateHour = format(zonedDate, 'dd/MM/yyyy HH:mm, a', {
     timeZone: 'Europe/Paris',
   });
@@ -83,17 +81,14 @@ const JobPostCard = ({
 
   const shortTimeSinceChange = getShortTimeSinceStatusChange(timeStamp);
 
-  console.log('Short time since change: ', shortTimeSinceChange);
-
   const handleJobPostClick = (id: string) => {
     router.push(`/home/boards/${board_id}/job/${id}/job-details`);
     localStorage.setItem('columnId', columnId);
   };
 
   const handleDeleteJobPost = (e: React.MouseEvent) => {
-    e.stopPropagation();
     e.preventDefault();
-    console.log('Deleted element ID: ', e.currentTarget.parentElement!.id);
+    e.stopPropagation();
 
     dispatch(
       deleteJobPost({
