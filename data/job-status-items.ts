@@ -1,28 +1,28 @@
-const jobPostItems = [
+const jobPostStatusItems = [
   {
-    jobStatus: 'Job Created',
+    jobPostStatus: 'Job Created',
     icon: 'HiOutlinePlusCircle',
   },
   {
-    jobStatus: 'Deadline',
+    jobPostStatus: 'Deadline',
     icon: 'HiOutlineClock',
   },
   {
-    jobStatus: 'Applied',
+    jobPostStatus: 'Applied',
     icon: 'HiOutlineFolder',
   },
   {
-    jobStatus: 'Interview',
+    jobPostStatus: 'Interview',
     icon: 'PiBriefcaseLight',
   },
   {
-    jobStatus: 'Offer Received',
+    jobPostStatus: 'Offer Received',
     icon: 'GoTrophy',
   },
   {
-    jobStatus: 'Job Moved',
+    jobPostStatus: 'Job Moved',
     icon: 'GoInbox',
   },
 ];
 
-export default jobPostItems;
+export default jobPostStatusItems;

@@ -61,6 +61,7 @@ export const updateJobPost = createAsyncThunk(
       company: { name: companyName },
       columnId,
       jobPostId,
+      status,
       postUrl,
       salary,
       location,
@@ -78,6 +79,7 @@ export const updateJobPost = createAsyncThunk(
       salary: salary,
       location: location,
       color: color,
+      status: status,
       deadline: deadline,
       description: description,
     };

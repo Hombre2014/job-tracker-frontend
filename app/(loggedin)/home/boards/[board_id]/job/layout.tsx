@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Modal from '@/components/Misc/Modal';
 import { Button } from '@/components/ui/button';
+import jobPostStatusItems from '@/data/job-status-items';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getAllJobPostsPerColumn, updateJobPost } from '@/redux/jobs/jobsThunk';
 import {
@@ -30,15 +31,15 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   const dispatch = useAppDispatch();
   const { board_id, job_id } = useParams();
   const accessToken = localStorage.getItem('accessToken');
+  const chosenColumn = localStorage.getItem('chosenColumn');
   const { jobPosts } = useAppSelector((state) => state.jobs);
   const { boards } = useAppSelector((state) => state.boards);
   const placeholderRef = useRef<HTMLDivElement | null>(null);
   const [triggerWidth, setTriggerWidth] = useState<number>(80);
   const [selectedListName, setSelectedListName] = useState('');
+  const [newJobPostStatus, setNewJobPostStatus] = useState('');
   const [temporaryMessage, setTemporaryMessage] = useState<string>('');
   const boardColumns = boards.find((board) => board.id === board_id)?.columns;
-
-  const chosenColumn = localStorage.getItem('chosenColumn');
 
   useEffect(() => {
     const jobPostsData = {
@@ -78,8 +79,7 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (placeholderRef.current) {
-      setTriggerWidth(placeholderRef.current.offsetWidth + 0); // Add some padding for aesthetics
-      console.log('offsetWidth: ', placeholderRef.current.offsetWidth);
+      setTriggerWidth(placeholderRef.current.offsetWidth);
     }
   }, [temporaryMessage]);
 
@@ -98,7 +98,7 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
           <div className="flex mr-6 gap-4">
             <Select
               onValueChange={handleSelectList}
-              value={temporaryMessage ? undefined : selectedListName} // Reset value when showing the temporary message
+              value={temporaryMessage ? undefined : selectedListName}
             >
               <SelectTrigger
                 className={cn(
