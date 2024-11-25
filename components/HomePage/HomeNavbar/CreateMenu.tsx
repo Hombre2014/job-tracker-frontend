@@ -1,18 +1,22 @@
 import { RiContactsLine } from 'react-icons/ri';
 import { PiBriefcaseLight } from 'react-icons/pi';
 
+import { useAppDispatch } from '@/redux/hooks';
+import { createJobPost } from '@/redux/jobs/jobsThunk';
 import AlertDialogModal from '../Boards/AlertDialogModal';
 import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
 import {
   NavigationMenu,
-  NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
+  NavigationMenuContent,
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
 
 const CreateMenu = () => {
+  const dispatch = useAppDispatch();
+  const accessToken = localStorage.getItem('accessToken');
   const clearDropDown = () => {
     const element = document.querySelector('#close-dropdown')!.children[0]
       .children[0].children[0].children[0].children[0] as HTMLElement;
@@ -23,20 +27,21 @@ const CreateMenu = () => {
   const createJobApplication = () => {
     clearDropDown();
 
-    // const jobPost = {
-    //   columnId = localStorage.getItem('columnId'),
-    //   accessToken: accessToken as string,
-    //   title: localStorage.getItem('jobTitle'),
-    //   jobPostStatus: 'Job Created',
-    //   companyName: localStorage.getItem('company'),
-    // };
+    const jobPost = {
+      jobPostStatus: 'Job Created',
+      accessToken: accessToken as string,
+      title: localStorage.getItem('jobTitle'),
+      columnId: localStorage.getItem('columnId'),
+      companyName: localStorage.getItem('company'),
+    };
 
-    // dispatch(createJobPost(jobPost));
+    dispatch(createJobPost(jobPost));
   };
 
   const createContact = () => {
     clearDropDown();
-    console.log('Contact created');
+
+    // TODO: Implement contact creation
   };
 
   return (

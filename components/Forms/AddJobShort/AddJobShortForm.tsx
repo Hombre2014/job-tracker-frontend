@@ -1,14 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { AddJobSchemaShort } from '@/schemas';
 import { Input } from '@/components/ui/input';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { getBoards, getBoardWithColumns } from '@/redux/boards/boardsThunk';
+import { getBoardWithColumns } from '@/redux/boards/boardsThunk';
 import ComboBoardListBox from '@/components/Forms/AddJobShort/ComboBoardListBox';
 import {
   Form,
@@ -31,14 +31,13 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
   const initialColumnName = boardColumns![columnOrder].name;
   const initialBoardName = boards.find((board) => board.id === board_id)!.name;
 
-  const chosenBoard = localStorage.getItem('chosenBoard');
-  const chosenColumn = localStorage.getItem('chosenColumn');
+  const chosenBoard = localStorage.getItem('chosenBoard') || initialBoardName;
+  const chosenColumn =
+    localStorage.getItem('chosenColumn') || initialColumnName;
 
   useEffect(() => {
-    // Get the board id from the local storage board's name
     const changedBoard = boards.find((board) => board.name === chosenBoard);
     const changedBoardId = changedBoard?.id;
-
     const values = {
       accessToken,
       boardId: changedBoardId,
@@ -48,7 +47,7 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
     setBoardColumns(
       boards.find((board) => board.id === changedBoardId)!.columns
     );
-  }, [dispatch, board_id, chosenBoard, accessToken]);
+  }, [board_id, chosenBoard, chosenColumn, boardColumns]);
 
   const form = useForm({
     resolver: zodResolver(AddJobSchemaShort),
@@ -80,21 +79,10 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
     }
   }, [initialColumnName, boardColumns]);
 
-  useEffect(() => {
-    if (initialBoardName) {
-      localStorage.setItem('chosenBoard', initialBoardName);
-      localStorage.setItem('chosenColumn', initialColumnName); // Tht I have change last
-    }
-  }, [initialBoardName]);
-
-  // useEffect(() => {
-  //   dispatch(getBoards(accessToken as string));
-  // }, [dispatch, accessToken]);
-
   console.log('initialColumnName: ', initialColumnName);
   console.log('initialBoardName: ', initialBoardName);
-  console.log('chosenBoard: ', chosenBoard);
-  console.log('chosenColumn: ', chosenColumn);
+  // console.log('chosenBoard: ', chosenBoard);
+  // console.log('chosenColumn: ', chosenColumn);
 
   return (
     <Form {...form}>
@@ -155,8 +143,8 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                 </span>
                 <ComboBoardListBox
                   {...field}
-                  itemsType="boards"
                   items={boards}
+                  itemsType="boards"
                   searchItem="Boards"
                   initialString={initialBoardName}
                 />
@@ -176,11 +164,11 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                   <FormLabel className="text-gray-400">Required</FormLabel>
                 </span>
                 <ComboBoardListBox
+                  {...field}
+                  searchItem="Lists"
                   itemsType="columns"
                   items={boardColumns}
-                  searchItem="Lists"
                   initialString={initialColumnName}
-                  {...field}
                 />
                 <FormMessage />
               </FormItem>
