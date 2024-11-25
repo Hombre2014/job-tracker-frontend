@@ -45,7 +45,8 @@ const JobInfo = () => {
 
   const handleFieldChange = (
     fieldName: keyof JobApplication,
-    value: string
+    value: string,
+    status?: string
   ) => {
     if (fieldName === 'postUrl') {
       const urlValidation = validatePostUrl(value);
@@ -70,6 +71,7 @@ const JobInfo = () => {
       company: {
         name: currentJobPost?.company.name,
       },
+      ...(status && { status }),
       jobPostId: job_id,
       [fieldName]: value, // Dynamic field
     };
@@ -96,7 +98,8 @@ const JobInfo = () => {
   const handleSelectDeadline = (date: Date | undefined) => {
     setDate(date!);
     const deadline = date!.toLocaleDateString();
-    handleFieldChange('deadline', deadline);
+    handleFieldChange('deadline', deadline, 'Deadline');
+
     setIsCalendarOpen(false);
   };
 

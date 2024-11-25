@@ -8,9 +8,9 @@ import { format, toZonedTime } from 'date-fns-tz';
 import { useRouter, useParams } from 'next/navigation';
 
 import { cn } from '@/lib/utils';
-import { useAppDispatch } from '@/redux/hooks';
 import { deleteJobPost } from '@/redux/jobs/jobsThunk';
 import { returnJobPostIcon } from '@/utils/ReturnIcons';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
   Card,
   CardTitle,
@@ -42,6 +42,8 @@ const JobPostCard = ({
   const [showIcons, setShowIcons] = useState(false);
   const zonedDate = toZonedTime(date, 'Europe/Sofia');
   const accessToken = localStorage.getItem('accessToken');
+  const { boards } = useAppSelector((state) => state.boards);
+  const boardColumns = boards.find((board) => board.id === board_id)?.columns;
   const formattedDateHour = format(zonedDate, 'dd/MM/yyyy HH:mm, a', {
     timeZone: 'Europe/Paris',
   });
@@ -84,6 +86,10 @@ const JobPostCard = ({
   const handleJobPostClick = (id: string) => {
     router.push(`/home/boards/${board_id}/job/${id}/job-details`);
     localStorage.setItem('columnId', columnId);
+    const chosenColumn = boardColumns?.find(
+      (column) => column.id === columnId
+    )?.name;
+    localStorage.setItem('chosenColumn', chosenColumn as string);
   };
 
   const handleDeleteJobPost = (e: React.MouseEvent) => {
@@ -104,7 +110,7 @@ const JobPostCard = ({
       onMouseLeave={iconsOff}
       style={{ backgroundColor: color }}
       className={cn(
-        'w-11/12 mx-auto mt-2 rounded-sm text-white',
+        'w-11/12 mx-auto mt-2 rounded-sm text-white cursor-pointer',
         color === null ? 'bg-[#6a776b]' : `bg-[${color}]`
       )}
       onClick={() => {
@@ -121,11 +127,11 @@ const JobPostCard = ({
         <div className="flex flex-col gap-1 py-1 pr-2 items-end w-1/4 mt-1">
           {showIcons ? (
             <div
-              className="h-[24px] w-[24px] rounded-md cursor-pointer border border-transparent p-[1px] hover:border-gray-400 hover:border"
+              className="h-[24px] w-[24px] rounded-md border border-gray-200 p-[1px] hover:border-gray-400 hover:border"
               id={id}
             >
               <RiDeleteBinLine
-                className="h-5 w-5 m-auto"
+                className="h-[24px] w-[24px] m-auto pb-[5px] pr-[3px]"
                 onClick={handleDeleteJobPost}
               />
             </div>

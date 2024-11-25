@@ -16,6 +16,9 @@ const JobBoardTitle = (board: Board) => {
   const [showTrash, setShowTrash] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const { boards } = useAppSelector((state) => state.boards);
+  const currentBoardName =
+    boards.find((item) => item.id === board_id)?.name || '';
+  localStorage.setItem('chosenBoard', currentBoardName as string);
 
   const toggleTrashIcon = () => {
     setTimeout(() => {
@@ -47,9 +50,9 @@ const JobBoardTitle = (board: Board) => {
 
   return (
     <div
+      key={board.id}
       onMouseEnter={toggleTrashIcon}
       onMouseLeave={toggleTrashIcon}
-      key={board.id}
       className={cn(
         board_id === board.id
           ? 'bg-blue-100 hover:bg-blue-100 font-semibold'
