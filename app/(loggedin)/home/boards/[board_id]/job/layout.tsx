@@ -11,7 +11,6 @@ import {
   Card,
   CardTitle,
   CardHeader,
-  CardFooter,
   CardContent,
   CardDescription,
 } from '@/components/ui/card';
@@ -41,21 +40,23 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <Modal stylings="sm:w-11/12 md:w-3/4 lg:w-2/3 xl:w-1/2">
       <Card className="w-full min-h-[840px]">
-        <CardHeader>
-          <CardTitle className="mt-8 mx-4 text-xl font-bold">
-            {currentJobPost?.title}
-          </CardTitle>
-          <CardDescription className="mx-4 mt-8 pb-12">
-            <div className="min-h-[20px]">{currentJobPost?.company.name}</div>
-          </CardDescription>
-        </CardHeader>
+        <div className="flex justify-between items-center">
+          <CardHeader>
+            <CardTitle className="mt-8 mx-4 text-xl font-bold">
+              {currentJobPost?.title}
+            </CardTitle>
+            <CardDescription className="mx-4 mt-8 pb-12">
+              <div className="min-h-[20px]">{currentJobPost?.company.name}</div>
+            </CardDescription>
+          </CardHeader>
+          <div className="flex mr-6 gap-4">
+            <Button variant="outline" onClick={closeModal}>
+              Close
+            </Button>
+            <Button>Move</Button>
+          </div>
+        </div>
         <CardContent>{children}</CardContent>
-        <CardFooter className="flex justify-end gap-4 pb-8">
-          <Button variant="outline" onClick={closeModal}>
-            Close
-          </Button>
-          <Button>Move</Button>
-        </CardFooter>
       </Card>
     </Modal>
   );
