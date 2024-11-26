@@ -68,10 +68,10 @@ const BoardColumns = () => {
 
   const createJobApplication = () => {
     const jobPost = {
-      columnId,
+      columnId: localStorage.getItem('columnId'),
       accessToken: accessToken as string,
       title: localStorage.getItem('jobTitle'),
-      jobPostStatus: 'Job Created',
+      status: 'Job Created',
       companyName: localStorage.getItem('company'),
     };
 

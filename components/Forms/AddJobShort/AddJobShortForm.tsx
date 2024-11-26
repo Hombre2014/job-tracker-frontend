@@ -81,8 +81,8 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
 
   console.log('initialColumnName: ', initialColumnName);
   console.log('initialBoardName: ', initialBoardName);
-  // console.log('chosenBoard: ', chosenBoard);
-  // console.log('chosenColumn: ', chosenColumn);
+  console.log('chosenBoard: ', chosenBoard);
+  console.log('chosenColumn: ', chosenColumn);
 
   return (
     <Form {...form}>
