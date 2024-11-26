@@ -35,9 +35,16 @@ const ComboBoardListBox = ({
   const accessToken = localStorage.getItem('accessToken');
   const { lastName } = useAppSelector((state) => state.user);
   const { firstName } = useAppSelector((state) => state.user);
-  const [chosenColumn, setChosenColumn] = useState(initialString);
+  const [chosenColumn, setChosenColumn] = useState(
+    itemsType === 'columns'
+      ? initialString
+      : localStorage.getItem('chosenColumn')
+  );
   const { boardsStatus } = useAppSelector((state) => state.boards);
-  const currentBoardName = items.find((item) => item.id === board_id)?.name;
+  const currentBoardName =
+    itemsType === 'boards'
+      ? items.find((item) => item.id === board_id)?.name
+      : localStorage.getItem('chosenBoard');
   const [chosenBoard, setChosenBoard] = useState(currentBoardName);
 
   useEffect(() => {
@@ -48,7 +55,10 @@ const ComboBoardListBox = ({
         boardId: board_id,
       };
       dispatch(getBoardWithColumns(values));
-      localStorage.setItem('chosenColumn', initialString);
+
+      setValue(chosenBoard as string);
+
+      // localStorage.setItem('chosenColumn', initialString);
     } else {
       localStorage.setItem('chosenColumn', chosenColumn as string);
       const columnId = items.find((item) => item.name === chosenColumn)?.id;
