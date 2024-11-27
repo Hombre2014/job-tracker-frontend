@@ -16,9 +16,6 @@ const JobBoardTitle = (board: Board) => {
   const [showTrash, setShowTrash] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const { boards } = useAppSelector((state) => state.boards);
-  const currentBoardName =
-    boards.find((item) => item.id === board_id)?.name || '';
-  localStorage.setItem('chosenBoard', currentBoardName as string);
 
   const toggleTrashIcon = () => {
     setTimeout(() => {
