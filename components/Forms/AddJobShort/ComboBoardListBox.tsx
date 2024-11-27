@@ -27,6 +27,8 @@ const ComboBoardListBox = ({
   itemsType,
   searchItem,
   initialString,
+  onChange,
+  value: controlledValue,
 }: ComboBoardListBoxProps) => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
@@ -47,6 +49,16 @@ const ComboBoardListBox = ({
       : localStorage.getItem('chosenBoard');
   const [chosenBoard, setChosenBoard] = useState(currentBoardName);
 
+  // New code from ChatGPT
+
+  useEffect(() => {
+    // Reset value when itemsType or items change
+    if (items.length > 0) {
+      const firstItem = items[0]?.name || initialString;
+      setValue(firstItem);
+    }
+  }, [items, itemsType]);
+
   useEffect(() => {
     if (itemsType === 'boards') {
       localStorage.setItem('chosenBoard', chosenBoard as string);
@@ -57,14 +69,14 @@ const ComboBoardListBox = ({
       dispatch(getBoardWithColumns(values));
 
       setValue(chosenBoard as string);
-
-      // localStorage.setItem('chosenColumn', initialString);
     } else {
       localStorage.setItem('chosenColumn', chosenColumn as string);
       const columnId = items.find((item) => item.name === chosenColumn)?.id;
       localStorage.setItem('columnId', columnId as string);
     }
   }, [value, chosenBoard, chosenColumn, itemsType]);
+
+  const displayValue = controlledValue || initialString;
 
   return (
     boardsStatus === 'succeeded' && (
@@ -76,9 +88,10 @@ const ComboBoardListBox = ({
             aria-expanded={open}
             className="w-full justify-between"
           >
-            {value
+            {displayValue || `${initialString}`}
+            {/* {value
               ? items.find((item) => item.name === value)?.name
-              : `${initialString}`}
+              : `${initialString}`} */}
             <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -96,18 +109,37 @@ const ComboBoardListBox = ({
                     key={item.id}
                     value={item.name}
                     onSelect={() => {
-                      itemsType === 'boards'
-                        ? setChosenBoard(item.name)
-                        : setChosenColumn(item.name);
-                      setValue(item.name);
+                      onChange(item.name); // Notify parent
                       setOpen(false);
+
+                      // onSelect={() => {
+                      //   setValue(item.name);
+                      //   onChange(item.name); // Notify parent about the selection
+                      //   setOpen(false);
+
+                      // onSelect={() => {
+                      //   itemsType === 'boards'
+                      //     ? localStorage.setItem('chosenBoard', item.name)
+                      //     : setChosenColumn(item.name);
+
+                      //   setValue(item.name); // Update value when user selects
+                      //   setOpen(false);
+
+                      // Old code
+                      // itemsType === 'boards'
+                      //   ? setChosenBoard(item.name)
+                      //   : setChosenColumn(item.name);
+                      // setValue(item.name);
+                      // setOpen(false);
                     }}
                   >
                     <CheckIcon
                       key={item.id}
                       className={cn(
                         'mr-2 h-4 w-4',
-                        value === item.name ? 'opacity-100' : 'opacity-0'
+                        controlledValue === item.name
+                          ? 'opacity-100'
+                          : 'opacity-0'
                       )}
                     />
                     <div>

@@ -28,6 +28,7 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
   const [boardColumns, setBoardColumns] = useState(
     boards.find((board) => board.id === board_id)!.columns
   );
+
   const initialColumnName = boardColumns![columnOrder].name;
   const initialBoardName = boards.find((board) => board.id === board_id)!.name;
 
@@ -79,11 +80,6 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
     }
   }, [initialColumnName, boardColumns]);
 
-  console.log('initialColumnName: ', initialColumnName);
-  console.log('initialBoardName: ', initialBoardName);
-  console.log('chosenBoard: ', chosenBoard);
-  console.log('chosenColumn: ', chosenColumn);
-
   return (
     <Form {...form}>
       <form className="space-y-8">
@@ -99,9 +95,9 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                 <FormLabel className="text-gray-400">Required</FormLabel>
               </span>
               <Input
-                placeholder="Company name"
                 {...field}
                 value={company}
+                placeholder="Company name"
                 onChange={(e) => handleCompanyChange(e)}
               />
               <FormMessage />
@@ -120,9 +116,9 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                 <FormLabel className="text-gray-400">Required</FormLabel>
               </span>
               <Input
-                placeholder="Job Title"
                 {...field}
                 value={jobTitle}
+                placeholder="Job Title"
                 onChange={(e) => handleJobTitleChange(e)}
               />
               <FormMessage />
@@ -131,8 +127,8 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
         />
         <span className="flex justify-between gap-4 pb-4">
           <FormField
-            control={form.control}
             name="board"
+            control={form.control}
             render={({ field }) => (
               <FormItem className="!text-left w-1/2">
                 <span className="flex justify-between">
@@ -146,15 +142,31 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                   items={boards}
                   itemsType="boards"
                   searchItem="Boards"
+                  value={form.watch('board')} // Controlled value
                   initialString={initialBoardName}
+                  onChange={(selectedBoard) => {
+                    const newBoard = boards.find(
+                      (board) => board.name === selectedBoard
+                    );
+                    const firstColumn =
+                      newBoard?.columns[0]?.name || initialColumnName;
+
+                    // Update form state
+                    form.setValue('board', selectedBoard); // Update selected board
+                    form.setValue('list', firstColumn); // Update list to first column of new board
+
+                    // Update localStorage
+                    localStorage.setItem('chosenBoard', selectedBoard);
+                    localStorage.setItem('chosenColumn', firstColumn);
+                  }}
                 />
                 <FormMessage />
               </FormItem>
             )}
           />
           <FormField
-            control={form.control}
             name="list"
+            control={form.control}
             render={({ field }) => (
               <FormItem className="!text-left w-1/2">
                 <span className="flex justify-between">
@@ -167,8 +179,12 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                   {...field}
                   searchItem="Lists"
                   itemsType="columns"
-                  items={boardColumns}
+                  items={boardColumns} // Dynamic columns based on chosen board
                   initialString={initialColumnName}
+                  onChange={(selectedColumn) => {
+                    form.setValue('list', selectedColumn); // Update list field
+                    localStorage.setItem('chosenColumn', selectedColumn);
+                  }}
                 />
                 <FormMessage />
               </FormItem>
