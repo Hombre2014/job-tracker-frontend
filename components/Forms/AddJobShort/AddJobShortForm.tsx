@@ -28,6 +28,7 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
   const [boardColumns, setBoardColumns] = useState(
     boards.find((board) => board.id === board_id)!.columns
   );
+
   const initialColumnName = boardColumns![columnOrder].name;
   const initialBoardName = boards.find((board) => board.id === board_id)!.name;
 
@@ -114,9 +115,9 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                 <FormLabel className="text-gray-400">Required</FormLabel>
               </span>
               <Input
-                placeholder="Company name"
                 {...field}
                 value={company}
+                placeholder="Company name"
                 onChange={(e) => handleCompanyChange(e)}
               />
               <FormMessage />
@@ -135,9 +136,9 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                 <FormLabel className="text-gray-400">Required</FormLabel>
               </span>
               <Input
-                placeholder="Job Title"
                 {...field}
                 value={jobTitle}
+                placeholder="Job Title"
                 onChange={(e) => handleJobTitleChange(e)}
               />
               <FormMessage />
@@ -146,8 +147,8 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
         />
         <span className="flex justify-between gap-4 pb-4">
           <FormField
-            control={form.control}
             name="board"
+            control={form.control}
             render={({ field }) => (
               <FormItem className="!text-left w-1/2">
                 <span className="flex justify-between">
@@ -170,8 +171,8 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
             )}
           />
           <FormField
-            control={form.control}
             name="list"
+            control={form.control}
             render={({ field }) => (
               <FormItem className="!text-left w-1/2">
                 <span className="flex justify-between">

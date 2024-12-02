@@ -42,8 +42,8 @@ const JobPostCard = ({
   const [showIcons, setShowIcons] = useState(false);
   const zonedDate = toZonedTime(date, 'Europe/Sofia');
   const accessToken = localStorage.getItem('accessToken');
-  const { boards } = useAppSelector((state) => state.boards);
-  const boardColumns = boards.find((board) => board.id === board_id)?.columns;
+  // const { boards } = useAppSelector((state) => state.boards);
+  // const boardColumns = boards.find((board) => board.id === board_id)?.columns;
   const formattedDateHour = format(zonedDate, 'dd/MM/yyyy HH:mm, a', {
     timeZone: 'Europe/Paris',
   });
@@ -86,10 +86,10 @@ const JobPostCard = ({
   const handleJobPostClick = (id: string) => {
     router.push(`/home/boards/${board_id}/job/${id}/job-details`);
     localStorage.setItem('columnId', columnId);
-    const chosenColumn = boardColumns?.find(
-      (column) => column.id === columnId
-    )?.name;
-    localStorage.setItem('chosenColumn', chosenColumn as string);
+    // const chosenColumn = boardColumns?.find(
+    //   (column) => column.id === columnId
+    // )?.name;
+    // localStorage.setItem('chosenColumn', chosenColumn as string);
   };
 
   const handleDeleteJobPost = (e: React.MouseEvent) => {
