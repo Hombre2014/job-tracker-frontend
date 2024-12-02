@@ -87,12 +87,12 @@ interface LinkDocumentProps {
 }
 
 interface ComboBoardListBoxProps {
-  value?: string;
   searchItem: string;
-  initialString: string;
   items: Board[] | Column[];
-  onChange: (e: string) => void;
+  initialBoardString?: string;
+  initialColumnString?: string;
   itemsType?: 'boards' | 'columns';
+  sendDataToParent?: (value: string) => void;
 }
 
 interface AlertDialogProps {
