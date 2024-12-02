@@ -26,19 +26,33 @@ const ComboBoardListBox = ({
   items,
   itemsType,
   searchItem,
-  initialString,
+  initialBoardString,
+  initialColumnString,
+  sendDataToParent,
 }: ComboBoardListBoxProps) => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
-  const [value, setValue] = useState('');
+
   const [open, setOpen] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const { lastName } = useAppSelector((state) => state.user);
   const { firstName } = useAppSelector((state) => state.user);
-  const [chosenColumn, setChosenColumn] = useState(initialString);
+  const [chosenColumn, setChosenColumn] = useState(initialColumnString);
   const { boardsStatus } = useAppSelector((state) => state.boards);
-  const currentBoardName = items.find((item) => item.id === board_id)?.name;
-  const [chosenBoard, setChosenBoard] = useState(currentBoardName);
+  // const currentBoardName = items.find((item) => item.id === board_id)?.name;
+  const [chosenBoard, setChosenBoard] =
+    useState(initialBoardString) || localStorage.getItem('chosenBoard');
+
+  const [boardValueChanged, setBoardValueChanged] = useState(false);
+
+  const [valueBoard, setValueBoard] = useState(initialBoardString);
+  const [valueColumn, setValueColumn] = useState(initialColumnString);
+
+  console.log('ValueBoard: ', valueBoard);
+  console.log('ValueColumn: ', valueColumn);
+
+  const firstColumn =
+    localStorage.getItem('firstColumnOfTheBoard') || initialColumnString;
 
   useEffect(() => {
     if (itemsType === 'boards') {
@@ -48,13 +62,19 @@ const ComboBoardListBox = ({
         boardId: board_id,
       };
       dispatch(getBoardWithColumns(values));
-      localStorage.setItem('chosenColumn', initialString);
     } else {
       localStorage.setItem('chosenColumn', chosenColumn as string);
       const columnId = items.find((item) => item.name === chosenColumn)?.id;
       localStorage.setItem('columnId', columnId as string);
     }
-  }, [value, chosenBoard, chosenColumn, itemsType]);
+  }, [valueBoard, chosenBoard, chosenColumn, itemsType]);
+
+  console.log('chosenBoard: ', chosenBoard);
+  console.log('chosenColumn: ', chosenColumn);
+
+  const handleBoardChange = () => {
+    sendDataToParent(chosenBoard!);
+  };
 
   return (
     boardsStatus === 'succeeded' && (
@@ -66,9 +86,15 @@ const ComboBoardListBox = ({
             aria-expanded={open}
             className="w-full justify-between"
           >
-            {value
-              ? items.find((item) => item.name === value)?.name
-              : `${initialString}`}
+            {/* {itemsType === 'boards'
+              ? chosenBoard
+              : localStorage.getItem('firstColumnOfTheBoard')} */}
+            {/* {valueBoard
+              ? items.find((item) => item.name === valueBoard)?.name
+              : itemsType === 'boards'
+              ? chosenBoard
+              : chosenColumn} */}
+            {itemsType === 'boards' ? valueBoard : valueColumn}
             <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -84,12 +110,17 @@ const ComboBoardListBox = ({
                 {items.map((item) => (
                   <CommandItem
                     key={item.id}
-                    value={item.name}
+                    value={itemsType === 'boards' ? valueBoard : valueColumn}
                     onSelect={() => {
                       itemsType === 'boards'
-                        ? setChosenBoard(item.name)
-                        : setChosenColumn(item.name);
-                      setValue(item.name);
+                        ? (setChosenBoard(item.name),
+                          setChosenColumn(firstColumn),
+                          setValueBoard(item.name),
+                          setBoardValueChanged(true),
+                          { handleBoardChange })
+                        : (setChosenColumn(item.name),
+                          setValueColumn(item.name));
+
                       setOpen(false);
                     }}
                   >
@@ -97,7 +128,7 @@ const ComboBoardListBox = ({
                       key={item.id}
                       className={cn(
                         'mr-2 h-4 w-4',
-                        value === item.name ? 'opacity-100' : 'opacity-0'
+                        valueBoard === item.name ? 'opacity-100' : 'opacity-0'
                       )}
                     />
                     <div>
