@@ -76,8 +76,6 @@ const ComboBoardListBox = ({
     sendDataToParent(chosenBoard!);
   };
 
-  const displayValue = controlledValue || initialString;
-
   return (
     boardsStatus === 'succeeded' && (
       <Popover open={open} onOpenChange={setOpen}>
