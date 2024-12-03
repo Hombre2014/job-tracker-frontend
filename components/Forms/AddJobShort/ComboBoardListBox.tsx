@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 
@@ -28,6 +28,7 @@ const ComboBoardListBox = ({
   searchItem,
   initialBoardString,
   initialColumnString,
+  firstColumnOfTheBoard,
   sendDataToParent,
 }: ComboBoardListBoxProps) => {
   const { board_id } = useParams();
@@ -51,8 +52,9 @@ const ComboBoardListBox = ({
   console.log('ValueBoard: ', valueBoard);
   console.log('ValueColumn: ', valueColumn);
 
-  const firstColumn =
-    localStorage.getItem('firstColumnOfTheBoard') || initialColumnString;
+  const firstColumn = localStorage.getItem('firstColumnOfTheBoard');
+
+  console.log('firstColumn: ', firstColumn);
 
   useEffect(() => {
     if (itemsType === 'boards') {
@@ -67,10 +69,18 @@ const ComboBoardListBox = ({
       const columnId = items.find((item) => item.name === chosenColumn)?.id;
       localStorage.setItem('columnId', columnId as string);
     }
-  }, [valueBoard, chosenBoard, chosenColumn, itemsType]);
+  }, [valueBoard, chosenBoard, chosenColumn, itemsType, firstColumnOfTheBoard]);
 
   console.log('chosenBoard: ', chosenBoard);
   console.log('chosenColumn: ', chosenColumn);
+
+  useEffect(() => {
+    if (boardValueChanged) {
+      if (chosenColumn === firstColumnOfTheBoard) {
+        localStorage.setItem('chosenColumn', firstColumnOfTheBoard!);
+      }
+    }
+  }, [boardValueChanged, chosenColumn, firstColumnOfTheBoard]);
 
   const handleBoardChange = () => {
     sendDataToParent(chosenBoard!);
@@ -114,7 +124,7 @@ const ComboBoardListBox = ({
                     onSelect={() => {
                       itemsType === 'boards'
                         ? (setChosenBoard(item.name),
-                          setChosenColumn(firstColumn),
+                          setChosenColumn(firstColumn!),
                           setValueBoard(item.name),
                           setBoardValueChanged(true),
                           { handleBoardChange })

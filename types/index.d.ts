@@ -92,7 +92,8 @@ interface ComboBoardListBoxProps {
   initialBoardString?: string;
   initialColumnString?: string;
   itemsType?: 'boards' | 'columns';
-  sendDataToParent?: (value: string) => void;
+  firstColumnOfTheBoard?: string;
+  sendDataToParent: (value: string) => void;
 }
 
 interface AlertDialogProps {

@@ -33,8 +33,7 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
   const initialBoardName = boards.find((board) => board.id === board_id)!.name;
 
   const chosenBoard = localStorage.getItem('chosenBoard') || initialBoardName;
-  const chosenColumn =
-    localStorage.getItem('chosenColumn') || initialColumnName;
+  const chosenColumn = localStorage.getItem('chosenColumn');
 
   const [firstColumnOfTheBoard, setFirstColumnOfTheBoard] =
     useState(initialColumnName);
@@ -80,16 +79,6 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
     setJobTitle(e.target.value);
     localStorage.setItem('jobTitle', e.target.value);
   };
-
-  useEffect(() => {
-    if (initialColumnName) {
-      const columnId = boardColumns!.find(
-        (column) => column.name === initialColumnName
-      )?.id;
-      localStorage.setItem('columnId', columnId as string);
-      localStorage.setItem('chosenColumn', initialColumnName);
-    }
-  }, [initialColumnName, boardColumns]);
 
   console.log('initialColumnName: ', initialColumnName);
   console.log('initialBoardName: ', initialBoardName);
@@ -163,7 +152,8 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                   itemsType="boards"
                   searchItem="Boards"
                   initialBoardString={initialBoardName}
-                  initialColumnString={firstColumnOfTheBoard}
+                  // initialColumnString={initialColumnName}
+                  firstColumnOfTheBoard={firstColumnOfTheBoard}
                   sendDataToParent={handleDataFromChild}
                 />
                 <FormMessage />
@@ -187,8 +177,9 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                   itemsType="columns"
                   items={boardColumns}
                   initialColumnString={initialColumnName}
+                  firstColumnOfTheBoard={firstColumnOfTheBoard}
+                  sendDataToParent={handleDataFromChild}
                   // initialBoardString={initialBoardName}
-                  // sendDataToParent={handleDataFromChild}
                 />
                 <FormMessage />
               </FormItem>
