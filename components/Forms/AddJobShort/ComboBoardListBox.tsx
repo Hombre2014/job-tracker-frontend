@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 
@@ -49,12 +49,12 @@ const ComboBoardListBox = ({
   const [valueBoard, setValueBoard] = useState(initialBoardString);
   const [valueColumn, setValueColumn] = useState(initialColumnString);
 
-  console.log('ValueBoard: ', valueBoard);
-  console.log('ValueColumn: ', valueColumn);
+  // console.log('ValueBoard: ', valueBoard);
+  // console.log('ValueColumn: ', valueColumn);
 
   const firstColumn = localStorage.getItem('firstColumnOfTheBoard');
 
-  console.log('firstColumn: ', firstColumn);
+  // console.log('firstColumn: ', firstColumn);
 
   useEffect(() => {
     if (itemsType === 'boards') {
@@ -71,8 +71,8 @@ const ComboBoardListBox = ({
     }
   }, [valueBoard, chosenBoard, chosenColumn, itemsType, firstColumnOfTheBoard]);
 
-  console.log('chosenBoard: ', chosenBoard);
-  console.log('chosenColumn: ', chosenColumn);
+  // console.log('chosenBoard: ', chosenBoard);
+  // console.log('chosenColumn: ', chosenColumn);
 
   useEffect(() => {
     if (boardValueChanged) {

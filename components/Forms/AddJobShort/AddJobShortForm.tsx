@@ -47,7 +47,7 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
       setFirstColumnOfTheBoard(changedBoard.columns[0].name);
     }
 
-    console.log('firstColumnOfTheBoard: ', firstColumnOfTheBoard);
+    // console.log('firstColumnOfTheBoard: ', firstColumnOfTheBoard);
     localStorage.setItem('firstColumnOfTheBoard', firstColumnOfTheBoard);
     const values = {
       accessToken,
@@ -80,8 +80,8 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
     localStorage.setItem('jobTitle', e.target.value);
   };
 
-  console.log('initialColumnName: ', initialColumnName);
-  console.log('initialBoardName: ', initialBoardName);
+  // console.log('initialColumnName: ', initialColumnName);
+  // console.log('initialBoardName: ', initialBoardName);
   // console.log('chosenBoard: ', chosenBoard);
   // console.log('chosenColumn: ', chosenColumn);
 
