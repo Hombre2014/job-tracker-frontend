@@ -30,7 +30,6 @@ const ComboBoardListBox = ({
   initialBoardString,
   initialColumnString,
   firstColumnOfTheBoard,
-  sendDataToParent,
 }: ComboBoardListBoxProps) => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
@@ -40,26 +39,16 @@ const ComboBoardListBox = ({
   const { lastName } = useAppSelector((state) => state.user);
   const { firstName } = useAppSelector((state) => state.user);
   const { boardsStatus } = useAppSelector((state) => state.boards);
+  const [valueBoard, setValueBoard] = useState(initialBoardString);
+  const firstColumn = localStorage.getItem('firstColumnOfTheBoard');
+  const [valueColumn, setValueColumn] = useState(initialColumnString);
   const [chosenColumn, setChosenColumn] = useState(initialColumnString);
-  // const currentBoardName = items.find((item) => item.id === board_id)?.name;
   const [chosenBoard, setChosenBoard] =
     useState(initialBoardString) || localStorage.getItem('chosenBoard');
-
   const [boardValueChanged, setBoardValueChanged] = useLocalStorage(
     'boardValueChanged',
     false
   );
-  // useState(false);
-
-  const [valueBoard, setValueBoard] = useState(initialBoardString);
-  const [valueColumn, setValueColumn] = useState(initialColumnString);
-
-  // console.log('ValueBoard: ', valueBoard);
-  // console.log('ValueColumn: ', valueColumn);
-
-  const firstColumn = localStorage.getItem('firstColumnOfTheBoard');
-
-  // console.log('firstColumn: ', firstColumn);
 
   useEffect(() => {
     if (itemsType === 'boards') {
@@ -76,9 +65,6 @@ const ComboBoardListBox = ({
     }
   }, [valueBoard, chosenBoard, chosenColumn, itemsType, firstColumnOfTheBoard]);
 
-  // console.log('chosenBoard: ', chosenBoard);
-  // console.log('chosenColumn: ', chosenColumn);
-
   useEffect(() => {
     if (boardValueChanged) {
       if (chosenColumn === firstColumnOfTheBoard) {
@@ -86,10 +72,6 @@ const ComboBoardListBox = ({
       }
     }
   }, [boardValueChanged, chosenColumn, firstColumnOfTheBoard]);
-
-  const handleBoardChange = () => {
-    sendDataToParent(chosenBoard!);
-  };
 
   return (
     boardsStatus === 'succeeded' && (
@@ -101,14 +83,6 @@ const ComboBoardListBox = ({
             aria-expanded={open}
             className="w-full justify-between"
           >
-            {/* {itemsType === 'boards'
-              ? chosenBoard
-              : localStorage.getItem('firstColumnOfTheBoard')} */}
-            {/* {valueBoard
-              ? items.find((item) => item.name === valueBoard)?.name
-              : itemsType === 'boards'
-              ? chosenBoard
-              : chosenColumn} */}
             {itemsType === 'boards'
               ? valueBoard
               : boardValueChanged
@@ -135,8 +109,7 @@ const ComboBoardListBox = ({
                         ? (setChosenBoard(item.name),
                           setChosenColumn(firstColumn!),
                           setValueBoard(item.name),
-                          setBoardValueChanged(true),
-                          handleBoardChange)
+                          setBoardValueChanged(true))
                         : (setBoardValueChanged(false),
                           setChosenColumn(item.name),
                           setValueColumn(item.name));
