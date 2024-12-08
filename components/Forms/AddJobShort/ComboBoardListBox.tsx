@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { useLocalStorage } from 'usehooks-ts';
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 
 import { cn } from '@/lib/utils';
@@ -38,13 +39,17 @@ const ComboBoardListBox = ({
   const accessToken = localStorage.getItem('accessToken');
   const { lastName } = useAppSelector((state) => state.user);
   const { firstName } = useAppSelector((state) => state.user);
-  const [chosenColumn, setChosenColumn] = useState(initialColumnString);
   const { boardsStatus } = useAppSelector((state) => state.boards);
+  const [chosenColumn, setChosenColumn] = useState(initialColumnString);
   // const currentBoardName = items.find((item) => item.id === board_id)?.name;
   const [chosenBoard, setChosenBoard] =
     useState(initialBoardString) || localStorage.getItem('chosenBoard');
 
-  const [boardValueChanged, setBoardValueChanged] = useState(false);
+  const [boardValueChanged, setBoardValueChanged] = useLocalStorage(
+    'boardValueChanged',
+    false
+  );
+  // useState(false);
 
   const [valueBoard, setValueBoard] = useState(initialBoardString);
   const [valueColumn, setValueColumn] = useState(initialColumnString);
@@ -104,7 +109,11 @@ const ComboBoardListBox = ({
               : itemsType === 'boards'
               ? chosenBoard
               : chosenColumn} */}
-            {itemsType === 'boards' ? valueBoard : valueColumn}
+            {itemsType === 'boards'
+              ? valueBoard
+              : boardValueChanged
+              ? firstColumn
+              : valueColumn}
             <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -127,10 +136,10 @@ const ComboBoardListBox = ({
                           setChosenColumn(firstColumn!),
                           setValueBoard(item.name),
                           setBoardValueChanged(true),
-                          { handleBoardChange })
-                        : (setChosenColumn(item.name),
+                          handleBoardChange)
+                        : (setBoardValueChanged(false),
+                          setChosenColumn(item.name),
                           setValueColumn(item.name));
-
                       setOpen(false);
                     }}
                   >
