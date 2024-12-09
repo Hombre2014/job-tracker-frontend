@@ -85,9 +85,16 @@ const ComboBoardListBox = ({
 
   useEffect(() => {
     if (boardValueChanged) {
-      if (chosenColumn === firstColumnOfTheBoard) {
-        localStorage.setItem('chosenColumn', firstColumnOfTheBoard!);
-      }
+      localStorage.setItem('chosenColumn', firstColumnOfTheBoard!);
+      // Get the columnId of the first column of the board
+
+      const columnId = items.find(
+        (item) => item.name === firstColumnOfTheBoard
+      )?.id;
+      localStorage.setItem('columnId', columnId as string);
+      // if (chosenColumn === firstColumnOfTheBoard) {
+      //   localStorage.setItem('chosenColumn', firstColumnOfTheBoard!);
+      // }
     }
   }, [boardValueChanged, chosenColumn, firstColumnOfTheBoard]);
 
