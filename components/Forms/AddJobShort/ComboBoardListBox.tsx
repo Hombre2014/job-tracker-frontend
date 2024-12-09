@@ -41,14 +41,32 @@ const ComboBoardListBox = ({
   const { boardsStatus } = useAppSelector((state) => state.boards);
   const [valueBoard, setValueBoard] = useState(initialBoardString);
   const firstColumn = localStorage.getItem('firstColumnOfTheBoard');
-  const [valueColumn, setValueColumn] = useState(initialColumnString);
+
   const [chosenColumn, setChosenColumn] = useState(initialColumnString);
+
   const [chosenBoard, setChosenBoard] =
     useState(initialBoardString) || localStorage.getItem('chosenBoard');
+
   const [boardValueChanged, setBoardValueChanged] = useLocalStorage(
     'boardValueChanged',
     false
   );
+
+  const useStringLocalStorage = (key: string, initialValue: string) => {
+    const [storedValue, setStoredValue] = useState(() => {
+      // Read raw value from localStorage or fall back to the initial value
+      const saved = localStorage.getItem(key);
+      return saved !== null ? saved : initialValue;
+    });
+
+    const setRawValue = (value: string) => {
+      // Directly set raw value in localStorage and update state
+      localStorage.setItem(key, value);
+      setStoredValue(value);
+    };
+
+    return [storedValue, setRawValue] as const;
+  };
 
   useEffect(() => {
     if (itemsType === 'boards') {
@@ -87,7 +105,7 @@ const ComboBoardListBox = ({
               ? valueBoard
               : boardValueChanged
               ? firstColumn
-              : valueColumn}
+              : chosenColumn}
             <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -103,7 +121,7 @@ const ComboBoardListBox = ({
                 {items.map((item) => (
                   <CommandItem
                     key={item.id}
-                    value={itemsType === 'boards' ? valueBoard : valueColumn}
+                    value={itemsType === 'boards' ? valueBoard : chosenColumn}
                     onSelect={() => {
                       itemsType === 'boards'
                         ? (setChosenBoard(item.name),
@@ -111,8 +129,7 @@ const ComboBoardListBox = ({
                           setValueBoard(item.name),
                           setBoardValueChanged(true))
                         : (setBoardValueChanged(false),
-                          setChosenColumn(item.name),
-                          setValueColumn(item.name));
+                          setChosenColumn(item.name));
                       setOpen(false);
                     }}
                   >
