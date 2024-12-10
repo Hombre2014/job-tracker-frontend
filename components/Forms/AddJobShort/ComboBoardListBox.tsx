@@ -41,32 +41,13 @@ const ComboBoardListBox = ({
   const { boardsStatus } = useAppSelector((state) => state.boards);
   const [valueBoard, setValueBoard] = useState(initialBoardString);
   const firstColumn = localStorage.getItem('firstColumnOfTheBoard');
-
   const [chosenColumn, setChosenColumn] = useState(initialColumnString);
-
   const [chosenBoard, setChosenBoard] =
     useState(initialBoardString) || localStorage.getItem('chosenBoard');
-
   const [boardValueChanged, setBoardValueChanged] = useLocalStorage(
     'boardValueChanged',
     false
   );
-
-  const useStringLocalStorage = (key: string, initialValue: string) => {
-    const [storedValue, setStoredValue] = useState(() => {
-      // Read raw value from localStorage or fall back to the initial value
-      const saved = localStorage.getItem(key);
-      return saved !== null ? saved : initialValue;
-    });
-
-    const setRawValue = (value: string) => {
-      // Directly set raw value in localStorage and update state
-      localStorage.setItem(key, value);
-      setStoredValue(value);
-    };
-
-    return [storedValue, setRawValue] as const;
-  };
 
   useEffect(() => {
     if (itemsType === 'boards') {
@@ -86,17 +67,15 @@ const ComboBoardListBox = ({
   useEffect(() => {
     if (boardValueChanged) {
       localStorage.setItem('chosenColumn', firstColumnOfTheBoard!);
-      // Get the columnId of the first column of the board
 
       const columnId = items.find(
         (item) => item.name === firstColumnOfTheBoard
       )?.id;
       localStorage.setItem('columnId', columnId as string);
-      // if (chosenColumn === firstColumnOfTheBoard) {
-      //   localStorage.setItem('chosenColumn', firstColumnOfTheBoard!);
-      // }
     }
   }, [boardValueChanged, chosenColumn, firstColumnOfTheBoard]);
+
+  console.log('valueBoard: ', valueBoard);
 
   return (
     boardsStatus === 'succeeded' && (
@@ -128,6 +107,16 @@ const ComboBoardListBox = ({
                 {items.map((item) => (
                   <CommandItem
                     key={item.id}
+                    className={cn(
+                      'hover:!bg-slate-200 cursor-pointer my-[2px]',
+                      itemsType === 'boards'
+                        ? chosenBoard === item.name
+                          ? '!bg-slate-200'
+                          : '!bg-white'
+                        : chosenColumn === item.name
+                        ? '!bg-slate-200'
+                        : '!bg-white'
+                    )}
                     value={itemsType === 'boards' ? valueBoard : chosenColumn}
                     onSelect={() => {
                       itemsType === 'boards'
@@ -144,7 +133,13 @@ const ComboBoardListBox = ({
                       key={item.id}
                       className={cn(
                         'mr-2 h-4 w-4',
-                        valueBoard === item.name ? 'opacity-100' : 'opacity-0'
+                        itemsType === 'boards'
+                          ? chosenBoard === item.name
+                            ? 'opacity-100'
+                            : 'opacity-0'
+                          : chosenColumn === item.name
+                          ? 'opacity-100'
+                          : 'opacity-0'
                       )}
                     />
                     <div>

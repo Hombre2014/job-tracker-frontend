@@ -17,13 +17,13 @@ const BoardColumns = () => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const [isEditing, setIsEditing] = useState(false);
-  const columnId = localStorage.getItem('columnId');
   const accessToken = localStorage.getItem('accessToken');
   const [currentColumnId, setCurrentColumnId] = useState('');
   const { boards } = useAppSelector((state) => state.boards);
   const { jobPosts } = useAppSelector((state) => state.jobs);
   const [renamedColumnName, setRenamedColumnName] = useState('');
   const currentBoard = boards.find((board) => board.id === board_id);
+  const jobPostStatus = useAppSelector((state) => state.jobs.jobPostsStatus);
 
   useEffect(() => {
     if (isEditing) {
@@ -68,14 +68,15 @@ const BoardColumns = () => {
 
   const createJobApplication = () => {
     const jobPost = {
-      columnId: localStorage.getItem('columnId'),
+      status: 'Job Created',
       accessToken: accessToken as string,
       title: localStorage.getItem('jobTitle'),
-      status: 'Job Created',
+      columnId: localStorage.getItem('columnId'),
       companyName: localStorage.getItem('company'),
     };
 
     dispatch(createJobPost(jobPost));
+    dispatch(getBoards(accessToken as string));
   };
 
   return (
@@ -127,20 +128,22 @@ const BoardColumns = () => {
               <AddJobShortForm columnOrder={column.order} />
             </AlertDialogModal>
             {column.jobApplications &&
-              column.jobApplications.map((job) => (
-                <JobPostCard
-                  id={job.id}
-                  key={job.id}
-                  title={job.title}
-                  color={job.color}
-                  columnId={column.id}
-                  status={job.status}
-                  postUrl={job.postUrl}
-                  timeStamp={job.createdAt}
-                  companyName={job.company.name}
-                  statusChangedTime={job.statusChangedAt}
-                />
-              ))}
+              column.jobApplications.map((job) =>
+                job.company !== null ? (
+                  <JobPostCard
+                    id={job.id}
+                    key={job.id}
+                    title={job.title}
+                    color={job.color}
+                    status={job.status}
+                    columnId={column.id}
+                    postUrl={job.postUrl}
+                    timeStamp={job.createdAt}
+                    companyName={job.company.name}
+                    statusChangedTime={job.statusChangedAt}
+                  />
+                ) : null
+              )}
           </section>
         ))}
     </div>
