@@ -63,7 +63,6 @@ const JobPostCard = ({
 
   function getShortTimeSinceStatusChange(timeStamp: string): string {
     const nowTime = Date.now();
-    // const adjustedTimeStamp = new Date(Date.parse(timeStamp) + 60 * 60 * 1000); // Add 1 hour due to timezone difference between server Docker container and client
     const dateTime = Date.parse(timeStamp);
 
     const diffInMs = nowTime - dateTime;
