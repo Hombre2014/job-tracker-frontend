@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useLocalStorage } from 'usehooks-ts';
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 
 import { cn } from '@/lib/utils';
@@ -28,38 +28,31 @@ const ComboBoardListBox = ({
   searchItem,
   initialBoardString,
   initialColumnString,
-  sendDataToParent,
+  firstColumnOfTheBoard,
 }: ComboBoardListBoxProps) => {
-  const { board_id } = useParams();
   const dispatch = useAppDispatch();
 
   const [open, setOpen] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const { lastName } = useAppSelector((state) => state.user);
   const { firstName } = useAppSelector((state) => state.user);
-  const [chosenColumn, setChosenColumn] = useState(initialColumnString);
   const { boardsStatus } = useAppSelector((state) => state.boards);
-  // const currentBoardName = items.find((item) => item.id === board_id)?.name;
-  const [chosenBoard, setChosenBoard] =
-    useState(initialBoardString) || localStorage.getItem('chosenBoard');
-
-  const [boardValueChanged, setBoardValueChanged] = useState(false);
-
   const [valueBoard, setValueBoard] = useState(initialBoardString);
-  const [valueColumn, setValueColumn] = useState(initialColumnString);
-
-  console.log('ValueBoard: ', valueBoard);
-  console.log('ValueColumn: ', valueColumn);
-
-  const firstColumn =
-    localStorage.getItem('firstColumnOfTheBoard') || initialColumnString;
+  const firstColumn = localStorage.getItem('firstColumnOfTheBoard');
+  const [chosenBoard, setChosenBoard] = useState(initialBoardString);
+  const [chosenColumn, setChosenColumn] = useState(initialColumnString);
+  const [boardValueChanged, setBoardValueChanged] = useLocalStorage(
+    'boardValueChanged',
+    false
+  );
 
   useEffect(() => {
     if (itemsType === 'boards') {
       localStorage.setItem('chosenBoard', chosenBoard as string);
+      const boardId = items.find((item) => item.name === chosenBoard)?.id;
       const values = {
         accessToken,
-        boardId: board_id,
+        boardId: boardId,
       };
       dispatch(getBoardWithColumns(values));
     } else {
@@ -67,14 +60,18 @@ const ComboBoardListBox = ({
       const columnId = items.find((item) => item.name === chosenColumn)?.id;
       localStorage.setItem('columnId', columnId as string);
     }
-  }, [valueBoard, chosenBoard, chosenColumn, itemsType]);
+  }, [valueBoard, chosenBoard, chosenColumn, itemsType, firstColumnOfTheBoard]);
 
-  console.log('chosenBoard: ', chosenBoard);
-  console.log('chosenColumn: ', chosenColumn);
+  useEffect(() => {
+    if (boardValueChanged) {
+      localStorage.setItem('chosenColumn', firstColumnOfTheBoard!);
 
-  const handleBoardChange = () => {
-    sendDataToParent(chosenBoard!);
-  };
+      const columnId = items.find(
+        (item) => item.name === firstColumnOfTheBoard
+      )?.id;
+      localStorage.setItem('columnId', columnId as string);
+    }
+  }, [boardValueChanged, chosenColumn, firstColumnOfTheBoard]);
 
   return (
     boardsStatus === 'succeeded' && (
@@ -86,15 +83,11 @@ const ComboBoardListBox = ({
             aria-expanded={open}
             className="w-full justify-between"
           >
-            {/* {itemsType === 'boards'
-              ? chosenBoard
-              : localStorage.getItem('firstColumnOfTheBoard')} */}
-            {/* {valueBoard
-              ? items.find((item) => item.name === valueBoard)?.name
-              : itemsType === 'boards'
-              ? chosenBoard
-              : chosenColumn} */}
-            {itemsType === 'boards' ? valueBoard : valueColumn}
+            {itemsType === 'boards'
+              ? valueBoard
+              : boardValueChanged
+              ? firstColumn
+              : chosenColumn}
             <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -110,17 +103,25 @@ const ComboBoardListBox = ({
                 {items.map((item) => (
                   <CommandItem
                     key={item.id}
-                    value={itemsType === 'boards' ? valueBoard : valueColumn}
+                    className={cn(
+                      'hover:!bg-slate-200 cursor-pointer my-[2px]',
+                      itemsType === 'boards'
+                        ? chosenBoard === item.name
+                          ? '!bg-slate-200'
+                          : '!bg-white'
+                        : chosenColumn === item.name
+                        ? '!bg-slate-200'
+                        : '!bg-white'
+                    )}
+                    value={itemsType === 'boards' ? valueBoard : chosenColumn}
                     onSelect={() => {
                       itemsType === 'boards'
                         ? (setChosenBoard(item.name),
-                          setChosenColumn(firstColumn),
+                          setChosenColumn(firstColumn!),
                           setValueBoard(item.name),
-                          setBoardValueChanged(true),
-                          { handleBoardChange })
-                        : (setChosenColumn(item.name),
-                          setValueColumn(item.name));
-
+                          setBoardValueChanged(true))
+                        : (setBoardValueChanged(false),
+                          setChosenColumn(item.name));
                       setOpen(false);
                     }}
                   >
@@ -128,7 +129,13 @@ const ComboBoardListBox = ({
                       key={item.id}
                       className={cn(
                         'mr-2 h-4 w-4',
-                        valueBoard === item.name ? 'opacity-100' : 'opacity-0'
+                        itemsType === 'boards'
+                          ? chosenBoard === item.name
+                            ? 'opacity-100'
+                            : 'opacity-0'
+                          : chosenColumn === item.name
+                          ? 'opacity-100'
+                          : 'opacity-0'
                       )}
                     />
                     <div>

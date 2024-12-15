@@ -28,27 +28,21 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
   const [boardColumns, setBoardColumns] = useState(
     boards.find((board) => board.id === board_id)!.columns
   );
-
   const initialColumnName = boardColumns![columnOrder].name;
   const initialBoardName = boards.find((board) => board.id === board_id)!.name;
-
   const chosenBoard = localStorage.getItem('chosenBoard') || initialBoardName;
-  const chosenColumn =
-    localStorage.getItem('chosenColumn') || initialColumnName;
-
+  const chosenColumn = localStorage.getItem('chosenColumn');
   const [firstColumnOfTheBoard, setFirstColumnOfTheBoard] =
     useState(initialColumnName);
 
   useEffect(() => {
     const changedBoard = boards.find((board) => board.name === chosenBoard);
     const changedBoardId = changedBoard?.id;
-    // Find the first column of the changed board
 
     if (changedBoard) {
       setFirstColumnOfTheBoard(changedBoard.columns[0].name);
     }
 
-    console.log('firstColumnOfTheBoard: ', firstColumnOfTheBoard);
     localStorage.setItem('firstColumnOfTheBoard', firstColumnOfTheBoard);
     const values = {
       accessToken,
@@ -64,10 +58,10 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
   const form = useForm({
     resolver: zodResolver(AddJobSchemaShort),
     defaultValues: {
+      list: '',
+      board: '',
       company: '',
       jobTitle: '',
-      board: '',
-      list: '',
     },
   });
 
@@ -79,25 +73,6 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
   const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setJobTitle(e.target.value);
     localStorage.setItem('jobTitle', e.target.value);
-  };
-
-  useEffect(() => {
-    if (initialColumnName) {
-      const columnId = boardColumns!.find(
-        (column) => column.name === initialColumnName
-      )?.id;
-      localStorage.setItem('columnId', columnId as string);
-      localStorage.setItem('chosenColumn', initialColumnName);
-    }
-  }, [initialColumnName, boardColumns]);
-
-  console.log('initialColumnName: ', initialColumnName);
-  console.log('initialBoardName: ', initialBoardName);
-  // console.log('chosenBoard: ', chosenBoard);
-  // console.log('chosenColumn: ', chosenColumn);
-
-  const handleDataFromChild = (data: string) => {
-    console.log('Data from child: ', data);
   };
 
   return (
@@ -163,8 +138,7 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                   itemsType="boards"
                   searchItem="Boards"
                   initialBoardString={initialBoardName}
-                  initialColumnString={firstColumnOfTheBoard}
-                  sendDataToParent={handleDataFromChild}
+                  firstColumnOfTheBoard={firstColumnOfTheBoard}
                 />
                 <FormMessage />
               </FormItem>
@@ -187,8 +161,7 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
                   itemsType="columns"
                   items={boardColumns}
                   initialColumnString={initialColumnName}
-                  // initialBoardString={initialBoardName}
-                  // sendDataToParent={handleDataFromChild}
+                  firstColumnOfTheBoard={firstColumnOfTheBoard}
                 />
                 <FormMessage />
               </FormItem>
