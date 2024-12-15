@@ -58,10 +58,10 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
   const form = useForm({
     resolver: zodResolver(AddJobSchemaShort),
     defaultValues: {
+      list: '',
+      board: '',
       company: '',
       jobTitle: '',
-      board: '',
-      list: '',
     },
   });
 

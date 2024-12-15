@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
 import { useLocalStorage } from 'usehooks-ts';
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 
@@ -31,7 +30,6 @@ const ComboBoardListBox = ({
   initialColumnString,
   firstColumnOfTheBoard,
 }: ComboBoardListBoxProps) => {
-  const { board_id } = useParams();
   const dispatch = useAppDispatch();
 
   const [open, setOpen] = useState(false);
@@ -41,9 +39,8 @@ const ComboBoardListBox = ({
   const { boardsStatus } = useAppSelector((state) => state.boards);
   const [valueBoard, setValueBoard] = useState(initialBoardString);
   const firstColumn = localStorage.getItem('firstColumnOfTheBoard');
+  const [chosenBoard, setChosenBoard] = useState(initialBoardString);
   const [chosenColumn, setChosenColumn] = useState(initialColumnString);
-  const [chosenBoard, setChosenBoard] =
-    useState(initialBoardString) || localStorage.getItem('chosenBoard');
   const [boardValueChanged, setBoardValueChanged] = useLocalStorage(
     'boardValueChanged',
     false
@@ -52,9 +49,10 @@ const ComboBoardListBox = ({
   useEffect(() => {
     if (itemsType === 'boards') {
       localStorage.setItem('chosenBoard', chosenBoard as string);
+      const boardId = items.find((item) => item.name === chosenBoard)?.id;
       const values = {
         accessToken,
-        boardId: board_id,
+        boardId: boardId,
       };
       dispatch(getBoardWithColumns(values));
     } else {
@@ -74,8 +72,6 @@ const ComboBoardListBox = ({
       localStorage.setItem('columnId', columnId as string);
     }
   }, [boardValueChanged, chosenColumn, firstColumnOfTheBoard]);
-
-  console.log('valueBoard: ', valueBoard);
 
   return (
     boardsStatus === 'succeeded' && (

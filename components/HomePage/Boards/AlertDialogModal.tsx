@@ -46,7 +46,11 @@ const AlertDialogModal = ({
           <AlertDialogAction onClick={actionFunction}>
             {buttonConfirm}
           </AlertDialogAction>
-          <AlertDialogCancel>{buttonCancel}</AlertDialogCancel>
+          <AlertDialogCancel
+            onClick={() => localStorage.setItem('boardValueChanged', 'false')}
+          >
+            {buttonCancel}
+          </AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

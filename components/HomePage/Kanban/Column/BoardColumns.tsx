@@ -23,7 +23,7 @@ const BoardColumns = () => {
   const { jobPosts } = useAppSelector((state) => state.jobs);
   const [renamedColumnName, setRenamedColumnName] = useState('');
   const currentBoard = boards.find((board) => board.id === board_id);
-  const jobPostStatus = useAppSelector((state) => state.jobs.jobPostsStatus);
+  // const jobPostStatus = useAppSelector((state) => state.jobs.jobPostsStatus);
 
   useEffect(() => {
     if (isEditing) {
@@ -77,6 +77,7 @@ const BoardColumns = () => {
 
     dispatch(createJobPost(jobPost));
     dispatch(getBoards(accessToken as string));
+    localStorage.setItem('boardValueChanged', 'false');
   };
 
   return (
