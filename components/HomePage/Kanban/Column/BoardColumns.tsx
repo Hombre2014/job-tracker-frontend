@@ -78,6 +78,8 @@ const BoardColumns = () => {
     dispatch(createJobPost(jobPost));
     dispatch(getBoards(accessToken as string));
     localStorage.setItem('boardValueChanged', 'false');
+    localStorage.removeItem('jobTitle');
+    localStorage.removeItem('company');
   };
 
   return (
