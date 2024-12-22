@@ -24,6 +24,12 @@ const AlertDialogModal = ({
   buttonConfirm,
   actionFunction,
 }: AlertDialogProps) => {
+  const clearLocalStorage = () => {
+    localStorage.setItem('boardValueChanged', 'false');
+    localStorage.removeItem('jobTitle');
+    localStorage.removeItem('company');
+  };
+
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -46,9 +52,7 @@ const AlertDialogModal = ({
           <AlertDialogAction onClick={actionFunction}>
             {buttonConfirm}
           </AlertDialogAction>
-          <AlertDialogCancel
-            onClick={() => localStorage.setItem('boardValueChanged', 'false')}
-          >
+          <AlertDialogCancel onClick={clearLocalStorage}>
             {buttonCancel}
           </AlertDialogCancel>
         </AlertDialogFooter>
