@@ -91,25 +91,6 @@ const AddJobShortForm = ({
     onValidationChange(isValid);
   }, [watchCompany, watchJobTitle, onValidationChange]);
 
-  // useEffect(() => {
-  //   if (watchCompany.length === 0) {
-  //     form.setError('company', {
-  //       type: 'manual',
-  //       message: 'Company name is required',
-  //     });
-  //   } else {
-  //     form.clearErrors('company');
-  //   }
-  //   if (watchJobTitle.length === 0) {
-  //     form.setError('jobTitle', {
-  //       type: 'manual',
-  //       message: 'Job title is required',
-  //     });
-  //   } else {
-  //     form.clearErrors('jobTitle');
-  //   }
-  // }, [watchCompany, watchJobTitle, form, company, jobTitle]);
-
   return (
     <Form {...form}>
       <form className="space-y-8">
