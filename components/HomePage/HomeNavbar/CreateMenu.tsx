@@ -62,7 +62,10 @@ const CreateMenu = () => {
                 <li>
                   <div
                     className="flex items-center px-4 mt-1 pb-1 cursor-pointer hover:bg-blue-400 rounded-md text-white"
-                    onClick={() => setShowJobModal(true)}
+                    onClick={() => {
+                      setShowJobModal(true);
+                      clearDropDown();
+                    }}
                   >
                     <PiBriefcaseLight />
                     <span className="ml-2 text-base">Job</span>
@@ -92,7 +95,10 @@ const CreateMenu = () => {
           isFormValid={isFormValid}
           actionFunction={createJobApplication}
           open={showJobModal} // Add this prop
-          onOpenChange={setShowJobModal} // Add this prop
+          onOpenChange={(open) => {
+            setShowJobModal(open);
+            if (!open) clearDropDown();
+          }}
         >
           <AddJobShortForm
             columnOrder={0}
