@@ -17,13 +17,13 @@ const BoardColumns = () => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const [isEditing, setIsEditing] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const [currentColumnId, setCurrentColumnId] = useState('');
   const { boards } = useAppSelector((state) => state.boards);
   const { jobPosts } = useAppSelector((state) => state.jobs);
   const [renamedColumnName, setRenamedColumnName] = useState('');
   const currentBoard = boards.find((board) => board.id === board_id);
-  // const jobPostStatus = useAppSelector((state) => state.jobs.jobPostsStatus);
 
   useEffect(() => {
     if (isEditing) {
@@ -67,6 +67,8 @@ const BoardColumns = () => {
   };
 
   const createJobApplication = () => {
+    if (!isFormValid) return;
+
     const jobPost = {
       status: 'Job Created',
       accessToken: accessToken as string,
@@ -75,14 +77,6 @@ const BoardColumns = () => {
       companyName: localStorage.getItem('company'),
     };
 
-    if (
-      jobPost.companyName?.length === 0 ||
-      !jobPost.title ||
-      jobPost.title.length === 0
-    ) {
-      alert('Please fill in all fields');
-      return;
-    }
     dispatch(createJobPost(jobPost));
     dispatch(getBoards(accessToken as string));
     localStorage.setItem('boardValueChanged', 'false');
@@ -133,10 +127,14 @@ const BoardColumns = () => {
               buttonCancel="Discard"
               buttonVariant="outline"
               buttonConfirm="Save Job"
+              isFormValid={isFormValid}
               actionFunction={createJobApplication}
               stylings="w-11/12 flex justify-center text-2xl border py-3 mb-4 mx-auto rounded-md hover:border-blue-500 transition duration-300 delay-150 cursor-pointer"
             >
-              <AddJobShortForm columnOrder={column.order} />
+              <AddJobShortForm
+                columnOrder={column.order}
+                onValidationChange={setIsFormValid}
+              />
             </AlertDialogModal>
             {column.jobApplications &&
               column.jobApplications.map((job) =>

@@ -22,6 +22,7 @@ const AlertDialogModal = ({
   buttonCancel,
   buttonVariant,
   buttonConfirm,
+  isFormValid = true,
   actionFunction,
 }: AlertDialogProps) => {
   const clearLocalStorage = () => {
@@ -48,7 +49,7 @@ const AlertDialogModal = ({
           </div>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogAction onClick={actionFunction}>
+          <AlertDialogAction onClick={actionFunction} disabled={!isFormValid}>
             {buttonConfirm}
           </AlertDialogAction>
           <AlertDialogCancel onClick={clearLocalStorage}>

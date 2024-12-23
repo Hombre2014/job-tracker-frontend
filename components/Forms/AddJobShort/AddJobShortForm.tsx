@@ -18,7 +18,13 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 
-const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
+const AddJobShortForm = ({
+  columnOrder,
+  onValidationChange,
+}: {
+  columnOrder: number;
+  onValidationChange: (isValid: boolean) => void;
+}) => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const [company, setCompany] = useState('');
@@ -80,26 +86,29 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
   const watchCompany = form.watch('company');
   const watchJobTitle = form.watch('jobTitle');
 
-  console.log('Wathccompany: ', watchCompany);
-
   useEffect(() => {
-    if (watchCompany.length === 0) {
-      form.setError('company', {
-        type: 'manual',
-        message: 'Company name is required',
-      });
-    } else {
-      form.clearErrors('company');
-    }
-    if (watchJobTitle.length === 0) {
-      form.setError('jobTitle', {
-        type: 'manual',
-        message: 'Job title is required',
-      });
-    } else {
-      form.clearErrors('jobTitle');
-    }
-  }, [watchCompany, watchJobTitle, form, company, jobTitle]);
+    const isValid = watchCompany.length > 0 && watchJobTitle.length > 0;
+    onValidationChange(isValid);
+  }, [watchCompany, watchJobTitle, onValidationChange]);
+
+  // useEffect(() => {
+  //   if (watchCompany.length === 0) {
+  //     form.setError('company', {
+  //       type: 'manual',
+  //       message: 'Company name is required',
+  //     });
+  //   } else {
+  //     form.clearErrors('company');
+  //   }
+  //   if (watchJobTitle.length === 0) {
+  //     form.setError('jobTitle', {
+  //       type: 'manual',
+  //       message: 'Job title is required',
+  //     });
+  //   } else {
+  //     form.clearErrors('jobTitle');
+  //   }
+  // }, [watchCompany, watchJobTitle, form, company, jobTitle]);
 
   return (
     <Form {...form}>
