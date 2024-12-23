@@ -18,7 +18,13 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 
-const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
+const AddJobShortForm = ({
+  columnOrder,
+  onValidationChange,
+}: {
+  columnOrder: number;
+  onValidationChange: (isValid: boolean) => void;
+}) => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const [company, setCompany] = useState('');
@@ -68,12 +74,22 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
   const handleCompanyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCompany(e.target.value);
     localStorage.setItem('company', e.target.value);
+    form.setValue('company', e.target.value);
   };
 
   const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setJobTitle(e.target.value);
     localStorage.setItem('jobTitle', e.target.value);
+    form.setValue('jobTitle', e.target.value);
   };
+
+  const watchCompany = form.watch('company');
+  const watchJobTitle = form.watch('jobTitle');
+
+  useEffect(() => {
+    const isValid = watchCompany.length > 0 && watchJobTitle.length > 0;
+    onValidationChange(isValid);
+  }, [watchCompany, watchJobTitle, onValidationChange]);
 
   return (
     <Form {...form}>

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { RiContactsLine } from 'react-icons/ri';
 import { PiBriefcaseLight } from 'react-icons/pi';
 
@@ -16,6 +17,7 @@ import {
 
 const CreateMenu = () => {
   const dispatch = useAppDispatch();
+  const [isFormValid, setIsFormValid] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const clearDropDown = () => {
     const element = document.querySelector('#close-dropdown')!.children[0]
@@ -25,6 +27,8 @@ const CreateMenu = () => {
   };
 
   const createJobApplication = () => {
+    if (!isFormValid) return;
+
     clearDropDown();
 
     const jobPost = {
@@ -67,10 +71,14 @@ const CreateMenu = () => {
                       dialogTitle="Add Job"
                       buttonCancel="Discard"
                       buttonConfirm="Save Job"
+                      isFormValid={isFormValid}
                       actionFunction={createJobApplication}
                       stylings="m-0 pl-0 pr-8 !items-left rounded-md hover:bg-blue-400 cursor-pointer inline-flex w-full"
                     >
-                      <AddJobShortForm columnOrder={0} />
+                      <AddJobShortForm
+                        columnOrder={0}
+                        onValidationChange={setIsFormValid}
+                      />
                     </AlertDialogModal>
                   </div>
                 </li>

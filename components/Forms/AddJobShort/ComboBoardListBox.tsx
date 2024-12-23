@@ -78,8 +78,8 @@ const ComboBoardListBox = ({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
-            variant="outline"
             role="combobox"
+            variant="outline"
             aria-expanded={open}
             className="w-full justify-between"
           >
@@ -94,8 +94,8 @@ const ComboBoardListBox = ({
         <PopoverContent className="w-fit p-0">
           <Command>
             <CommandInput
-              placeholder={`Search ${searchItem}`}
               className="h-9"
+              placeholder={`Search ${searchItem}`}
             />
             <CommandList>
               <CommandEmpty>Nothing found.</CommandEmpty>
