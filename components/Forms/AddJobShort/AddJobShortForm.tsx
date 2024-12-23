@@ -68,12 +68,38 @@ const AddJobShortForm = ({ columnOrder }: { columnOrder: number }) => {
   const handleCompanyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCompany(e.target.value);
     localStorage.setItem('company', e.target.value);
+    form.setValue('company', e.target.value);
   };
 
   const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setJobTitle(e.target.value);
     localStorage.setItem('jobTitle', e.target.value);
+    form.setValue('jobTitle', e.target.value);
   };
+
+  const watchCompany = form.watch('company');
+  const watchJobTitle = form.watch('jobTitle');
+
+  console.log('Wathccompany: ', watchCompany);
+
+  useEffect(() => {
+    if (watchCompany.length === 0) {
+      form.setError('company', {
+        type: 'manual',
+        message: 'Company name is required',
+      });
+    } else {
+      form.clearErrors('company');
+    }
+    if (watchJobTitle.length === 0) {
+      form.setError('jobTitle', {
+        type: 'manual',
+        message: 'Job title is required',
+      });
+    } else {
+      form.clearErrors('jobTitle');
+    }
+  }, [watchCompany, watchJobTitle, form, company, jobTitle]);
 
   return (
     <Form {...form}>

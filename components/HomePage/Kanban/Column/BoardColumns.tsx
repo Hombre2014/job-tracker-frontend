@@ -75,6 +75,14 @@ const BoardColumns = () => {
       companyName: localStorage.getItem('company'),
     };
 
+    if (
+      jobPost.companyName?.length === 0 ||
+      !jobPost.title ||
+      jobPost.title.length === 0
+    ) {
+      alert('Please fill in all fields');
+      return;
+    }
     dispatch(createJobPost(jobPost));
     dispatch(getBoards(accessToken as string));
     localStorage.setItem('boardValueChanged', 'false');
