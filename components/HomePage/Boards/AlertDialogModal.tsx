@@ -14,11 +14,13 @@ import {
 } from '@/components/ui/alert-dialog';
 
 const AlertDialogModal = ({
+  open,
   children,
   stylings,
   dialogText,
   dialogTitle,
   buttonLabel,
+  onOpenChange,
   buttonCancel,
   buttonVariant,
   buttonConfirm,
@@ -32,7 +34,7 @@ const AlertDialogModal = ({
   };
 
   return (
-    <AlertDialog>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogTrigger asChild>
         <Button variant={buttonVariant} className={cn(stylings)}>
           {buttonLabel}

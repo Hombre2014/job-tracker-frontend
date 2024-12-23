@@ -96,7 +96,6 @@ interface ComboBoardListBoxProps {
 }
 
 interface AlertDialogProps {
-  buttonLabel?: React.ReactNode;
   buttonVariant?:
     | null
     | 'link'
@@ -109,6 +108,7 @@ interface AlertDialogProps {
     | 'outlineNew'
     | 'destructive'
     | undefined;
+  open: boolean;
   stylings?: string;
   dialogTitle: string;
   dialogText?: string;
@@ -117,6 +117,8 @@ interface AlertDialogProps {
   isFormValid?: boolean;
   children?: React.ReactNode;
   actionFunction?: () => void;
+  buttonLabel?: React.ReactNode;
+  onOpenChange: (open: boolean) => void;
 }
 
 interface InputElementProps {
