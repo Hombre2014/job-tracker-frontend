@@ -17,20 +17,15 @@ import {
 
 const CreateMenu = () => {
   const dispatch = useAppDispatch();
+  const [, setIsMenuOpen] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const [showJobModal, setShowJobModal] = useState(false);
-  const clearDropDown = () => {
-    const element = document.querySelector('#close-dropdown')!.children[0]
-      .children[0].children[0].children[0].children[0] as HTMLElement;
-
-    element.click();
-  };
 
   const createJobApplication = () => {
     if (!isFormValid) return;
 
-    clearDropDown();
+    setShowJobModal(false);
 
     const jobPost = {
       jobPostStatus: 'Job Created',
@@ -44,7 +39,7 @@ const CreateMenu = () => {
   };
 
   const createContact = () => {
-    clearDropDown();
+    setShowJobModal(false);
 
     // TODO: Implement contact creation
   };
@@ -64,7 +59,7 @@ const CreateMenu = () => {
                     className="flex items-center px-4 mt-1 pb-1 cursor-pointer hover:bg-blue-400 rounded-md text-white"
                     onClick={() => {
                       setShowJobModal(true);
-                      clearDropDown();
+                      setIsFormValid(false);
                     }}
                   >
                     <PiBriefcaseLight />
@@ -88,16 +83,16 @@ const CreateMenu = () => {
       {showJobModal && (
         <AlertDialogModal
           buttonLabel="" // Remove the buttonLabel since we don't need a trigger button
+          open={showJobModal}
           buttonVariant="none"
           dialogTitle="Add Job"
           buttonCancel="Discard"
           buttonConfirm="Save Job"
           isFormValid={isFormValid}
           actionFunction={createJobApplication}
-          open={showJobModal} // Add this prop
           onOpenChange={(open) => {
             setShowJobModal(open);
-            if (!open) clearDropDown();
+            if (!open) setIsMenuOpen(false);
           }}
         >
           <AddJobShortForm
