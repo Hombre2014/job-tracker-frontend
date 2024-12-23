@@ -17,19 +17,15 @@ import {
 
 const CreateMenu = () => {
   const dispatch = useAppDispatch();
+  const [, setIsMenuOpen] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
-  const clearDropDown = () => {
-    const element = document.querySelector('#close-dropdown')!.children[0]
-      .children[0].children[0].children[0].children[0] as HTMLElement;
-
-    element.click();
-  };
+  const [showJobModal, setShowJobModal] = useState(false);
 
   const createJobApplication = () => {
     if (!isFormValid) return;
 
-    clearDropDown();
+    setShowJobModal(false);
 
     const jobPost = {
       jobPostStatus: 'Job Created',
@@ -43,7 +39,7 @@ const CreateMenu = () => {
   };
 
   const createContact = () => {
-    clearDropDown();
+    setShowJobModal(false);
 
     // TODO: Implement contact creation
   };
@@ -59,27 +55,15 @@ const CreateMenu = () => {
             <NavigationMenuContent className="bg-blue-500 p-2">
               <ul>
                 <li>
-                  <div className="flex items-center px-4 mt-1 pb-1 cursor-pointer hover:bg-blue-400 rounded-md text-white">
-                    <AlertDialogModal
-                      buttonLabel={
-                        <>
-                          <PiBriefcaseLight />
-                          <span className="ml-2 text-base">Job</span>
-                        </>
-                      }
-                      buttonVariant="none"
-                      dialogTitle="Add Job"
-                      buttonCancel="Discard"
-                      buttonConfirm="Save Job"
-                      isFormValid={isFormValid}
-                      actionFunction={createJobApplication}
-                      stylings="m-0 pl-0 pr-8 !items-left rounded-md hover:bg-blue-400 cursor-pointer inline-flex w-full"
-                    >
-                      <AddJobShortForm
-                        columnOrder={0}
-                        onValidationChange={setIsFormValid}
-                      />
-                    </AlertDialogModal>
+                  <div
+                    className="flex items-center px-4 mt-1 pb-1 cursor-pointer hover:bg-blue-400 rounded-md text-white"
+                    onClick={() => {
+                      setShowJobModal(true);
+                      setIsFormValid(false);
+                    }}
+                  >
+                    <PiBriefcaseLight />
+                    <span className="ml-2 text-base">Job</span>
                   </div>
                 </li>
                 <li>
@@ -95,6 +79,28 @@ const CreateMenu = () => {
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
+
+      {showJobModal && (
+        <AlertDialogModal
+          buttonLabel="" // Remove the buttonLabel since we don't need a trigger button
+          open={showJobModal}
+          buttonVariant="none"
+          dialogTitle="Add Job"
+          buttonCancel="Discard"
+          buttonConfirm="Save Job"
+          isFormValid={isFormValid}
+          actionFunction={createJobApplication}
+          onOpenChange={(open) => {
+            setShowJobModal(open);
+            if (!open) setIsMenuOpen(false);
+          }}
+        >
+          <AddJobShortForm
+            columnOrder={0}
+            onValidationChange={setIsFormValid}
+          />
+        </AlertDialogModal>
+      )}
     </div>
   );
 };
