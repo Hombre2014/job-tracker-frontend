@@ -108,7 +108,7 @@ interface AlertDialogProps {
     | 'outlineNew'
     | 'destructive'
     | undefined;
-  open: boolean;
+  open?: boolean;
   stylings?: string;
   dialogTitle: string;
   dialogText?: string;
@@ -118,7 +118,7 @@ interface AlertDialogProps {
   children?: React.ReactNode;
   actionFunction?: () => void;
   buttonLabel?: React.ReactNode;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange?: (open: boolean) => void;
 }
 
 interface InputElementProps {
