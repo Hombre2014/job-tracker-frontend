@@ -58,6 +58,7 @@ interface JobPostCardProps {
   color: string;
   postUrl: string;
   columnId: string;
+  deadline: string;
   timeStamp: string;
   companyName: string;
   status: jobPostStatus;

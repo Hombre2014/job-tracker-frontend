@@ -48,6 +48,13 @@ const JobInfo = () => {
     value: string,
     status?: string
   ) => {
+    // Check the payload if it is the same as the current job post data and if so, do not send the request
+    if (currentJobPost) {
+      if (currentJobPost[fieldName] === value) {
+        return;
+      }
+    }
+
     if (fieldName === 'postUrl') {
       const urlValidation = validatePostUrl(value);
       if (!urlValidation.valid) {
@@ -58,14 +65,6 @@ const JobInfo = () => {
 
     setFirstVisit(false);
 
-    // Check the payload if it is the same as the current job post data and if so, do not send the request
-    if (currentJobPost) {
-      if (currentJobPost[fieldName] === value) {
-        return;
-      }
-    }
-
-    // Prepare the payload dynamically
     const updatePayload = {
       accessToken: localStorage.getItem('accessToken'),
       company: {
@@ -73,7 +72,10 @@ const JobInfo = () => {
       },
       ...(status && { status }),
       jobPostId: job_id,
-      [fieldName]: value, // Dynamic field
+      [fieldName]:
+        status === 'Deadline'
+          ? format(new Date(value), 'yyyy-MM-dd HH:mm a')
+          : value,
     };
 
     dispatch(updateJobPost(updatePayload));
@@ -193,7 +195,11 @@ const JobInfo = () => {
                 <PopoverContent className="w-auto p-0">
                   <Calendar
                     mode="single"
-                    selected={date!}
+                    selected={
+                      currentJobPost?.deadline
+                        ? new Date(currentJobPost?.deadline)
+                        : date ?? undefined
+                    }
                     onSelect={handleSelectDeadline}
                     initialFocus
                   />
