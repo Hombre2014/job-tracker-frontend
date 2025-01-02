@@ -31,9 +31,9 @@ const JobPostCard = ({
   status,
   postUrl,
   columnId,
+  deadline,
   timeStamp,
   companyName,
-  statusChangedTime,
 }: JobPostCardProps) => {
   const router = useRouter();
   const date = new Date(timeStamp);
@@ -63,9 +63,6 @@ const JobPostCard = ({
 
   function getShortTimeSinceStatusChange(timeStamp: string): string {
     const nowTime = Date.now();
-
-    // Working back on the old laptop, where there is a 1 hour time difference
-    // const dateTime = Date.parse(timeStamp);
     const adjustedTimeStamp = new Date(Date.parse(timeStamp) + 60 * 60 * 1000); // Add 1 hour due to timezone difference between server Docker container and client
     const dateTime = adjustedTimeStamp.getTime();
 
@@ -86,6 +83,28 @@ const JobPostCard = ({
   }
 
   const shortTimeSinceChange = getShortTimeSinceStatusChange(timeStamp);
+
+  const now = new Date();
+  const timeDifference = new Date(deadline).getTime() - now.getTime();
+  const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+  const weeksDifference = Math.floor(daysDifference / 7);
+  const monthsDifference = Math.floor(daysDifference / 30);
+  const yearsDifference = Math.floor(daysDifference / 365);
+  const monthsDifferenceString = 'mo';
+  const yearsDifferenceString = 'y';
+  const weeksDifferenceString = 'w';
+  const daysDifferenceString = 'd';
+
+  let timeDifferenceString = '';
+  if (yearsDifference > 0) {
+    timeDifferenceString = `${yearsDifference}${yearsDifferenceString}`;
+  } else if (monthsDifference > 0) {
+    timeDifferenceString = `${monthsDifference}${monthsDifferenceString}`;
+  } else if (weeksDifference > 0) {
+    timeDifferenceString = `in ${weeksDifference}${weeksDifferenceString}`;
+  } else if (daysDifference > 0) {
+    timeDifferenceString = `in ${daysDifference}${daysDifferenceString}`;
+  }
 
   const handleJobPostClick = (id: string) => {
     router.push(`/home/boards/${board_id}/job/${id}/job-details`);
@@ -154,14 +173,22 @@ const JobPostCard = ({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="text-xs text-white cursor-help">
-                    {shortTimeSinceChange}
+                    {status === 'Job Created'
+                      ? shortTimeSinceChange
+                      : timeDifferenceString}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent className="bg-slate-300 !min-w-[250px] text-gray-900">
                   <p>
                     <span>{status}</span>
                     <span> | </span>
-                    <span>{formattedDateHour}</span>
+                    <span>
+                      {status === 'Deadline'
+                        ? deadline
+                          ? format(new Date(deadline), 'dd/MM/yyyy HH:mm, a')
+                          : formattedDateHour
+                        : formattedDateHour}
+                    </span>
                   </p>
                 </TooltipContent>
               </Tooltip>

@@ -147,6 +147,7 @@ const BoardColumns = () => {
                     status={job.status}
                     columnId={column.id}
                     postUrl={job.postUrl}
+                    deadline={job.deadline}
                     timeStamp={job.createdAt}
                     companyName={job.company.name}
                     statusChangedTime={job.statusChangedAt}
