@@ -184,9 +184,13 @@ const JobPostCard = ({
                     <span> | </span>
                     <span>
                       {status === 'Deadline'
-                        ? deadline
-                          ? format(new Date(deadline), 'dd/MM/yyyy HH:mm, a')
-                          : formattedDateHour
+                        ? format(
+                            toZonedTime(new Date(deadline), 'UTC'),
+                            'dd/MM/yyyy HH:mm, a',
+                            {
+                              timeZone: 'UTC',
+                            }
+                          )
                         : formattedDateHour}
                     </span>
                   </p>
