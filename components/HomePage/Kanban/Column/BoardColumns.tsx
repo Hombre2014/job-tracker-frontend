@@ -142,6 +142,7 @@ const BoardColumns = () => {
                   <JobPostCard
                     id={job.id}
                     key={job.id}
+                    notes={job.notes}
                     title={job.title}
                     color={job.color}
                     status={job.status}

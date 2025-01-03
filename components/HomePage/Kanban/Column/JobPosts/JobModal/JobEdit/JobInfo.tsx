@@ -165,8 +165,8 @@ const JobInfo = () => {
                   title="Description"
                   buttonVisibility={false}
                   sendData={handleFieldChange}
-                  initialText="Add a description"
                   value={currentJobPost?.description}
+                  placeholder="Add a description here..."
                 />
               </div>
             </div>

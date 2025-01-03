@@ -39,8 +39,8 @@ const JobPostCard = ({
   const date = new Date(timeStamp);
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
-  const [showIcons, setShowIcons] = useState(false);
   const zonedDate = toZonedTime(date, 'UTC');
+  const [showIcons, setShowIcons] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const { boards } = useAppSelector((state) => state.boards);
   const boardColumns = boards.find((board) => board.id === board_id)?.columns;
@@ -66,7 +66,10 @@ const JobPostCard = ({
     const adjustedTimeStamp = new Date(Date.parse(timeStamp) + 60 * 60 * 1000); // Add 1 hour due to timezone difference between server Docker container and client
     const dateTime = adjustedTimeStamp.getTime();
 
-    const diffInMs = nowTime - dateTime;
+    return formatTimeDifference(nowTime - dateTime);
+  }
+
+  function formatTimeDifference(diffInMs: number): string {
     const diffInSeconds = Math.floor(diffInMs / 1000);
     const diffInMinutes = Math.floor(diffInSeconds / 60);
     const diffInHours = Math.floor(diffInMinutes / 60);
@@ -86,25 +89,7 @@ const JobPostCard = ({
 
   const now = new Date();
   const timeDifference = new Date(deadline).getTime() - now.getTime();
-  const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-  const weeksDifference = Math.floor(daysDifference / 7);
-  const monthsDifference = Math.floor(daysDifference / 30);
-  const yearsDifference = Math.floor(daysDifference / 365);
-  const monthsDifferenceString = 'mo';
-  const yearsDifferenceString = 'y';
-  const weeksDifferenceString = 'w';
-  const daysDifferenceString = 'd';
-
-  let timeDifferenceString = '';
-  if (yearsDifference > 0) {
-    timeDifferenceString = `${yearsDifference}${yearsDifferenceString}`;
-  } else if (monthsDifference > 0) {
-    timeDifferenceString = `${monthsDifference}${monthsDifferenceString}`;
-  } else if (weeksDifference > 0) {
-    timeDifferenceString = `in ${weeksDifference}${weeksDifferenceString}`;
-  } else if (daysDifference > 0) {
-    timeDifferenceString = `in ${daysDifference}${daysDifferenceString}`;
-  }
+  const timeDifferenceString = formatTimeDifference(timeDifference);
 
   const handleJobPostClick = (id: string) => {
     router.push(`/home/boards/${board_id}/job/${id}/job-details`);
