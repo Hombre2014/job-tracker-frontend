@@ -10,7 +10,7 @@ export const createJobApplicationNote = createAsyncThunk(
       jobApplicationId: jobApplicationId,
     };
     try {
-      const res = await client.post(`/job-applications-notes`, body, {
+      const res = await client.post(`/job-application-notes`, body, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -31,7 +31,7 @@ export const getAllJobApplicationNotes = createAsyncThunk(
     const { accessToken, jobApplicationId } = values;
     try {
       const res = await client.get(
-        `/job-applications-notes/${jobApplicationId}`,
+        `/job-application-notes/${jobApplicationId}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,

@@ -26,12 +26,16 @@ const TextEditor = ({
   id,
   title,
   value,
-  backColor,
-  initialText,
-  buttonVisibility,
   sendData,
+  backColor,
+  placeholder,
+  buttonVisibility,
 }: TextEditorProps) => {
-  const [html, setHtml] = useState(value || initialText);
+  const [html, setHtml] = useState(
+    value || placeholder || 'Add a note here...'
+  );
+  const [isPlaceholder, setIsPlaceholder] = useState(!value);
+
   const handleDescription = (e: any) => {
     setHtml(e.target.value);
   };
@@ -40,10 +44,26 @@ const TextEditor = ({
   const BtnAlignRight = createButton('Align right', '⟞', 'justifyRight');
   const BtnAlignCenter = createButton('Align center', '≡', 'justifyCenter');
 
+  const handleFocus = () => {
+    if (isPlaceholder) {
+      setHtml('');
+      setIsPlaceholder(false);
+    }
+  };
+
   const handleBlur = () => {
+    if (!html) {
+      setHtml(placeholder || 'Add a note here...');
+      setIsPlaceholder(true);
+    }
     if (sendData) {
       sendData(id as keyof JobApplication, html!);
     }
+  };
+
+  const handleSave = () => {
+    setHtml(placeholder || 'Add a note here...');
+    setIsPlaceholder(true);
   };
 
   return (
@@ -54,15 +74,16 @@ const TextEditor = ({
           <Editor
             id={id}
             value={html}
-            style={{ backgroundColor: `${backColor}` }}
-            onChange={handleDescription}
             onBlur={handleBlur}
+            onFocus={handleFocus}
+            onChange={handleDescription}
+            style={{ backgroundColor: `${backColor}` }}
             containerProps={{
               style: {
+                overflow: 'auto',
                 resize: 'vertical',
                 minHeight: '200px',
                 maxHeight: '280px',
-                overflow: 'auto',
               },
             }}
           >
@@ -90,7 +111,7 @@ const TextEditor = ({
           </Editor>
           <Button
             variant="normal"
-            onClick={() => console.log('The value in TextEditor: ', html)}
+            onClick={handleSave}
             className={cn(
               'relative bottom-[20%] left-[90%] hover:bg-blue-600 cursor-pointer',
               buttonVisibility ? 'block' : 'hidden'

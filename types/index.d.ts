@@ -19,11 +19,19 @@ type jobPostStatus =
   | 'Offer Received'
   | 'Job Moved';
 
+type Notes = {
+  id: string;
+  order: number;
+  content: string;
+  jobApplicationId: string;
+};
+
 type JobApplication = {
   id: string;
   title: string;
   color: string;
   salary: string;
+  notes: Notes[];
   postUrl: string;
   location: string;
   deadline: string;
@@ -34,13 +42,6 @@ type JobApplication = {
   description: string;
   status: jobPostStatus;
   statusChangedAt: string;
-};
-
-type Notes = {
-  id: string;
-  order: number;
-  content: string;
-  jobApplicationId: string;
 };
 
 interface Column {
@@ -63,6 +64,7 @@ interface JobPostCardProps {
   id: string;
   title: string;
   color: string;
+  notes: Notes[];
   postUrl: string;
   columnId: string;
   deadline: string;
@@ -145,7 +147,7 @@ interface TextEditorProps {
   title?: string;
   value?: string;
   backColor?: string;
-  initialText?: string;
+  placeholder?: string;
   buttonVisibility?: boolean;
   sendData?: (fieldName: keyof JobApplication, value: string) => void;
 }

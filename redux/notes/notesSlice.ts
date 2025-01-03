@@ -34,7 +34,7 @@ export const notesSlice = createSlice({
       })
       .addCase(createJobApplicationNote.rejected, (state, action) => {
         state.notesStatus = 'failed';
-        state.error = action.error.message || 'Failed to create note';
+        state.error = action.error.message || 'Failed to create a note';
       })
       .addCase(getAllJobApplicationNotes.pending, (state) => {
         state.notesStatus = 'loading';
@@ -46,7 +46,7 @@ export const notesSlice = createSlice({
       })
       .addCase(getAllJobApplicationNotes.rejected, (state, action) => {
         state.notesStatus = 'failed';
-        state.error = action.error.message || 'Failed to fetch notes';
+        state.error = action.error.message || 'Failed to fetch the notes';
       });
   },
 });
