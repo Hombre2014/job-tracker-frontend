@@ -40,13 +40,13 @@ const JobPostCard = ({
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const [showIcons, setShowIcons] = useState(false);
-  const zonedDate = toZonedTime(date, 'Europe/Sofia');
+  const zonedDate = toZonedTime(date, 'UTC');
   const accessToken = localStorage.getItem('accessToken');
   const { boards } = useAppSelector((state) => state.boards);
   const boardColumns = boards.find((board) => board.id === board_id)?.columns;
 
   const formattedDateHour = format(zonedDate, 'dd/MM/yyyy HH:mm, a', {
-    timeZone: 'Europe/Paris',
+    timeZone: 'UTC',
   });
 
   const iconsOn = () => {
@@ -184,9 +184,13 @@ const JobPostCard = ({
                     <span> | </span>
                     <span>
                       {status === 'Deadline'
-                        ? deadline
-                          ? format(new Date(deadline), 'dd/MM/yyyy HH:mm, a')
-                          : formattedDateHour
+                        ? format(
+                            toZonedTime(new Date(deadline), 'UTC'),
+                            'dd/MM/yyyy HH:mm, a',
+                            {
+                              timeZone: 'UTC',
+                            }
+                          )
                         : formattedDateHour}
                     </span>
                   </p>
