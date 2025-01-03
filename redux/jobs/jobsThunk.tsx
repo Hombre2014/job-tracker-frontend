@@ -14,6 +14,7 @@ export const createJobPost = createAsyncThunk(
       },
       status: status,
       color: defaultJobPostColor,
+      createdAt: new Date().toISOString(),
     };
     try {
       const res = await client.post('/job-applications', body, {
