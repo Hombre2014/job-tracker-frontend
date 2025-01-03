@@ -40,13 +40,13 @@ const JobPostCard = ({
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const [showIcons, setShowIcons] = useState(false);
-  const zonedDate = toZonedTime(date, 'Europe/Sofia');
+  const zonedDate = toZonedTime(date, 'UTC');
   const accessToken = localStorage.getItem('accessToken');
   const { boards } = useAppSelector((state) => state.boards);
   const boardColumns = boards.find((board) => board.id === board_id)?.columns;
 
   const formattedDateHour = format(zonedDate, 'dd/MM/yyyy HH:mm, a', {
-    timeZone: 'Europe/Paris',
+    timeZone: 'UTC',
   });
 
   const iconsOn = () => {
