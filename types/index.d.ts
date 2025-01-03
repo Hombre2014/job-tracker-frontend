@@ -36,6 +36,13 @@ type JobApplication = {
   statusChangedAt: string;
 };
 
+type Notes = {
+  id: string;
+  order: number;
+  content: string;
+  jobApplicationId: string;
+};
+
 interface Column {
   id: string;
   name: string;

@@ -2,18 +2,19 @@ import { WebStorage } from 'redux-persist/lib/types';
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import createWebStorage from 'redux-persist/lib/storage/createWebStorage';
 import {
+  FLUSH,
+  PAUSE,
+  PURGE,
+  PERSIST,
+  REGISTER,
+  REHYDRATE,
   persistStore,
   persistReducer,
-  FLUSH,
-  REHYDRATE,
-  PAUSE,
-  PERSIST,
-  PURGE,
-  REGISTER,
 } from 'redux-persist';
 
 import userSlice from './user/userSlice';
 import jobsSlice from './jobs/jobsSlice';
+import notesSlice from './notes/notesSlice';
 import boardsSlice from './boards/boardsSlice';
 
 export function createPersistStorage(): WebStorage {
@@ -40,13 +41,14 @@ export function createPersistStorage(): WebStorage {
 const persistConfig = {
   key: 'root',
   storage: createPersistStorage(),
-  whitelist: ['user', 'boards', 'jobs'],
+  whitelist: ['user', 'boards', 'jobs', 'notes'],
   version: 1,
 };
 
 const rootReducer = combineReducers({
   user: userSlice,
   jobs: jobsSlice,
+  notes: notesSlice,
   boards: boardsSlice,
 });
 
