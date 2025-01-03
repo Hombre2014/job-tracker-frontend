@@ -90,7 +90,7 @@ const TextEditor = ({
           </Editor>
           <Button
             variant="normal"
-            onClick={() => console.log(html)}
+            onClick={() => console.log('The value in TextEditor: ', html)}
             className={cn(
               'relative bottom-[20%] left-[90%] hover:bg-blue-600 cursor-pointer',
               buttonVisibility ? 'block' : 'hidden'
