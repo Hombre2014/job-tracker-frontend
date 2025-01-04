@@ -22,6 +22,8 @@ const buttonVariants = cva(
         none: '!bg-transparent !items-left !rounded-none transition-none !focus-visible:none hover:bg-blue-400 text-white cursor-pointer text-left p-0 m-0',
         link: 'text-primary underline-offset-4 hover:underline',
         normal: 'font-semibold p-2 bg-blue-500 text-white rounded-md',
+        invisible:
+          '!bg-transparent !p-0 !m-0 !rounded-none !transition-none !focus-visible:none !hover:bg-transparent !text-gray-500 !cursor-pointer !text-left',
       },
       size: {
         default: 'h-9 px-4 py-2',

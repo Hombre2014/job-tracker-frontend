@@ -27,11 +27,12 @@ const TextEditor = ({
   title,
   value,
   sendData,
+  autoSave,
   backColor,
   placeholder,
   buttonVisibility,
 }: TextEditorProps) => {
-  const [html, setHtml] = useState('');
+  const [html, setHtml] = useState(value || '');
   const [showPlaceholder, setShowPlaceholder] = useState(true);
 
   const BtnAlignLeft = createButton('Align left', '⟝', 'justifyLeft');
@@ -47,10 +48,17 @@ const TextEditor = ({
     setShowPlaceholder(false);
   };
 
+  // const handleBlur = () => {
+  //   if (!html.trim()) {
+  //     setShowPlaceholder(true);
+  //   }
+  // };
+
   const handleBlur = () => {
-    if (!html.trim()) {
-      setShowPlaceholder(true);
+    if (autoSave && sendData) {
+      sendData(id as keyof JobApplication, html || value || '');
     }
+    setShowPlaceholder(true);
   };
 
   const handleSave = () => {
