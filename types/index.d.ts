@@ -23,6 +23,8 @@ type Notes = {
   id: string;
   order: number;
   content: string;
+  createdAt: string;
+  updatedAt: string;
   jobApplicationId: string;
 };
 

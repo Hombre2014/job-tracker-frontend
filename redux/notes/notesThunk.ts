@@ -39,6 +39,7 @@ export const getAllJobApplicationNotes = createAsyncThunk(
         }
       );
       const data = res.data;
+      console.log('Data from Thunk: ', data);
       return data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(
