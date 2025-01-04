@@ -14,6 +14,7 @@ const Notes = () => {
   const { job_id } = useParams();
   const dispatch = useAppDispatch();
   const accessToken = localStorage.getItem('accessToken');
+  const { notes } = useAppSelector((state) => state.notes);
   const { firstName, lastName } = useAppSelector((state) => state.user);
 
   useEffect(() => {
@@ -24,23 +25,21 @@ const Notes = () => {
     dispatch(getAllJobApplicationNotes(updatePayload));
   }, [accessToken, dispatch, job_id]);
 
-  const { notes } = useAppSelector((state) => state.notes);
-
   const handleFieldChange = (
     fieldName: keyof JobApplication,
     value: string,
     status?: string
   ) => {
+    // Check if the note is not empty
+    if (value.trim() === '') {
+      return;
+    }
+
     const updatePayload = {
       noteContent: value,
       jobApplicationId: job_id,
       accessToken: localStorage.getItem('accessToken'),
     };
-
-    // Check if the note is not empty
-    if (value.trim() === '') {
-      return;
-    }
 
     dispatch(createJobApplicationNote(updatePayload));
   };

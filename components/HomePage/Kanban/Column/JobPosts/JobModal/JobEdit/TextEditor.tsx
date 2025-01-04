@@ -31,39 +31,34 @@ const TextEditor = ({
   placeholder,
   buttonVisibility,
 }: TextEditorProps) => {
-  const [html, setHtml] = useState(
-    value || placeholder || 'Add a note here...'
-  );
-  const [isPlaceholder, setIsPlaceholder] = useState(!value);
-
-  const handleDescription = (e: any) => {
-    setHtml(e.target.value);
-  };
+  const [html, setHtml] = useState('');
+  const [showPlaceholder, setShowPlaceholder] = useState(true);
 
   const BtnAlignLeft = createButton('Align left', '⟝', 'justifyLeft');
   const BtnAlignRight = createButton('Align right', '⟞', 'justifyRight');
   const BtnAlignCenter = createButton('Align center', '≡', 'justifyCenter');
 
+  const handleDescription = (e: any) => {
+    setHtml(e.target.value);
+    setShowPlaceholder(false);
+  };
+
   const handleFocus = () => {
-    if (isPlaceholder) {
-      setHtml('');
-      setIsPlaceholder(false);
-    }
+    setShowPlaceholder(false);
   };
 
   const handleBlur = () => {
-    if (!html) {
-      setHtml(placeholder || 'Add a note here...');
-      setIsPlaceholder(true);
-    }
-    if (sendData) {
-      sendData(id as keyof JobApplication, html!);
+    if (!html.trim()) {
+      setShowPlaceholder(true);
     }
   };
 
   const handleSave = () => {
-    setHtml(placeholder || 'Add a note here...');
-    setIsPlaceholder(true);
+    if (sendData && html.trim()) {
+      sendData(id as keyof JobApplication, html);
+      setHtml('');
+      setShowPlaceholder(true);
+    }
   };
 
   return (
@@ -73,11 +68,11 @@ const TextEditor = ({
         <EditorProvider>
           <Editor
             id={id}
-            value={html}
             onBlur={handleBlur}
             onFocus={handleFocus}
             onChange={handleDescription}
             style={{ backgroundColor: `${backColor}` }}
+            value={showPlaceholder && !html ? placeholder : html}
             containerProps={{
               style: {
                 overflow: 'auto',
