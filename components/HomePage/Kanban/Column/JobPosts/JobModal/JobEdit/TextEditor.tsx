@@ -40,23 +40,22 @@ const TextEditor = ({
   const BtnAlignCenter = createButton('Align center', '≡', 'justifyCenter');
 
   const handleDescription = (e: any) => {
-    setHtml(e.target.value);
+    const newValue = e.target.value;
+    setHtml(newValue);
     setShowPlaceholder(false);
+    if (sendData && id === 'edit-note') {
+      sendData(id as keyof JobApplication, newValue);
+    }
   };
 
   const handleFocus = () => {
     setShowPlaceholder(false);
   };
 
-  // const handleBlur = () => {
-  //   if (!html.trim()) {
-  //     setShowPlaceholder(true);
-  //   }
-  // };
-
   const handleBlur = () => {
-    if (autoSave && sendData) {
-      sendData(id as keyof JobApplication, html || value || '');
+    const content = html || value || '';
+    if (autoSave && sendData && content.trim()) {
+      sendData(id as keyof JobApplication, content);
     }
     setShowPlaceholder(true);
   };
@@ -74,44 +73,46 @@ const TextEditor = ({
       <div className="space-y-1 w-full">
         <Label htmlFor="description">{title}</Label>
         <EditorProvider>
-          <Editor
-            id={id}
-            onBlur={handleBlur}
-            onFocus={handleFocus}
-            onChange={handleDescription}
-            style={{ backgroundColor: `${backColor}` }}
-            value={showPlaceholder && !html ? placeholder : html}
-            containerProps={{
-              style: {
-                overflow: 'auto',
-                resize: 'vertical',
-                minHeight: '200px',
-                maxHeight: '280px',
-              },
-            }}
-          >
-            <Toolbar>
-              <BtnUndo />
-              <BtnRedo />
-              <Separator />
-              <BtnBold />
-              <BtnItalic />
-              <BtnUnderline />
-              <BtnStrikeThrough />
-              <Separator />
-              <BtnAlignLeft />
-              <BtnAlignCenter />
-              <BtnAlignRight />
-              <Separator />
-              <BtnNumberedList />
-              <BtnBulletList />
-              <Separator />
-              <BtnLink />
-              <HtmlButton />
-              <Separator />
-              <BtnStyles />
-            </Toolbar>
-          </Editor>
+          <div onBlur={handleBlur}>
+            <Editor
+              id={id}
+              onBlur={handleBlur}
+              onFocus={handleFocus}
+              onChange={handleDescription}
+              style={{ backgroundColor: `${backColor}` }}
+              value={showPlaceholder && !html ? placeholder : html}
+              containerProps={{
+                style: {
+                  overflow: 'auto',
+                  resize: 'vertical',
+                  minHeight: '200px',
+                  maxHeight: '280px',
+                },
+              }}
+            >
+              <Toolbar>
+                <BtnUndo />
+                <BtnRedo />
+                <Separator />
+                <BtnBold />
+                <BtnItalic />
+                <BtnUnderline />
+                <BtnStrikeThrough />
+                <Separator />
+                <BtnAlignLeft />
+                <BtnAlignCenter />
+                <BtnAlignRight />
+                <Separator />
+                <BtnNumberedList />
+                <BtnBulletList />
+                <Separator />
+                <BtnLink />
+                <HtmlButton />
+                <Separator />
+                <BtnStyles />
+              </Toolbar>
+            </Editor>
+          </div>
           <Button
             variant="normal"
             onClick={handleSave}

@@ -8,6 +8,7 @@ import { Card, CardDescription } from '@/components/ui/card';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
   createJobApplicationNote,
+  updateJobApplicationNote,
   getAllJobApplicationNotes,
 } from '@/redux/notes/notesThunk';
 import {
@@ -38,7 +39,27 @@ const Notes = () => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (editingNoteId && !(event.target as Element).closest('#edit-note')) {
+      const isClickInsideEditor =
+        (event.target as Element).closest('.rsw-editor') ||
+        (event.target as Element).closest('#edit-note');
+      if (editingNoteId && !isClickInsideEditor) {
+        const editingNote = notes.find((note) => note.id === editingNoteId);
+        if (editingNote && editingNoteContent !== editingNote.content) {
+          const updatePayload = {
+            noteId: editingNoteId,
+            noteContent: editingNoteContent,
+            accessToken: localStorage.getItem('accessToken'),
+          };
+          // So, here we send a second request after the first one succeeded with .then() method to update the notes. This is a good example of how to handle the async operations in Redux.
+          dispatch(updateJobApplicationNote(updatePayload)).then(() => {
+            dispatch(
+              getAllJobApplicationNotes({
+                accessToken,
+                jobApplicationId: job_id,
+              })
+            );
+          });
+        }
         setEditingNoteId(null);
         setEditingNoteContent('');
       }
@@ -48,7 +69,7 @@ const Notes = () => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [editingNoteId]);
+  }, [editingNoteId, editingNoteContent, dispatch, notes, accessToken, job_id]);
 
   const handleFieldChange = (
     fieldName: keyof JobApplication,
@@ -98,17 +119,11 @@ const Notes = () => {
     setEditingNoteContent(note.content);
   };
 
-  const handleEditSave = (fieldName: keyof JobApplication, value: string) => {
-    if (editingNoteId && value.trim() !== '') {
-      const updatePayload = {
-        noteContent: value,
-        jobApplicationId: job_id,
-        accessToken: localStorage.getItem('accessToken'),
-      };
-      // dispatch(updateJobApplicationNote(updatePayload));
-      setEditingNoteId(null);
-      setEditingNoteContent('');
-    }
+  const handleContentUpdate = (
+    fieldName: keyof JobApplication,
+    value: string
+  ) => {
+    setEditingNoteContent(value);
   };
 
   const sortedNotes = [...notes].reverse();
@@ -134,8 +149,8 @@ const Notes = () => {
             title="Edit Note"
             backColor="#ffffe0"
             buttonVisibility={false}
-            sendData={handleEditSave}
             value={editingNoteContent}
+            sendData={handleContentUpdate}
           />
           <div className="flex justify-between items-center mx-2 text-sm text-muted-foreground">
             <span>
