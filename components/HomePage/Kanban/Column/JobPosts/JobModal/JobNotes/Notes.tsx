@@ -40,7 +40,8 @@ const Notes = () => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const isClickInsideEditor =
-        (event.target as Element).closest('.rsw-editor') ||
+        ((event.target as Element).closest('.rsw-editor') &&
+          (event.target as Element).closest('#edit-note')) ||
         (event.target as Element).closest('#edit-note');
       if (editingNoteId && !isClickInsideEditor) {
         const editingNote = notes.find((note) => note.id === editingNoteId);
@@ -172,7 +173,7 @@ const Notes = () => {
               className="flex flex-col basis-[calc(33.333%-16px)] gap-1"
             >
               <Card
-                className="w-full min-h-60 max-h-60 overflow-y-auto bg-[#ffffe0] relative rounded-sm  hover:border-gray-400"
+                className="w-full min-h-60 max-h-60 overflow-y-auto bg-[#ffffe0] relative rounded-sm  hover:border-gray-400 cursor-pointer"
                 onClick={() => handleEditNote(note)}
               >
                 <div className="sticky top-0 right-0 z-10 flex justify-end w-full">
@@ -192,7 +193,7 @@ const Notes = () => {
                   </DropdownMenu>
                 </div>
                 <CardDescription
-                  className="pl-2 pt-0 pr-8"
+                  className="pl-2 pt-0 pr-8 cursor-text"
                   dangerouslySetInnerHTML={{ __html: note.content }}
                 />
               </Card>
