@@ -47,3 +47,27 @@ export const getAllJobApplicationNotes = createAsyncThunk(
     }
   }
 );
+
+export const updateJobApplicationNote = createAsyncThunk(
+  'notes/updateJobApplicationNote',
+  async (values: any, thunkAPI) => {
+    const { accessToken, noteContent, noteId } = values;
+    const body = {
+      content: noteContent,
+    };
+    try {
+      const res = await client.put(`/job-application-notes/${noteId}`, body, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = res.data;
+      console.log('Data from Thunk on update: ', data);
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error updating job application note'
+      );
+    }
+  }
+);

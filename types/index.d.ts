@@ -12,17 +12,19 @@ type Company = {
 };
 
 type jobPostStatus =
-  | 'Job Created'
-  | 'Deadline'
   | 'Applied'
+  | 'Deadline'
   | 'Interview'
-  | 'Offer Received'
-  | 'Job Moved';
+  | 'Job Moved'
+  | 'Job Created'
+  | 'Offer Received';
 
 type Notes = {
   id: string;
   order: number;
   content: string;
+  createdAt: string;
+  updatedAt: string;
   jobApplicationId: string;
 };
 
@@ -147,6 +149,7 @@ interface TextEditorProps {
   title?: string;
   value?: string;
   backColor?: string;
+  autoSave?: boolean;
   placeholder?: string;
   buttonVisibility?: boolean;
   sendData?: (fieldName: keyof JobApplication, value: string) => void;

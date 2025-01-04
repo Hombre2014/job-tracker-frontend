@@ -70,19 +70,26 @@ const JobPostCard = ({
   }
 
   function formatTimeDifference(diffInMs: number): string {
-    const diffInSeconds = Math.floor(diffInMs / 1000);
+    const isInFuture = diffInMs > 0;
+    const absDiffInMs = Math.abs(diffInMs);
+    const diffInSeconds = Math.floor(absDiffInMs / 1000);
     const diffInMinutes = Math.floor(diffInSeconds / 60);
     const diffInHours = Math.floor(diffInMinutes / 60);
     const diffInDays = Math.floor(diffInHours / 24);
+    const diffInWeeks = Math.floor(diffInDays / 7);
     const diffInMonths = Math.floor(diffInDays / 30);
     const diffInYears = Math.floor(diffInMonths / 12);
 
-    if (diffInYears > 0) return `${diffInYears}y`;
-    if (diffInMonths > 0) return `${diffInMonths}mo`;
-    if (diffInDays > 0) return `${diffInDays}d`;
-    if (diffInHours > 0) return `${diffInHours}h`;
-    if (diffInMinutes > 0) return `${diffInMinutes}m`;
-    return `${diffInSeconds}s`;
+    let result = '';
+    if (diffInYears > 0) result = `${diffInYears}y`;
+    else if (diffInMonths > 0) result = `${diffInMonths}mo`;
+    else if (diffInWeeks > 0) result = `${diffInWeeks}w`;
+    else if (diffInDays > 0) result = `${diffInDays}d`;
+    else if (diffInHours > 0) result = `${diffInHours}h`;
+    else if (diffInMinutes > 0) result = `${diffInMinutes}m`;
+    else result = `${diffInSeconds}s`;
+
+    return isInFuture ? `in ${result}` : result;
   }
 
   const shortTimeSinceChange = getShortTimeSinceStatusChange(timeStamp);

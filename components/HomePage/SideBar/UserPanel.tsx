@@ -5,16 +5,15 @@ import { logout } from '@/redux/user/userThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
 const UserPanel = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { firstName } = useAppSelector((state) => state.user);
-  const { lastName } = useAppSelector((state) => state.user);
+  const { firstName, lastName } = useAppSelector((state) => state.user);
 
   const userLogout = () => {
     dispatch(logout());
