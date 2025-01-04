@@ -50,7 +50,7 @@ const Notes = () => {
         value=""
         id="notes"
         title="Notes"
-        backColor="lightyellow"
+        backColor="#ffffe0"
         buttonVisibility={true}
         placeholder="Add a note"
         sendData={handleFieldChange}
@@ -62,14 +62,14 @@ const Notes = () => {
             key={note.id}
             className="flex flex-col basis-[calc(33.333%-16px)] gap-1"
           >
-            <Card className="w-full min-h-60 max-h-60 overflow-y-auto bg-yellow-100 relative rounded-sm  hover:border-gray-400">
+            <Card className="w-full min-h-60 max-h-60 overflow-y-auto bg-[#ffffe0] relative rounded-sm  hover:border-gray-400">
               <BsThreeDots className="absolute top-2 right-4 size-6 bg-white rounded-lg p-1 border border-gray-500  hover:border-gray-800" />
               <CardDescription
                 className="p-4 mt-6"
                 dangerouslySetInnerHTML={{ __html: note.content }}
               />
             </Card>
-            <div className="flex justify-between items-center mx-2">
+            <div className="flex justify-between items-center mx-2 text-sm text-muted-foreground">
               <span>
                 <p>
                   {firstName} {lastName}
