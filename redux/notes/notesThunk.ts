@@ -62,11 +62,29 @@ export const updateJobApplicationNote = createAsyncThunk(
         },
       });
       const data = res.data;
-      console.log('Data from Thunk on update: ', data);
       return data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(
         err.response?.data || 'Error updating job application note'
+      );
+    }
+  }
+);
+
+export const deleteJobApplicationNote = createAsyncThunk(
+  'notes/deleteJobApplicationNote',
+  async (values: any, thunkAPI) => {
+    const { accessToken, noteId } = values;
+    try {
+      await client.delete(`/job-application-notes/${noteId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      return noteId;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error deleting job application note'
       );
     }
   }
