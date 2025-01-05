@@ -4,6 +4,7 @@ import { RootState } from '../store';
 import {
   createJobApplicationNote,
   updateJobApplicationNote,
+  deleteJobApplicationNote,
   getAllJobApplicationNotes,
 } from './notesThunk';
 
@@ -62,6 +63,20 @@ export const notesSlice = createSlice({
       .addCase(updateJobApplicationNote.rejected, (state, action) => {
         state.notesStatus = 'failed';
         state.error = action.error.message || 'Failed to update the note';
+      })
+      .addCase(deleteJobApplicationNote.pending, (state) => {
+        state.notesStatus = 'loading';
+      })
+      .addCase(deleteJobApplicationNote.fulfilled, (state, action) => {
+        state.notesStatus = 'succeeded';
+        state.notes = state.notes.filter(
+          (note) => note.id !== action.payload.id
+        );
+        state.error = null;
+      })
+      .addCase(deleteJobApplicationNote.rejected, (state, action) => {
+        state.notesStatus = 'failed';
+        state.error = action.error.message || 'Failed to delete the note';
       });
   },
 });
