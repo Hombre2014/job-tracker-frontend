@@ -118,7 +118,7 @@ const TextEditor = ({
             variant="normal"
             onClick={handleSave}
             className={cn(
-              'relative bottom-[20%] left-[90%] hover:bg-blue-600 cursor-pointer',
+              'relative bottom-[20%] left-[88%] hover:bg-blue-600 cursor-pointer',
               buttonVisibility ? 'block' : 'hidden'
             )}
           >

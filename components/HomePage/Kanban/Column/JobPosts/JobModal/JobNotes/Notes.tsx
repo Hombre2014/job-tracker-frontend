@@ -209,7 +209,7 @@ const Notes = () => {
                           dialogTitle="Delete Note"
                           buttonLabel="Delete Note"
                           destructiveVariant={true}
-                          stylings="ml-0 pl-2 font-normal"
+                          stylings="ml-0 pl-2 font-normal inline-flex justify-start w-full text-left"
                           actionFunction={() => handleDeleteNote(note.id)}
                           dialogText="Are you sure you want to delete this note?"
                         />

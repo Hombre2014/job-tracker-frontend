@@ -25,8 +25,8 @@ const AlertDialogModal = ({
   buttonVariant,
   buttonConfirm,
   actionFunction,
+  destructiveVariant,
   isFormValid = true,
-  destructiveVariant = true,
 }: AlertDialogProps) => {
   const clearLocalStorage = () => {
     localStorage.setItem('boardValueChanged', 'false');
