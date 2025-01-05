@@ -24,8 +24,9 @@ const AlertDialogModal = ({
   buttonCancel,
   buttonVariant,
   buttonConfirm,
-  isFormValid = true,
   actionFunction,
+  isFormValid = true,
+  destructiveVariant = true,
 }: AlertDialogProps) => {
   const clearLocalStorage = () => {
     localStorage.setItem('boardValueChanged', 'false');
@@ -51,7 +52,13 @@ const AlertDialogModal = ({
           </div>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogAction onClick={actionFunction} disabled={!isFormValid}>
+          <AlertDialogAction
+            onClick={actionFunction}
+            disabled={!isFormValid}
+            className={cn(
+              destructiveVariant && 'bg-destructive hover:bg-destructive/90'
+            )}
+          >
             {buttonConfirm}
           </AlertDialogAction>
           <AlertDialogCancel onClick={clearLocalStorage}>

@@ -129,6 +129,7 @@ interface AlertDialogProps {
   isFormValid?: boolean;
   children?: React.ReactNode;
   actionFunction?: () => void;
+  destructiveVariant?: boolean;
   buttonLabel?: React.ReactNode;
   onOpenChange?: (open: boolean) => void;
 }

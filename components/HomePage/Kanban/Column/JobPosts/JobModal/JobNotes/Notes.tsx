@@ -6,9 +6,11 @@ import TextEditor from '../JobEdit/TextEditor';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription } from '@/components/ui/card';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import {
   createJobApplicationNote,
   updateJobApplicationNote,
+  deleteJobApplicationNote,
   getAllJobApplicationNotes,
 } from '@/redux/notes/notesThunk';
 import {
@@ -127,6 +129,21 @@ const Notes = () => {
     setEditingNoteContent(value);
   };
 
+  const handleDeleteNote = (noteId: string) => {
+    const deletePayload = {
+      noteId,
+      accessToken: localStorage.getItem('accessToken'),
+    };
+    dispatch(deleteJobApplicationNote(deletePayload)).then(() => {
+      dispatch(
+        getAllJobApplicationNotes({
+          accessToken,
+          jobApplicationId: job_id,
+        })
+      );
+    });
+  };
+
   const sortedNotes = [...notes].reverse();
 
   return (
@@ -184,7 +201,19 @@ const Notes = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-36">
-                      <DropdownMenuItem>Delete Note</DropdownMenuItem>
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <AlertDialogModal
+                          buttonCancel="Cancel"
+                          buttonVariant="ghost"
+                          buttonConfirm="Delete"
+                          dialogTitle="Delete Note"
+                          buttonLabel="Delete Note"
+                          destructiveVariant={true}
+                          stylings="ml-0 pl-2 font-normal"
+                          actionFunction={() => handleDeleteNote(note.id)}
+                          dialogText="Are you sure you want to delete this note?"
+                        />
+                      </div>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => handleEditNote(note)}>
                         Edit Note
