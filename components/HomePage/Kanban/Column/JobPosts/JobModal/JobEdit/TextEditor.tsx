@@ -91,27 +91,29 @@ const TextEditor = ({
                 },
               }}
             >
-              <Toolbar>
-                <BtnUndo />
-                <BtnRedo />
-                <Separator />
-                <BtnBold />
-                <BtnItalic />
-                <BtnUnderline />
-                <BtnStrikeThrough />
-                <Separator />
-                <BtnAlignLeft />
-                <BtnAlignCenter />
-                <BtnAlignRight />
-                <Separator />
-                <BtnNumberedList />
-                <BtnBulletList />
-                <Separator />
-                <BtnLink />
-                <HtmlButton />
-                <Separator />
-                <BtnStyles />
-              </Toolbar>
+              <div className="sticky top-0 z-50 bg-background">
+                <Toolbar>
+                  <BtnUndo />
+                  <BtnRedo />
+                  <Separator />
+                  <BtnBold />
+                  <BtnItalic />
+                  <BtnUnderline />
+                  <BtnStrikeThrough />
+                  <Separator />
+                  <BtnAlignLeft />
+                  <BtnAlignCenter />
+                  <BtnAlignRight />
+                  <Separator />
+                  <BtnNumberedList />
+                  <BtnBulletList />
+                  <Separator />
+                  <BtnLink />
+                  <HtmlButton />
+                  <Separator />
+                  <BtnStyles />
+                </Toolbar>
+              </div>
             </Editor>
           </div>
           <Button
