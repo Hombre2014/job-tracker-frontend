@@ -147,7 +147,7 @@ const Notes = () => {
   const sortedNotes = [...notes].reverse();
 
   return (
-    <div className="flex flex-col gap-2 max-h-[70vh] overflow-y-auto">
+    <div className="flex flex-col gap-2 max-h-[570px] overflow-y-auto">
       <TextEditor
         value=""
         id="notes"

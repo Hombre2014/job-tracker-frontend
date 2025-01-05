@@ -87,6 +87,7 @@ const TextEditor = ({
                   resize: 'vertical',
                   minHeight: '200px',
                   maxHeight: '280px',
+                  marginRight: '1rem',
                 },
               }}
             >
