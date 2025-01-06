@@ -12,11 +12,11 @@ import {
 } from '@/components/ui/popover';
 import {
   Command,
+  CommandItem,
+  CommandList,
   CommandEmpty,
   CommandGroup,
   CommandInput,
-  CommandItem,
-  CommandList,
 } from '@/components/ui/command';
 
 export function LinkDocument({
@@ -31,8 +31,8 @@ export function LinkDocument({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
           role="combobox"
+          variant="outline"
           aria-expanded={open}
           className="w-fit justify-between"
         >
@@ -67,8 +67,7 @@ export function LinkDocument({
                       value === doc.title ? 'opacity-100' : 'opacity-0'
                     )}
                   />
-                  {/* <Link href={`/home/boards/${doc.id}/board`}> */}
-                  {/* Clicking on one of these should trigger a file upload. TODO: Implement it. */}
+                  {/* TODO: Implement file upload */}
                   <div>
                     <span>{doc.title}&nbsp;</span>
                     <span className="opacity-40">{doc.category}</span>

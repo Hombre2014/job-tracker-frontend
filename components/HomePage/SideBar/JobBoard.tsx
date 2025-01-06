@@ -19,12 +19,12 @@ const JobBoard = () => {
     <div className="flex flex-col">
       {boards.map((board) => (
         <JobBoardTitle
-          key={board.id}
-          id={board.id}
-          name={board.name}
           columns={[]}
-          isArchived={board.isArchived}
+          id={board.id}
+          key={board.id}
+          name={board.name}
           userId={board.userId}
+          isArchived={board.isArchived}
         />
       ))}
     </div>

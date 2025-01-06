@@ -13,10 +13,10 @@ const Navbar = () => {
         <Link href="/">
           <div className="flex items-center gap-x-1 w-44">
             <Image
-              src="/images/logo.png"
               alt="Logo"
               width="40"
               height="40"
+              src="/images/logo.png"
               className="cursor-pointer rounded-md"
             />
             <h1 className="text-2xl font-bold">JobTracker</h1>

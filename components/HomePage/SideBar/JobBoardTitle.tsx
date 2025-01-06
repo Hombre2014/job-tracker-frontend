@@ -69,11 +69,11 @@ const JobBoardTitle = (board: Board) => {
           <RiDeleteBinLine className="h-5 w-5 absolute m-2" />
         ) : null}
         <AlertDialogModal
+          buttonCancel="Cancel"
+          buttonConfirm="Archive"
           stylings={cn('opacity-0')}
           dialogTitle="Archive Board"
           dialogText="Are you sure you want to archive this board?"
-          buttonConfirm="Archive"
-          buttonCancel="Cancel"
           actionFunction={() =>
             handleArchiveBoard(accessToken as string, board.id)
           }

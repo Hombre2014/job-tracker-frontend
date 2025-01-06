@@ -42,8 +42,8 @@ const ColorPicker = ({ id, sendData }: ColorPickerProps) => {
         <DropdownMenuTrigger>
           <DropdownMenuTrigger asChild>
             <div
-              style={{ backgroundColor: companyColor }}
               id="color"
+              style={{ backgroundColor: companyColor }}
               className="!w-full !h-[34px] !rounded-md mt-[2px]"
             ></div>
           </DropdownMenuTrigger>
