@@ -227,7 +227,7 @@ const Notes = () => {
                   </DropdownMenu>
                 </div>
                 <CardDescription
-                  className="pl-2 pt-0 pr-8 cursor-text"
+                  className="pl-2 pt-0 pr-8 cursor-text text-gray-900"
                   dangerouslySetInnerHTML={{ __html: note.content }}
                 />
               </Card>
