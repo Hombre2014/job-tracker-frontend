@@ -91,34 +91,36 @@ const TextEditor = ({
                 },
               }}
             >
-              <Toolbar>
-                <BtnUndo />
-                <BtnRedo />
-                <Separator />
-                <BtnBold />
-                <BtnItalic />
-                <BtnUnderline />
-                <BtnStrikeThrough />
-                <Separator />
-                <BtnAlignLeft />
-                <BtnAlignCenter />
-                <BtnAlignRight />
-                <Separator />
-                <BtnNumberedList />
-                <BtnBulletList />
-                <Separator />
-                <BtnLink />
-                <HtmlButton />
-                <Separator />
-                <BtnStyles />
-              </Toolbar>
+              <div className="sticky top-0 z-50 bg-background">
+                <Toolbar>
+                  <BtnUndo />
+                  <BtnRedo />
+                  <Separator />
+                  <BtnBold />
+                  <BtnItalic />
+                  <BtnUnderline />
+                  <BtnStrikeThrough />
+                  <Separator />
+                  <BtnAlignLeft />
+                  <BtnAlignCenter />
+                  <BtnAlignRight />
+                  <Separator />
+                  <BtnNumberedList />
+                  <BtnBulletList />
+                  <Separator />
+                  <BtnLink />
+                  <HtmlButton />
+                  <Separator />
+                  <BtnStyles />
+                </Toolbar>
+              </div>
             </Editor>
           </div>
           <Button
             variant="normal"
             onClick={handleSave}
             className={cn(
-              'relative bottom-[20%] left-[90%] hover:bg-blue-600 cursor-pointer',
+              'relative bottom-[20%] left-[88%] hover:bg-blue-600 cursor-pointer',
               buttonVisibility ? 'block' : 'hidden'
             )}
           >

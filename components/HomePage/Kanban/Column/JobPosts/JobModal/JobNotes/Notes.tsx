@@ -45,7 +45,12 @@ const Notes = () => {
         ((event.target as Element).closest('.rsw-editor') &&
           (event.target as Element).closest('#edit-note')) ||
         (event.target as Element).closest('#edit-note');
-      if (editingNoteId && !isClickInsideEditor) {
+
+      const isClickInsideToolbar = (event.target as Element).closest(
+        '.rsw-toolbar'
+      );
+
+      if (editingNoteId && !isClickInsideEditor && !isClickInsideToolbar) {
         const editingNote = notes.find((note) => note.id === editingNoteId);
         if (editingNote && editingNoteContent !== editingNote.content) {
           const updatePayload = {
@@ -53,7 +58,7 @@ const Notes = () => {
             noteContent: editingNoteContent,
             accessToken: localStorage.getItem('accessToken'),
           };
-          // So, here we send a second request after the first one succeeded with .then() method to update the notes. This is a good example of how to handle the async operations in Redux.
+
           dispatch(updateJobApplicationNote(updatePayload)).then(() => {
             dispatch(
               getAllJobApplicationNotes({
@@ -209,7 +214,7 @@ const Notes = () => {
                           dialogTitle="Delete Note"
                           buttonLabel="Delete Note"
                           destructiveVariant={true}
-                          stylings="ml-0 pl-2 font-normal"
+                          stylings="ml-0 pl-2 font-normal inline-flex justify-start w-full text-left"
                           actionFunction={() => handleDeleteNote(note.id)}
                           dialogText="Are you sure you want to delete this note?"
                         />
@@ -222,7 +227,7 @@ const Notes = () => {
                   </DropdownMenu>
                 </div>
                 <CardDescription
-                  className="pl-2 pt-0 pr-8 cursor-text"
+                  className="pl-2 pt-0 pr-8 cursor-text text-gray-900"
                   dangerouslySetInnerHTML={{ __html: note.content }}
                 />
               </Card>

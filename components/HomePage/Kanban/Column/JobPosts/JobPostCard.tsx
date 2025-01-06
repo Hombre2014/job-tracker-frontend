@@ -69,7 +69,10 @@ const JobPostCard = ({
     return formatTimeDifference(nowTime - dateTime);
   }
 
-  function formatTimeDifference(diffInMs: number): string {
+  function formatTimeDifference(
+    diffInMs: number,
+    showPrefix: boolean = false
+  ): string {
     const isInFuture = diffInMs > 0;
     const absDiffInMs = Math.abs(diffInMs);
     const diffInSeconds = Math.floor(absDiffInMs / 1000);
@@ -89,14 +92,14 @@ const JobPostCard = ({
     else if (diffInMinutes > 0) result = `${diffInMinutes}m`;
     else result = `${diffInSeconds}s`;
 
-    return isInFuture ? `in ${result}` : result;
+    return isInFuture && showPrefix ? `in ${result}` : result;
   }
 
   const shortTimeSinceChange = getShortTimeSinceStatusChange(timeStamp);
 
   const now = new Date();
   const timeDifference = new Date(deadline).getTime() - now.getTime();
-  const timeDifferenceString = formatTimeDifference(timeDifference);
+  const timeDifferenceString = formatTimeDifference(timeDifference, true);
 
   const handleJobPostClick = (id: string) => {
     router.push(`/home/boards/${board_id}/job/${id}/job-details`);
