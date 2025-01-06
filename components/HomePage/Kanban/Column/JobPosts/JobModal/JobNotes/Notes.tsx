@@ -45,7 +45,12 @@ const Notes = () => {
         ((event.target as Element).closest('.rsw-editor') &&
           (event.target as Element).closest('#edit-note')) ||
         (event.target as Element).closest('#edit-note');
-      if (editingNoteId && !isClickInsideEditor) {
+
+      const isClickInsideToolbar = (event.target as Element).closest(
+        '.rsw-toolbar'
+      );
+
+      if (editingNoteId && !isClickInsideEditor && !isClickInsideToolbar) {
         const editingNote = notes.find((note) => note.id === editingNoteId);
         if (editingNote && editingNoteContent !== editingNote.content) {
           const updatePayload = {
@@ -53,7 +58,7 @@ const Notes = () => {
             noteContent: editingNoteContent,
             accessToken: localStorage.getItem('accessToken'),
           };
-          // So, here we send a second request after the first one succeeded with .then() method to update the notes. This is a good example of how to handle the async operations in Redux.
+
           dispatch(updateJobApplicationNote(updatePayload)).then(() => {
             dispatch(
               getAllJobApplicationNotes({
