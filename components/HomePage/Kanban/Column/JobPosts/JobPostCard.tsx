@@ -101,6 +101,8 @@ const JobPostCard = ({
   const timeDifference = new Date(deadline).getTime() - now.getTime();
   const timeDifferenceString = formatTimeDifference(timeDifference, true);
 
+  const isDeadlinePassed = deadline ? new Date(deadline) < new Date() : false;
+
   const handleJobPostClick = (id: string) => {
     router.push(`/home/boards/${board_id}/job/${id}/job-details`);
     localStorage.setItem('columnId', columnId);
@@ -167,9 +169,16 @@ const JobPostCard = ({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="text-xs text-white cursor-help">
+                  <span
+                    className={cn(
+                      'text-xs cursor-help',
+                      isDeadlinePassed ? 'text-red-500' : 'text-white'
+                    )}
+                  >
                     {status === 'Job Created'
                       ? shortTimeSinceChange
+                      : isDeadlinePassed
+                      ? `Overdue ${timeDifferenceString}`
                       : timeDifferenceString}
                   </span>
                 </TooltipTrigger>
