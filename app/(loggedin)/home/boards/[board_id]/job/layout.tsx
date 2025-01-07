@@ -37,7 +37,6 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   const placeholderRef = useRef<HTMLDivElement | null>(null);
   const [triggerWidth, setTriggerWidth] = useState<number>(80);
   const [selectedListName, setSelectedListName] = useState('');
-  const [newJobPostStatus, setNewJobPostStatus] = useState('');
   const [temporaryMessage, setTemporaryMessage] = useState<string>('');
   const boardColumns = boards.find((board) => board.id === board_id)?.columns;
 
@@ -59,6 +58,7 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   const handleSelectList = (value: string) => {
     setSelectedListName(value);
     setTemporaryMessage(`Moved to ${value}`);
+    localStorage.setItem('chosenColumn', value);
 
     const updatePayload = {
       accessToken: localStorage.getItem('accessToken'),
@@ -102,15 +102,15 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
             >
               <SelectTrigger
                 className={cn(
-                  'bg-slate-900 text-white transition-all duration-300 delay-100 ease-in-out overflow-hidden pr-2',
+                  'bg-blue-500 text-white transition-all duration-300 delay-100 ease-in-out overflow-hidden pr-2',
                   {
                     'w-[`$triggerWidth`px]': triggerWidth,
                   }
                 )}
               >
                 <SelectValue
-                  placeholder={temporaryMessage || 'Move'}
                   ref={placeholderRef}
+                  placeholder={temporaryMessage || 'Move'}
                 />
               </SelectTrigger>
               <SelectContent>

@@ -173,7 +173,7 @@ const JobPostCard = ({
                     className={cn(
                       'text-xs cursor-help',
                       isDeadlinePassed
-                        ? 'bg-red-700 py-[2px] px-[6px] rounded-md'
+                        ? 'bg-red-700 py-[2px] px-[5px] rounded-md'
                         : 'text-white'
                     )}
                   >
