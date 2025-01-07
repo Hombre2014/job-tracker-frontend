@@ -5,8 +5,8 @@ import CreateNewBoard from '../Boards/CreateNewBoard';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
+  TooltipProvider,
 } from '@/components/ui/tooltip';
 
 const JobTrackers = () => {

@@ -15,10 +15,10 @@ import { Button } from '@/components/ui/button';
 import { FormError } from '@/components/Forms/form-error';
 import {
   Form,
-  FormControl,
-  FormField,
   FormItem,
+  FormField,
   FormLabel,
+  FormControl,
   FormMessage,
 } from '@/components/ui/form';
 
@@ -31,10 +31,10 @@ const SignUp = () => {
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
     defaultValues: {
-      firstName: '',
-      lastName: '',
       email: '',
       password: '',
+      lastName: '',
+      firstName: '',
     },
   });
 
@@ -45,11 +45,11 @@ const SignUp = () => {
     startTransition(async () => {
       try {
         const res = await client.post('/users', {
-          firstName,
-          lastName,
+          role,
           email,
           password,
-          role,
+          lastName,
+          firstName,
         });
 
         if (res.status === 201) {
@@ -81,17 +81,17 @@ const SignUp = () => {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="flex justify-between gap-4">
             <FormField
-              control={form.control}
               name="firstName"
+              control={form.control}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>First Name</FormLabel>
                   <FormControl>
                     <Input
-                      disabled={isPending}
+                      {...field}
                       type="text"
                       placeholder="John"
-                      {...field}
+                      disabled={isPending}
                     />
                   </FormControl>
                   <FormMessage />
@@ -99,17 +99,17 @@ const SignUp = () => {
               )}
             />
             <FormField
-              control={form.control}
               name="lastName"
+              control={form.control}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Last Name</FormLabel>
                   <FormControl>
                     <Input
-                      disabled={isPending}
+                      {...field}
                       type="text"
                       placeholder="Doe"
-                      {...field}
+                      disabled={isPending}
                     />
                   </FormControl>
                   <FormMessage />
@@ -119,17 +119,17 @@ const SignUp = () => {
           </div>
           <div className="space-y-4">
             <FormField
-              control={form.control}
               name="email"
+              control={form.control}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
-                      disabled={isPending}
-                      type="email"
-                      placeholder="john.doe@domain.com"
                       {...field}
+                      type="email"
+                      disabled={isPending}
+                      placeholder="john.doe@domain.com"
                     />
                   </FormControl>
                   <FormMessage />
@@ -137,17 +137,17 @@ const SignUp = () => {
               )}
             />
             <FormField
-              control={form.control}
               name="password"
+              control={form.control}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
                     <Input
-                      disabled={isPending}
-                      type="password"
-                      placeholder="********"
                       {...field}
+                      type="password"
+                      disabled={isPending}
+                      placeholder="********"
                     />
                   </FormControl>
                   <FormMessage />

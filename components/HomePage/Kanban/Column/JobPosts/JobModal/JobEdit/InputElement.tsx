@@ -8,10 +8,10 @@ const InputElement = ({
   id,
   value,
   stylings,
+  sendData,
   labelName,
   defaultValue,
   placeholderName,
-  sendData,
 }: InputElementProps) => {
   const [inputValue, setInputValue] = useState(value!);
 
@@ -27,9 +27,9 @@ const InputElement = ({
       <Input
         id={id}
         value={inputValue}
+        onBlur={handleBlur}
         defaultValue={defaultValue}
         placeholder={placeholderName}
-        onBlur={handleBlur}
         onChange={(e) => setInputValue(e.target.value)}
       />
     </div>

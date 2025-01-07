@@ -58,32 +58,34 @@ export const updateJobPost = createAsyncThunk(
   'jobs/updateJobPost',
   async (values: any, thunkAPI) => {
     const {
-      accessToken,
       title,
-      company: { name: companyName },
-      columnId,
-      jobPostId,
+      color,
+      salary,
       status,
       postUrl,
-      salary,
       location,
-      color,
       deadline,
+      columnId,
+      jobPostId,
+      accessToken,
       description,
+      statusChangedAt,
+      company: { name: companyName },
     } = values;
     const body = {
       title: title,
+      color: color,
+      salary: salary,
+      status: status,
+      postUrl: postUrl,
+      location: location,
+      deadline: deadline,
       columnId: columnId,
+      description: description,
+      statusChangedAt: statusChangedAt,
       company: {
         name: companyName,
       },
-      postUrl: postUrl,
-      salary: salary,
-      location: location,
-      color: color,
-      status: status,
-      deadline: deadline,
-      description: description,
     };
     try {
       const res = await client.put(`/job-applications/${jobPostId}`, body, {

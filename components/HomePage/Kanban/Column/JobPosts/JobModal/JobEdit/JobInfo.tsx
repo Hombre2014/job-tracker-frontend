@@ -194,14 +194,15 @@ const JobInfo = () => {
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
                   <Calendar
+                    initialFocus
                     mode="single"
+                    onSelect={handleSelectDeadline}
+                    disabled={{ before: new Date() }}
                     selected={
                       currentJobPost?.deadline
                         ? new Date(currentJobPost?.deadline)
                         : date ?? undefined
                     }
-                    onSelect={handleSelectDeadline}
-                    initialFocus
                   />
                 </PopoverContent>
                 <PopoverAnchor />

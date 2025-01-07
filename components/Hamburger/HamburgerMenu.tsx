@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
 import Link from 'next/link';
-import { fallDown as Menu } from 'react-burger-menu';
-import HamburgerIcon from './hamburger-icon';
+import React, { useState } from 'react';
 import { FaTimes } from 'react-icons/fa';
+import { fallDown as Menu } from 'react-burger-menu';
+
+import HamburgerIcon from './hamburger-icon';
 import navbarLinks from '@/data/navbar-links';
 
 const HamburgerMenu: React.FC = () => {
@@ -19,9 +20,9 @@ const HamburgerMenu: React.FC = () => {
       {isOpen && (
         <div className="fixed top-0 left-0 right-0 bottom-0 z-50">
           <Menu
-            isOpen={isOpen}
             right
             width={'100%'}
+            isOpen={isOpen}
             className="bg-gray-200 text-black dark:bg-gray-700 dark:text-white"
           >
             <div className="flex justify-end">

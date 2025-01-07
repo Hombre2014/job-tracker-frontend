@@ -12,10 +12,10 @@ import { FormError } from '@/components/Forms/form-error';
 import { FormSuccess } from '@/components/Forms/form-success';
 import {
   Form,
-  FormControl,
-  FormField,
   FormItem,
+  FormField,
   FormLabel,
+  FormControl,
   FormMessage,
 } from '@/components/ui/form';
 
@@ -24,29 +24,29 @@ interface AuthFormProps {
   onSubmit: (
     data: z.infer<typeof LoginSchema> | z.infer<typeof RegisterSchema>
   ) => void;
+  type: string;
+  label: string;
+  noteText?: string;
+  noteTitle?: string;
   buttonText: string;
+  placeholder: string;
   errorMessage?: string;
   successMessage?: string;
-  noteTitle?: string;
-  noteText?: string;
   passwordVisibility?: boolean;
-  label: string;
-  placeholder: string;
-  type: string;
 }
 
 const AuthForm = ({
+  type,
+  label,
   schema,
   onSubmit,
+  noteText,
+  noteTitle,
   buttonText,
+  placeholder,
   errorMessage,
   successMessage,
-  noteTitle,
-  noteText,
   passwordVisibility = true,
-  label,
-  placeholder,
-  type,
 }: AuthFormProps) => {
   const form = useForm({
     resolver: zodResolver(schema),
@@ -75,8 +75,8 @@ const AuthForm = ({
           />
           {passwordVisibility && (
             <FormField
-              control={form.control}
               name="password"
+              control={form.control}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Password</FormLabel>

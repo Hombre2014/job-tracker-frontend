@@ -15,11 +15,11 @@ import {
 } from '@/components/ui/popover';
 import {
   Command,
+  CommandList,
+  CommandItem,
   CommandEmpty,
   CommandGroup,
   CommandInput,
-  CommandItem,
-  CommandList,
 } from '@/components/ui/command';
 
 export function ComboBox({ items, searchItem }: ComboBoxProps) {
@@ -36,8 +36,8 @@ export function ComboBox({ items, searchItem }: ComboBoxProps) {
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
-            variant="outline"
             role="combobox"
+            variant="outline"
             aria-expanded={open}
             className="w-fit justify-between"
           >
@@ -48,8 +48,8 @@ export function ComboBox({ items, searchItem }: ComboBoxProps) {
         <PopoverContent className="w-fit p-0">
           <Command>
             <CommandInput
-              placeholder={`Search ${searchItem}`}
               className="h-9"
+              placeholder={`Search ${searchItem}`}
             />
             <CommandList>
               <CommandEmpty>Nothing found.</CommandEmpty>

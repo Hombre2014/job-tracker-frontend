@@ -3,11 +3,11 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import {
   Card,
-  CardContent,
-  CardDescription,
+  CardTitle,
   CardFooter,
   CardHeader,
-  CardTitle,
+  CardContent,
+  CardDescription,
 } from '@/components/ui/card';
 
 const Company = () => {

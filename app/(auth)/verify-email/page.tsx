@@ -15,10 +15,10 @@ import { FormError } from '@/components/Forms/form-error';
 import { FormSuccess } from '@/components/Forms/form-success';
 import {
   Form,
-  FormControl,
-  FormField,
   FormItem,
+  FormField,
   FormLabel,
+  FormControl,
   FormMessage,
 } from '@/components/ui/form';
 
@@ -60,7 +60,6 @@ const VerifyEmail = () => {
         if (res.status === 201) {
           form.reset();
           setSuccess('Code verification successful');
-          // localStorage.removeItem('user');
           router.push('/login');
         }
       } catch (error: any) {
@@ -133,8 +132,8 @@ const VerifyEmail = () => {
         </Form>
         <div className="text-slate-500 text-sm mt-4 w-full flex justify-center">
           <Link
-            onClick={handleResend}
             href="/verify-email"
+            onClick={handleResend}
             className="text-blue-500 mx-auto text-sm underline"
           >
             or create new and resend code

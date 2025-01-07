@@ -13,19 +13,19 @@ import { AlertDialogFooter } from '@/components/ui/alert-dialog';
 import {
   Dialog,
   DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
   DialogTitle,
+  DialogHeader,
+  DialogContent,
   DialogTrigger,
+  DialogDescription,
 } from '@/components/ui/dialog';
 
 const CreateNewBoard = ({
-  buttonLabel,
   styling,
+  buttonLabel,
 }: {
-  buttonLabel?: string;
   styling?: string;
+  buttonLabel?: string;
 }) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -89,10 +89,10 @@ const CreateNewBoard = ({
         <div className="flex">
           <Input
             id="name"
-            placeholder="Board name (e.g., Job Search 2024)"
             value={newBoardName}
-            onChange={(e) => handleInputChange(e)}
             className="focus:border-blue-500"
+            onChange={(e) => handleInputChange(e)}
+            placeholder="Board name (e.g., Job Search 2024)"
           />
         </div>
         <AlertDialogFooter className="w-full">
@@ -101,8 +101,8 @@ const CreateNewBoard = ({
               type="submit"
               variant="normal"
               className="w-full"
-              disabled={buttonIsDisabled}
               onClick={createNewBoard}
+              disabled={buttonIsDisabled}
             >
               Create Board
             </Button>

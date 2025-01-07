@@ -4,8 +4,8 @@ import { useParams, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 const NavbarMenuItem = ({ linkName, icon }: MenuItemProps) => {
-  const { board_id } = useParams();
   const pathname = usePathname();
+  const { board_id } = useParams();
 
   return (
     <Link

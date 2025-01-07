@@ -11,11 +11,11 @@ import { useAppSelector, useAppDispatch } from '@/redux/hooks';
 import { getBoards, rearrangeColumns } from '@/redux/boards/boardsThunk';
 import {
   Select,
-  SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectTrigger,
+  SelectGroup,
   SelectValue,
+  SelectContent,
+  SelectTrigger,
 } from '@/components/ui/select';
 
 const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
@@ -42,9 +42,9 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
 
     dispatch(
       rearrangeColumns({
-        accessToken: accessToken,
         boardId: board_id,
         columns_id: columnIds,
+        accessToken: accessToken,
       })
     );
     setIsEditing(true);
@@ -74,11 +74,11 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
         <li>
           <div className="flex !justify-between h-12 mb-1 p-4 w-full">
             <AlertDialogModal
-              buttonLabel="Move List"
-              buttonVariant="ghost"
-              dialogTitle="Move List"
-              buttonCancel="Discard"
               buttonConfirm="Move"
+              buttonVariant="ghost"
+              buttonCancel="Discard"
+              buttonLabel="Move List"
+              dialogTitle="Move List"
               actionFunction={handleMoveList}
               stylings="bg-none hover:!bg-gray-200 py-4 !pl-0 pr-[72px] m-0 active:!bg-gray-800 active:text-gray-200"
             >

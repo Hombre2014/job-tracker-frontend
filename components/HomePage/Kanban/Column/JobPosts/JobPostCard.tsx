@@ -34,6 +34,7 @@ const JobPostCard = ({
   deadline,
   timeStamp,
   companyName,
+  statusChangedTime,
 }: JobPostCardProps) => {
   const router = useRouter();
   const date = new Date(timeStamp);
@@ -96,10 +97,15 @@ const JobPostCard = ({
   }
 
   const shortTimeSinceChange = getShortTimeSinceStatusChange(timeStamp);
+  const shortTimeSinceStatusChange = getShortTimeSinceStatusChange(
+    new Date(Date.parse(statusChangedTime) - 60 * 60 * 1000).toISOString() // Compensate for the added 1 hour in the server.getTime()
+  );
 
   const now = new Date();
   const timeDifference = new Date(deadline).getTime() - now.getTime();
   const timeDifferenceString = formatTimeDifference(timeDifference, true);
+
+  const isDeadlinePassed = deadline ? new Date(deadline) < new Date() : false;
 
   const handleJobPostClick = (id: string) => {
     router.push(`/home/boards/${board_id}/job/${id}/job-details`);
@@ -167,15 +173,34 @@ const JobPostCard = ({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="text-xs text-white cursor-help">
-                    {status === 'Job Created'
-                      ? shortTimeSinceChange
-                      : timeDifferenceString}
+                  <span
+                    className={cn(
+                      'text-xs cursor-help',
+                      isDeadlinePassed
+                        ? 'bg-red-700 py-[2px] px-[5px] rounded-md'
+                        : 'text-white'
+                    )}
+                  >
+                    <div className="min-w-10">
+                      {status === 'Job Created'
+                        ? shortTimeSinceChange
+                        : status === 'Deadline'
+                        ? isDeadlinePassed
+                          ? `o ${timeDifferenceString}`
+                          : `${timeDifferenceString}`
+                        : `${shortTimeSinceStatusChange}`}
+                    </div>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent className="bg-slate-300 !min-w-[250px] text-gray-900">
                   <p>
-                    <span>{status}</span>
+                    <span>
+                      {isDeadlinePassed ? (
+                        <span>Overdue {timeDifferenceString} ago</span>
+                      ) : (
+                        status
+                      )}
+                    </span>
                     <span> | </span>
                     <span>
                       {status === 'Deadline'

@@ -33,17 +33,22 @@ export const login = createAsyncThunk(
 );
 
 export const logout = createAsyncThunk('user/logout', async () => {
+  localStorage.removeItem('user');
+  localStorage.removeItem('columnId');
+  localStorage.removeItem('chosenBoard');
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
-  localStorage.removeItem('user');
+  localStorage.removeItem('chosenColumn');
+  localStorage.removeItem('boardValueChanged');
+  localStorage.removeItem('firstColumnOfTheBoard');
 
   return {
-    accessToken: '',
-    refreshToken: '',
     email: '',
+    error: null,
     userId: null,
     status: 'idle',
-    error: null,
+    accessToken: '',
+    refreshToken: '',
   };
 });
 
@@ -55,12 +60,12 @@ export const isLoggedIn = createAsyncThunk(
 
     if (accessToken && refreshToken && email && userId) {
       return {
+        email,
+        userId,
+        error: null,
         accessToken,
         refreshToken,
-        userId,
-        email,
         status: 'succeeded',
-        error: null,
       };
     } else {
       return thunkAPI.rejectWithValue('User is not logged in');
