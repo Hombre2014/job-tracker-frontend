@@ -120,6 +120,11 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
           })
         );
       });
+
+      setTimeout(() => {
+        setTemporaryMessage(''); // Clear temporary message
+        setSelectedListName(''); // Reset selected value to show placeholder
+      }, 2000);
     }
   };
 
