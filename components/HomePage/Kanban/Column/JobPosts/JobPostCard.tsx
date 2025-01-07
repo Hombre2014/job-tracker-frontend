@@ -34,6 +34,7 @@ const JobPostCard = ({
   deadline,
   timeStamp,
   companyName,
+  statusChangedTime,
 }: JobPostCardProps) => {
   const router = useRouter();
   const date = new Date(timeStamp);
@@ -96,6 +97,9 @@ const JobPostCard = ({
   }
 
   const shortTimeSinceChange = getShortTimeSinceStatusChange(timeStamp);
+  const shortTimeSinceStatusChange = getShortTimeSinceStatusChange(
+    new Date(Date.parse(statusChangedTime) - 60 * 60 * 1000).toISOString() // Compensate for the added 1 hour in the server.getTime()
+  );
 
   const now = new Date();
   const timeDifference = new Date(deadline).getTime() - now.getTime();
@@ -177,11 +181,15 @@ const JobPostCard = ({
                         : 'text-white'
                     )}
                   >
-                    {status === 'Job Created'
-                      ? shortTimeSinceChange
-                      : isDeadlinePassed
-                      ? `o ${timeDifferenceString}`
-                      : timeDifferenceString}
+                    <div className="min-w-10">
+                      {status === 'Job Created'
+                        ? shortTimeSinceChange
+                        : status === 'Deadline'
+                        ? isDeadlinePassed
+                          ? `o ${timeDifferenceString}`
+                          : `${timeDifferenceString}`
+                        : `${shortTimeSinceStatusChange}`}
+                    </div>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent className="bg-slate-300 !min-w-[250px] text-gray-900">

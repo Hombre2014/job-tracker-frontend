@@ -6,8 +6,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Modal from '@/components/Misc/Modal';
 import { Button } from '@/components/ui/button';
-import jobPostStatusItems from '@/data/job-status-items';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { getAllJobApplicationNotes } from '@/redux/notes/notesThunk';
 import { getAllJobPostsPerColumn, updateJobPost } from '@/redux/jobs/jobsThunk';
 import {
   Card,
@@ -60,21 +60,67 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
     setTemporaryMessage(`Moved to ${value}`);
     localStorage.setItem('chosenColumn', value);
 
-    const updatePayload = {
-      accessToken: localStorage.getItem('accessToken'),
-      company: {
-        name: currentJobPost?.company.name,
-      },
-      jobPostId: job_id,
-      columnId: boardColumns?.find((column) => column.name === value)?.id,
-    };
+    const currentColumnOrder = boardColumns?.find(
+      (column) => column.name === chosenColumn
+    )?.order;
 
-    dispatch(updateJobPost(updatePayload));
+    const newColumnOrder = boardColumns?.find(
+      (column) => column.name === value
+    )?.order;
 
-    setTimeout(() => {
-      setTemporaryMessage(''); // Clear temporary message
-      setSelectedListName(''); // Reset selected value to show placeholder
-    }, 2000);
+    const newColumnId = boardColumns?.find(
+      (column) => column.name === value
+    )?.id;
+
+    if (
+      (currentJobPost &&
+        newColumnOrder !== undefined &&
+        currentColumnOrder !== undefined) ||
+      currentColumnOrder === 0
+    ) {
+      let newStatus: jobPostStatus = currentJobPost!.status;
+
+      if (newColumnOrder === 4 || newColumnOrder! < currentColumnOrder) {
+        newStatus = 'Job Moved';
+      } else {
+        switch (newColumnOrder) {
+          case 0:
+            newStatus = 'Job Created';
+            break;
+          case 1:
+            newStatus = 'Applied';
+            break;
+          case 2:
+            newStatus = 'Interview';
+            break;
+          case 3:
+            newStatus = 'Offer Received';
+            break;
+          default:
+            newStatus = currentJobPost!.status;
+        }
+      }
+
+      const updatePayload = {
+        status: newStatus,
+        jobPostId: job_id,
+        columnId: newColumnId,
+        statusChangedTime: new Date().toISOString(), // Set the current date and time
+        accessToken: localStorage.getItem('accessToken'),
+        company: {
+          name: currentJobPost!.company.name,
+        },
+      };
+
+      dispatch(updateJobPost(updatePayload)).then(() => {
+        dispatch(
+          getAllJobApplicationNotes({
+            accessToken,
+            jobApplicationId: job_id,
+          })
+        );
+      });
+    }
   };
 
   useEffect(() => {
