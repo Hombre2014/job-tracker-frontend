@@ -172,19 +172,27 @@ const JobPostCard = ({
                   <span
                     className={cn(
                       'text-xs cursor-help',
-                      isDeadlinePassed ? 'text-red-500' : 'text-white'
+                      isDeadlinePassed
+                        ? 'bg-red-700 py-[2px] px-[6px] rounded-md'
+                        : 'text-white'
                     )}
                   >
                     {status === 'Job Created'
                       ? shortTimeSinceChange
                       : isDeadlinePassed
-                      ? `Overdue ${timeDifferenceString}`
+                      ? `o ${timeDifferenceString}`
                       : timeDifferenceString}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent className="bg-slate-300 !min-w-[250px] text-gray-900">
                   <p>
-                    <span>{status}</span>
+                    <span>
+                      {isDeadlinePassed ? (
+                        <span>Overdue {timeDifferenceString} ago</span>
+                      ) : (
+                        status
+                      )}
+                    </span>
                     <span> | </span>
                     <span>
                       {status === 'Deadline'
