@@ -33,9 +33,14 @@ export const login = createAsyncThunk(
 );
 
 export const logout = createAsyncThunk('user/logout', async () => {
+  localStorage.removeItem('user');
+  localStorage.removeItem('columnId');
+  localStorage.removeItem('chosenBoard');
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
-  localStorage.removeItem('user');
+  localStorage.removeItem('chosenColumn');
+  localStorage.removeItem('boardValueChanged');
+  localStorage.removeItem('firstColumnOfTheBoard');
 
   return {
     accessToken: '',
