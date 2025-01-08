@@ -29,6 +29,7 @@ const Notes = () => {
   const [editingNoteContent, setEditingNoteContent] = useState('');
   const { firstName, lastName } = useAppSelector((state) => state.user);
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const currentNote = notes.find((note) => note.id === editingNoteId);
 
   useEffect(() => {
@@ -125,6 +126,7 @@ const Notes = () => {
   const handleEditNote = (note: any) => {
     setEditingNoteId(note.id);
     setEditingNoteContent(note.content);
+    setOpenDropdownId(null); // Close the dropdown menu
   };
 
   const handleContentUpdate = (
@@ -147,6 +149,11 @@ const Notes = () => {
         })
       );
     });
+    setOpenDropdownId(null); // Close the dropdown menu
+  };
+
+  const handleCancel = () => {
+    setOpenDropdownId(null); // Close the dropdown menu
   };
 
   const sortedNotes = [...notes].reverse();
@@ -199,14 +206,22 @@ const Notes = () => {
                 onClick={() => handleEditNote(note)}
               >
                 <div className="sticky top-0 right-0 z-10 flex justify-end w-full">
-                  <DropdownMenu>
+                  <DropdownMenu
+                    open={openDropdownId === note.id}
+                    onOpenChange={(isOpen) =>
+                      setOpenDropdownId(isOpen ? note.id : null)
+                    }
+                  >
                     <DropdownMenuTrigger asChild>
                       <Button variant="invisible" className="!mr-2 !mt-2">
                         <BsThreeDots className="size-6 bg-white rounded-lg p-1 border border-gray-500  hover:border-gray-800" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-36">
-                      <div onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenuContent className="w-36 rsw-dropdown-menu">
+                      <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="rsw-dropdown-menu-item"
+                      >
                         <AlertDialogModal
                           buttonCancel="Cancel"
                           buttonVariant="ghost"
@@ -214,13 +229,19 @@ const Notes = () => {
                           dialogTitle="Delete Note"
                           buttonLabel="Delete Note"
                           destructiveVariant={true}
-                          stylings="ml-0 pl-2 font-normal inline-flex justify-start w-full text-left"
+                          onOpenChange={(isOpen) => {
+                            if (!isOpen) handleCancel();
+                          }}
                           actionFunction={() => handleDeleteNote(note.id)}
                           dialogText="Are you sure you want to delete this note?"
+                          stylings="ml-0 pl-2 font-normal inline-flex justify-start w-full text-left"
                         />
                       </div>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => handleEditNote(note)}>
+                      <DropdownMenuItem
+                        className="rsw-dropdown-menu-item"
+                        onClick={() => handleEditNote(note)}
+                      >
                         Edit Note
                       </DropdownMenuItem>
                     </DropdownMenuContent>

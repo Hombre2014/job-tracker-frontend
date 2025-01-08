@@ -37,8 +37,8 @@ const JobDetails = () => {
             {item.title}
             {item.title === 'Notes' && (
               <div className="indicator">
-                <span className="indicator-item badge badge-primary absolute -top-2 -right-3 !p-1 size-5 text-[12px]">
-                  {numberOfNotes}
+                <span className="indicator-item badge badge-neutral absolute -top-2 -right-[14px] size-6 text-[12px]">
+                  <div className="mx-auto text-center">{numberOfNotes}</div>
                 </span>
               </div>
             )}
