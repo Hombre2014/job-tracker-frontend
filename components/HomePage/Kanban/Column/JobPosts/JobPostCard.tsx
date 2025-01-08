@@ -182,18 +182,25 @@ const JobPostCard = ({
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Job Post</AlertDialogTitle>
-                  <AlertDialogDescription>
+                  <AlertDialogTitle className="text-center">
+                    Delete Job Post
+                  </AlertDialogTitle>
+                  <hr />
+                  <AlertDialogDescription className="text-center">
                     Are you sure you want to delete this job post?
                   </AlertDialogDescription>
                 </AlertDialogHeader>
+                <hr />
                 <AlertDialogFooter>
+                  <AlertDialogAction
+                    className="bg-red-500"
+                    onClick={handleDeleteJobPost}
+                  >
+                    Delete
+                  </AlertDialogAction>
                   <AlertDialogCancel onClick={() => setIsDialogOpen(false)}>
                     Cancel
                   </AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteJobPost}>
-                    Delete
-                  </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
