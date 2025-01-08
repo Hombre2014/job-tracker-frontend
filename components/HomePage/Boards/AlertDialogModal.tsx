@@ -64,7 +64,7 @@ const AlertDialogModal = ({
           <AlertDialogCancel
             onClick={() => {
               clearLocalStorage();
-              onOpenChange(false); // Close the alert dialog and dropdown menu
+              onOpenChange && onOpenChange(false); // Close the alert dialog and dropdown menu
             }}
           >
             {buttonCancel}

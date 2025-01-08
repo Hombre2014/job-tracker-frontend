@@ -23,6 +23,17 @@ import {
   TooltipContent,
   TooltipProvider,
 } from '@/components/ui/tooltip';
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from '@/components/ui/alert-dialog';
 
 const JobPostCard = ({
   id,
@@ -42,13 +53,10 @@ const JobPostCard = ({
   const dispatch = useAppDispatch();
   const zonedDate = toZonedTime(date, 'UTC');
   const [showIcons, setShowIcons] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const { boards } = useAppSelector((state) => state.boards);
   const boardColumns = boards.find((board) => board.id === board_id)?.columns;
-
-  const formattedDateHour = format(zonedDate, 'dd/MM/yyyy HH:mm, a', {
-    timeZone: 'UTC',
-  });
 
   const formattedStatusChangedTime = format(
     toZonedTime(new Date(statusChangedTime), 'UTC'),
@@ -116,24 +124,24 @@ const JobPostCard = ({
   const isDeadlinePassed = deadline ? new Date(deadline) < new Date() : false;
 
   const handleJobPostClick = (id: string) => {
-    router.push(`/home/boards/${board_id}/job/${id}/job-details`);
-    localStorage.setItem('columnId', columnId);
-    const chosenColumn = boardColumns?.find(
-      (column) => column.id === columnId
-    )?.name;
-    localStorage.setItem('chosenColumn', chosenColumn as string);
+    if (!isDialogOpen) {
+      router.push(`/home/boards/${board_id}/job/${id}/job-details`);
+      localStorage.setItem('columnId', columnId);
+      const chosenColumn = boardColumns?.find(
+        (column) => column.id === columnId
+      )?.name;
+      localStorage.setItem('chosenColumn', chosenColumn as string);
+    }
   };
 
-  const handleDeleteJobPost = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
+  const handleDeleteJobPost = () => {
     dispatch(
       deleteJobPost({
         accessToken,
         jobPostId: id,
       })
     );
+    setIsDialogOpen(false);
   };
 
   return (
@@ -158,15 +166,37 @@ const JobPostCard = ({
         </CardHeader>
         <div className="flex flex-col gap-1 py-1 pr-2 items-end w-1/4 mt-1">
           {showIcons ? (
-            <div
-              className="h-[24px] w-[24px] rounded-md border border-gray-200 p-[1px] hover:border-gray-400 hover:border"
-              id={id}
-            >
-              <RiDeleteBinLine
-                className="h-[24px] w-[24px] m-auto pb-[5px] pr-[3px]"
-                onClick={handleDeleteJobPost}
-              />
-            </div>
+            <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <AlertDialogTrigger asChild>
+                <div
+                  className="h-[24px] w-[24px] rounded-md border border-gray-200 p-[1px] hover:border-gray-400 hover:border flex items-center justify-center"
+                  id={id}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent triggering the card click event
+                    setIsDialogOpen(true);
+                  }}
+                  style={{ backgroundColor: color }} // Ensure the background color matches the card color
+                >
+                  <RiDeleteBinLine className="h-[20px] w-[20px]" />
+                </div>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Job Post</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete this job post?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel onClick={() => setIsDialogOpen(false)}>
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteJobPost}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           ) : (
             <div className="h-[24px] w-[24px] rounded-md p-[1px]"></div>
           )}
