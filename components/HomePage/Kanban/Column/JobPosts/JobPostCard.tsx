@@ -50,6 +50,14 @@ const JobPostCard = ({
     timeZone: 'UTC',
   });
 
+  const formattedStatusChangedTime = format(
+    toZonedTime(new Date(statusChangedTime), 'UTC'),
+    'dd/MM/yyyy HH:mm, a',
+    {
+      timeZone: 'UTC',
+    }
+  );
+
   const iconsOn = () => {
     setTimeout(() => {
       setShowIcons(true);
@@ -98,7 +106,7 @@ const JobPostCard = ({
 
   const shortTimeSinceChange = getShortTimeSinceStatusChange(timeStamp);
   const shortTimeSinceStatusChange = getShortTimeSinceStatusChange(
-    new Date(Date.parse(statusChangedTime) - 60 * 60 * 1000).toISOString() // Compensate for the added 1 hour in the server.getTime()
+    new Date(Date.parse(statusChangedTime) - 60 * 60 * 1000).toISOString()
   );
 
   const now = new Date();
@@ -211,7 +219,7 @@ const JobPostCard = ({
                               timeZone: 'UTC',
                             }
                           )
-                        : formattedDateHour}
+                        : formattedStatusChangedTime}
                     </span>
                   </p>
                 </TooltipContent>
