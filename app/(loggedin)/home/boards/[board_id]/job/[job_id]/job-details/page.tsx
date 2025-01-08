@@ -37,10 +37,9 @@ const JobDetails = () => {
             {item.title}
             {item.title === 'Notes' && (
               <div className="indicator">
-                <span className="indicator-item badge badge-primary absolute -top-1 -right-2 !p-1 size-5 text-[12px]">
+                <span className="indicator-item badge badge-primary absolute -top-2 -right-3 !p-1 size-5 text-[12px]">
                   {numberOfNotes}
                 </span>
-                {item.title}
               </div>
             )}
           </TabsTrigger>
