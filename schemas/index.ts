@@ -71,6 +71,7 @@ export const AddContactSchema = z.object({
   }),
   company: z.string().min(1),
   jobTitle: z.string().min(1),
+  photoUrl: z.string().min(1),
   companyLocation: z.string().min(2),
   comment: z.string().min(1),
   emails: z.array(

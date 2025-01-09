@@ -112,12 +112,14 @@ const CreateMenu = () => {
       {/* Add other menu items here */}
       {showContactModal && (
         <AlertDialogModal
-          open={showContactModal}
+          stylings="!min-w-[900px]"
           buttonVariant="none"
-          dialogTitle="Save New Contact"
           buttonCancel="Discard"
           buttonConfirm="Create"
+          open={showContactModal}
           isFormValid={isFormValid}
+          contentWidth="!max-w-[900px]"
+          dialogTitle="Save New Contact"
           actionFunction={createContact}
           onOpenChange={(open) => {
             setShowContactModal(open);

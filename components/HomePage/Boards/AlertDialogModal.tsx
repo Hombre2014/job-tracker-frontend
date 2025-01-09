@@ -22,6 +22,7 @@ const AlertDialogModal = ({
   buttonLabel,
   onOpenChange,
   buttonCancel,
+  contentWidth,
   buttonVariant,
   buttonConfirm,
   actionFunction,
@@ -41,7 +42,7 @@ const AlertDialogModal = ({
           {buttonLabel}
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className={cn(contentWidth)}>
         <AlertDialogHeader>
           <AlertDialogTitle className="text-center border-b pb-4 mb-2">
             {dialogTitle}
