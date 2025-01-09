@@ -120,7 +120,7 @@ const CreateContactForm = ({
   console.log('PhotoUrl: ', photoUrl);
 
   return (
-    <div className="">
+    <div className="min-h-[660px]">
       <div className="flex gap-2">
         <div className="w-3/4 h-full">
           <Form {...form}>
