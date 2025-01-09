@@ -1,5 +1,5 @@
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { SlPeople } from 'react-icons/sl';
+
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -12,26 +12,24 @@ import {
 
 const Contacts = () => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Contacts</CardTitle>
-        <CardDescription>
-          Change your Contacts here. After saving, you will be logged out.
+    <Card className="min-h-[560px] flex flex-col gap-4">
+      <CardHeader className="flex flex-col gap-2 items-center">
+        <CardTitle className="mt-28">
+          <SlPeople className="h-14 w-14" />
+        </CardTitle>
+        <CardDescription className="pt-10 text-xl pb-6">
+          You have not linked any contacts to this job yet.
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-2">
-        <div className="space-y-1">
-          <Label htmlFor="current">Current Contacts</Label>
-          <Input id="current" type="Contacts" />
-        </div>
-        <div className="space-y-1">
-          <Label htmlFor="new">New Contacts</Label>
-          <Input id="new" type="Contacts" />
-        </div>
+      <CardContent className="flex flex-col gap-4 items-center">
+        <Button className="w-fit" variant="normal">
+          + Create Contact
+        </Button>
+        <Button className="w-fit mt-4" variant="outline">
+          Link contact
+        </Button>
       </CardContent>
-      <CardFooter>
-        <Button>Save Contacts</Button>
-      </CardFooter>
+      <CardFooter></CardFooter>
     </Card>
   );
 };

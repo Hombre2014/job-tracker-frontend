@@ -1,8 +1,8 @@
 import { RxInfoCircled } from 'react-icons/rx';
-import { GoTrophy, GoInbox } from 'react-icons/go';
+import { RiFolder2Line } from 'react-icons/ri';
 import { IoDocumentsOutline } from 'react-icons/io5';
 import { PiBriefcaseLight, PiUsers } from 'react-icons/pi';
-import { RiContactsLine, RiFolder2Line } from 'react-icons/ri';
+import { GoTrophy, GoInbox, GoPersonAdd } from 'react-icons/go';
 import { SlEnvolopeLetter, SlMagicWand, SlBriefcase } from 'react-icons/sl';
 import {
   HiOutlineThumbDown,
@@ -37,8 +37,8 @@ export const returnBoardIcon = (id: number) => {
 
 export const returnMenuIcon = (icon: string) => {
   switch (icon) {
-    case MenuIcons.RiContactsLine:
-      return <RiContactsLine />;
+    case MenuIcons.GoPersonAdd:
+      return <GoPersonAdd />;
     case MenuIcons.RiFolder2Line:
       return <RiFolder2Line />;
     case MenuIcons.PiBriefcaseLight:

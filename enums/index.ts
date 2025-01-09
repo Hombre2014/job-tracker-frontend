@@ -1,14 +1,14 @@
 export enum BoardIcons {
-  SlMagicWand = 1,
-  SlEnvolopeLetter = 2,
-  SlBriefcase = 3,
   GoTrophy = 4,
+  SlMagicWand = 1,
+  SlBriefcase = 3,
+  SlEnvolopeLetter = 2,
   HiOutlineThumbDown = 5,
 }
 
 export enum MenuIcons {
+  GoPersonAdd = 'GoPersonAdd',
   RiFolder2Line = 'RiFolder2Line',
-  RiContactsLine = 'RiContactsLine',
   PiBriefcaseLight = 'PiBriefcaseLight',
 }
 
@@ -22,9 +22,9 @@ export enum JobPostIcons {
 }
 
 export enum JobPostMenuItems {
-  JobInfo = 'RxInfoCircled',
-  Notes = 'SlNotebook',
   Contacts = 'PiUsers',
-  Documents = 'IoDocumentsOutline',
+  Notes = 'SlNotebook',
   Company = 'SlBriefcase',
+  JobInfo = 'RxInfoCircled',
+  Documents = 'IoDocumentsOutline',
 }

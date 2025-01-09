@@ -5,7 +5,7 @@ const menuItems = [
   },
   {
     title: 'Contacts',
-    icon: 'RiContactsLine',
+    icon: 'GoPersonAdd',
   },
   {
     title: 'Documents',

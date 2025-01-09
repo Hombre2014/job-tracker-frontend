@@ -126,6 +126,7 @@ interface AlertDialogProps {
   dialogText?: string;
   buttonCancel: string;
   buttonConfirm: string;
+  contentWidth?: string;
   isFormValid?: boolean;
   children?: React.ReactNode;
   actionFunction?: () => void;
