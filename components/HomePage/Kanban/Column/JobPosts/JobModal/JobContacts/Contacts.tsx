@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/card';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import { useState } from 'react';
-import CreateContactForm from '@/components/Forms/CreateContactForm';
+import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
 
 const Contacts = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

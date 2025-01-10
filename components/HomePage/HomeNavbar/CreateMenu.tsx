@@ -13,7 +13,7 @@ import {
   NavigationMenuContent,
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
-import CreateContactForm from '@/components/Forms/CreateContactForm';
+import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
 
 const CreateMenu = () => {
   const dispatch = useAppDispatch();

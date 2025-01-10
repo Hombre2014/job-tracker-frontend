@@ -1,11 +1,15 @@
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { IoMdContact } from 'react-icons/io';
 import { zodResolver } from '@hookform/resolvers/zod';
 
+import ComboJobsBox from './ComboJobsBox';
 import { AddContactSchema } from '@/schemas';
 import { Input } from '@/components/ui/input';
+import { getUser } from '@/redux/user/userThunk';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
 import {
   Form,
   FormItem,
@@ -19,6 +23,7 @@ const CreateContactForm = ({
 }: {
   onValidationChange: (isValid: boolean) => void;
 }) => {
+  const dispatch = useAppDispatch();
   const [emails, setEmails] = useState([]);
   const [phones, setPhones] = useState([]);
   const [comment, setComment] = useState('');
@@ -27,11 +32,33 @@ const CreateContactForm = ({
   const [lastName, setLastName] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
   const [firstName, setFirstName] = useState('');
+  const user = useAppSelector((state) => state.user);
+  const jobs = useAppSelector((state) => state.jobs);
   const [twitterHandle, setTwitterHandle] = useState('');
   const [gitHubProfile, setGitHubProfile] = useState('');
+  const accessToken = localStorage.getItem('accessToken');
   const [companyLocation, setCompanyLocation] = useState('');
   const [linkedinProfile, setLinkedinProfile] = useState('');
   const [facebookProfile, setFacebookProfile] = useState('');
+
+  console.log('User:', user);
+
+  useEffect(() => {
+    if (accessToken) {
+      dispatch(getUser(accessToken));
+    }
+  }, [dispatch, accessToken]);
+
+  useEffect(() => {
+    const jobPostsData = {
+      accessToken: accessToken as string,
+      columnId: localStorage.getItem('columnId'),
+    };
+
+    dispatch(getAllJobPostsPerColumn(jobPostsData));
+  }, [dispatch, accessToken]);
+
+  console.log('Jobs in CreateContactForm:', jobs);
 
   const form = useForm({
     resolver: zodResolver(AddContactSchema),
@@ -117,15 +144,13 @@ const CreateContactForm = ({
     setPhones([...phones, e.target.value]);
   };
 
-  console.log('PhotoUrl: ', photoUrl);
-
   return (
     <div className="min-h-[660px]">
       <div className="flex gap-2">
         <div className="w-3/4 h-full">
           <Form {...form}>
             <form className="space-y-8">
-              <div className="flex flex-row items-center gap-4">
+              <div className="flex flex-row items-center justify-between gap-4 pr-8">
                 <FormField
                   name="photoUrl"
                   control={form.control}
@@ -207,7 +232,27 @@ const CreateContactForm = ({
             </form>
           </Form>
         </div>
-        <div className="w-1/4 h-full"></div>
+        <div className="w-1/4 h-full flex-col">
+          <p className="text-left mb-2 font-semibold text-muted-foreground">
+            Linked to
+          </p>
+          <hr></hr>
+          <p className="text-left font-semibold mt-6 mb-2">Jobs</p>
+          <div>
+            <ComboJobsBox jobPosts={jobs.jobPosts} />
+          </div>
+          <p className="text-left font-semibold mt-6 text-muted-foreground">
+            Created by
+          </p>
+          <hr></hr>
+          <div className="flex flex-col gap-2 border rounded-md p-2 mt-4">
+            <div className="flex justify-start gap-2">
+              <p className="text-left font-semibold">{user.firstName}</p>
+              <p className="text-left font-semibold">{user.lastName}</p>
+            </div>
+            <p className="text-left text-muted-foreground">{user.email}</p>
+          </div>
+        </div>
       </div>
     </div>
   );
