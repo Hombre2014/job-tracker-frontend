@@ -9,12 +9,11 @@ import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
 import {
   NavigationMenu,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuContent,
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
-import CreateContactForm from '@/components/Forms/CreateContactForm';
+import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
 
 const CreateMenu = () => {
   const dispatch = useAppDispatch();
@@ -43,7 +42,7 @@ const CreateMenu = () => {
   const createContact = () => {
     if (!isFormValid) return;
 
-    setShowJobModal(false);
+    setShowContactModal(false);
 
     // TODO: Implement contact creation
   };
@@ -109,10 +108,8 @@ const CreateMenu = () => {
         </AlertDialogModal>
       )}
 
-      {/* Add other menu items here */}
       {showContactModal && (
         <AlertDialogModal
-          stylings="!min-w-[900px]"
           buttonVariant="none"
           buttonCancel="Discard"
           buttonConfirm="Create"
