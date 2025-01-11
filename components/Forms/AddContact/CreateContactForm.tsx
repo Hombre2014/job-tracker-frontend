@@ -1,7 +1,8 @@
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { IoMdContact } from 'react-icons/io';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { IoMdClose, IoMdContact } from 'react-icons/io';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import ComboJobsBox from './ComboJobsBox';
@@ -23,6 +24,7 @@ const CreateContactForm = ({
 }: {
   onValidationChange: (isValid: boolean) => void;
 }) => {
+  const { job_id } = useParams();
   const dispatch = useAppDispatch();
   const [emails, setEmails] = useState([]);
   const [phones, setPhones] = useState([]);
@@ -144,6 +146,11 @@ const CreateContactForm = ({
     setPhones([...phones, e.target.value]);
   };
 
+  const handleRemoveJob = (jobId: string) => {
+    const updatedJobs = jobs.jobPosts.filter((job) => job.id !== jobId);
+    dispatch(getAllJobPostsPerColumn({ accessToken, columnId: boardId }));
+  };
+
   return (
     <div className="min-h-[660px]">
       <div className="flex gap-2">
@@ -238,6 +245,34 @@ const CreateContactForm = ({
           </p>
           <hr></hr>
           <p className="text-left font-semibold mt-6 mb-2">Jobs</p>
+          {jobs.jobPosts.length > 0 ? (
+            <div className="flex flex-col gap-2">
+              {jobs.jobPosts.map(
+                (jobPost) =>
+                  jobPost.id === job_id && (
+                    <div
+                      key={jobPost.id}
+                      className="flex flex-row justify-between items-center"
+                    >
+                      <p className="text-left text-muted-foreground">
+                        {jobPost.title} - {jobPost.company.name}
+                      </p>
+                      <div className="flex flex-row gap-2">
+                        <button
+                          title="Remove"
+                          className="text-left text-muted-foreground"
+                          onClick={() => handleRemoveJob(jobPost.id)}
+                        >
+                          <IoMdClose size={20} />
+                        </button>
+                      </div>
+                    </div>
+                  )
+              )}
+            </div>
+          ) : (
+            <p className="text-left text-muted-foreground">No jobs</p>
+          )}
           <div>
             <ComboJobsBox jobPosts={jobs.jobPosts} />
           </div>

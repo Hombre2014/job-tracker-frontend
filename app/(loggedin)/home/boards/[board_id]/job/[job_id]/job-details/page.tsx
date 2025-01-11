@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 
 import jobPostMenuItems from '@/data/job-post-menu-items';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
 import { getAllJobApplicationNotes } from '@/redux/notes/notesThunk';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -15,8 +16,18 @@ import {
 const JobDetails = () => {
   const { job_id } = useParams();
   const dispatch = useAppDispatch();
+  const jobs = useAppSelector((state) => state.jobs);
   const accessToken = localStorage.getItem('accessToken');
   const { notes } = useAppSelector((state) => state.notes);
+
+  useEffect(() => {
+    const jobPostsData = {
+      accessToken: accessToken as string,
+      columnId: localStorage.getItem('columnId'),
+    };
+
+    dispatch(getAllJobPostsPerColumn(jobPostsData));
+  }, [dispatch, accessToken]);
 
   useEffect(() => {
     const updatePayload = {
@@ -27,6 +38,9 @@ const JobDetails = () => {
   }, [accessToken, dispatch, job_id]);
 
   const numberOfNotes = notes.length;
+
+  const numberOfContactsPerJob = jobs.jobPosts.find((job) => job.id === job_id)
+    ?.contacts.length;
 
   return (
     <Tabs defaultValue="Job Info" className="w-full">
@@ -39,6 +53,15 @@ const JobDetails = () => {
               <div className="indicator">
                 <span className="indicator-item badge badge-neutral absolute -top-2 -right-[14px] size-6 text-[12px]">
                   <div className="mx-auto text-center">{numberOfNotes}</div>
+                </span>
+              </div>
+            )}
+            {item.title === 'Contacts' && (
+              <div className="indicator">
+                <span className="indicator-item badge badge-neutral absolute -top-2 -right-[14px] size-6 text-[12px]">
+                  <div className="mx-auto text-center">
+                    {numberOfContactsPerJob}
+                  </div>
                 </span>
               </div>
             )}

@@ -28,6 +28,38 @@ type Notes = {
   jobApplicationId: string;
 };
 
+type Email = {
+  id: string;
+  email: string;
+  type: 'work' | 'personal';
+};
+
+type Phone = {
+  id: string;
+  phone: string;
+  type: 'work' | 'personal';
+};
+
+type Contact = {
+  id: string;
+  userId: string;
+  boardId: string;
+  emails: Email[];
+  phones: Phone[];
+  comment: string;
+  lastName: string;
+  jobTitle: string;
+  firstName: string;
+  githubUrl: string;
+  createdAt: string;
+  updatedAt: string;
+  twitterUrl: string;
+  facebookUrl: string;
+  companyName: string;
+  linkedinUrl: string;
+  companyLocation: string;
+};
+
 type JobApplication = {
   id: string;
   title: string;
@@ -39,6 +71,7 @@ type JobApplication = {
   deadline: string;
   company: Company;
   column_id: string;
+  contacts: Contact[];
   createdAt: string;
   updatedAt: string;
   description: string;
