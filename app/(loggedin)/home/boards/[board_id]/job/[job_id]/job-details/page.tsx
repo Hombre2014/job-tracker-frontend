@@ -49,14 +49,14 @@ const JobDetails = () => {
           <TabsTrigger key={item.id} value={item.title}>
             {returnJobPostMenuIcon(item.icon)}
             {item.title}
-            {item.title === 'Notes' && (
+            {item.title === 'Notes' && numberOfNotes > 0 && (
               <div className="indicator">
                 <span className="indicator-item badge badge-neutral absolute -top-2 -right-[14px] size-6 text-[12px]">
                   <div className="mx-auto text-center">{numberOfNotes}</div>
                 </span>
               </div>
             )}
-            {item.title === 'Contacts' && (
+            {item.title === 'Contacts' && numberOfContactsPerJob! > 0 && (
               <div className="indicator">
                 <span className="indicator-item badge badge-neutral absolute -top-2 -right-[14px] size-6 text-[12px]">
                   <div className="mx-auto text-center">
