@@ -2,7 +2,8 @@ import Image from 'next/image';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { IoMdClose, IoMdContact } from 'react-icons/io';
+import { IoMdContact } from 'react-icons/io';
+import { BsThreeDots } from 'react-icons/bs';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import ComboJobsBox from './ComboJobsBox';
@@ -252,18 +253,22 @@ const CreateContactForm = ({
                   jobPost.id === job_id && (
                     <div
                       key={jobPost.id}
-                      className="flex flex-row justify-between items-center"
+                      className="flex flex-row justify-between items-center border border-gray-300 rounded-lg p-[5px]"
                     >
-                      <p className="text-left text-muted-foreground">
-                        {jobPost.title} - {jobPost.company.name}
+                      <p
+                        className="text-left text-muted-foreground text-sm"
+                        style={{ color: `${jobPost.color}` }}
+                      >
+                        {jobPost.title} @ {jobPost.company.name}
                       </p>
                       <div className="flex flex-row gap-2">
                         <button
+                          type="button"
                           title="Remove"
                           className="text-left text-muted-foreground"
                           onClick={() => handleRemoveJob(jobPost.id)}
                         >
-                          <IoMdClose size={20} />
+                          <BsThreeDots className="border border-gray-300 rounded-sm p-[2px] h-6 w-6" />
                         </button>
                       </div>
                     </div>
@@ -273,8 +278,8 @@ const CreateContactForm = ({
           ) : (
             <p className="text-left text-muted-foreground">No jobs</p>
           )}
-          <div>
-            <ComboJobsBox jobPosts={jobs.jobPosts} />
+          <div className="m-0 p-0 mt-2">
+            <ComboJobsBox jobPosts={jobs.jobPosts} buttonWidth="w-full" />
           </div>
           <p className="text-left font-semibold mt-6 text-muted-foreground">
             Created by
