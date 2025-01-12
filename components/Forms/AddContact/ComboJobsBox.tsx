@@ -1,7 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useParams } from 'next/navigation';
 
+import { cn } from '@/lib/utils';
+import { useAppSelector } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -17,21 +20,17 @@ import {
   CommandInput,
 } from '@/components/ui/command';
 
-type JobPost = {
-  id: string;
-  title: string;
-  color: string;
-};
-
 interface ComboJobsBoxProps {
-  jobPosts: JobPost[];
+  jobPosts: JobApplication[];
+  buttonWidth: string;
 }
 
-const ComboJobsBox = ({ jobPosts }: ComboJobsBoxProps) => {
+const ComboJobsBox = ({ jobPosts, buttonWidth }: ComboJobsBoxProps) => {
+  const { job_id } = useParams();
   const [value, setValue] = useState('');
   const [open, setOpen] = useState(false);
 
-  const handleJobPostSelect = (jobPost: JobPost) => {
+  const handleJobPostSelect = (jobPost: JobApplication) => {
     setValue(jobPost.title);
     setOpen(false);
   };
@@ -47,7 +46,10 @@ const ComboJobsBox = ({ jobPosts }: ComboJobsBoxProps) => {
           role="combobox"
           variant="outline"
           aria-expanded={open}
-          className="w-[200px] justify-between border border-dashed border-muted-foreground rounded-md py-1 pl-2 text-muted-foreground text-left"
+          className={cn(
+            'justify-between border border-dashed border-muted-foreground rounded-md py-1 pl-2 text-muted-foreground text-left',
+            buttonWidth ? buttonWidth : 'w-full'
+          )}
         >
           {value ? value : '+ Link Job'}
         </Button>
@@ -56,20 +58,24 @@ const ComboJobsBox = ({ jobPosts }: ComboJobsBoxProps) => {
         <Command>
           <CommandInput placeholder="Search jobs" className="h-9" />
           <CommandList>
-            <CommandEmpty>No framework found.</CommandEmpty>
+            <CommandEmpty>No Job found.</CommandEmpty>
             <CommandGroup>
-              {jobPosts.map((jobPost) => (
-                <CommandItem
-                  key={jobPost.id}
-                  value={jobPost.title}
-                  onSelect={(currentValue) => {
-                    setValue(currentValue === value ? '' : currentValue);
-                    setOpen(false);
-                  }}
-                >
-                  <p style={{ color: `${jobPost.color}` }}>{jobPost.title}</p>
-                </CommandItem>
-              ))}
+              {jobPosts
+                .filter((jobPost) => jobPost.id !== job_id)
+                .map((jobPost) => (
+                  <CommandItem
+                    key={jobPost.id}
+                    value={jobPost.title}
+                    onSelect={(currentValue) => {
+                      setValue(currentValue === value ? '' : currentValue);
+                      setOpen(false);
+                    }}
+                  >
+                    <p style={{ color: `${jobPost.color}` }}>
+                      {jobPost.title} @ {jobPost.company.name}
+                    </p>
+                  </CommandItem>
+                ))}
             </CommandGroup>
           </CommandList>
         </Command>

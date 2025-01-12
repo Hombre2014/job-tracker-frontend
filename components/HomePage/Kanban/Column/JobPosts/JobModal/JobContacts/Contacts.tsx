@@ -83,43 +83,66 @@ const Contacts = () => {
           <CreateContactForm onValidationChange={setIsFormValid} />
         </AlertDialogModal>
         <Button className="w-fit mt-4" variant="outline">
-          Link contact
+          + Link contact
         </Button>
       </CardContent>
       <CardFooter></CardFooter>
     </Card>
   ) : (
     <div className="flex flex-col gap-4 w-full">
-      <div className="flex flex-col gap-4 w-1/3 border border-gray-200 rounded-md p-2">
-        <div className="flex justify-between">
-          <div className="flex justify-start gap-4 items-center">
-            <Image
-              width={40}
-              height={40}
-              alt="Contact photo"
-              // TODO: Add contact photo
-              src="/images/Yuriy.jpg"
-            />
-            <div className="flex flex-col items-start justify-center text-sm">
-              <p className="font-bold">
-                {firstName} {lastName}
-              </p>
-              <p className="font-semibold text-muted-foreground">
-                {currentJobPost?.title}
-              </p>
-              <p className="text-muted-foreground">
-                {currentJobPost?.company.name}
-              </p>
+      <div className="flex justify-end items-center gap-2 mb-4">
+        <AlertDialogModal
+          buttonVariant="none"
+          buttonCancel="Discard"
+          buttonConfirm="Create"
+          open={showContactModal}
+          isFormValid={isFormValid}
+          contentWidth="!max-w-[908px]"
+          buttonLabel="+ Create Contact"
+          dialogTitle="Save New Contact"
+          actionFunction={createContact}
+          stylings="!w-fit !bg-blue-500 text-white !rounded-md hover:cursor-pointer hover:!bg-blue-600"
+          onOpenChange={(open) => {
+            setShowContactModal(open);
+            if (!open) setIsMenuOpen(false);
+          }}
+        >
+          <CreateContactForm onValidationChange={setIsFormValid} />
+        </AlertDialogModal>
+        <Button variant="outline">+ Link contact</Button>
+      </div>
+      <div className="flex flex-col gap-4 w-full">
+        <div className="flex flex-col gap-4 w-1/3 border border-gray-200 rounded-md p-2">
+          <div className="flex justify-between">
+            <div className="flex justify-start gap-4 items-center">
+              <Image
+                width={40}
+                height={40}
+                alt="Contact photo"
+                // TODO: Add contact photo
+                src="/images/Yuriy.jpg"
+              />
+              <div className="flex flex-col items-start justify-center text-sm">
+                <p className="font-bold">
+                  {firstName} {lastName}
+                </p>
+                <p className="font-semibold text-muted-foreground">
+                  {currentJobPost?.title}
+                </p>
+                <p className="text-muted-foreground">
+                  {currentJobPost?.company.name}
+                </p>
+              </div>
             </div>
+            <BsThreeDots className="h-6 w-6 border rounded-md hover:cursor-pointer hover:border-gray-300" />
           </div>
-          <BsThreeDots className="h-6 w-6 border rounded-md" />
-        </div>
-        <hr />
-        <div className="flex justify-start gap-2 items-center">
-          <IoLocationOutline className="h-6 w-6" />
-          <p className="text-sm text-muted-foreground">
-            {currentJobPost?.contacts[0].companyLocation}
-          </p>
+          <hr />
+          <div className="flex justify-start gap-2 items-center">
+            <IoLocationOutline className="h-6 w-6" />
+            <p className="text-sm text-muted-foreground">
+              {currentJobPost?.contacts[0].companyLocation}
+            </p>
+          </div>
         </div>
       </div>
     </div>
