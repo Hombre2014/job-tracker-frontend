@@ -20,15 +20,6 @@ import {
   CommandInput,
 } from '@/components/ui/command';
 
-// type JobPost = {
-//   id: string;
-//   title: string;
-//   color: string;
-//   company: {
-//     name: string;
-//   };
-// };
-
 interface ComboJobsBoxProps {
   jobPosts: JobApplication[];
   buttonWidth: string;
@@ -38,7 +29,6 @@ const ComboJobsBox = ({ jobPosts, buttonWidth }: ComboJobsBoxProps) => {
   const { job_id } = useParams();
   const [value, setValue] = useState('');
   const [open, setOpen] = useState(false);
-  const jobs = useAppSelector((state) => state.jobs);
 
   const handleJobPostSelect = (jobPost: JobApplication) => {
     setValue(jobPost.title);
