@@ -27,14 +27,16 @@ const CreateContactForm = ({
 }) => {
   const { job_id } = useParams();
   const dispatch = useAppDispatch();
-  const [emails, setEmails] = useState([]);
-  const [phones, setPhones] = useState([]);
   const [comment, setComment] = useState('');
   const [boardId, setBoardId] = useState('');
   const [company, setCompany] = useState('');
   const [lastName, setLastName] = useState('');
+  const [location, setLocation] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
   const [firstName, setFirstName] = useState('');
+  const [emails, setEmails] = useState<string[]>([]);
+  const [phones, setPhones] = useState<string[]>([]);
   const user = useAppSelector((state) => state.user);
   const jobs = useAppSelector((state) => state.jobs);
   const [twitterHandle, setTwitterHandle] = useState('');
@@ -63,6 +65,9 @@ const CreateContactForm = ({
 
   console.log('Jobs in CreateContactForm:', jobs);
 
+  const selectedJob = jobs.jobPosts.find((job) => job.id === job_id);
+  const selectedCompanyName = selectedJob?.company.name;
+
   const form = useForm({
     resolver: zodResolver(AddContactSchema),
     defaultValues: {
@@ -70,29 +75,18 @@ const CreateContactForm = ({
       phones: [],
       comment: '',
       boardId: '',
-      company: '',
       lastName: '',
       photoUrl: '',
+      jobTitle: '',
+      location: '',
+      companies: [],
       firstName: '',
       twitterHandle: '',
       gitHubProfile: '',
-      companyLocation: '',
       linkedinProfile: '',
       facebookProfile: '',
     },
   });
-
-  const handleCompanyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCompany(e.target.value);
-  };
-
-  const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLastName(e.target.value);
-  };
-
-  const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFirstName(e.target.value);
-  };
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -103,6 +97,19 @@ const CreateContactForm = ({
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleRemoveJob = (jobId: string) => {
+    const updatedJobs = jobs.jobPosts.filter((job) => job.id !== jobId);
+    dispatch(getAllJobPostsPerColumn({ accessToken, columnId: boardId }));
+  };
+
+  const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLastName(e.target.value);
+  };
+
+  const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFirstName(e.target.value);
   };
 
   const handleTwitterHandleChange = (
@@ -117,12 +124,6 @@ const CreateContactForm = ({
     setGitHubProfile(e.target.value);
   };
 
-  const handleCompanyLocationChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setCompanyLocation(e.target.value);
-  };
-
   const handleLinkedInProfileChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -135,21 +136,28 @@ const CreateContactForm = ({
     setFacebookProfile(e.target.value);
   };
 
+  const handleCompaniesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCompany(e.target.value);
+  };
+
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCompanyLocation(e.target.value);
+  };
+
+  const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setJobTitle(e.target.value);
+  };
+
   const handleCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setComment(e.target.value);
   };
 
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmails([...emails, e.target.value]);
+  const handleEmailsChange = () => {
+    setEmails([...emails, '']);
   };
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPhones([...phones, e.target.value]);
-  };
-
-  const handleRemoveJob = (jobId: string) => {
-    const updatedJobs = jobs.jobPosts.filter((job) => job.id !== jobId);
-    dispatch(getAllJobPostsPerColumn({ accessToken, columnId: boardId }));
+  const handlePhonesChange = () => {
+    setPhones([...phones, '']);
   };
 
   return (
@@ -158,80 +166,188 @@ const CreateContactForm = ({
         <div className="w-3/4 h-full">
           <Form {...form}>
             <form className="space-y-8">
-              <div className="flex flex-row items-center justify-between gap-4 pr-8">
-                <FormField
-                  name="photoUrl"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel htmlFor="file-input">
-                        {photoUrl === '' ? (
-                          <IoMdContact size={50} className="cursor-pointer" />
-                        ) : (
-                          <Image
-                            width={50}
-                            height={50}
-                            src={photoUrl}
-                            alt="User profile picture"
-                            className="cursor-pointer rounded-lg"
+              <div className="pr-4">
+                <div className="flex flex-row items-center justify-between gap-8 mb-8">
+                  <FormField
+                    name="photoUrl"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel htmlFor="file-input">
+                          {photoUrl === '' ? (
+                            <IoMdContact size={50} className="cursor-pointer" />
+                          ) : (
+                            <Image
+                              width={50}
+                              height={50}
+                              src={photoUrl}
+                              alt="User profile picture"
+                              className="cursor-pointer rounded-lg"
+                            />
+                          )}
+                          <input
+                            {...field}
+                            type="file"
+                            id="file-input"
+                            accept="image/*"
+                            name="file-input"
+                            title="file-input"
+                            onChange={handleFileInput}
+                            className="file-input file-input-ghost max-w-xs opacity-0 absolute top-[100px] h-[62px] w-[50px]"
                           />
-                        )}
-                        <input
+                        </FormLabel>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    name="firstName"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem className="!text-left w-full">
+                        <span className="flex justify-between">
+                          <FormLabel className="text-gray-800 font-semibold">
+                            First Name
+                          </FormLabel>
+                          <FormLabel className="text-gray-400">
+                            Required
+                          </FormLabel>
+                        </span>
+                        <Input
                           {...field}
-                          type="file"
-                          id="file-input"
-                          accept="image/*"
-                          name="file-input"
-                          title="file-input"
-                          onChange={handleFileInput}
-                          className="file-input file-input-ghost max-w-xs opacity-0 absolute top-[100px] h-[62px] w-[50px]"
+                          value={firstName}
+                          placeholder="First Name"
+                          onChange={(e) => handleFirstNameChange(e)}
                         />
-                      </FormLabel>
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    name="lastName"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem className="!text-left w-full">
+                        <span className="flex justify-between">
+                          <FormLabel className="text-gray-800 font-semibold">
+                            Last Name
+                          </FormLabel>
+                          <FormLabel className="text-gray-400">
+                            Required
+                          </FormLabel>
+                        </span>
+                        <Input
+                          {...field}
+                          value={lastName}
+                          placeholder="Last Name"
+                          onChange={(e) => handleLastNameChange(e)}
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
                 <FormField
-                  name="firstName"
+                  name="jobTitle"
                   control={form.control}
                   render={({ field }) => (
                     <FormItem className="!text-left">
-                      <span className="flex justify-between">
-                        <FormLabel className="text-gray-800 font-semibold">
-                          First Name
-                        </FormLabel>
-                        <FormLabel className="text-gray-400">
-                          Required
-                        </FormLabel>
-                      </span>
+                      <FormLabel className="text-gray-800 font-semibold">
+                        Job Title
+                      </FormLabel>
                       <Input
                         {...field}
-                        value={firstName}
-                        placeholder="First Name"
-                        onChange={(e) => handleFirstNameChange(e)}
+                        value={jobTitle}
+                        placeholder="i.e: CEO"
+                        onChange={(e) => handleJobTitleChange(e)}
                       />
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+                <div className="flex items-center justify-between my-8 gap-8">
+                  <FormField
+                    name="companies"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem className="!text-left w-full">
+                        <FormLabel className="text-gray-800 font-semibold">
+                          Companies
+                        </FormLabel>
+                        <Input
+                          {...field}
+                          placeholder='i.e: "Google"'
+                          value={selectedCompanyName ? selectedCompanyName : ''}
+                          onChange={(e) => handleCompaniesChange(e)}
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    name="location"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem className="!text-left w-full">
+                        <FormLabel className="text-gray-800 font-semibold">
+                          Location
+                        </FormLabel>
+                        <Input
+                          {...field}
+                          value={location}
+                          placeholder="New York, NY, USA"
+                          onChange={(e) => handleLocationChange(e)}
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col items-center justify-between gap-8 my-8 mr-4">
                 <FormField
-                  name="lastName"
+                  name="emails"
                   control={form.control}
                   render={({ field }) => (
-                    <FormItem className="!text-left">
-                      <span className="flex justify-between">
-                        <FormLabel className="text-gray-800 font-semibold">
-                          Last Name
-                        </FormLabel>
-                        <FormLabel className="text-gray-400">
-                          Required
-                        </FormLabel>
-                      </span>
-                      <Input
+                    <FormItem className="!text-left w-full">
+                      <FormLabel className="text-gray-800 font-semibold">
+                        Emails
+                      </FormLabel>
+                      <div className="flex border p-2 rounded-md">
+                        <span
+                          className="text-sm text-blue-500 hover:cursor-pointer"
+                          onClick={handleEmailsChange}
+                        >
+                          + add email
+                        </span>
+                      </div>
+                      {/* <Input
                         {...field}
-                        value={lastName}
-                        placeholder="Last Name"
-                        onChange={(e) => handleLastNameChange(e)}
-                      />
+                        onChange={(e) => handleEmailsChange(e)}
+                      /> */}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  name="phones"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem className="!text-left w-full">
+                      <FormLabel className="text-gray-800 font-semibold">
+                        Phones
+                      </FormLabel>
+                      <div className="flex border p-2 rounded-md">
+                        <span
+                          className="text-sm text-blue-500 hover:cursor-pointer"
+                          onClick={handlePhonesChange}
+                        >
+                          + add phone
+                        </span>
+                      </div>
+                      {/* <Input
+                        {...field}
+                        onChange={(e) => handlePhonesChange(e)}
+                      /> */}
                       <FormMessage />
                     </FormItem>
                   )}
