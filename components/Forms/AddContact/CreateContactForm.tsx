@@ -5,6 +5,11 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { IoMdContact } from 'react-icons/io';
 import { BsThreeDots } from 'react-icons/bs';
+import { LiaLinkSolid } from 'react-icons/lia';
+import { SlSocialGithub } from 'react-icons/sl';
+import { SlSocialTwitter } from 'react-icons/sl';
+import { SlSocialFacebook } from 'react-icons/sl';
+import { SlSocialLinkedin } from 'react-icons/sl';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { cn } from '@/lib/utils';
@@ -24,6 +29,7 @@ import {
   FormControl,
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
+import Link from 'next/link';
 
 const CreateContactForm = ({
   onValidationChange,
@@ -86,6 +92,7 @@ const CreateContactForm = ({
       location: '',
       companies: [],
       firstName: '',
+      socialMedia: [],
       twitterHandle: '',
       gitHubProfile: '',
       linkedinProfile: '',
@@ -129,6 +136,7 @@ const CreateContactForm = ({
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     setTwitterHandle(e.target.value);
+    console.log('Twitter handle:', twitterHandle);
   };
 
   const handleGitHubProfileChange = (
@@ -154,7 +162,7 @@ const CreateContactForm = ({
   };
 
   const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCompanyLocation(e.target.value);
+    setLocation(e.target.value);
   };
 
   const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -229,6 +237,7 @@ const CreateContactForm = ({
                           {...field}
                           value={firstName}
                           placeholder="First Name"
+                          className="focus:border-blue-500"
                           onChange={(e) => handleFirstNameChange(e)}
                         />
                         <FormMessage />
@@ -252,6 +261,7 @@ const CreateContactForm = ({
                           {...field}
                           value={lastName}
                           placeholder="Last Name"
+                          className="focus:border-blue-500"
                           onChange={(e) => handleLastNameChange(e)}
                         />
                         <FormMessage />
@@ -259,82 +269,88 @@ const CreateContactForm = ({
                     )}
                   />
                 </div>
-                <FormField
-                  name="jobTitle"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem className="!text-left">
-                      <FormLabel className="text-gray-800 font-semibold">
-                        Job Title
-                      </FormLabel>
-                      <Input
-                        {...field}
-                        value={jobTitle}
-                        placeholder="i.e: CEO"
-                        onChange={(e) => handleJobTitleChange(e)}
-                        className="focus:border-blue-500"
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="flex items-center justify-between my-8 gap-8">
+                <div className="ml-[2px]">
                   <FormField
-                    name="companies"
+                    name="jobTitle"
                     control={form.control}
                     render={({ field }) => (
-                      <FormItem className="!text-left w-full">
+                      <FormItem className="!text-left">
                         <FormLabel className="text-gray-800 font-semibold">
-                          Companies
+                          Job Title
                         </FormLabel>
                         <Input
                           {...field}
-                          placeholder='i.e: "Google"'
-                          value={selectedCompanyName ? selectedCompanyName : ''}
-                          onChange={(e) => handleCompaniesChange(e)}
+                          value={jobTitle}
+                          placeholder="i.e: CEO"
+                          onChange={(e) => handleJobTitleChange(e)}
+                          className="focus:border-blue-500"
                         />
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+                  <div className="flex items-center justify-between my-8 gap-8">
+                    <FormField
+                      name="companies"
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem className="!text-left w-full">
+                          <FormLabel className="text-gray-800 font-semibold">
+                            Companies
+                          </FormLabel>
+                          <Input
+                            {...field}
+                            placeholder='i.e: "Google"'
+                            className="focus:border-blue-500 border-gray-300 rounded-md"
+                            onChange={(e) => handleCompaniesChange(e)}
+                            value={
+                              selectedCompanyName ? selectedCompanyName : ''
+                            }
+                          />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      name="location"
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem className="!text-left w-full">
+                          <FormLabel className="text-gray-800 font-semibold">
+                            Location
+                          </FormLabel>
+                          <Input
+                            {...field}
+                            value={location}
+                            placeholder="New York, NY, USA"
+                            className="focus:border-blue-500"
+                            onChange={(e) => handleLocationChange(e)}
+                          />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   <FormField
-                    name="location"
+                    name="comment"
                     control={form.control}
                     render={({ field }) => (
-                      <FormItem className="!text-left w-full">
+                      <FormItem className="!text-left">
                         <FormLabel className="text-gray-800 font-semibold">
-                          Location
+                          Comment
                         </FormLabel>
-                        <Input
-                          {...field}
-                          value={location}
-                          placeholder="New York, NY, USA"
-                          onChange={(e) => handleLocationChange(e)}
-                        />
+                        <FormControl>
+                          <Textarea
+                            {...field}
+                            placeholder="Any comment about the contact"
+                            className="resize-none focus:border-blue-500"
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-                <FormField
-                  name="comment"
-                  control={form.control}
-                  render={({ field }) => (
-                    <FormItem className="!text-left">
-                      <FormLabel className="text-gray-800 font-semibold">
-                        Comment
-                      </FormLabel>
-                      <FormControl>
-                        <Textarea
-                          {...field}
-                          className="resize-none"
-                          placeholder="Any comment about the contact"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
               </div>
               <div className="flex flex-col items-center justify-between gap-8 my-8 mr-4">
                 <FormField
@@ -413,6 +429,134 @@ const CreateContactForm = ({
                     </FormItem>
                   )}
                 />
+                <div className="flex flex-co w-full mb-4">
+                  <FormField
+                    name="socialMedia"
+                    control={form.control}
+                    render={({ field }) => (
+                      <FormItem className="!text-left w-full">
+                        <FormLabel className="text-gray-800 font-semibold">
+                          Social Media
+                        </FormLabel>
+                        <div className="border rounded-md px-4">
+                          <div className="flex flex-col">
+                            <div className="flex justify-between items-center w-full">
+                              <div className="flex justify-start gap-2 items-center mb-2 mt-4 w-full">
+                                <SlSocialTwitter
+                                  className={cn(
+                                    'block',
+                                    twitterHandle !== '' && 'text-blue-500'
+                                  )}
+                                />
+                                <Input
+                                  {...field}
+                                  value={twitterHandle}
+                                  placeholder="Twitter handle"
+                                  onChange={(e) => handleTwitterHandleChange(e)}
+                                  className="!outline-none !border-none shadow-none focus-visible:ring-0"
+                                />
+                              </div>
+                              <Link
+                                target="_blank"
+                                href={`https://twitter.com/${twitterHandle}`}
+                                className="text-blue-500 hover:cursor-pointer"
+                              >
+                                <LiaLinkSolid
+                                  className={cn(
+                                    'hidden',
+                                    twitterHandle !== '' && 'block'
+                                  )}
+                                />
+                              </Link>
+                            </div>
+                          </div>
+                          <div className="flex justify-start gap-2 items-center mb-2">
+                            <SlSocialFacebook
+                              className={cn(
+                                'block',
+                                facebookProfile !== '' && 'text-blue-500'
+                              )}
+                            />
+                            <Input
+                              {...field}
+                              value={facebookProfile}
+                              placeholder="Facebook profile"
+                              onChange={(e) => handleFacebookProfileChange(e)}
+                              className="!outline-none !border-none shadow-none focus-visible:ring-0"
+                            />
+                            <Link
+                              target="_blank"
+                              href={`https://facebook.com/${facebookProfile}`}
+                              className="text-blue-500 hover:cursor-pointer"
+                            >
+                              <LiaLinkSolid
+                                className={cn(
+                                  'hidden',
+                                  facebookProfile !== '' && 'block'
+                                )}
+                              />
+                            </Link>
+                          </div>
+                          <div className="flex justify-start gap-2 items-center mb-2">
+                            <SlSocialLinkedin
+                              className={cn(
+                                'block',
+                                linkedinProfile !== '' && 'text-blue-500'
+                              )}
+                            />
+                            <Input
+                              {...field}
+                              value={linkedinProfile}
+                              placeholder="LinkedIn profile"
+                              onChange={(e) => handleLinkedInProfileChange(e)}
+                              className="!outline-none !border-none shadow-none focus-visible:ring-0"
+                            />
+                            <Link
+                              target="_blank"
+                              href={`https://linkedin.com/in/${linkedinProfile}`}
+                              className="text-blue-500 hover:cursor-pointer"
+                            >
+                              <LiaLinkSolid
+                                className={cn(
+                                  'hidden',
+                                  linkedinProfile !== '' && 'block'
+                                )}
+                              />
+                            </Link>
+                          </div>
+                          <div className="flex justify-start gap-2 items-center mb-2">
+                            <SlSocialGithub
+                              className={cn(
+                                'block',
+                                gitHubProfile !== '' && 'text-blue-500'
+                              )}
+                            />
+                            <Input
+                              {...field}
+                              value={gitHubProfile}
+                              placeholder="GitHub profile"
+                              onChange={(e) => handleGitHubProfileChange(e)}
+                              className="!outline-none !border-none shadow-none focus-visible:ring-0"
+                            />
+                            <Link
+                              target="_blank"
+                              href={`https://github.com/${gitHubProfile}`}
+                              className="text-blue-500 hover:cursor-pointer"
+                            >
+                              <LiaLinkSolid
+                                className={cn(
+                                  'hidden',
+                                  gitHubProfile !== '' && 'block'
+                                )}
+                              />
+                            </Link>
+                          </div>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
             </form>
           </Form>
