@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { v4 as uuidv4 } from 'uuid';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -6,7 +7,9 @@ import { IoMdContact } from 'react-icons/io';
 import { BsThreeDots } from 'react-icons/bs';
 import { zodResolver } from '@hookform/resolvers/zod';
 
+import { cn } from '@/lib/utils';
 import ComboJobsBox from './ComboJobsBox';
+import EmailAndPhone from './EmailAndPhone';
 import { AddContactSchema } from '@/schemas';
 import { Input } from '@/components/ui/input';
 import { getUser } from '@/redux/user/userThunk';
@@ -18,7 +21,9 @@ import {
   FormField,
   FormLabel,
   FormMessage,
+  FormControl,
 } from '@/components/ui/form';
+import { Textarea } from '@/components/ui/textarea';
 
 const CreateContactForm = ({
   onValidationChange,
@@ -35,8 +40,8 @@ const CreateContactForm = ({
   const [photoUrl, setPhotoUrl] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [firstName, setFirstName] = useState('');
-  const [emails, setEmails] = useState<string[]>([]);
-  const [phones, setPhones] = useState<string[]>([]);
+  const [emails, setEmails] = useState<{ id: string; value: string }[]>([]);
+  const [phones, setPhones] = useState<{ id: string; value: string }[]>([]);
   const user = useAppSelector((state) => state.user);
   const jobs = useAppSelector((state) => state.jobs);
   const [twitterHandle, setTwitterHandle] = useState('');
@@ -104,6 +109,14 @@ const CreateContactForm = ({
     dispatch(getAllJobPostsPerColumn({ accessToken, columnId: boardId }));
   };
 
+  const handleRemoveContactType = (type: 'email' | 'phone', id: string) => {
+    if (type === 'email') {
+      setEmails(emails.filter((email) => email.id !== id));
+    } else if (type === 'phone') {
+      setPhones(phones.filter((phone) => phone.id !== id));
+    }
+  };
+
   const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLastName(e.target.value);
   };
@@ -152,20 +165,20 @@ const CreateContactForm = ({
     setComment(e.target.value);
   };
 
-  const handleEmailsChange = () => {
-    setEmails([...emails, '']);
+  const handleAddEmail = () => {
+    setEmails([...emails, { id: uuidv4(), value: '' }]);
   };
 
-  const handlePhonesChange = () => {
-    setPhones([...phones, '']);
+  const handleAddPhone = () => {
+    setPhones([...phones, { id: uuidv4(), value: '' }]);
   };
 
   return (
     <div className="min-h-[660px]">
       <div className="flex gap-2">
-        <div className="w-3/4 h-full">
+        <div className="w-3/4">
           <Form {...form}>
-            <form className="space-y-8">
+            <form className="space-y-8 max-h-[660px] overflow-y-auto">
               <div className="pr-4">
                 <div className="flex flex-row items-center justify-between gap-8 mb-8">
                   <FormField
@@ -259,6 +272,7 @@ const CreateContactForm = ({
                         value={jobTitle}
                         placeholder="i.e: CEO"
                         onChange={(e) => handleJobTitleChange(e)}
+                        className="focus:border-blue-500"
                       />
                       <FormMessage />
                     </FormItem>
@@ -302,6 +316,25 @@ const CreateContactForm = ({
                     )}
                   />
                 </div>
+                <FormField
+                  name="comment"
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem className="!text-left">
+                      <FormLabel className="text-gray-800 font-semibold">
+                        Comment
+                      </FormLabel>
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          className="resize-none"
+                          placeholder="Any comment about the contact"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
               <div className="flex flex-col items-center justify-between gap-8 my-8 mr-4">
                 <FormField
@@ -312,18 +345,32 @@ const CreateContactForm = ({
                       <FormLabel className="text-gray-800 font-semibold">
                         Emails
                       </FormLabel>
-                      <div className="flex border p-2 rounded-md">
-                        <span
-                          className="text-sm text-blue-500 hover:cursor-pointer"
-                          onClick={handleEmailsChange}
+                      <div className="border rounded-md">
+                        <div
+                          className={cn(
+                            'w-full first-of-type:mt-2',
+                            emails.length === 0 && 'hidden'
+                          )}
                         >
-                          + add email
-                        </span>
+                          {emails.map((email) => (
+                            <div key={email.id} className="mb-2">
+                              <EmailAndPhone
+                                id={email.id}
+                                contact="email"
+                                returnData={handleRemoveContactType}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex p-2">
+                          <span
+                            className="text-sm text-blue-500 hover:cursor-pointer"
+                            onClick={handleAddEmail}
+                          >
+                            + add email
+                          </span>
+                        </div>
                       </div>
-                      {/* <Input
-                        {...field}
-                        onChange={(e) => handleEmailsChange(e)}
-                      /> */}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -336,18 +383,32 @@ const CreateContactForm = ({
                       <FormLabel className="text-gray-800 font-semibold">
                         Phones
                       </FormLabel>
-                      <div className="flex border p-2 rounded-md">
-                        <span
-                          className="text-sm text-blue-500 hover:cursor-pointer"
-                          onClick={handlePhonesChange}
+                      <div className="border rounded-md">
+                        <div
+                          className={cn(
+                            'w-full first-of-type:mt-2',
+                            phones.length === 0 && 'hidden'
+                          )}
                         >
-                          + add phone
-                        </span>
+                          {phones.map((phone) => (
+                            <div key={phone.id} className="mb-2">
+                              <EmailAndPhone
+                                id={phone.id}
+                                contact="phone"
+                                returnData={handleRemoveContactType}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex p-2">
+                          <span
+                            className="text-sm text-blue-500 hover:cursor-pointer"
+                            onClick={handleAddPhone}
+                          >
+                            + add phone
+                          </span>
+                        </div>
                       </div>
-                      {/* <Input
-                        {...field}
-                        onChange={(e) => handlePhonesChange(e)}
-                      /> */}
                       <FormMessage />
                     </FormItem>
                   )}
