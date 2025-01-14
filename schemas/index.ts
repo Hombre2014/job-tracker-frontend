@@ -66,22 +66,23 @@ export const AddContactSchema = z.object({
   firstName: z.string().min(2, {
     message: 'First name is required',
   }),
-  lastName: z.string().min(1, {
+  lastName: z.string().min(2, {
     message: 'Last name is required',
   }),
   company: z.string().min(1),
+  comment: z.string().min(1),
   jobTitle: z.string().min(1),
   photoUrl: z.string().min(1),
-  companyLocation: z.string().min(2),
-  comment: z.string().min(1),
+  location: z.string().min(2),
   emails: z.array(
     z.string().email({
       message: 'Invalid email address',
     })
   ),
-  phones: z.array(z.string().min(10)),
+  gitHubProfile: z.string().min(1),
   twitterHandle: z.string().min(1),
   linkedinProfile: z.string().min(1),
   facebookProfile: z.string().min(1),
-  gitHubProfile: z.string().min(1),
+  phones: z.array(z.string().min(10)),
+  socialMedia: z.array(z.string().min(1)),
 });

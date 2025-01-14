@@ -95,8 +95,8 @@ const AddJobShortForm = ({
     <Form {...form}>
       <form className="space-y-8">
         <FormField
-          control={form.control}
           name="company"
+          control={form.control}
           render={({ field }) => (
             <FormItem className="!text-left">
               <span className="flex justify-between">
@@ -116,8 +116,8 @@ const AddJobShortForm = ({
           )}
         />
         <FormField
-          control={form.control}
           name="jobTitle"
+          control={form.control}
           render={({ field }) => (
             <FormItem className="!text-left">
               <span className="flex justify-between">

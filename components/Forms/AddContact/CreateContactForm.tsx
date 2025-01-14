@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Image from 'next/image';
 import { v4 as uuidv4 } from 'uuid';
 import { useForm } from 'react-hook-form';
@@ -18,6 +19,7 @@ import EmailAndPhone from './EmailAndPhone';
 import { AddContactSchema } from '@/schemas';
 import { Input } from '@/components/ui/input';
 import { getUser } from '@/redux/user/userThunk';
+import { Textarea } from '@/components/ui/textarea';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
 import {
@@ -28,8 +30,6 @@ import {
   FormMessage,
   FormControl,
 } from '@/components/ui/form';
-import { Textarea } from '@/components/ui/textarea';
-import Link from 'next/link';
 
 const CreateContactForm = ({
   onValidationChange,
@@ -46,37 +46,16 @@ const CreateContactForm = ({
   const [photoUrl, setPhotoUrl] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [firstName, setFirstName] = useState('');
-  const [emails, setEmails] = useState<{ id: string; value: string }[]>([]);
-  const [phones, setPhones] = useState<{ id: string; value: string }[]>([]);
   const user = useAppSelector((state) => state.user);
   const jobs = useAppSelector((state) => state.jobs);
   const [twitterHandle, setTwitterHandle] = useState('');
   const [gitHubProfile, setGitHubProfile] = useState('');
   const accessToken = localStorage.getItem('accessToken');
-  const [companyLocation, setCompanyLocation] = useState('');
   const [linkedinProfile, setLinkedinProfile] = useState('');
   const [facebookProfile, setFacebookProfile] = useState('');
-
-  console.log('User:', user);
-
-  useEffect(() => {
-    if (accessToken) {
-      dispatch(getUser(accessToken));
-    }
-  }, [dispatch, accessToken]);
-
-  useEffect(() => {
-    const jobPostsData = {
-      accessToken: accessToken as string,
-      columnId: localStorage.getItem('columnId'),
-    };
-
-    dispatch(getAllJobPostsPerColumn(jobPostsData));
-  }, [dispatch, accessToken]);
-
-  console.log('Jobs in CreateContactForm:', jobs);
-
   const selectedJob = jobs.jobPosts.find((job) => job.id === job_id);
+  const [emails, setEmails] = useState<{ id: string; value: string }[]>([]);
+  const [phones, setPhones] = useState<{ id: string; value: string }[]>([]);
   const selectedCompanyName = selectedJob?.company.name;
 
   const form = useForm({
@@ -99,6 +78,29 @@ const CreateContactForm = ({
       facebookProfile: '',
     },
   });
+
+  useEffect(() => {
+    if (accessToken) {
+      dispatch(getUser(accessToken));
+    }
+  }, [dispatch, accessToken]);
+
+  useEffect(() => {
+    const jobPostsData = {
+      accessToken: accessToken as string,
+      columnId: localStorage.getItem('columnId'),
+    };
+
+    dispatch(getAllJobPostsPerColumn(jobPostsData));
+  }, [dispatch, accessToken]);
+
+  const watchLastName = form.watch('lastName');
+  const watchFirstName = form.watch('firstName');
+
+  useEffect(() => {
+    const isValid = watchFirstName.length > 1 && watchLastName.length > 1;
+    onValidationChange(isValid);
+  }, [watchFirstName, watchLastName, onValidationChange]);
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -124,19 +126,10 @@ const CreateContactForm = ({
     }
   };
 
-  const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLastName(e.target.value);
-  };
-
-  const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFirstName(e.target.value);
-  };
-
   const handleTwitterHandleChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     setTwitterHandle(e.target.value);
-    console.log('Twitter handle:', twitterHandle);
   };
 
   const handleGitHubProfileChange = (
@@ -157,6 +150,24 @@ const CreateContactForm = ({
     setFacebookProfile(e.target.value);
   };
 
+  const handleAddEmail = () => {
+    setEmails([...emails, { id: uuidv4(), value: '' }]);
+  };
+
+  const handleAddPhone = () => {
+    setPhones([...phones, { id: uuidv4(), value: '' }]);
+  };
+
+  const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLastName(e.target.value);
+    form.setValue('lastName', e.target.value);
+  };
+
+  const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFirstName(e.target.value);
+    form.setValue('firstName', e.target.value);
+  };
+
   const handleCompaniesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCompany(e.target.value);
   };
@@ -167,18 +178,6 @@ const CreateContactForm = ({
 
   const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setJobTitle(e.target.value);
-  };
-
-  const handleCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setComment(e.target.value);
-  };
-
-  const handleAddEmail = () => {
-    setEmails([...emails, { id: uuidv4(), value: '' }]);
-  };
-
-  const handleAddPhone = () => {
-    setPhones([...phones, { id: uuidv4(), value: '' }]);
   };
 
   return (
@@ -282,8 +281,8 @@ const CreateContactForm = ({
                           {...field}
                           value={jobTitle}
                           placeholder="i.e: CEO"
-                          onChange={(e) => handleJobTitleChange(e)}
                           className="focus:border-blue-500"
+                          onChange={(e) => handleJobTitleChange(e)}
                         />
                         <FormMessage />
                       </FormItem>
@@ -301,8 +300,8 @@ const CreateContactForm = ({
                           <Input
                             {...field}
                             placeholder='i.e: "Google"'
-                            className="focus:border-blue-500 border-gray-300 rounded-md"
                             onChange={(e) => handleCompaniesChange(e)}
+                            className="focus:border-blue-500 border-gray-300 rounded-md"
                             value={
                               selectedCompanyName ? selectedCompanyName : ''
                             }
@@ -344,6 +343,10 @@ const CreateContactForm = ({
                             {...field}
                             placeholder="Any comment about the contact"
                             className="resize-none focus:border-blue-500"
+                            onChange={(e) => {
+                              field.onChange(e);
+                              setComment(e.target.value);
+                            }}
                           />
                         </FormControl>
                         <FormMessage />
@@ -356,6 +359,7 @@ const CreateContactForm = ({
                 <FormField
                   name="emails"
                   control={form.control}
+                  // TODO: Find a way to capture the emails and phones values
                   render={({ field }) => (
                     <FormItem className="!text-left w-full">
                       <FormLabel className="text-gray-800 font-semibold">
@@ -380,8 +384,8 @@ const CreateContactForm = ({
                         </div>
                         <div className="flex p-2">
                           <span
-                            className="text-sm text-blue-500 hover:cursor-pointer"
                             onClick={handleAddEmail}
+                            className="text-sm text-blue-500 hover:cursor-pointer"
                           >
                             + add email
                           </span>
@@ -418,8 +422,8 @@ const CreateContactForm = ({
                         </div>
                         <div className="flex p-2">
                           <span
-                            className="text-sm text-blue-500 hover:cursor-pointer"
                             onClick={handleAddPhone}
+                            className="text-sm text-blue-500 hover:cursor-pointer"
                           >
                             + add phone
                           </span>
@@ -513,8 +517,8 @@ const CreateContactForm = ({
                             />
                             <Link
                               target="_blank"
-                              href={`https://linkedin.com/in/${linkedinProfile}`}
                               className="text-blue-500 hover:cursor-pointer"
+                              href={`https://linkedin.com/in/${linkedinProfile}`}
                             >
                               <LiaLinkSolid
                                 className={cn(
@@ -577,8 +581,8 @@ const CreateContactForm = ({
                       className="flex flex-row justify-between items-center border border-gray-300 rounded-lg p-[5px]"
                     >
                       <p
-                        className="text-left text-muted-foreground text-sm"
                         style={{ color: `${jobPost.color}` }}
+                        className="text-left text-muted-foreground text-sm"
                       >
                         {jobPost.title} @ {jobPost.company.name}
                       </p>

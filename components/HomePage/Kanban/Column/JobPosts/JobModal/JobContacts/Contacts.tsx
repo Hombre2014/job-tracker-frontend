@@ -31,8 +31,6 @@ const Contacts = () => {
 
   const currentJobPost = jobs.jobPosts.find((job) => job.id === job_id);
 
-  console.log('currentJobPost: ', currentJobPost);
-
   useEffect(() => {
     const jobPostsData = {
       accessToken: accessToken as string,
@@ -43,6 +41,7 @@ const Contacts = () => {
   }, [dispatch, accessToken]);
 
   const createContact = () => {
+    console.log('isValid: ', isFormValid);
     if (!isFormValid) return;
 
     setShowContactModal(false);
