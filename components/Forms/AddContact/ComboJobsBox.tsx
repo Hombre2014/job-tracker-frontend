@@ -35,10 +35,6 @@ const ComboJobsBox = ({ jobPosts, buttonWidth }: ComboJobsBoxProps) => {
     setOpen(false);
   };
 
-  console.log('value: ', value);
-
-  console.log('jobPosts: ', jobPosts);
-
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
