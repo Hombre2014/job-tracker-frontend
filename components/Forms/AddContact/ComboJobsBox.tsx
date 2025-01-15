@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useParams } from 'next/navigation';
 
 import { cn } from '@/lib/utils';
-import { useAppSelector } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -21,8 +20,8 @@ import {
 } from '@/components/ui/command';
 
 interface ComboJobsBoxProps {
-  jobPosts: JobApplication[];
   buttonWidth: string;
+  jobPosts: JobApplication[];
 }
 
 const ComboJobsBox = ({ jobPosts, buttonWidth }: ComboJobsBoxProps) => {

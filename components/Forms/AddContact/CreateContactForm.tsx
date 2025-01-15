@@ -1,24 +1,19 @@
-import Link from 'next/link';
 import Image from 'next/image';
 import { v4 as uuidv4 } from 'uuid';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { IoMdContact } from 'react-icons/io';
-import { BsThreeDots } from 'react-icons/bs';
-import { LiaLinkSolid } from 'react-icons/lia';
-import { SlSocialGithub } from 'react-icons/sl';
-import { SlSocialTwitter } from 'react-icons/sl';
-import { SlSocialFacebook } from 'react-icons/sl';
-import { SlSocialLinkedin } from 'react-icons/sl';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { cn } from '@/lib/utils';
-import ComboJobsBox from './ComboJobsBox';
 import EmailAndPhone from './EmailAndPhone';
 import { AddContactSchema } from '@/schemas';
 import { Input } from '@/components/ui/input';
+import ContactSideBar from './ContactSideBar';
+import CompaniesInput from './CompaniesInput';
 import { getUser } from '@/redux/user/userThunk';
+import SocialMediaLinks from './SocialMediaLinks';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
@@ -36,21 +31,21 @@ const CreateContactForm = ({
 }: {
   onValidationChange: (isValid: boolean) => void;
 }) => {
-  const { job_id } = useParams();
   const dispatch = useAppDispatch();
   const [comment, setComment] = useState('');
   const [boardId, setBoardId] = useState('');
-  const [company, setCompany] = useState('');
   const [lastName, setLastName] = useState('');
   const [location, setLocation] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [firstName, setFirstName] = useState('');
+  const { job_id } = useParams<{ job_id: string }>();
   const user = useAppSelector((state) => state.user);
   const jobs = useAppSelector((state) => state.jobs);
   const [twitterHandle, setTwitterHandle] = useState('');
   const [gitHubProfile, setGitHubProfile] = useState('');
   const accessToken = localStorage.getItem('accessToken');
+  const [companies, setCompanies] = useState<string[]>([]);
   const [linkedinProfile, setLinkedinProfile] = useState('');
   const [facebookProfile, setFacebookProfile] = useState('');
   const selectedJob = jobs.jobPosts.find((job) => job.id === job_id);
@@ -94,6 +89,12 @@ const CreateContactForm = ({
     dispatch(getAllJobPostsPerColumn(jobPostsData));
   }, [dispatch, accessToken]);
 
+  useEffect(() => {
+    if (selectedCompanyName) {
+      setCompanies([selectedCompanyName]);
+    }
+  }, [selectedCompanyName]);
+
   const watchLastName = form.watch('lastName');
   const watchFirstName = form.watch('firstName');
 
@@ -126,28 +127,41 @@ const CreateContactForm = ({
     }
   };
 
-  const handleTwitterHandleChange = (
+  const handleFieldChange = (
+    fieldName: string,
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setTwitterHandle(e.target.value);
-  };
-
-  const handleGitHubProfileChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setGitHubProfile(e.target.value);
-  };
-
-  const handleLinkedInProfileChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setLinkedinProfile(e.target.value);
-  };
-
-  const handleFacebookProfileChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setFacebookProfile(e.target.value);
+    const value = e.target.value;
+    switch (fieldName) {
+      case 'twitterHandle':
+        setTwitterHandle(value);
+        break;
+      case 'gitHubProfile':
+        setGitHubProfile(value);
+        break;
+      case 'linkedinProfile':
+        setLinkedinProfile(value);
+        break;
+      case 'facebookProfile':
+        setFacebookProfile(value);
+        break;
+      case 'lastName':
+        setLastName(value);
+        form.setValue('lastName', value);
+        break;
+      case 'firstName':
+        setFirstName(value);
+        form.setValue('firstName', value);
+        break;
+      case 'location':
+        setLocation(value);
+        break;
+      case 'jobTitle':
+        setJobTitle(value);
+        break;
+      default:
+        break;
+    }
   };
 
   const handleAddEmail = () => {
@@ -158,26 +172,16 @@ const CreateContactForm = ({
     setPhones([...phones, { id: uuidv4(), value: '' }]);
   };
 
-  const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLastName(e.target.value);
-    form.setValue('lastName', e.target.value);
+  const handleEmailChange = (id: string, value: string) => {
+    setEmails((prevEmails) =>
+      prevEmails.map((email) => (email.id === id ? { ...email, value } : email))
+    );
   };
 
-  const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFirstName(e.target.value);
-    form.setValue('firstName', e.target.value);
-  };
-
-  const handleCompaniesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCompany(e.target.value);
-  };
-
-  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLocation(e.target.value);
-  };
-
-  const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setJobTitle(e.target.value);
+  const handlePhoneChange = (id: string, value: string) => {
+    setPhones((prevPhones) =>
+      prevPhones.map((phone) => (phone.id === id ? { ...phone, value } : phone))
+    );
   };
 
   return (
@@ -237,7 +241,7 @@ const CreateContactForm = ({
                           value={firstName}
                           placeholder="First Name"
                           className="focus:border-blue-500"
-                          onChange={(e) => handleFirstNameChange(e)}
+                          onChange={(e) => handleFieldChange('firstName', e)}
                         />
                         <FormMessage />
                       </FormItem>
@@ -261,14 +265,14 @@ const CreateContactForm = ({
                           value={lastName}
                           placeholder="Last Name"
                           className="focus:border-blue-500"
-                          onChange={(e) => handleLastNameChange(e)}
+                          onChange={(e) => handleFieldChange('lastName', e)}
                         />
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
-                <div className="ml-[2px]">
+                <div className="ml-2">
                   <FormField
                     name="jobTitle"
                     control={form.control}
@@ -282,7 +286,7 @@ const CreateContactForm = ({
                           value={jobTitle}
                           placeholder="i.e: CEO"
                           className="focus:border-blue-500"
-                          onChange={(e) => handleJobTitleChange(e)}
+                          onChange={(e) => handleFieldChange('jobTitle', e)}
                         />
                         <FormMessage />
                       </FormItem>
@@ -297,14 +301,9 @@ const CreateContactForm = ({
                           <FormLabel className="text-gray-800 font-semibold">
                             Companies
                           </FormLabel>
-                          <Input
-                            {...field}
-                            placeholder='i.e: "Google"'
-                            onChange={(e) => handleCompaniesChange(e)}
-                            className="focus:border-blue-500 border-gray-300 rounded-md"
-                            value={
-                              selectedCompanyName ? selectedCompanyName : ''
-                            }
+                          <CompaniesInput
+                            companies={companies}
+                            setCompanies={setCompanies}
                           />
                           <FormMessage />
                         </FormItem>
@@ -323,7 +322,7 @@ const CreateContactForm = ({
                             value={location}
                             placeholder="New York, NY, USA"
                             className="focus:border-blue-500"
-                            onChange={(e) => handleLocationChange(e)}
+                            onChange={(e) => handleFieldChange('location', e)}
                           />
                           <FormMessage />
                         </FormItem>
@@ -355,11 +354,10 @@ const CreateContactForm = ({
                   />
                 </div>
               </div>
-              <div className="flex flex-col items-center justify-between gap-8 my-8 mr-4">
+              <div className="flex flex-col items-center justify-between gap-8 my-8 mr-4 ml-2">
                 <FormField
                   name="emails"
                   control={form.control}
-                  // TODO: Find a way to capture the emails and phones values
                   render={({ field }) => (
                     <FormItem className="!text-left w-full">
                       <FormLabel className="text-gray-800 font-semibold">
@@ -377,6 +375,7 @@ const CreateContactForm = ({
                               <EmailAndPhone
                                 id={email.id}
                                 contact="email"
+                                handleChange={handleEmailChange}
                                 returnData={handleRemoveContactType}
                               />
                             </div>
@@ -415,6 +414,7 @@ const CreateContactForm = ({
                               <EmailAndPhone
                                 id={phone.id}
                                 contact="phone"
+                                handleChange={handlePhoneChange}
                                 returnData={handleRemoveContactType}
                               />
                             </div>
@@ -433,191 +433,23 @@ const CreateContactForm = ({
                     </FormItem>
                   )}
                 />
-                <div className="flex flex-co w-full mb-4">
-                  <FormField
-                    name="socialMedia"
-                    control={form.control}
-                    render={({ field }) => (
-                      <FormItem className="!text-left w-full">
-                        <FormLabel className="text-gray-800 font-semibold">
-                          Social Media
-                        </FormLabel>
-                        <div className="border rounded-md px-4">
-                          <div className="flex flex-col">
-                            <div className="flex justify-between items-center w-full">
-                              <div className="flex justify-start gap-2 items-center mb-2 mt-4 w-full">
-                                <SlSocialTwitter
-                                  className={cn(
-                                    'block',
-                                    twitterHandle !== '' && 'text-blue-500'
-                                  )}
-                                />
-                                <Input
-                                  {...field}
-                                  value={twitterHandle}
-                                  placeholder="Twitter handle"
-                                  onChange={(e) => handleTwitterHandleChange(e)}
-                                  className="!outline-none !border-none shadow-none focus-visible:ring-0"
-                                />
-                              </div>
-                              <Link
-                                target="_blank"
-                                href={`https://twitter.com/${twitterHandle}`}
-                                className="text-blue-500 hover:cursor-pointer"
-                              >
-                                <LiaLinkSolid
-                                  className={cn(
-                                    'hidden',
-                                    twitterHandle !== '' && 'block'
-                                  )}
-                                />
-                              </Link>
-                            </div>
-                          </div>
-                          <div className="flex justify-start gap-2 items-center mb-2">
-                            <SlSocialFacebook
-                              className={cn(
-                                'block',
-                                facebookProfile !== '' && 'text-blue-500'
-                              )}
-                            />
-                            <Input
-                              {...field}
-                              value={facebookProfile}
-                              placeholder="Facebook profile"
-                              onChange={(e) => handleFacebookProfileChange(e)}
-                              className="!outline-none !border-none shadow-none focus-visible:ring-0"
-                            />
-                            <Link
-                              target="_blank"
-                              href={`https://facebook.com/${facebookProfile}`}
-                              className="text-blue-500 hover:cursor-pointer"
-                            >
-                              <LiaLinkSolid
-                                className={cn(
-                                  'hidden',
-                                  facebookProfile !== '' && 'block'
-                                )}
-                              />
-                            </Link>
-                          </div>
-                          <div className="flex justify-start gap-2 items-center mb-2">
-                            <SlSocialLinkedin
-                              className={cn(
-                                'block',
-                                linkedinProfile !== '' && 'text-blue-500'
-                              )}
-                            />
-                            <Input
-                              {...field}
-                              value={linkedinProfile}
-                              placeholder="LinkedIn profile"
-                              onChange={(e) => handleLinkedInProfileChange(e)}
-                              className="!outline-none !border-none shadow-none focus-visible:ring-0"
-                            />
-                            <Link
-                              target="_blank"
-                              className="text-blue-500 hover:cursor-pointer"
-                              href={`https://linkedin.com/in/${linkedinProfile}`}
-                            >
-                              <LiaLinkSolid
-                                className={cn(
-                                  'hidden',
-                                  linkedinProfile !== '' && 'block'
-                                )}
-                              />
-                            </Link>
-                          </div>
-                          <div className="flex justify-start gap-2 items-center mb-2">
-                            <SlSocialGithub
-                              className={cn(
-                                'block',
-                                gitHubProfile !== '' && 'text-blue-500'
-                              )}
-                            />
-                            <Input
-                              {...field}
-                              value={gitHubProfile}
-                              placeholder="GitHub profile"
-                              onChange={(e) => handleGitHubProfileChange(e)}
-                              className="!outline-none !border-none shadow-none focus-visible:ring-0"
-                            />
-                            <Link
-                              target="_blank"
-                              href={`https://github.com/${gitHubProfile}`}
-                              className="text-blue-500 hover:cursor-pointer"
-                            >
-                              <LiaLinkSolid
-                                className={cn(
-                                  'hidden',
-                                  gitHubProfile !== '' && 'block'
-                                )}
-                              />
-                            </Link>
-                          </div>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <SocialMediaLinks
+                  twitterHandle={twitterHandle}
+                  gitHubProfile={gitHubProfile}
+                  linkedinProfile={linkedinProfile}
+                  facebookProfile={facebookProfile}
+                  handleFieldChange={handleFieldChange}
+                />
               </div>
             </form>
           </Form>
         </div>
-        <div className="w-1/4 h-full flex-col">
-          <p className="text-left mb-2 font-semibold text-muted-foreground">
-            Linked to
-          </p>
-          <hr></hr>
-          <p className="text-left font-semibold mt-6 mb-2">Jobs</p>
-          {jobs.jobPosts.length > 0 ? (
-            <div className="flex flex-col gap-2">
-              {jobs.jobPosts.map(
-                (jobPost) =>
-                  jobPost.id === job_id && (
-                    <div
-                      key={jobPost.id}
-                      className="flex flex-row justify-between items-center border border-gray-300 rounded-lg p-[5px]"
-                    >
-                      <p
-                        style={{ color: `${jobPost.color}` }}
-                        className="text-left text-muted-foreground text-sm"
-                      >
-                        {jobPost.title} @ {jobPost.company.name}
-                      </p>
-                      <div className="flex flex-row gap-2">
-                        <button
-                          type="button"
-                          title="Remove"
-                          className="text-left text-muted-foreground"
-                          onClick={() => handleRemoveJob(jobPost.id)}
-                        >
-                          <BsThreeDots className="border border-gray-300 rounded-sm p-[2px] h-6 w-6" />
-                        </button>
-                      </div>
-                    </div>
-                  )
-              )}
-            </div>
-          ) : (
-            <p className="text-left text-muted-foreground">No jobs</p>
-          )}
-          <div className="m-0 p-0 mt-2">
-            <ComboJobsBox jobPosts={jobs.jobPosts} buttonWidth="w-full" />
-          </div>
-          <p className="text-left font-semibold mt-6 text-muted-foreground">
-            Created by
-          </p>
-          <hr></hr>
-          <div className="flex flex-col gap-2 border rounded-md p-2 mt-4">
-            <div className="flex justify-start gap-2">
-              <p className="text-left font-semibold">{user.firstName}</p>
-              <p className="text-left font-semibold">{user.lastName}</p>
-            </div>
-            <p className="text-left text-muted-foreground">{user.email}</p>
-          </div>
-        </div>
+        <ContactSideBar
+          user={user}
+          jobs={jobs}
+          job_id={job_id}
+          handleRemoveJob={handleRemoveJob}
+        />
       </div>
     </div>
   );
