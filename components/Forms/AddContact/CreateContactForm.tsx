@@ -115,10 +115,8 @@ const CreateContactForm = ({
   const handleRemoveContactType = (type: 'email' | 'phone', id: string) => {
     if (type === 'email') {
       setEmails(emails.filter((email) => email.id !== id));
-      console.log('emails: ', emails);
     } else if (type === 'phone') {
       setPhones(phones.filter((phone) => phone.id !== id));
-      console.log('phones: ', phones);
     }
   };
 
@@ -128,15 +126,6 @@ const CreateContactForm = ({
   ) => {
     const value = e.target.value;
     switch (fieldName) {
-      case 'company':
-        setCompany(value);
-        break;
-      case 'location':
-        setLocation(value);
-        break;
-      case 'jobTitle':
-        setJobTitle(value);
-        break;
       case 'twitterHandle':
         setTwitterHandle(value);
         break;
@@ -157,6 +146,15 @@ const CreateContactForm = ({
         setFirstName(value);
         form.setValue('firstName', value);
         break;
+      case 'company':
+        setCompany(value);
+        break;
+      case 'location':
+        setLocation(value);
+        break;
+      case 'jobTitle':
+        setJobTitle(value);
+        break;
       default:
         break;
     }
@@ -169,6 +167,25 @@ const CreateContactForm = ({
   const handleAddPhone = () => {
     setPhones([...phones, { id: uuidv4(), value: '' }]);
   };
+
+  const handleEmailChange = (id: string, value: string, type: string) => {
+    setEmails((prevEmails) =>
+      prevEmails.map((email) =>
+        email.id === id ? { ...email, value, type } : email
+      )
+    );
+  };
+
+  const handlePhoneChange = (id: string, value: string, type: string) => {
+    setPhones((prevPhones) =>
+      prevPhones.map((phone) =>
+        phone.id === id ? { ...phone, value, type } : phone
+      )
+    );
+  };
+
+  console.log('Emails: ', emails);
+  console.log('Phones: ', phones);
 
   return (
     <div className="min-h-[660px]">
@@ -366,6 +383,7 @@ const CreateContactForm = ({
                               <EmailAndPhone
                                 id={email.id}
                                 contact="email"
+                                handleChange={handleEmailChange}
                                 returnData={handleRemoveContactType}
                               />
                             </div>
@@ -404,6 +422,7 @@ const CreateContactForm = ({
                               <EmailAndPhone
                                 id={phone.id}
                                 contact="phone"
+                                handleChange={handlePhoneChange}
                                 returnData={handleRemoveContactType}
                               />
                             </div>

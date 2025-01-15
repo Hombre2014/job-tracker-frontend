@@ -1,10 +1,9 @@
-import { useState } from 'react';
+import { debounce } from 'lodash';
 import { RiCloseLine } from 'react-icons/ri';
 import { HiOutlinePhone } from 'react-icons/hi';
-import { RxEnvelopeClosed } from 'react-icons/rx';
-
-import { RxChevronDown } from 'react-icons/rx';
 import { Button } from '@/components/ui/button';
+import { useState, useEffect, useCallback } from 'react';
+import { RxEnvelopeClosed, RxChevronDown } from 'react-icons/rx';
 import {
   Popover,
   PopoverContent,
@@ -32,15 +31,36 @@ interface EmailAndPhoneProps {
   id: string;
   contact: 'email' | 'phone';
   returnData: (type: 'email' | 'phone', id: string) => void;
+  handleChange: (id: string, value: string, type: string) => void;
 }
 
-const EmailAndPhone = ({ id, contact, returnData }: EmailAndPhoneProps) => {
-  const [value, setValue] = useState('');
+const EmailAndPhone = ({
+  id,
+  contact,
+  returnData,
+  handleChange,
+}: EmailAndPhoneProps) => {
   const [open, setOpen] = useState(false);
+  const [type, setType] = useState('work');
+  const [inputValue, setInputValue] = useState('');
 
   const removeContact = () => {
     returnData(contact, id);
   };
+
+  const debouncedHandleChange = useCallback(
+    debounce((id: string, value: string, type: string) => {
+      handleChange(id, value, type);
+    }, 300),
+    []
+  );
+
+  useEffect(() => {
+    debouncedHandleChange(id, inputValue, type);
+    return () => {
+      debouncedHandleChange.cancel();
+    };
+  }, [inputValue, id, debouncedHandleChange, type]);
 
   return (
     <div className="w-full px-2">
@@ -54,21 +74,23 @@ const EmailAndPhone = ({ id, contact, returnData }: EmailAndPhoneProps) => {
           <input
             name="contact"
             title="contact"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
             className="outline-none bg-transparent border-none pl-2 text-sm"
             placeholder={contact.charAt(0).toUpperCase() + contact.slice(1)}
-          ></input>
+          />
         </div>
         <div className="flex items-center gap-4">
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <Button
-                value={value}
+                value={type}
                 role="combobox"
                 variant="outline"
                 aria-expanded={open}
                 className="w-fit justify-between !h-7 !px-2"
               >
-                {value ? value : 'work'}
+                {type}
                 <RxChevronDown className="opacity-50 ml-2" />
               </Button>
             </PopoverTrigger>
@@ -81,7 +103,7 @@ const EmailAndPhone = ({ id, contact, returnData }: EmailAndPhoneProps) => {
                         key={type.value}
                         value={type.value}
                         onSelect={(currentValue) => {
-                          setValue(currentValue);
+                          setType(currentValue);
                           setOpen(false);
                         }}
                       >
