@@ -11,6 +11,7 @@ import EmailAndPhone from './EmailAndPhone';
 import { AddContactSchema } from '@/schemas';
 import { Input } from '@/components/ui/input';
 import ContactSideBar from './ContactSideBar';
+import CompaniesInput from './CompaniesInput';
 import { getUser } from '@/redux/user/userThunk';
 import SocialMediaLinks from './SocialMediaLinks';
 import { Textarea } from '@/components/ui/textarea';
@@ -30,16 +31,16 @@ const CreateContactForm = ({
 }: {
   onValidationChange: (isValid: boolean) => void;
 }) => {
-  const { job_id } = useParams<{ job_id: string }>();
   const dispatch = useAppDispatch();
   const [comment, setComment] = useState('');
   const [boardId, setBoardId] = useState('');
-  const [company, setCompany] = useState('');
   const [lastName, setLastName] = useState('');
   const [location, setLocation] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
   const [jobTitle, setJobTitle] = useState('');
+  const [companies, setCompanies] = useState<string[]>([]);
   const [firstName, setFirstName] = useState('');
+  const { job_id } = useParams<{ job_id: string }>();
   const user = useAppSelector((state) => state.user);
   const jobs = useAppSelector((state) => state.jobs);
   const [twitterHandle, setTwitterHandle] = useState('');
@@ -87,6 +88,12 @@ const CreateContactForm = ({
 
     dispatch(getAllJobPostsPerColumn(jobPostsData));
   }, [dispatch, accessToken]);
+
+  useEffect(() => {
+    if (selectedCompanyName) {
+      setCompanies([selectedCompanyName]);
+    }
+  }, [selectedCompanyName]);
 
   const watchLastName = form.watch('lastName');
   const watchFirstName = form.watch('firstName');
@@ -146,9 +153,6 @@ const CreateContactForm = ({
         setFirstName(value);
         form.setValue('firstName', value);
         break;
-      case 'company':
-        setCompany(value);
-        break;
       case 'location':
         setLocation(value);
         break;
@@ -168,19 +172,15 @@ const CreateContactForm = ({
     setPhones([...phones, { id: uuidv4(), value: '' }]);
   };
 
-  const handleEmailChange = (id: string, value: string, type: string) => {
+  const handleEmailChange = (id: string, value: string) => {
     setEmails((prevEmails) =>
-      prevEmails.map((email) =>
-        email.id === id ? { ...email, value, type } : email
-      )
+      prevEmails.map((email) => (email.id === id ? { ...email, value } : email))
     );
   };
 
-  const handlePhoneChange = (id: string, value: string, type: string) => {
+  const handlePhoneChange = (id: string, value: string) => {
     setPhones((prevPhones) =>
-      prevPhones.map((phone) =>
-        phone.id === id ? { ...phone, value, type } : phone
-      )
+      prevPhones.map((phone) => (phone.id === id ? { ...phone, value } : phone))
     );
   };
 
@@ -304,14 +304,9 @@ const CreateContactForm = ({
                           <FormLabel className="text-gray-800 font-semibold">
                             Companies
                           </FormLabel>
-                          <Input
-                            {...field}
-                            placeholder='i.e: "Google"'
-                            className="focus:border-blue-500"
-                            onChange={(e) => handleFieldChange('company', e)}
-                            value={
-                              selectedCompanyName ? selectedCompanyName : ''
-                            }
+                          <CompaniesInput
+                            companies={companies}
+                            setCompanies={setCompanies}
                           />
                           <FormMessage />
                         </FormItem>
