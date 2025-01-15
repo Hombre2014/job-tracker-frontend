@@ -11,9 +11,9 @@ interface ContactSideBarProps {
 
 const ContactSideBar = ({
   jobs,
+  user,
   job_id,
   handleRemoveJob,
-  user,
 }: ContactSideBarProps) => {
   return (
     <div className="w-1/4 h-full flex-col">
@@ -32,8 +32,8 @@ const ContactSideBar = ({
                   className="flex flex-row justify-between items-center border border-gray-300 rounded-lg p-[5px]"
                 >
                   <p
-                    className="text-left text-muted-foreground text-sm"
                     style={{ color: `${jobPost.color}` }}
+                    className="text-left text-muted-foreground text-sm"
                   >
                     {jobPost.title} @ {jobPost.company.name}
                   </p>

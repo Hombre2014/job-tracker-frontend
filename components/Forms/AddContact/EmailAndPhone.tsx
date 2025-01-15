@@ -116,8 +116,8 @@ const EmailAndPhone = ({
             </PopoverContent>
           </Popover>
           <RiCloseLine
-            className="text-gray-500 hover:cursor-pointer"
             onClick={removeContact}
+            className="text-gray-500 hover:cursor-pointer"
           />
         </div>
       </div>

@@ -30,7 +30,7 @@ const CompaniesInput = ({ companies, setCompanies }: CompaniesInputProps) => {
         {companies.map((company) => (
           <div
             key={company}
-            className="flex items-center bg-gray-200 rounded-full px-3 py-1"
+            className="flex items-center bg-gray-200 rounded-full px-2 py-[2px]"
           >
             <span className="mr-2">{company}</span>
             <RiCloseLine

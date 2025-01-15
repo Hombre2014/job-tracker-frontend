@@ -38,7 +38,6 @@ const CreateContactForm = ({
   const [location, setLocation] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
   const [jobTitle, setJobTitle] = useState('');
-  const [companies, setCompanies] = useState<string[]>([]);
   const [firstName, setFirstName] = useState('');
   const { job_id } = useParams<{ job_id: string }>();
   const user = useAppSelector((state) => state.user);
@@ -46,6 +45,7 @@ const CreateContactForm = ({
   const [twitterHandle, setTwitterHandle] = useState('');
   const [gitHubProfile, setGitHubProfile] = useState('');
   const accessToken = localStorage.getItem('accessToken');
+  const [companies, setCompanies] = useState<string[]>([]);
   const [linkedinProfile, setLinkedinProfile] = useState('');
   const [facebookProfile, setFacebookProfile] = useState('');
   const selectedJob = jobs.jobPosts.find((job) => job.id === job_id);
@@ -183,9 +183,6 @@ const CreateContactForm = ({
       prevPhones.map((phone) => (phone.id === id ? { ...phone, value } : phone))
     );
   };
-
-  console.log('Emails: ', emails);
-  console.log('Phones: ', phones);
 
   return (
     <div className="min-h-[660px]">
