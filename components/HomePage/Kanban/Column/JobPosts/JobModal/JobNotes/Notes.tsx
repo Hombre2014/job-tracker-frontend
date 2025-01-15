@@ -4,7 +4,7 @@ import { BsThreeDots } from 'react-icons/bs';
 
 import TextEditor from '../JobEdit/TextEditor';
 import { Button } from '@/components/ui/button';
-import { Card, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import {
@@ -247,7 +247,7 @@ const Notes = () => {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-                <CardDescription
+                <CardContent
                   className="pl-2 pt-0 pr-8 cursor-text text-gray-900"
                   dangerouslySetInnerHTML={{ __html: note.content }}
                 />
