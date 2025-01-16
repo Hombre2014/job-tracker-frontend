@@ -114,10 +114,10 @@ const CreateContactForm = ({
     }
   };
 
-  const handleRemoveJob = (jobId: string) => {
-    const updatedJobs = jobs.jobPosts.filter((job) => job.id !== jobId);
-    dispatch(getAllJobPostsPerColumn({ accessToken, columnId: boardId }));
-  };
+  // const handleRemoveJob = (jobId: string) => {
+  //   const updatedJobs = jobs.jobPosts.filter((job) => job.id !== jobId);
+  //   dispatch(getAllJobPostsPerColumn({ accessToken, columnId: boardId }));
+  // };
 
   const handleRemoveContactType = (type: 'email' | 'phone', id: string) => {
     if (type === 'email') {
@@ -448,7 +448,7 @@ const CreateContactForm = ({
           user={user}
           jobs={jobs}
           job_id={job_id}
-          handleRemoveJob={handleRemoveJob}
+          // handleRemoveJob={handleRemoveJob}
         />
       </div>
     </div>

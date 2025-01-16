@@ -1,18 +1,18 @@
-import { BsThreeDots } from 'react-icons/bs';
 import { useState, useEffect } from 'react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { BsThreeDots } from 'react-icons/bs';
 
 import ComboJobsBox from './ComboJobsBox';
+import {
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface ContactSideBarProps {
   job_id: string;
   jobs: { jobPosts: JobApplication[] };
-  handleRemoveJob: (jobId: string) => void;
+  // handleRemoveJob: (jobId: string) => void;
   user: { firstName: string; lastName: string; email: string };
 }
 
@@ -20,8 +20,8 @@ const ContactSideBar = ({
   jobs,
   user,
   job_id,
-  handleRemoveJob,
-}: ContactSideBarProps) => {
+}: // handleRemoveJob,
+ContactSideBarProps) => {
   const [jobsConnectedToContact, setJobsConnectedToContact] = useState<
     JobApplication[]
   >([]);
@@ -33,8 +33,10 @@ const ContactSideBar = ({
     }
   }, [job_id, jobs.jobPosts]);
 
-  const handleAddJob = (jobTitle: string) => {
-    const jobToAdd = jobs.jobPosts.find((job) => job.title === jobTitle);
+  const handleAddJob = (jobTitle: string, jobId: string) => {
+    const jobToAdd = jobs.jobPosts.find(
+      (job) => job.title === jobTitle && job.id === jobId
+    );
     if (
       jobToAdd &&
       !jobsConnectedToContact.some((job) => job.id === jobToAdd.id)
@@ -44,8 +46,8 @@ const ContactSideBar = ({
   };
 
   const handleUnlinkJob = (jobId: string) => {
-    setJobsConnectedToContact(
-      jobsConnectedToContact.filter((job) => job.id !== jobId)
+    setJobsConnectedToContact((prevJobs) =>
+      prevJobs.filter((job) => job.id !== jobId)
     );
   };
 
@@ -98,14 +100,14 @@ const ContactSideBar = ({
       )}
       <div className="m-0 p-0 mt-2">
         <ComboJobsBox
+          buttonWidth="w-full"
+          onJobSelect={handleAddJob}
           jobPosts={jobs.jobPosts.filter(
             (job) =>
               !jobsConnectedToContact.some(
                 (connectedJob) => connectedJob.id === job.id
               )
           )}
-          buttonWidth="w-full"
-          onJobSelect={handleAddJob}
         />
       </div>
       <p className="text-left font-semibold mt-6 text-muted-foreground">

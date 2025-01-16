@@ -22,7 +22,7 @@ import {
 interface ComboJobsBoxProps {
   buttonWidth: string;
   jobPosts: JobApplication[];
-  onJobSelect: (jobTitle: string) => void;
+  onJobSelect: (jobTitle: string, jobId: string) => void;
 }
 
 const ComboJobsBox = ({
@@ -64,7 +64,7 @@ const ComboJobsBox = ({
                     onSelect={() => {
                       setValue('');
                       setOpen(false);
-                      onJobSelect(jobPost.title);
+                      onJobSelect(jobPost.title, jobPost.id);
                     }}
                   >
                     <p style={{ color: `${jobPost.color}` }}>
