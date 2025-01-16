@@ -22,17 +22,17 @@ import {
 interface ComboJobsBoxProps {
   buttonWidth: string;
   jobPosts: JobApplication[];
+  onJobSelect: (jobTitle: string) => void;
 }
 
-const ComboJobsBox = ({ jobPosts, buttonWidth }: ComboJobsBoxProps) => {
+const ComboJobsBox = ({
+  jobPosts,
+  buttonWidth,
+  onJobSelect,
+}: ComboJobsBoxProps) => {
   const { job_id } = useParams();
   const [value, setValue] = useState('');
   const [open, setOpen] = useState(false);
-
-  const handleJobPostSelect = (jobPost: JobApplication) => {
-    setValue(jobPost.title);
-    setOpen(false);
-  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -61,9 +61,10 @@ const ComboJobsBox = ({ jobPosts, buttonWidth }: ComboJobsBoxProps) => {
                   <CommandItem
                     key={jobPost.id}
                     value={jobPost.title}
-                    onSelect={(currentValue) => {
-                      setValue(currentValue === value ? '' : currentValue);
+                    onSelect={() => {
+                      setValue('');
                       setOpen(false);
+                      onJobSelect(jobPost.title);
                     }}
                   >
                     <p style={{ color: `${jobPost.color}` }}>
