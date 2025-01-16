@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams } from 'next/navigation';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -22,6 +21,7 @@ import {
 interface ComboJobsBoxProps {
   buttonWidth: string;
   jobPosts: JobApplication[];
+  jobsConnectedToContact: JobApplication[];
   onJobSelect: (jobTitle: string, jobId: string) => void;
 }
 
@@ -29,8 +29,8 @@ const ComboJobsBox = ({
   jobPosts,
   buttonWidth,
   onJobSelect,
+  jobsConnectedToContact,
 }: ComboJobsBoxProps) => {
-  const { job_id } = useParams();
   const [value, setValue] = useState('');
   const [open, setOpen] = useState(false);
 
@@ -56,11 +56,16 @@ const ComboJobsBox = ({
             <CommandEmpty>No Job found.</CommandEmpty>
             <CommandGroup>
               {jobPosts
-                .filter((jobPost) => jobPost.id !== job_id)
+                .filter(
+                  (jobPost) =>
+                    !jobsConnectedToContact.some(
+                      (connectedJob) => connectedJob.id === jobPost.id
+                    )
+                )
                 .map((jobPost) => (
                   <CommandItem
                     key={jobPost.id}
-                    value={jobPost.title}
+                    value={jobPost.id}
                     onSelect={() => {
                       setValue('');
                       setOpen(false);

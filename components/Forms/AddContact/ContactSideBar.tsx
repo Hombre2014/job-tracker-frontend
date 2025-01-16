@@ -12,16 +12,10 @@ import {
 interface ContactSideBarProps {
   job_id: string;
   jobs: { jobPosts: JobApplication[] };
-  // handleRemoveJob: (jobId: string) => void;
   user: { firstName: string; lastName: string; email: string };
 }
 
-const ContactSideBar = ({
-  jobs,
-  user,
-  job_id,
-}: // handleRemoveJob,
-ContactSideBarProps) => {
+const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
   const [jobsConnectedToContact, setJobsConnectedToContact] = useState<
     JobApplication[]
   >([]);
@@ -101,13 +95,9 @@ ContactSideBarProps) => {
       <div className="m-0 p-0 mt-2">
         <ComboJobsBox
           buttonWidth="w-full"
+          jobPosts={jobs.jobPosts}
           onJobSelect={handleAddJob}
-          jobPosts={jobs.jobPosts.filter(
-            (job) =>
-              !jobsConnectedToContact.some(
-                (connectedJob) => connectedJob.id === job.id
-              )
-          )}
+          jobsConnectedToContact={jobsConnectedToContact}
         />
       </div>
       <p className="text-left font-semibold mt-6 text-muted-foreground">
