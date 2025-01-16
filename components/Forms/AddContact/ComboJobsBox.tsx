@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams } from 'next/navigation';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -22,17 +21,18 @@ import {
 interface ComboJobsBoxProps {
   buttonWidth: string;
   jobPosts: JobApplication[];
+  jobsConnectedToContact: JobApplication[];
+  onJobSelect: (jobTitle: string, jobId: string) => void;
 }
 
-const ComboJobsBox = ({ jobPosts, buttonWidth }: ComboJobsBoxProps) => {
-  const { job_id } = useParams();
+const ComboJobsBox = ({
+  jobPosts,
+  buttonWidth,
+  onJobSelect,
+  jobsConnectedToContact,
+}: ComboJobsBoxProps) => {
   const [value, setValue] = useState('');
   const [open, setOpen] = useState(false);
-
-  const handleJobPostSelect = (jobPost: JobApplication) => {
-    setValue(jobPost.title);
-    setOpen(false);
-  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -56,14 +56,20 @@ const ComboJobsBox = ({ jobPosts, buttonWidth }: ComboJobsBoxProps) => {
             <CommandEmpty>No Job found.</CommandEmpty>
             <CommandGroup>
               {jobPosts
-                .filter((jobPost) => jobPost.id !== job_id)
+                .filter(
+                  (jobPost) =>
+                    !jobsConnectedToContact.some(
+                      (connectedJob) => connectedJob.id === jobPost.id
+                    )
+                )
                 .map((jobPost) => (
                   <CommandItem
                     key={jobPost.id}
-                    value={jobPost.title}
-                    onSelect={(currentValue) => {
-                      setValue(currentValue === value ? '' : currentValue);
+                    value={jobPost.id}
+                    onSelect={() => {
+                      setValue('');
                       setOpen(false);
+                      onJobSelect(jobPost.title, jobPost.id);
                     }}
                   >
                     <p style={{ color: `${jobPost.color}` }}>

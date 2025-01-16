@@ -114,10 +114,10 @@ const CreateContactForm = ({
     }
   };
 
-  const handleRemoveJob = (jobId: string) => {
-    const updatedJobs = jobs.jobPosts.filter((job) => job.id !== jobId);
-    dispatch(getAllJobPostsPerColumn({ accessToken, columnId: boardId }));
-  };
+  // const handleRemoveJob = (jobId: string) => {
+  //   const updatedJobs = jobs.jobPosts.filter((job) => job.id !== jobId);
+  //   dispatch(getAllJobPostsPerColumn({ accessToken, columnId: boardId }));
+  // };
 
   const handleRemoveContactType = (type: 'email' | 'phone', id: string) => {
     if (type === 'email') {
@@ -292,7 +292,7 @@ const CreateContactForm = ({
                       </FormItem>
                     )}
                   />
-                  <div className="flex items-center justify-between my-8 gap-8">
+                  <div className="flex items-start justify-between my-8 gap-8">
                     <FormField
                       name="companies"
                       control={form.control}
@@ -448,7 +448,7 @@ const CreateContactForm = ({
           user={user}
           jobs={jobs}
           job_id={job_id}
-          handleRemoveJob={handleRemoveJob}
+          // handleRemoveJob={handleRemoveJob}
         />
       </div>
     </div>

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { RiCloseLine } from 'react-icons/ri';
 
+import { Input } from '@/components/ui/input';
+
 interface CompaniesInputProps {
   companies: string[];
   setCompanies: (companies: string[]) => void;
@@ -25,7 +27,15 @@ const CompaniesInput = ({ companies, setCompanies }: CompaniesInputProps) => {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full flex flex-col gap-2">
+      <Input
+        type="text"
+        value={inputValue}
+        onKeyDown={handleKeyDown}
+        placeholder='i.e: "Google"'
+        onChange={handleInputChange}
+        className="outline-none bg-transparent border border-gray-300 rounded-md px-2 py-1 w-full"
+      />
       <div className="flex flex-wrap gap-2 mb-2">
         {companies.map((company) => (
           <div
@@ -40,14 +50,6 @@ const CompaniesInput = ({ companies, setCompanies }: CompaniesInputProps) => {
           </div>
         ))}
       </div>
-      <input
-        type="text"
-        value={inputValue}
-        onKeyDown={handleKeyDown}
-        placeholder='i.e: "Google"'
-        onChange={handleInputChange}
-        className="outline-none bg-transparent border border-gray-300 rounded-md px-2 py-1 w-full"
-      />
     </div>
   );
 };
