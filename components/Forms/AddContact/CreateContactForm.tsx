@@ -292,7 +292,7 @@ const CreateContactForm = ({
                       </FormItem>
                     )}
                   />
-                  <div className="flex items-center justify-between my-8 gap-8">
+                  <div className="flex items-start justify-between my-8 gap-8">
                     <FormField
                       name="companies"
                       control={form.control}
