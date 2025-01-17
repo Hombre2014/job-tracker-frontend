@@ -1,13 +1,14 @@
 import Link from 'next/link';
+import { LiaLinkSolid } from 'react-icons/lia';
+
+import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
 import {
   SlSocialGithub,
   SlSocialTwitter,
   SlSocialFacebook,
   SlSocialLinkedin,
 } from 'react-icons/sl';
-import { LiaLinkSolid } from 'react-icons/lia';
-import { Input } from '@/components/ui/input';
-import { cn } from '@/lib/utils';
 
 interface SocialMediaLinksProps {
   twitterHandle: string;
