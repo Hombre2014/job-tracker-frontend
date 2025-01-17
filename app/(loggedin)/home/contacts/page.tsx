@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import CreateContactModal from '@/components/Misc/CreateContactModal';
 
 const UserContacts = () => {
   return (
@@ -6,7 +6,7 @@ const UserContacts = () => {
       <div className="w-11/12">
         <h1 className="font-semibold text-center">Contacts</h1>
       </div>
-      <Button variant="normal">+ Contact</Button>
+      <CreateContactModal showButton={true} />
     </div>
   );
 };
