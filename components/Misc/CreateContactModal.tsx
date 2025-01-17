@@ -28,7 +28,7 @@ const CreateContactModal = ({
   };
 
   return (
-    <>
+    <div className="">
       {showButton && (
         <Button
           variant="normal"
@@ -47,7 +47,7 @@ const CreateContactModal = ({
           buttonConfirm="Create"
           open={showContactModal}
           isFormValid={isFormValid}
-          contentWidth="!max-w-[900px]"
+          contentWidth="!max-w-[910px]"
           dialogTitle="Save New Contact"
           actionFunction={createContact}
           onOpenChange={(open) => {
@@ -58,7 +58,7 @@ const CreateContactModal = ({
           <CreateContactForm onValidationChange={setIsFormValid} />
         </AlertDialogModal>
       )}
-    </>
+    </div>
   );
 };
 
