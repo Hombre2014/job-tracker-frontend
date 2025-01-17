@@ -106,10 +106,10 @@ const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
       <hr></hr>
       <div className="flex flex-col gap-2 border rounded-md p-2 mt-4">
         <div className="flex justify-start gap-2">
-          <p className="text-left font-semibold">{user.firstName}</p>
-          <p className="text-left font-semibold">{user.lastName}</p>
+          <p className="text-left text-sm font-semibold">{user.firstName}</p>
+          <p className="text-left text-sm font-semibold">{user.lastName}</p>
         </div>
-        <p className="text-left text-muted-foreground">{user.email}</p>
+        <p className="text-left text-sm text-muted-foreground">{user.email}</p>
       </div>
     </div>
   );

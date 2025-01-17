@@ -114,11 +114,6 @@ const CreateContactForm = ({
     }
   };
 
-  // const handleRemoveJob = (jobId: string) => {
-  //   const updatedJobs = jobs.jobPosts.filter((job) => job.id !== jobId);
-  //   dispatch(getAllJobPostsPerColumn({ accessToken, columnId: boardId }));
-  // };
-
   const handleRemoveContactType = (type: 'email' | 'phone', id: string) => {
     if (type === 'email') {
       setEmails(emails.filter((email) => email.id !== id));
@@ -444,12 +439,7 @@ const CreateContactForm = ({
             </form>
           </Form>
         </div>
-        <ContactSideBar
-          user={user}
-          jobs={jobs}
-          job_id={job_id}
-          // handleRemoveJob={handleRemoveJob}
-        />
+        <ContactSideBar user={user} jobs={jobs} job_id={job_id} />
       </div>
     </div>
   );

@@ -34,9 +34,9 @@ const CompaniesInput = ({ companies, setCompanies }: CompaniesInputProps) => {
         onKeyDown={handleKeyDown}
         placeholder='i.e: "Google"'
         onChange={handleInputChange}
-        className="outline-none bg-transparent border border-gray-300 rounded-md px-2 py-1 w-full"
+        className="outline-none bg-transparent border border-gray-300 rounded-md px-2 py-1 w-full focus:border-blue-500 focus:ring-blue-500"
       />
-      <div className="flex flex-wrap gap-2 mb-2">
+      <div className="flex flex-wrap gap-2">
         {companies.map((company) => (
           <div
             key={company}
