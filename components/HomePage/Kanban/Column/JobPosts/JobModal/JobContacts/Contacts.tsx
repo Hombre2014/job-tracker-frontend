@@ -1,5 +1,5 @@
+import { useEffect } from 'react';
 import { SlPeople } from 'react-icons/sl';
-import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { BsThreeDots } from 'react-icons/bs';
 import { IoLocationOutline } from 'react-icons/io5';
@@ -7,8 +7,8 @@ import { IoLocationOutline } from 'react-icons/io5';
 import { Button } from '@/components/ui/button';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
-import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
-import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
+// import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
+// import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
 import {
   Card,
   CardTitle,
@@ -18,15 +18,16 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import Image from 'next/image';
+import CreateContactModal from '@/components/Misc/CreateContactModal';
 
 const Contacts = () => {
   const { job_id } = useParams();
   const dispatch = useAppDispatch();
   const jobs = useAppSelector((state) => state.jobs);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isFormValid, setIsFormValid] = useState(false);
+  // const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // const [isFormValid, setIsFormValid] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
-  const [showContactModal, setShowContactModal] = useState(false);
+  // const [showContactModal, setShowContactModal] = useState(false);
   const { firstName, lastName } = useAppSelector((state) => state.user);
 
   const currentJobPost = jobs.jobPosts.find((job) => job.id === job_id);
@@ -40,14 +41,14 @@ const Contacts = () => {
     dispatch(getAllJobPostsPerColumn(jobPostsData));
   }, [dispatch, accessToken]);
 
-  const createContact = () => {
-    console.log('isValid: ', isFormValid);
-    if (!isFormValid) return;
+  // const createContact = () => {
+  //   console.log('isValid: ', isFormValid);
+  //   if (!isFormValid) return;
 
-    setShowContactModal(false);
+  //   setShowContactModal(false);
 
-    // TODO: Implement contact creation
-  };
+  //   // TODO: Implement contact creation
+  // };
 
   const numberOfContactsPerJob =
     jobs.jobPosts.find((job) => job.id === job_id)?.contacts.length || 0;
@@ -63,24 +64,7 @@ const Contacts = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4 items-center">
-        <AlertDialogModal
-          buttonVariant="none"
-          buttonCancel="Discard"
-          buttonConfirm="Create"
-          open={showContactModal}
-          isFormValid={isFormValid}
-          contentWidth="!max-w-[908px]"
-          buttonLabel="+ Create Contact"
-          dialogTitle="Save New Contact"
-          actionFunction={createContact}
-          stylings="!w-fit !bg-blue-500 text-white !rounded-md hover:cursor-pointer hover:!bg-blue-600"
-          onOpenChange={(open) => {
-            setShowContactModal(open);
-            if (!open) setIsMenuOpen(false);
-          }}
-        >
-          <CreateContactForm onValidationChange={setIsFormValid} />
-        </AlertDialogModal>
+        <CreateContactModal showButton={true} buttonLabel="+ Create Contact" />
         <Button className="w-fit mt-4" variant="outline">
           + Link contact
         </Button>
@@ -90,24 +74,7 @@ const Contacts = () => {
   ) : (
     <div className="flex flex-col gap-4 w-full">
       <div className="flex justify-end items-center gap-2 mb-4">
-        <AlertDialogModal
-          buttonVariant="none"
-          buttonCancel="Discard"
-          buttonConfirm="Create"
-          open={showContactModal}
-          isFormValid={isFormValid}
-          contentWidth="!max-w-[908px]"
-          buttonLabel="+ Create Contact"
-          dialogTitle="Save New Contact"
-          actionFunction={createContact}
-          stylings="!w-fit !bg-blue-500 text-white !rounded-md hover:cursor-pointer hover:!bg-blue-600"
-          onOpenChange={(open) => {
-            setShowContactModal(open);
-            if (!open) setIsMenuOpen(false);
-          }}
-        >
-          <CreateContactForm onValidationChange={setIsFormValid} />
-        </AlertDialogModal>
+        <CreateContactModal showButton={true} buttonLabel="+ Create Contact" />
         <Button variant="outline">+ Link contact</Button>
       </div>
       <div className="flex flex-col gap-4 w-full">

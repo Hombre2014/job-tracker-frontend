@@ -8,9 +8,13 @@ import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
 
 interface CreateContactModalProps {
   showButton: boolean;
+  buttonLabel?: string;
 }
 
-const CreateContactModal = ({ showButton }: CreateContactModalProps) => {
+const CreateContactModal = ({
+  showButton,
+  buttonLabel,
+}: CreateContactModalProps) => {
   const [, setIsMenuOpen] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
@@ -33,7 +37,7 @@ const CreateContactModal = ({ showButton }: CreateContactModalProps) => {
             setIsFormValid(false);
           }}
         >
-          + Contact
+          {buttonLabel || '+ Create Contact'}
         </Button>
       )}
       {showContactModal && (
