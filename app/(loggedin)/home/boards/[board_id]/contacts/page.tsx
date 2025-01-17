@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import CreateContactModal from '@/components/Misc/CreateContactModal';
 
 const BoardContacts = () => {
   return (
@@ -6,7 +6,7 @@ const BoardContacts = () => {
       <div className="flex justify-between w-full">
         <h1 className="font-semibold text-center">Contacts</h1>
       </div>
-      <Button variant="normal">+ Contact</Button>
+      <CreateContactModal showButton={true} />
     </div>
   );
 };
