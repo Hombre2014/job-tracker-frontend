@@ -93,7 +93,7 @@ const ContactCard = () => {
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-500 hover:cursor-pointer"
-            href="https://linkedin.com/in/${linkedinProfile}"
+            href="https://linkedin.com/in/${linkedinUrl}"
           >
             <SlSocialLinkedin className="size-6" />
           </Link>
