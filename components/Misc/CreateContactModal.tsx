@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
@@ -8,10 +8,14 @@ import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
 
 interface CreateContactModalProps {
   showButton: boolean;
+  isVisible?: boolean;
   buttonLabel?: string;
+  onClose?: () => void;
 }
 
 const CreateContactModal = ({
+  onClose,
+  isVisible,
   showButton,
   buttonLabel,
 }: CreateContactModalProps) => {
@@ -19,10 +23,17 @@ const CreateContactModal = ({
   const [isFormValid, setIsFormValid] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
 
+  useEffect(() => {
+    if (isVisible !== undefined) {
+      setShowContactModal(isVisible);
+    }
+  }, [isVisible]);
+
   const createContact = () => {
     if (!isFormValid) return;
 
     setShowContactModal(false);
+    if (onClose) onClose();
 
     // TODO: Implement contact creation
   };
@@ -52,7 +63,10 @@ const CreateContactModal = ({
           actionFunction={createContact}
           onOpenChange={(open) => {
             setShowContactModal(open);
-            if (!open) setIsMenuOpen(false);
+            if (!open) {
+              setIsMenuOpen(false);
+              if (onClose) onClose();
+            }
           }}
         >
           <CreateContactForm onValidationChange={setIsFormValid} />

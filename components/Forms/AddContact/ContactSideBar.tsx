@@ -72,12 +72,11 @@ const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
                       type="button"
                       title="Remove"
                       className="text-left text-muted-foreground"
-                      onClick={() => handleUnlinkJob(jobPost.id)}
                     >
                       <BsThreeDots className="border border-gray-300 rounded-sm p-[2px] h-6 w-6" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent>
+                  <DropdownMenuContent className="!absolute !-right-4">
                     <DropdownMenuItem
                       onClick={() => handleUnlinkJob(jobPost.id)}
                     >

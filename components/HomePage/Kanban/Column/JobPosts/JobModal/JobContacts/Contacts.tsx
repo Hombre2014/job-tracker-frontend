@@ -21,6 +21,8 @@ const Contacts = () => {
   const numberOfContactsPerJob =
     jobs.jobPosts.find((job) => job.id === job_id)?.contacts.length || 0;
 
+  const contactId = jobs.jobPosts.find((job) => job.id === job_id)?.contacts[0];
+
   return numberOfContactsPerJob === 0 ? (
     <Card className="min-h-[560px] flex flex-col gap-4">
       <CardHeader className="flex flex-col gap-2 items-center">
@@ -45,7 +47,7 @@ const Contacts = () => {
         <CreateContactModal showButton={true} buttonLabel="+ Create Contact" />
         <Button variant="outline">+ Link contact</Button>
       </div>
-      <ContactCard />
+      <ContactCard contactId="abcd" />
     </div>
   );
 };
