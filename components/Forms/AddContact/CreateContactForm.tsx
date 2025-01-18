@@ -35,19 +35,19 @@ const CreateContactForm = ({
   const [comment, setComment] = useState('');
   const [boardId, setBoardId] = useState('');
   const [lastName, setLastName] = useState('');
-  const [location, setLocation] = useState('');
+  const [companyLocation, setCompanyLocation] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [firstName, setFirstName] = useState('');
   const { job_id } = useParams<{ job_id: string }>();
   const user = useAppSelector((state) => state.user);
   const jobs = useAppSelector((state) => state.jobs);
-  const [twitterHandle, setTwitterHandle] = useState('');
-  const [gitHubProfile, setGitHubProfile] = useState('');
+  const [twitterUrl, setTwitterUrl] = useState('');
+  const [gitHubUrl, setGitHubUrl] = useState('');
   const accessToken = localStorage.getItem('accessToken');
   const [companies, setCompanies] = useState<string[]>([]);
-  const [linkedinProfile, setLinkedinProfile] = useState('');
-  const [facebookProfile, setFacebookProfile] = useState('');
+  const [linkedinUrl, setLinkedinUrl] = useState('');
+  const [facebookUrl, setFacebookUrl] = useState('');
   const selectedJob = jobs.jobPosts.find((job) => job.id === job_id);
   const [emails, setEmails] = useState<{ id: string; value: string }[]>([]);
   const [phones, setPhones] = useState<{ id: string; value: string }[]>([]);
@@ -63,14 +63,13 @@ const CreateContactForm = ({
       lastName: '',
       photoUrl: '',
       jobTitle: '',
-      location: '',
       companies: [],
       firstName: '',
-      socialMedia: [],
-      twitterHandle: '',
-      gitHubProfile: '',
-      linkedinProfile: '',
-      facebookProfile: '',
+      gitHubUrl: '',
+      twitterUrl: '',
+      linkedinUrl: '',
+      facebookUrl: '',
+      companyLocation: '',
     },
   });
 
@@ -128,17 +127,17 @@ const CreateContactForm = ({
   ) => {
     const value = e.target.value;
     switch (fieldName) {
-      case 'twitterHandle':
-        setTwitterHandle(value);
+      case 'twitterUrl':
+        setTwitterUrl(value);
         break;
-      case 'gitHubProfile':
-        setGitHubProfile(value);
+      case 'gitHubUrl':
+        setGitHubUrl(value);
         break;
-      case 'linkedinProfile':
-        setLinkedinProfile(value);
+      case 'linkedinUrl':
+        setLinkedinUrl(value);
         break;
-      case 'facebookProfile':
-        setFacebookProfile(value);
+      case 'facebookUrl':
+        setFacebookUrl(value);
         break;
       case 'lastName':
         setLastName(value);
@@ -148,8 +147,8 @@ const CreateContactForm = ({
         setFirstName(value);
         form.setValue('firstName', value);
         break;
-      case 'location':
-        setLocation(value);
+      case 'companyLocation':
+        setCompanyLocation(value);
         break;
       case 'jobTitle':
         setJobTitle(value);
@@ -305,7 +304,7 @@ const CreateContactForm = ({
                       )}
                     />
                     <FormField
-                      name="location"
+                      name="companyLocation"
                       control={form.control}
                       render={({ field }) => (
                         <FormItem className="!text-left w-full">
@@ -314,10 +313,12 @@ const CreateContactForm = ({
                           </FormLabel>
                           <Input
                             {...field}
-                            value={location}
+                            value={companyLocation}
                             placeholder="New York, NY, USA"
                             className="focus:border-blue-500"
-                            onChange={(e) => handleFieldChange('location', e)}
+                            onChange={(e) =>
+                              handleFieldChange('companyLocation', e)
+                            }
                           />
                           <FormMessage />
                         </FormItem>
@@ -429,10 +430,10 @@ const CreateContactForm = ({
                   )}
                 />
                 <SocialMediaLinks
-                  twitterHandle={twitterHandle}
-                  gitHubProfile={gitHubProfile}
-                  linkedinProfile={linkedinProfile}
-                  facebookProfile={facebookProfile}
+                  twitterUrl={twitterUrl}
+                  gitHubUrl={gitHubUrl}
+                  linkedinUrl={linkedinUrl}
+                  facebookUrl={facebookUrl}
                   handleFieldChange={handleFieldChange}
                 />
               </div>

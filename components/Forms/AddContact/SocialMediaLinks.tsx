@@ -11,10 +11,10 @@ import {
 } from 'react-icons/sl';
 
 interface SocialMediaLinksProps {
-  twitterHandle: string;
-  gitHubProfile: string;
-  linkedinProfile: string;
-  facebookProfile: string;
+  twitterUrl: string;
+  gitHubUrl: string;
+  linkedinUrl: string;
+  facebookUrl: string;
   handleFieldChange: (
     fieldName: string,
     e: React.ChangeEvent<HTMLInputElement>
@@ -22,10 +22,10 @@ interface SocialMediaLinksProps {
 }
 
 const SocialMediaLinks = ({
-  twitterHandle,
-  gitHubProfile,
-  linkedinProfile,
-  facebookProfile,
+  twitterUrl,
+  gitHubUrl,
+  linkedinUrl,
+  facebookUrl,
   handleFieldChange,
 }: SocialMediaLinksProps) => {
   return (
@@ -35,82 +35,82 @@ const SocialMediaLinks = ({
           <div className="flex justify-between items-center w-full">
             <div className="flex justify-start gap-2 items-center mb-2 mt-4 w-full">
               <SlSocialTwitter
-                className={cn('block', twitterHandle !== '' && 'text-blue-500')}
+                className={cn('block', twitterUrl !== '' && 'text-blue-500')}
               />
               <Input
-                value={twitterHandle}
+                value={twitterUrl}
                 placeholder="Twitter handle"
-                onChange={(e) => handleFieldChange('twitterHandle', e)}
+                onChange={(e) => handleFieldChange('twitterUrl', e)}
                 className="!outline-none !border-none shadow-none focus-visible:ring-0"
               />
             </div>
             <Link
               target="_blank"
-              href={`https://twitter.com/${twitterHandle}`}
+              href={`https://twitter.com/${twitterUrl}`}
               className="text-blue-500 hover:cursor-pointer"
             >
               <LiaLinkSolid
-                className={cn('hidden', twitterHandle !== '' && 'block')}
+                className={cn('hidden', twitterUrl !== '' && 'block')}
               />
             </Link>
           </div>
           <div className="flex justify-start gap-2 items-center mb-2">
             <SlSocialFacebook
-              className={cn('block', facebookProfile !== '' && 'text-blue-500')}
+              className={cn('block', facebookUrl !== '' && 'text-blue-500')}
             />
             <Input
-              value={facebookProfile}
+              value={facebookUrl}
               placeholder="Facebook profile"
-              onChange={(e) => handleFieldChange('facebookProfile', e)}
+              onChange={(e) => handleFieldChange('facebookUrl', e)}
               className="!outline-none !border-none shadow-none focus-visible:ring-0"
             />
             <Link
               target="_blank"
-              href={`https://facebook.com/${facebookProfile}`}
+              href={`https://facebook.com/${facebookUrl}`}
               className="text-blue-500 hover:cursor-pointer"
             >
               <LiaLinkSolid
-                className={cn('hidden', facebookProfile !== '' && 'block')}
+                className={cn('hidden', facebookUrl !== '' && 'block')}
               />
             </Link>
           </div>
           <div className="flex justify-start gap-2 items-center mb-2">
             <SlSocialLinkedin
-              className={cn('block', linkedinProfile !== '' && 'text-blue-500')}
+              className={cn('block', linkedinUrl !== '' && 'text-blue-500')}
             />
             <Input
-              value={linkedinProfile}
+              value={linkedinUrl}
               placeholder="LinkedIn profile"
-              onChange={(e) => handleFieldChange('linkedinProfile', e)}
+              onChange={(e) => handleFieldChange('linkedinUrl', e)}
               className="!outline-none !border-none shadow-none focus-visible:ring-0"
             />
             <Link
               target="_blank"
               className="text-blue-500 hover:cursor-pointer"
-              href={`https://linkedin.com/in/${linkedinProfile}`}
+              href={`https://linkedin.com/in/${linkedinUrl}`}
             >
               <LiaLinkSolid
-                className={cn('hidden', linkedinProfile !== '' && 'block')}
+                className={cn('hidden', linkedinUrl !== '' && 'block')}
               />
             </Link>
           </div>
           <div className="flex justify-start gap-2 items-center mb-2">
             <SlSocialGithub
-              className={cn('block', gitHubProfile !== '' && 'text-blue-500')}
+              className={cn('block', gitHubUrl !== '' && 'text-blue-500')}
             />
             <Input
-              value={gitHubProfile}
+              value={gitHubUrl}
               placeholder="GitHub profile"
-              onChange={(e) => handleFieldChange('gitHubProfile', e)}
+              onChange={(e) => handleFieldChange('gitHubUrl', e)}
               className="!outline-none !border-none shadow-none focus-visible:ring-0"
             />
             <Link
               target="_blank"
-              href={`https://github.com/${gitHubProfile}`}
+              href={`https://github.com/${gitHubUrl}`}
               className="text-blue-500 hover:cursor-pointer"
             >
               <LiaLinkSolid
-                className={cn('hidden', gitHubProfile !== '' && 'block')}
+                className={cn('hidden', gitHubUrl !== '' && 'block')}
               />
             </Link>
           </div>

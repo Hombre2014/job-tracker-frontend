@@ -126,7 +126,7 @@ const Notes = () => {
   const handleEditNote = (note: any) => {
     setEditingNoteId(note.id);
     setEditingNoteContent(note.content);
-    setOpenDropdownId(null); // Close the dropdown menu
+    setOpenDropdownId(null);
   };
 
   const handleContentUpdate = (
@@ -149,11 +149,11 @@ const Notes = () => {
         })
       );
     });
-    setOpenDropdownId(null); // Close the dropdown menu
+    setOpenDropdownId(null);
   };
 
   const handleCancel = () => {
-    setOpenDropdownId(null); // Close the dropdown menu
+    setOpenDropdownId(null);
   };
 
   const sortedNotes = [...notes].reverse();
