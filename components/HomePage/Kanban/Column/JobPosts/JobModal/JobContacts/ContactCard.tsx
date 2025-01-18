@@ -23,6 +23,7 @@ import {
   DropdownMenuContent,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 
 const ContactCard = (contactId: { contactId: string }) => {
   const { job_id } = useParams();
@@ -32,6 +33,7 @@ const ContactCard = (contactId: { contactId: string }) => {
   const [showContactModal, setShowContactModal] = useState(false);
   const { firstName, lastName } = useAppSelector((state) => state.user);
   const currentJobPost = jobs.jobPosts.find((job) => job.id === job_id);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
 
   useEffect(() => {
     const jobPostsData = {
@@ -45,10 +47,16 @@ const ContactCard = (contactId: { contactId: string }) => {
   const handleEditContact = (contactId: string) => {
     console.log('Edit contact with id: ', contactId);
     setShowContactModal(true);
+    setOpenDropdownId(null);
   };
 
   const handleDeleteContact = (contactId: string) => {
     console.log('Delete contact with id: ', contactId);
+    setOpenDropdownId(null);
+  };
+
+  const handleCancel = () => {
+    setOpenDropdownId(null);
   };
 
   return (
@@ -72,7 +80,12 @@ const ContactCard = (contactId: { contactId: string }) => {
               </p>
             </div>
           </div>
-          <DropdownMenu>
+          <DropdownMenu
+            open={openDropdownId === contactId.contactId}
+            onOpenChange={(isOpen) =>
+              setOpenDropdownId(isOpen ? contactId.contactId : null)
+            }
+          >
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
@@ -83,18 +96,35 @@ const ContactCard = (contactId: { contactId: string }) => {
                 <BsThreeDots className="size-6 border rounded-md hover:cursor-pointer hover:border-gray-300" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="!absolute !-right-4 !top-0">
+            <DropdownMenuContent className="!absolute !-right-4 !top-0 rsw-dropdown-menu">
               <DropdownMenuItem
                 onClick={() => handleEditContact(contactId.contactId)}
+                className="rsw-dropdown-menu-item"
               >
                 Edit Contact
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => handleDeleteContact(contactId.contactId)}
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="rsw-dropdown-menu-item"
               >
-                Delete Contact
-              </DropdownMenuItem>
+                <AlertDialogModal
+                  buttonCancel="Cancel"
+                  buttonVariant="ghost"
+                  buttonConfirm="Delete"
+                  destructiveVariant={true}
+                  dialogTitle="Delete Contact"
+                  buttonLabel="Delete Contact"
+                  dialogText="Are you sure you want to delete this contact?"
+                  stylings="ml-0 pl-2 font-normal inline-flex justify-start w-full text-left"
+                  actionFunction={() =>
+                    handleDeleteContact(contactId.contactId)
+                  }
+                  onOpenChange={(isOpen) => {
+                    if (!isOpen) handleCancel();
+                  }}
+                />
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -142,7 +172,9 @@ const ContactCard = (contactId: { contactId: string }) => {
       </div>
       <CreateContactModal
         showButton={false}
+        buttonConfirm="Update"
         buttonLabel="Edit Contact"
+        dialogTitle="Edit Contact"
         isVisible={showContactModal}
         onClose={() => setShowContactModal(false)}
       />

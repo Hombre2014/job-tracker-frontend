@@ -10,7 +10,9 @@ interface CreateContactModalProps {
   showButton: boolean;
   isVisible?: boolean;
   buttonLabel?: string;
+  dialogTitle?: string;
   onClose?: () => void;
+  buttonConfirm?: string;
 }
 
 const CreateContactModal = ({
@@ -18,6 +20,8 @@ const CreateContactModal = ({
   isVisible,
   showButton,
   buttonLabel,
+  dialogTitle,
+  buttonConfirm,
 }: CreateContactModalProps) => {
   const [, setIsMenuOpen] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
@@ -55,12 +59,12 @@ const CreateContactModal = ({
         <AlertDialogModal
           buttonVariant="none"
           buttonCancel="Discard"
-          buttonConfirm="Create"
           open={showContactModal}
           isFormValid={isFormValid}
           contentWidth="!max-w-[910px]"
-          dialogTitle="Save New Contact"
           actionFunction={createContact}
+          buttonConfirm={buttonConfirm || 'Create'}
+          dialogTitle={dialogTitle || 'Save New Contact'}
           onOpenChange={(open) => {
             setShowContactModal(open);
             if (!open) {
