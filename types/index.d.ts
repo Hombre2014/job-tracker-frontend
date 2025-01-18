@@ -49,6 +49,7 @@ type Contact = {
   comment: string;
   lastName: string;
   jobTitle: string;
+  photoUrl: string;
   firstName: string;
   githubUrl: string;
   createdAt: string;
@@ -57,6 +58,7 @@ type Contact = {
   facebookUrl: string;
   companyName: string;
   linkedinUrl: string;
+  companies: Company[];
   companyLocation: string;
 };
 
