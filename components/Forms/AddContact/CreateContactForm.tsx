@@ -35,19 +35,19 @@ const CreateContactForm = ({
   const [comment, setComment] = useState('');
   const [boardId, setBoardId] = useState('');
   const [lastName, setLastName] = useState('');
-  const [companyLocation, setCompanyLocation] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [firstName, setFirstName] = useState('');
+  const [gitHubUrl, setGitHubUrl] = useState('');
+  const [twitterUrl, setTwitterUrl] = useState('');
   const { job_id } = useParams<{ job_id: string }>();
   const user = useAppSelector((state) => state.user);
   const jobs = useAppSelector((state) => state.jobs);
-  const [twitterUrl, setTwitterUrl] = useState('');
-  const [gitHubUrl, setGitHubUrl] = useState('');
+  const [facebookUrl, setFacebookUrl] = useState('');
+  const [linkedinUrl, setLinkedinUrl] = useState('');
   const accessToken = localStorage.getItem('accessToken');
   const [companies, setCompanies] = useState<string[]>([]);
-  const [linkedinUrl, setLinkedinUrl] = useState('');
-  const [facebookUrl, setFacebookUrl] = useState('');
+  const [companyLocation, setCompanyLocation] = useState('');
   const selectedJob = jobs.jobPosts.find((job) => job.id === job_id);
   const [emails, setEmails] = useState<{ id: string; value: string }[]>([]);
   const [phones, setPhones] = useState<{ id: string; value: string }[]>([]);
@@ -91,6 +91,7 @@ const CreateContactForm = ({
   useEffect(() => {
     if (selectedCompanyName) {
       setCompanies([selectedCompanyName]);
+      localStorage.setItem('companies', JSON.stringify([selectedCompanyName]));
     }
   }, [selectedCompanyName]);
 
@@ -108,6 +109,7 @@ const CreateContactForm = ({
       const reader = new FileReader();
       reader.onload = () => {
         setPhotoUrl(reader.result as string);
+        // TODO: Implement image upload to the server and save the URL to the local storage
       };
       reader.readAsDataURL(file);
     }
@@ -116,8 +118,16 @@ const CreateContactForm = ({
   const handleRemoveContactType = (type: 'email' | 'phone', id: string) => {
     if (type === 'email') {
       setEmails(emails.filter((email) => email.id !== id));
+      localStorage.setItem(
+        'emails',
+        JSON.stringify(emails.filter((email) => email.id !== id))
+      );
     } else if (type === 'phone') {
       setPhones(phones.filter((phone) => phone.id !== id));
+      localStorage.setItem(
+        'phones',
+        JSON.stringify(phones.filter((phone) => phone.id !== id))
+      );
     }
   };
 
@@ -129,29 +139,37 @@ const CreateContactForm = ({
     switch (fieldName) {
       case 'twitterUrl':
         setTwitterUrl(value);
+        localStorage.setItem('twitterUrl', value);
         break;
       case 'gitHubUrl':
         setGitHubUrl(value);
+        localStorage.setItem('gitHubUrl', value);
         break;
       case 'linkedinUrl':
         setLinkedinUrl(value);
+        localStorage.setItem('linkedinUrl', value);
         break;
       case 'facebookUrl':
         setFacebookUrl(value);
+        localStorage.setItem('facebookUrl', value);
         break;
       case 'lastName':
         setLastName(value);
         form.setValue('lastName', value);
+        localStorage.setItem('lastName', value);
         break;
       case 'firstName':
         setFirstName(value);
         form.setValue('firstName', value);
+        localStorage.setItem('firstName', value);
         break;
       case 'companyLocation':
         setCompanyLocation(value);
+        localStorage.setItem('companyLocation', value);
         break;
       case 'jobTitle':
         setJobTitle(value);
+        localStorage.setItem('jobTitle', value);
         break;
       default:
         break;
@@ -160,22 +178,30 @@ const CreateContactForm = ({
 
   const handleAddEmail = () => {
     setEmails([...emails, { id: uuidv4(), value: '' }]);
+    localStorage.setItem('emails', JSON.stringify(emails));
   };
 
   const handleAddPhone = () => {
     setPhones([...phones, { id: uuidv4(), value: '' }]);
+    localStorage.setItem('phones', JSON.stringify(phones));
   };
 
-  const handleEmailChange = (id: string, value: string) => {
+  const handleEmailChange = (id: string, value: string, type: string) => {
     setEmails((prevEmails) =>
-      prevEmails.map((email) => (email.id === id ? { ...email, value } : email))
+      prevEmails.map((email) =>
+        email.id === id ? { ...email, value, type } : email
+      )
     );
+    localStorage.setItem('emails', JSON.stringify(emails));
   };
 
-  const handlePhoneChange = (id: string, value: string) => {
+  const handlePhoneChange = (id: string, value: string, type: string) => {
     setPhones((prevPhones) =>
-      prevPhones.map((phone) => (phone.id === id ? { ...phone, value } : phone))
+      prevPhones.map((phone) =>
+        phone.id === id ? { ...phone, value, type } : phone
+      )
     );
+    localStorage.setItem('phones', JSON.stringify(phones));
   };
 
   return (
@@ -341,6 +367,7 @@ const CreateContactForm = ({
                             onChange={(e) => {
                               field.onChange(e);
                               setComment(e.target.value);
+                              localStorage.setItem('comment', e.target.value);
                             }}
                           />
                         </FormControl>

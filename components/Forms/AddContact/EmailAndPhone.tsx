@@ -30,7 +30,7 @@ const types = [
 interface EmailAndPhoneProps {
   id: string;
   contact: 'email' | 'phone';
-  returnData: (type: 'email' | 'phone', id: string) => void;
+  returnData: (contact: 'email' | 'phone', id: string) => void;
   handleChange: (id: string, value: string, type: string) => void;
 }
 
@@ -51,16 +51,27 @@ const EmailAndPhone = ({
   const debouncedHandleChange = useCallback(
     debounce((id: string, value: string, type: string) => {
       handleChange(id, value, type);
+      // console.log('type', type, 'Value: ', value, 'id: ', id);
+
+      const storageKey = contact === 'email' ? 'emails' : 'phones';
+      const existingItems = JSON.parse(
+        localStorage.getItem(storageKey) || '[]'
+      ) as any[];
+      const updatedItems = existingItems.filter((item) => item.id !== id); // Remove any existing item with the same id
+      updatedItems.push({ id, value, type }); // Add the new item
+      localStorage.setItem(storageKey, JSON.stringify(updatedItems));
     }, 300),
-    []
+    [contact]
   );
 
   useEffect(() => {
-    debouncedHandleChange(id, inputValue, type);
+    if (inputValue || type) {
+      debouncedHandleChange(id, inputValue, type);
+    }
     return () => {
       debouncedHandleChange.cancel();
     };
-  }, [inputValue, id, debouncedHandleChange, type]);
+  }, [inputValue, id, type, debouncedHandleChange]);
 
   return (
     <div className="w-full px-2">
@@ -105,6 +116,7 @@ const EmailAndPhone = ({
                         onSelect={(currentValue) => {
                           setType(currentValue);
                           setOpen(false);
+                          debouncedHandleChange(id, inputValue, currentValue); // Ensure the type is saved when changed
                         }}
                       >
                         {type.label}

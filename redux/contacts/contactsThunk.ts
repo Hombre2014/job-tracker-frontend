@@ -2,7 +2,7 @@ import client from '@/api/client';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
 export const createContact = createAsyncThunk(
-  'contacts',
+  'contacts/createContact',
   async (values: any, thunkAPI) => {
     const {
       emails,
@@ -54,7 +54,7 @@ export const createContact = createAsyncThunk(
 );
 
 export const updateContact = createAsyncThunk(
-  'contacts',
+  'contacts/updateContact',
   async (values: any, thunkAPI) => {
     const {
       id,
@@ -108,7 +108,7 @@ export const updateContact = createAsyncThunk(
 );
 
 export const deleteContact = createAsyncThunk(
-  'contacts',
+  'contacts/deleteContact',
   async (values: any, thunkAPI) => {
     const { id, accessToken } = values;
     try {

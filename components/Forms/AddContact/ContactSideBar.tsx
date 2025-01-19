@@ -24,6 +24,10 @@ const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
     const currentJob = jobs.jobPosts.find((job) => job.id === job_id);
     if (currentJob) {
       setJobsConnectedToContact([currentJob]);
+      localStorage.setItem(
+        'jobsConnectedToContact',
+        JSON.stringify([currentJob])
+      );
     }
   }, [job_id, jobs.jobPosts]);
 
@@ -36,12 +40,20 @@ const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
       !jobsConnectedToContact.some((job) => job.id === jobToAdd.id)
     ) {
       setJobsConnectedToContact([...jobsConnectedToContact, jobToAdd]);
+      localStorage.setItem(
+        'jobsConnectedToContact',
+        JSON.stringify([...jobsConnectedToContact, jobToAdd])
+      );
     }
   };
 
   const handleUnlinkJob = (jobId: string) => {
     setJobsConnectedToContact((prevJobs) =>
       prevJobs.filter((job) => job.id !== jobId)
+    );
+    localStorage.setItem(
+      'jobsConnectedToContact',
+      JSON.stringify(jobsConnectedToContact.filter((job) => job.id !== jobId))
     );
   };
 
