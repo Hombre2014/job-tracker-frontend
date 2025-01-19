@@ -18,12 +18,20 @@ const CompaniesInput = ({ companies, setCompanies }: CompaniesInputProps) => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && inputValue.trim() !== '') {
       setCompanies([...companies, inputValue.trim()]);
+      localStorage.setItem(
+        'companies',
+        JSON.stringify([...companies, inputValue.trim()])
+      );
       setInputValue('');
     }
   };
 
   const handleRemoveCompany = (company: string) => {
     setCompanies(companies.filter((c) => c !== company));
+    localStorage.setItem(
+      'companies',
+      JSON.stringify(companies.filter((c) => c !== company))
+    );
   };
 
   return (
