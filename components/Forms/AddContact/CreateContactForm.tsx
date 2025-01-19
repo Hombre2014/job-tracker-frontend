@@ -33,7 +33,6 @@ const CreateContactForm = ({
 }) => {
   const dispatch = useAppDispatch();
   const [comment, setComment] = useState('');
-  const [boardId, setBoardId] = useState('');
   const [lastName, setLastName] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
   const [jobTitle, setJobTitle] = useState('');
@@ -154,12 +153,12 @@ const CreateContactForm = ({
         localStorage.setItem('facebookUrl', value);
         break;
       case 'lastName':
-        setLastName(value);
+        setLastName(value as string);
         form.setValue('lastName', value);
         localStorage.setItem('lastName', value);
         break;
       case 'firstName':
-        setFirstName(value);
+        setFirstName(value as string);
         form.setValue('firstName', value);
         localStorage.setItem('firstName', value);
         break;

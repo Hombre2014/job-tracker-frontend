@@ -31,13 +31,13 @@ type Notes = {
 type Email = {
   id: string;
   email: string;
-  type: 'work' | 'personal';
+  type: 'WORK' | 'PERSONAL';
 };
 
 type Phone = {
   id: string;
   phone: string;
-  type: 'work' | 'personal';
+  type: 'WORK' | 'PERSONAL';
 };
 
 type Contact = {

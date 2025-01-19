@@ -18,12 +18,12 @@ import {
 
 const types = [
   {
-    value: 'work',
-    label: 'work',
+    value: 'WORK',
+    label: 'WORK',
   },
   {
-    value: 'personal',
-    label: 'personal',
+    value: 'PERSONAL',
+    label: 'PERSONAL',
   },
 ];
 
@@ -41,7 +41,7 @@ const EmailAndPhone = ({
   handleChange,
 }: EmailAndPhoneProps) => {
   const [open, setOpen] = useState(false);
-  const [type, setType] = useState('work');
+  const [type, setType] = useState('WORK');
   const [inputValue, setInputValue] = useState('');
 
   const removeContact = () => {
@@ -51,7 +51,6 @@ const EmailAndPhone = ({
   const debouncedHandleChange = useCallback(
     debounce((id: string, value: string, type: string) => {
       handleChange(id, value, type);
-      // console.log('type', type, 'Value: ', value, 'id: ', id);
 
       const storageKey = contact === 'email' ? 'emails' : 'phones';
       const existingItems = JSON.parse(
@@ -101,7 +100,7 @@ const EmailAndPhone = ({
                 aria-expanded={open}
                 className="w-fit justify-between !h-7 !px-2"
               >
-                {type}
+                <span className="text-xs">{type}</span>
                 <RxChevronDown className="opacity-50 ml-2" />
               </Button>
             </PopoverTrigger>
@@ -119,7 +118,7 @@ const EmailAndPhone = ({
                           debouncedHandleChange(id, inputValue, currentValue); // Ensure the type is saved when changed
                         }}
                       >
-                        {type.label}
+                        <span className="text-xs">{type.label}</span>
                       </CommandItem>
                     ))}
                   </CommandGroup>

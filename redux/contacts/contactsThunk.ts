@@ -10,9 +10,9 @@ export const createContact = createAsyncThunk(
       boardId,
       comment,
       lastName,
-      photoUrl,
+      // photoUrl,
       jobTitle,
-      companies,
+      // companies,
       firstName,
       gitHubUrl,
       twitterUrl,
@@ -22,20 +22,20 @@ export const createContact = createAsyncThunk(
       companyLocation,
     } = values;
     const body = {
-      emails,
-      phones,
-      boardId,
-      comment,
-      photoUrl,
-      lastName,
-      jobTitle,
-      firstName,
-      gitHubUrl,
-      companies,
-      twitterUrl,
-      linkedinUrl,
-      facebookUrl,
-      companyLocation,
+      emails: emails,
+      phones: phones,
+      boardId: boardId,
+      comment: comment,
+      // photoUrl: photoUrl,
+      lastName: lastName,
+      jobTitle: jobTitle,
+      firstName: firstName,
+      gitHubUrl: gitHubUrl,
+      // companies: companies,
+      twitterUrl: twitterUrl,
+      linkedinUrl: linkedinUrl,
+      facebookUrl: facebookUrl,
+      companyLocation: companyLocation,
     };
     try {
       const res = await client.post(`/contacts`, body, {
@@ -44,6 +44,7 @@ export const createContact = createAsyncThunk(
         },
       });
       const data = res.data;
+      console.log('Data from thunk: ', data);
       return data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(
