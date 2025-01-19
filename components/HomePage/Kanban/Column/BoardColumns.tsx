@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { ChangeEvent, useEffect, useState } from 'react';
 
 import ThreeDotsMenu from './ThreeDotsMenu';
@@ -14,6 +14,7 @@ import { getBoards, updateColumnName } from '@/redux/boards/boardsThunk';
 import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
 
 const BoardColumns = () => {
+  const router = useRouter();
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const [isEditing, setIsEditing] = useState(false);
@@ -77,7 +78,11 @@ const BoardColumns = () => {
       companyName: localStorage.getItem('company'),
     };
 
-    dispatch(createJobPost(jobPost));
+    dispatch(createJobPost(jobPost)).then((result) => {
+      const newJobPostId = result.payload.id; // Assuming the payload contains the new job post
+      console.log('New job post ID: ', newJobPostId);
+      router.push(`/home/boards/${board_id}/job/${newJobPostId}/job-details`);
+    });
     dispatch(getBoards(accessToken as string));
     localStorage.setItem('boardValueChanged', 'false');
     localStorage.removeItem('jobTitle');
