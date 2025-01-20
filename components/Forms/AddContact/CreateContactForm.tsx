@@ -48,8 +48,12 @@ const CreateContactForm = ({
   const [companies, setCompanies] = useState<string[]>([]);
   const [companyLocation, setCompanyLocation] = useState('');
   const selectedJob = jobs.jobPosts.find((job) => job.id === job_id);
-  const [emails, setEmails] = useState<{ id: string; value: string }[]>([]);
-  const [phones, setPhones] = useState<{ id: string; value: string }[]>([]);
+  const [emails, setEmails] = useState<
+    { id: string; value: string; type: string }[]
+  >([]);
+  const [phones, setPhones] = useState<
+    { id: string; value: string; type: string }[]
+  >([]);
   const selectedCompanyName = selectedJob?.company.name;
 
   const form = useForm({
@@ -176,13 +180,11 @@ const CreateContactForm = ({
   };
 
   const handleAddEmail = () => {
-    setEmails([...emails, { id: uuidv4(), value: '' }]);
-    localStorage.setItem('emails', JSON.stringify(emails));
+    setEmails([...emails, { id: uuidv4(), value: '', type: 'WORK' }]);
   };
 
   const handleAddPhone = () => {
-    setPhones([...phones, { id: uuidv4(), value: '' }]);
-    localStorage.setItem('phones', JSON.stringify(phones));
+    setPhones([...phones, { id: uuidv4(), value: '', type: 'WORK' }]);
   };
 
   const handleEmailChange = (id: string, value: string, type: string) => {
@@ -191,7 +193,10 @@ const CreateContactForm = ({
         email.id === id ? { ...email, value, type } : email
       )
     );
-    localStorage.setItem('emails', JSON.stringify(emails));
+    const emailsToSave = emails
+      .filter((email) => email.value !== '') // Filter out empty emails
+      .map(({ value, type }) => ({ email: value, type }));
+    localStorage.setItem('emails', JSON.stringify(emailsToSave));
   };
 
   const handlePhoneChange = (id: string, value: string, type: string) => {
@@ -200,8 +205,15 @@ const CreateContactForm = ({
         phone.id === id ? { ...phone, value, type } : phone
       )
     );
-    localStorage.setItem('phones', JSON.stringify(phones));
+    const phonesToSave = phones.map(({ value, type }) => ({
+      phone: value,
+      type,
+    }));
+    localStorage.setItem('phones', JSON.stringify(phonesToSave));
   };
+
+  console.log('Emails array: ', emails);
+  console.log('Phones array: ', phones);
 
   return (
     <div className="min-h-[660px]">
