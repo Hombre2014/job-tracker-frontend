@@ -57,14 +57,22 @@ const EmailAndPhone = ({
         localStorage.getItem(storageKey) || '[]'
       ) as any[];
       const updatedItems = existingItems.filter((item) => item.id !== id); // Remove any existing item with the same id
-      updatedItems.push({ id, value, type }); // Add the new item
-      localStorage.setItem(storageKey, JSON.stringify(updatedItems));
+      if (contact === 'email') {
+        updatedItems.push({ email: value, type });
+      } else {
+        updatedItems.push({ phone: value, type });
+      }
+      const nonEmptyItems = updatedItems.filter(
+        (item) => item.email || item.phone
+      ); // Filter out empty items
+      localStorage.setItem(storageKey, JSON.stringify(nonEmptyItems));
+      console.log('updatedItems: ', nonEmptyItems);
     }, 300),
     [contact]
   );
 
   useEffect(() => {
-    if (inputValue || type) {
+    if (inputValue) {
       debouncedHandleChange(id, inputValue, type);
     }
     return () => {
@@ -85,7 +93,17 @@ const EmailAndPhone = ({
             name="contact"
             title="contact"
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => {
+              setInputValue(e.target.value);
+              if (e.target.value) {
+                handleChange(id, e.target.value, type); // Add the record to the state when the user types a value
+              }
+            }}
+            onBlur={() => {
+              if (inputValue) {
+                debouncedHandleChange(id, inputValue, type);
+              }
+            }} // Save on blur if inputValue is not empty
             className="outline-none bg-transparent border-none pl-2 text-sm"
             placeholder={contact.charAt(0).toUpperCase() + contact.slice(1)}
           />
@@ -115,7 +133,9 @@ const EmailAndPhone = ({
                         onSelect={(currentValue) => {
                           setType(currentValue);
                           setOpen(false);
-                          debouncedHandleChange(id, inputValue, currentValue); // Ensure the type is saved when changed
+                          if (inputValue) {
+                            debouncedHandleChange(id, inputValue, currentValue); // Ensure the type is saved when changed
+                          }
                         }}
                       >
                         <span className="text-xs">{type.label}</span>
