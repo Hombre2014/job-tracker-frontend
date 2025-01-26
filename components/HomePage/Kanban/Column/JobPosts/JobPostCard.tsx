@@ -111,7 +111,7 @@ const JobPostCard = ({
 
   const shortTimeSinceChange = getShortTimeSinceStatusChange(timeStamp);
   const shortTimeSinceStatusChange = getShortTimeSinceStatusChange(
-    new Date(Date.parse(statusChangedTime) - 60 * 60 * 1000).toISOString()
+    new Date(Date.parse(statusChangedTime)).toISOString()
   );
 
   const now = new Date();
