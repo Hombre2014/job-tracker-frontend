@@ -48,10 +48,8 @@ const JobPostCard = ({
   statusChangedTime,
 }: JobPostCardProps) => {
   const router = useRouter();
-  const date = new Date(timeStamp);
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
-  // const zonedDate = toZonedTime(date, 'UTC');
   const [showIcons, setShowIcons] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
@@ -80,8 +78,7 @@ const JobPostCard = ({
 
   function getShortTimeSinceStatusChange(timeStamp: string): string {
     const nowTime = Date.now();
-    const adjustedTimeStamp = new Date(Date.parse(timeStamp) + 60 * 60 * 1000); // Add 1 hour due to timezone difference between server Docker container and client
-    const dateTime = adjustedTimeStamp.getTime();
+    const dateTime = new Date(Date.parse(timeStamp)).getTime();
 
     return formatTimeDifference(nowTime - dateTime);
   }
@@ -114,7 +111,7 @@ const JobPostCard = ({
 
   const shortTimeSinceChange = getShortTimeSinceStatusChange(timeStamp);
   const shortTimeSinceStatusChange = getShortTimeSinceStatusChange(
-    new Date(Date.parse(statusChangedTime) - 60 * 60 * 1000).toISOString()
+    new Date(Date.parse(statusChangedTime)).toISOString()
   );
 
   const now = new Date();

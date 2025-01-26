@@ -102,7 +102,7 @@ const Notes = () => {
     const now = Date.now();
     const createdAt = new Date(note.createdAt);
     const updatedAt = note.updatedAt ? new Date(note.updatedAt) : createdAt;
-    const adjustedTime = updatedAt.getTime() + 60 * 60 * 1000;
+    const adjustedTime = updatedAt.getTime();
     const diffInSeconds = Math.floor((now - adjustedTime) / 1000);
 
     const formatTimeUnit = (value: number, unit: string) => {
