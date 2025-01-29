@@ -44,7 +44,6 @@ export const createContact = createAsyncThunk(
         },
       });
       const data = res.data;
-      console.log('Data from thunk: ', data);
       return data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(
@@ -123,6 +122,48 @@ export const deleteContact = createAsyncThunk(
     } catch (err: any) {
       return thunkAPI.rejectWithValue(
         err.response?.data || 'Error deleting contact'
+      );
+    }
+  }
+);
+
+export const getContact = createAsyncThunk(
+  'contacts/getContact',
+  async ({ accessToken, boardId, contactId }: any, thunkAPI) => {
+    try {
+      const res = await client.get(
+        `/contacts?boardId=${boardId}&contactId=${contactId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error getting contacts'
+      );
+    }
+  }
+);
+
+export const getAllContactsPerBoard = createAsyncThunk(
+  'contacts/getAllContactsPerBoard',
+  async (values: any, thunkAPI) => {
+    const { accessToken, boardId } = values;
+    try {
+      const res = await client.get(`/contacts?boardId=${boardId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error getting contacts'
       );
     }
   }

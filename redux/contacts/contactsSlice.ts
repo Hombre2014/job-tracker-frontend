@@ -1,7 +1,13 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 import { RootState } from '../store';
-import { createContact, updateContact, deleteContact } from './contactsThunk';
+import {
+  getContact,
+  createContact,
+  updateContact,
+  deleteContact,
+  getAllContactsPerBoard,
+} from './contactsThunk';
 
 interface ContactState {
   contacts: Contact[];
@@ -60,6 +66,30 @@ export const contactsSlice = createSlice({
       .addCase(deleteContact.rejected, (state, action) => {
         state.contactsStatus = 'failed';
         state.error = action.error.message || 'Failed to delete contact';
+      })
+      .addCase(getContact.pending, (state) => {
+        state.contactsStatus = 'loading';
+      })
+      .addCase(getContact.fulfilled, (state, action) => {
+        state.contactsStatus = 'succeeded';
+        state.contacts = action.payload;
+        state.error = null;
+      })
+      .addCase(getContact.rejected, (state, action) => {
+        state.contactsStatus = 'failed';
+        state.error = action.error.message || 'Failed to get contact';
+      })
+      .addCase(getAllContactsPerBoard.pending, (state) => {
+        state.contactsStatus = 'loading';
+      })
+      .addCase(getAllContactsPerBoard.fulfilled, (state, action) => {
+        state.contactsStatus = 'succeeded';
+        state.contacts = action.payload;
+        state.error = null;
+      })
+      .addCase(getAllContactsPerBoard.rejected, (state, action) => {
+        state.contactsStatus = 'failed';
+        state.error = action.error.message || 'Failed to get contacts';
       });
   },
 });
