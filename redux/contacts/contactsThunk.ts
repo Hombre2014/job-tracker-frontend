@@ -168,3 +168,51 @@ export const getAllContactsPerBoard = createAsyncThunk(
     }
   }
 );
+
+export const assignContactToJobPost = createAsyncThunk(
+  'contacts/assignContactToJobPost',
+  async (values: any, thunkAPI) => {
+    const { accessToken, contactId, jobPostId } = values;
+    const body = {
+      contactId: contactId,
+      jobPostId: jobPostId,
+    };
+    try {
+      const res = await client.post(`/contacts/jobApplication/assign`, body, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error assigning contact to job application'
+      );
+    }
+  }
+);
+
+export const unassignContactFromJobPost = createAsyncThunk(
+  'contacts/unassignContactFromJobPost',
+  async (values: any, thunkAPI) => {
+    const { accessToken, contactId, jobPostId } = values;
+    const body = {
+      contactId: contactId,
+      jobPostId: jobPostId,
+    };
+    try {
+      const res = await client.post(`/contacts/jobApplication/unassign`, body, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error removing contact from job application'
+      );
+    }
+  }
+);

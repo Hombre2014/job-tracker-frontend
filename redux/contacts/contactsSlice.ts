@@ -7,6 +7,8 @@ import {
   updateContact,
   deleteContact,
   getAllContactsPerBoard,
+  assignContactToJobPost,
+  unassignContactFromJobPost,
 } from './contactsThunk';
 
 interface ContactState {
@@ -90,6 +92,40 @@ export const contactsSlice = createSlice({
       .addCase(getAllContactsPerBoard.rejected, (state, action) => {
         state.contactsStatus = 'failed';
         state.error = action.error.message || 'Failed to get contacts';
+      })
+      .addCase(assignContactToJobPost.pending, (state) => {
+        state.contactsStatus = 'loading';
+      })
+      .addCase(assignContactToJobPost.fulfilled, (state, action) => {
+        state.contactsStatus = 'succeeded';
+        state.contacts = state.contacts.map((contact) =>
+          contact.id === action.payload.contactId
+            ? { ...contact, jobPostId: action.payload.jobPostId }
+            : contact
+        );
+        state.error = null;
+      })
+      .addCase(assignContactToJobPost.rejected, (state, action) => {
+        state.contactsStatus = 'failed';
+        state.error =
+          action.error.message || 'Failed to assign contact to job post';
+      })
+      .addCase(unassignContactFromJobPost.pending, (state) => {
+        state.contactsStatus = 'loading';
+      })
+      .addCase(unassignContactFromJobPost.fulfilled, (state, action) => {
+        state.contactsStatus = 'succeeded';
+        state.contacts = state.contacts.map((contact) =>
+          contact.id === action.payload.contactId
+            ? { ...contact, jobPostId: null }
+            : contact
+        );
+        state.error = null;
+      })
+      .addCase(unassignContactFromJobPost.rejected, (state, action) => {
+        state.contactsStatus = 'failed';
+        state.error =
+          action.error.message || 'Failed to unassign contact from job post';
       });
   },
 });
