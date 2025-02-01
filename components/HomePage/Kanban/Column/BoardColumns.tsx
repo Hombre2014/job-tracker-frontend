@@ -79,8 +79,8 @@ const BoardColumns = () => {
     };
 
     dispatch(createJobPost(jobPost)).then((result) => {
-      const newJobPostId = result.payload.id; // Assuming the payload contains the new job post
-      console.log('New job post ID: ', newJobPostId);
+      const newJobPostId = result.payload.id;
+      localStorage.setItem('companyId', result.payload.company.id);
       router.push(`/home/boards/${board_id}/job/${newJobPostId}/job-details`);
     });
     dispatch(getBoards(accessToken as string));
