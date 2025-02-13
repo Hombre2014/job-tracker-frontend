@@ -1,9 +1,10 @@
 'use client';
 
+import { debounce } from 'lodash';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect, useState, useCallback } from 'react';
 
 import { AddJobSchemaShort } from '@/schemas';
 import { Input } from '@/components/ui/input';
@@ -17,6 +18,10 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  createCompany,
+  getCompanyThatStartsWith,
+} from '@/redux/companies/companiesThunk';
 
 const AddJobShortForm = ({
   columnOrder,
@@ -30,6 +35,10 @@ const AddJobShortForm = ({
   const [company, setCompany] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const accessToken = localStorage.getItem('accessToken');
+
+  const [matchingCompanies, setMatchingCompanies] = useState<string[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+
   const { boards } = useAppSelector((state) => state.boards);
   const [boardColumns, setBoardColumns] = useState(
     boards.find((board) => board.id === board_id)!.columns
@@ -71,10 +80,64 @@ const AddJobShortForm = ({
     },
   });
 
+  const debouncedSearch = useCallback(
+    debounce((searchTerm: string) => {
+      if (searchTerm.length >= 2) {
+        const values = {
+          accessToken,
+          companyName: searchTerm,
+        };
+        dispatch(getCompanyThatStartsWith(values))
+          .unwrap()
+          .then((result) => {
+            const companyNames: string[] = result.map(
+              (company: { name: string }) => company.name
+            );
+            setMatchingCompanies(companyNames);
+            setShowDropdown(true);
+          })
+          .catch((error) => {
+            console.error('Search error:', error);
+            setMatchingCompanies([]);
+            setShowDropdown(false);
+          });
+      } else {
+        setMatchingCompanies([]);
+        setShowDropdown(false);
+      }
+    }, 300),
+    [dispatch, accessToken]
+  );
+
   const handleCompanyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCompany(e.target.value);
-    localStorage.setItem('company', e.target.value);
-    form.setValue('company', e.target.value);
+    const value = e.target.value;
+    setCompany(value);
+    form.setValue('company', value);
+    debouncedSearch(value);
+  };
+
+  const handleCompanyBlur = () => {
+    setTimeout(() => {
+      setShowDropdown(false);
+      if (matchingCompanies.includes(company)) {
+        localStorage.setItem('company', company);
+      } else {
+        localStorage.setItem('company', company);
+        dispatch(createCompany({ accessToken, name: company }))
+          .unwrap()
+          .then((result) => {
+            const companyId = result.id;
+            localStorage.setItem('companyId', companyId);
+          });
+      }
+    }, 200);
+  };
+
+  const handleCompanySelect = (selectedCompany: string) => {
+    setCompany(selectedCompany);
+    form.setValue('company', selectedCompany);
+    setShowDropdown(false);
+    localStorage.setItem('company', selectedCompany);
   };
 
   const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,7 +161,7 @@ const AddJobShortForm = ({
           name="company"
           control={form.control}
           render={({ field }) => (
-            <FormItem className="!text-left">
+            <FormItem className="!text-left relative">
               <span className="flex justify-between">
                 <FormLabel className="text-gray-800 font-semibold">
                   Company
@@ -107,10 +170,26 @@ const AddJobShortForm = ({
               </span>
               <Input
                 {...field}
+                {...field}
                 value={company}
                 placeholder="Company name"
-                onChange={(e) => handleCompanyChange(e)}
+                onChange={handleCompanyChange}
+                onBlur={handleCompanyBlur}
               />
+              {showDropdown && matchingCompanies.length > 0 && (
+                <div className="absolute z-10 w-full bg-white mt-1 border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                  {matchingCompanies.map((matchingCompany, index) => (
+                    <div
+                      key={index}
+                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => handleCompanySelect(matchingCompany)}
+                    >
+                      {matchingCompany}
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <FormMessage />
             </FormItem>
           )}
