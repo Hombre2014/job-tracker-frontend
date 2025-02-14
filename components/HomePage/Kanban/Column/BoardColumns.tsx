@@ -75,7 +75,8 @@ const BoardColumns = () => {
       accessToken: accessToken as string,
       title: localStorage.getItem('jobTitle'),
       columnId: localStorage.getItem('columnId'),
-      companyName: localStorage.getItem('company'),
+      // companyName: localStorage.getItem('company'),
+      companyId: localStorage.getItem('companyId'),
     };
 
     dispatch(createJobPost(jobPost)).then((result) => {

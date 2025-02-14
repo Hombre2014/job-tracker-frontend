@@ -12,16 +12,16 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getBoardWithColumns } from '@/redux/boards/boardsThunk';
 import ComboBoardListBox from '@/components/Forms/AddJobShort/ComboBoardListBox';
 import {
+  createCompany,
+  getCompanyThatStartsWith,
+} from '@/redux/companies/companiesThunk';
+import {
   Form,
   FormItem,
   FormField,
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  createCompany,
-  getCompanyThatStartsWith,
-} from '@/redux/companies/companiesThunk';
 
 const AddJobShortForm = ({
   columnOrder,
@@ -114,30 +114,73 @@ const AddJobShortForm = ({
     setCompany(value);
     form.setValue('company', value);
     debouncedSearch(value);
+
+    console.log('Company in handle companyChange:', company);
   };
 
   const handleCompanyBlur = () => {
     setTimeout(() => {
       setShowDropdown(false);
+      // Only proceed if no company was selected from dropdown
+      if (localStorage.getItem('companySelected') === 'true') {
+        localStorage.removeItem('companySelected');
+        return;
+      }
+
       if (matchingCompanies.includes(company)) {
         localStorage.setItem('company', company);
+        // Get the existing company's ID
+        const existingCompany = matchingCompanies.find(
+          (comp) => comp === company
+        );
+        if (existingCompany) {
+          const values = {
+            accessToken,
+            companyName: company,
+          };
+          dispatch(getCompanyThatStartsWith(values))
+            .unwrap()
+            .then((result) => {
+              const companyData = result.find(
+                (comp: any) => comp.name === company
+              );
+              if (companyData) {
+                localStorage.setItem('companyId', companyData.id);
+              }
+            });
+        }
       } else {
         localStorage.setItem('company', company);
         dispatch(createCompany({ accessToken, name: company }))
           .unwrap()
           .then((result) => {
-            const companyId = result.id;
-            localStorage.setItem('companyId', companyId);
+            const newCompanyId = result.id;
+            localStorage.setItem('companyId', newCompanyId);
           });
       }
     }, 200);
   };
 
-  const handleCompanySelect = (selectedCompany: string) => {
-    setCompany(selectedCompany);
-    form.setValue('company', selectedCompany);
+  const handleCompanySelect = async (selectedCompany: string) => {
+    const fullCompanyName = selectedCompany;
+    setCompany(fullCompanyName);
+    form.setValue('company', fullCompanyName);
     setShowDropdown(false);
-    localStorage.setItem('company', selectedCompany);
+    localStorage.setItem('company', fullCompanyName);
+    localStorage.setItem('companySelected', 'true'); // Added this line
+
+    const values = {
+      accessToken,
+      companyName: fullCompanyName,
+    };
+
+    const result = await dispatch(getCompanyThatStartsWith(values)).unwrap();
+    const existingCompany = result.find(
+      (comp: any) => comp.name === fullCompanyName
+    );
+    if (existingCompany) {
+      localStorage.setItem('companyId', existingCompany.id);
+    }
   };
 
   const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -173,8 +216,8 @@ const AddJobShortForm = ({
                 {...field}
                 value={company}
                 placeholder="Company name"
-                onChange={handleCompanyChange}
                 onBlur={handleCompanyBlur}
+                onChange={handleCompanyChange}
               />
               {showDropdown && matchingCompanies.length > 0 && (
                 <div className="absolute z-10 w-full bg-white mt-1 border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
