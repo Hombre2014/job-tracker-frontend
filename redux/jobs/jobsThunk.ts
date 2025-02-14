@@ -5,13 +5,14 @@ import { defaultJobPostColor } from '@/data/constants';
 export const createJobPost = createAsyncThunk(
   'jobs/createJobPost',
   async (values: any, thunkAPI) => {
-    const { accessToken, title, companyName, columnId, status } = values;
+    const { accessToken, title, companyId, columnId, status } = values;
     const body = {
       title: title,
       columnId: columnId,
-      company: {
-        name: companyName,
-      },
+      // company: {
+      //   name: companyName,
+      // },
+      companyId: companyId,
       status: status,
       color: defaultJobPostColor,
       createdAt: new Date().toISOString(),
