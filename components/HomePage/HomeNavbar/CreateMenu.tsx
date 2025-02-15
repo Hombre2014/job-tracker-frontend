@@ -6,10 +6,13 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAppDispatch } from '@/redux/hooks';
 import { createJobPost } from '@/redux/jobs/jobsThunk';
 import { getBoards } from '@/redux/boards/boardsThunk';
-import { createContact } from '@/redux/contacts/contactsThunk';
 import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
+import {
+  assignContactToJobPost,
+  createContact,
+} from '@/redux/contacts/contactsThunk';
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -20,8 +23,8 @@ import {
 
 const CreateMenu = () => {
   const router = useRouter();
-  const { board_id } = useParams();
   const dispatch = useAppDispatch();
+  const { board_id, job_id } = useParams();
   const [, setIsMenuOpen] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
@@ -72,7 +75,21 @@ const CreateMenu = () => {
       companyIds: JSON.parse(localStorage.getItem('companyIds') || '[]'),
     };
 
-    dispatch(createContact(values));
+    dispatch(createContact(values))
+      .unwrap()
+      .then((result) => {
+        const newContactId = result.id;
+        const jobPostId = job_id;
+        localStorage.setItem('contactId', newContactId);
+
+        const assignData = {
+          accessToken,
+          contactId: newContactId,
+          jobApplicationId: jobPostId,
+        };
+
+        dispatch(assignContactToJobPost(assignData));
+      });
     localStorage.removeItem('jobTitle');
     localStorage.removeItem('lastName');
     localStorage.removeItem('companies');

@@ -5,9 +5,12 @@ import { useParams } from 'next/navigation';
 
 import { useAppDispatch } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
-import { createContact } from '@/redux/contacts/contactsThunk';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
+import {
+  assignContactToJobPost,
+  createContact,
+} from '@/redux/contacts/contactsThunk';
 
 interface CreateContactModalProps {
   showButton: boolean;
@@ -26,8 +29,8 @@ const CreateContactModal = ({
   dialogTitle,
   buttonConfirm,
 }: CreateContactModalProps) => {
-  const { board_id } = useParams();
   const dispatch = useAppDispatch();
+  const { board_id, job_id } = useParams();
   const [, setIsMenuOpen] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
@@ -61,7 +64,21 @@ const CreateContactModal = ({
       companyIds: JSON.parse(localStorage.getItem('companyIds') || '[]'),
     };
 
-    dispatch(createContact(values));
+    dispatch(createContact(values))
+      .unwrap()
+      .then((result) => {
+        const newContactId = result.id;
+        const jobPostId = job_id;
+        localStorage.setItem('contactId', newContactId);
+
+        const assignData = {
+          accessToken,
+          contactId: newContactId,
+          jobApplicationId: jobPostId,
+        };
+
+        dispatch(assignContactToJobPost(assignData));
+      });
     localStorage.removeItem('jobTitle');
     localStorage.removeItem('lastName');
     localStorage.removeItem('companies');
