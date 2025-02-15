@@ -35,18 +35,16 @@ const AddJobShortForm = ({
   const [company, setCompany] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const accessToken = localStorage.getItem('accessToken');
-
-  const [matchingCompanies, setMatchingCompanies] = useState<string[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
-
+  const chosenColumn = localStorage.getItem('chosenColumn');
   const { boards } = useAppSelector((state) => state.boards);
   const [boardColumns, setBoardColumns] = useState(
     boards.find((board) => board.id === board_id)!.columns
   );
   const initialColumnName = boardColumns![columnOrder].name;
+  const [matchingCompanies, setMatchingCompanies] = useState<string[]>([]);
   const initialBoardName = boards.find((board) => board.id === board_id)!.name;
   const chosenBoard = localStorage.getItem('chosenBoard') || initialBoardName;
-  const chosenColumn = localStorage.getItem('chosenColumn');
   const [firstColumnOfTheBoard, setFirstColumnOfTheBoard] =
     useState(initialColumnName);
 
@@ -114,8 +112,6 @@ const AddJobShortForm = ({
     setCompany(value);
     form.setValue('company', value);
     debouncedSearch(value);
-
-    console.log('Company in handle companyChange:', company);
   };
 
   const handleCompanyBlur = () => {
@@ -133,11 +129,13 @@ const AddJobShortForm = ({
         const existingCompany = matchingCompanies.find(
           (comp) => comp === company
         );
+
         if (existingCompany) {
           const values = {
             accessToken,
             companyName: company,
           };
+
           dispatch(getCompanyThatStartsWith(values))
             .unwrap()
             .then((result) => {
@@ -167,7 +165,7 @@ const AddJobShortForm = ({
     form.setValue('company', fullCompanyName);
     setShowDropdown(false);
     localStorage.setItem('company', fullCompanyName);
-    localStorage.setItem('companySelected', 'true'); // Added this line
+    localStorage.setItem('companySelected', 'true');
 
     const values = {
       accessToken,
@@ -212,7 +210,6 @@ const AddJobShortForm = ({
                 <FormLabel className="text-gray-400">Required</FormLabel>
               </span>
               <Input
-                {...field}
                 {...field}
                 value={company}
                 placeholder="Company name"

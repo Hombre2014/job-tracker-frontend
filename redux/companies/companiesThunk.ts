@@ -41,8 +41,6 @@ export const createCompany = createAsyncThunk(
           'Content-Type': 'application/json',
         },
       });
-
-      console.log('Resdata from company creation: ', res.data);
       return res.data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(

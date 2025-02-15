@@ -212,7 +212,7 @@ const JobInfo = () => {
         </CardContent>
       ) : jobPostsStatus !== 'succeeded' && firstVisit ? (
         <div className="min-h-[524px] flex flex-col justify-center">
-          <Loader title="Loading job post..." />
+          <Loader title="Loading job post" />
         </div>
       ) : null}
     </Card>

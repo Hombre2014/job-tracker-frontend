@@ -75,14 +75,11 @@ const BoardColumns = () => {
       accessToken: accessToken as string,
       title: localStorage.getItem('jobTitle'),
       columnId: localStorage.getItem('columnId'),
-      // companyName: localStorage.getItem('company'),
       companyId: localStorage.getItem('companyId'),
     };
 
     dispatch(createJobPost(jobPost)).then((result) => {
       const newJobPostId = result.payload.id;
-      console.log('Result payload: ', result.payload);
-      // localStorage.setItem('companyId', result.payload.company.id);
       router.push(`/home/boards/${board_id}/job/${newJobPostId}/job-details`);
     });
     dispatch(getBoards(accessToken as string));
