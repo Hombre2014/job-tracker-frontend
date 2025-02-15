@@ -45,11 +45,6 @@ const CreateContactModal = ({
     setShowContactModal(false);
     if (onClose) onClose();
 
-    console.log(
-      'Creating contact... and companyIds',
-      localStorage.getItem('companyId')
-    );
-
     const values = {
       accessToken,
       boardId: board_id,
@@ -67,6 +62,12 @@ const CreateContactModal = ({
     };
 
     dispatch(createContact(values));
+    localStorage.removeItem('jobTitle');
+    localStorage.removeItem('lastName');
+    localStorage.removeItem('companies');
+    localStorage.removeItem('firstName');
+    localStorage.removeItem('companyIds');
+    localStorage.removeItem('jobsConnectedToContact');
   };
 
   return (

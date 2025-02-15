@@ -6,8 +6,9 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAppDispatch } from '@/redux/hooks';
 import { createJobPost } from '@/redux/jobs/jobsThunk';
 import { getBoards } from '@/redux/boards/boardsThunk';
-import AlertDialogModal from '../Boards/AlertDialogModal';
+import { createContact } from '@/redux/contacts/contactsThunk';
 import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
+import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
 import {
   NavigationMenu,
@@ -50,12 +51,34 @@ const CreateMenu = () => {
     localStorage.removeItem('company');
   };
 
-  const createContact = () => {
+  const createNewContact = () => {
     if (!isFormValid) return;
 
     setShowContactModal(false);
 
-    // TODO: Implement contact creation
+    const values = {
+      accessToken,
+      boardId: board_id,
+      comment: localStorage.getItem('comment'),
+      jobTitle: localStorage.getItem('jobTitle'),
+      lastName: localStorage.getItem('lastName'),
+      firstName: localStorage.getItem('firstName'),
+      gitHubUrl: localStorage.getItem('githubUrl'),
+      twitterUrl: localStorage.getItem('twitterUrl'),
+      linkedinUrl: localStorage.getItem('linkedinUrl'),
+      facebookUrl: localStorage.getItem('facebookUrl'),
+      emails: JSON.parse(localStorage.getItem('emails') || '[]'),
+      phones: JSON.parse(localStorage.getItem('phones') || '[]'),
+      companyIds: JSON.parse(localStorage.getItem('companyIds') || '[]'),
+    };
+
+    dispatch(createContact(values));
+    localStorage.removeItem('jobTitle');
+    localStorage.removeItem('lastName');
+    localStorage.removeItem('companies');
+    localStorage.removeItem('firstName');
+    localStorage.removeItem('companyIds');
+    localStorage.removeItem('jobsConnectedToContact');
   };
 
   return (
@@ -128,7 +151,7 @@ const CreateMenu = () => {
           isFormValid={isFormValid}
           contentWidth="!max-w-[900px]"
           dialogTitle="Save New Contact"
-          actionFunction={createContact}
+          actionFunction={createNewContact}
           onOpenChange={(open) => {
             setShowContactModal(open);
             if (!open) setIsMenuOpen(false);
