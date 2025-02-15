@@ -8,12 +8,9 @@ export const createJobPost = createAsyncThunk(
     const { accessToken, title, companyId, columnId, status } = values;
     const body = {
       title: title,
-      columnId: columnId,
-      // company: {
-      //   name: companyName,
-      // },
-      companyId: companyId,
       status: status,
+      columnId: columnId,
+      companyId: companyId,
       color: defaultJobPostColor,
       createdAt: new Date().toISOString(),
     };

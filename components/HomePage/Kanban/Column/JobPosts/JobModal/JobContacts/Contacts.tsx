@@ -18,8 +18,12 @@ const Contacts = () => {
   const { job_id } = useParams();
   const jobs = useAppSelector((state) => state.jobs);
 
+  console.log('jobs in Contacts: ', jobs);
+
   const numberOfContactsPerJob =
     jobs.jobPosts.find((job) => job.id === job_id)?.contacts.length || 0;
+
+  console.log('number of contacts', numberOfContactsPerJob);
 
   const contactId = jobs.jobPosts.find((job) => job.id === job_id)?.contacts[0];
 
