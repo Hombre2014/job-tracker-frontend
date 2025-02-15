@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { GoPersonAdd } from 'react-icons/go';
 import { PiBriefcaseLight } from 'react-icons/pi';
+import { useParams, useRouter } from 'next/navigation';
 
 import { useAppDispatch } from '@/redux/hooks';
 import { createJobPost } from '@/redux/jobs/jobsThunk';
+import { getBoards } from '@/redux/boards/boardsThunk';
 import AlertDialogModal from '../Boards/AlertDialogModal';
 import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
+import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -13,9 +16,10 @@ import {
   NavigationMenuContent,
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
-import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
 
 const CreateMenu = () => {
+  const router = useRouter();
+  const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const [, setIsMenuOpen] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
@@ -33,10 +37,17 @@ const CreateMenu = () => {
       accessToken: accessToken as string,
       title: localStorage.getItem('jobTitle'),
       columnId: localStorage.getItem('columnId'),
-      companyName: localStorage.getItem('company'),
+      companyId: localStorage.getItem('companyId'),
     };
 
-    dispatch(createJobPost(jobPost));
+    dispatch(createJobPost(jobPost)).then((result) => {
+      const newJobPostId = result.payload.id;
+      router.push(`/home/boards/${board_id}/job/${newJobPostId}/job-details`);
+    });
+    dispatch(getBoards(accessToken as string));
+    localStorage.setItem('boardValueChanged', 'false');
+    localStorage.removeItem('jobTitle');
+    localStorage.removeItem('company');
   };
 
   const createContact = () => {

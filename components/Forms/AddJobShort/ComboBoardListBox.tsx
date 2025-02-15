@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState, forwardRef } from 'react';
 import { useLocalStorage } from 'usehooks-ts';
+import { useEffect, useState, forwardRef } from 'react';
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
+
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useAppSelector, useAppDispatch } from '@/redux/hooks';
@@ -22,15 +23,15 @@ import {
 } from '@/components/ui/command';
 
 interface ComboBoardListBoxProps {
-  items: Array<{
-    id: string;
-    name: string;
-  }>;
-  itemsType: 'boards' | 'columns';
   searchItem: string;
   initialBoardString?: string;
   initialColumnString?: string;
   firstColumnOfTheBoard?: string;
+  itemsType: 'boards' | 'columns';
+  items: Array<{
+    id: string;
+    name: string;
+  }>;
 }
 
 const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
