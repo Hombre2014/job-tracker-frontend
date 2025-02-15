@@ -43,6 +43,7 @@ export const logout = createAsyncThunk('user/logout', async () => {
   localStorage.removeItem('gitHubUrl');
   localStorage.removeItem('companies');
   localStorage.removeItem('firstName');
+  localStorage.removeItem('companyId');
   localStorage.removeItem('twitterUrl');
   localStorage.removeItem('linkedinUrl');
   localStorage.removeItem('chosenBoard');

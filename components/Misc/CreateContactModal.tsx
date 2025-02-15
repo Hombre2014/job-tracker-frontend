@@ -45,6 +45,11 @@ const CreateContactModal = ({
     setShowContactModal(false);
     if (onClose) onClose();
 
+    console.log(
+      'Creating contact... and companyIds',
+      localStorage.getItem('companyId')
+    );
+
     const values = {
       accessToken,
       boardId: board_id,
@@ -56,9 +61,9 @@ const CreateContactModal = ({
       twitterUrl: localStorage.getItem('twitterUrl'),
       linkedinUrl: localStorage.getItem('linkedinUrl'),
       facebookUrl: localStorage.getItem('facebookUrl'),
-      companyLocation: localStorage.getItem('companyLocation'),
       emails: JSON.parse(localStorage.getItem('emails') || '[]'),
       phones: JSON.parse(localStorage.getItem('phones') || '[]'),
+      companyIds: JSON.parse(localStorage.getItem('companyIds') || '[]'),
     };
 
     dispatch(createContact(values));
