@@ -51,6 +51,7 @@ type Contact = {
   emails: Email[];
   phones: Phone[];
   comment: string;
+  photoUrl: string;
   lastName: string;
   jobTitle: string;
   firstName: string;
