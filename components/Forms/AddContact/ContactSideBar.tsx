@@ -54,9 +54,9 @@ const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
       );
 
       const assignData = {
-        accessToken,
         contactId,
-        jobPostId: jobId,
+        accessToken,
+        jobApplicationId: jobId,
       };
       dispatch(assignContactToJobPost(assignData));
     }
@@ -72,9 +72,9 @@ const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
     );
 
     const unassignData = {
-      accessToken,
       contactId,
-      jobPostId: jobId,
+      accessToken,
+      jobApplicationId: jobId,
     };
     dispatch(unassignContactFromJobPost(unassignData));
   };
