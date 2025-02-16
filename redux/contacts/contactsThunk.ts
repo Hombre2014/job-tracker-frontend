@@ -164,10 +164,10 @@ export const getAllContactsPerBoard = createAsyncThunk(
 export const assignContactToJobPost = createAsyncThunk(
   'contacts/assignContactToJobPost',
   async (values: any, thunkAPI) => {
-    const { accessToken, contactId, jobPostId } = values;
+    const { accessToken, contactId, jobApplicationId } = values;
     const body = {
       contactId: contactId,
-      jobPostId: jobPostId,
+      jobApplicationId: jobApplicationId,
     };
     try {
       const res = await client.post(`/contacts/jobApplication/assign`, body, {
@@ -188,10 +188,10 @@ export const assignContactToJobPost = createAsyncThunk(
 export const unassignContactFromJobPost = createAsyncThunk(
   'contacts/unassignContactFromJobPost',
   async (values: any, thunkAPI) => {
-    const { accessToken, contactId, jobPostId } = values;
+    const { accessToken, contactId, jobApplicationId } = values;
     const body = {
       contactId: contactId,
-      jobPostId: jobPostId,
+      jobApplicationId: jobApplicationId,
     };
     try {
       const res = await client.post(`/contacts/jobApplication/unassign`, body, {

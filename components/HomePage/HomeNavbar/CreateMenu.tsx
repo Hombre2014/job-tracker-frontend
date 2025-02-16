@@ -6,9 +6,13 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAppDispatch } from '@/redux/hooks';
 import { createJobPost } from '@/redux/jobs/jobsThunk';
 import { getBoards } from '@/redux/boards/boardsThunk';
-import AlertDialogModal from '../Boards/AlertDialogModal';
 import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
+import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
+import {
+  assignContactToJobPost,
+  createContact,
+} from '@/redux/contacts/contactsThunk';
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -19,8 +23,8 @@ import {
 
 const CreateMenu = () => {
   const router = useRouter();
-  const { board_id } = useParams();
   const dispatch = useAppDispatch();
+  const { board_id, job_id } = useParams();
   const [, setIsMenuOpen] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
@@ -50,12 +54,48 @@ const CreateMenu = () => {
     localStorage.removeItem('company');
   };
 
-  const createContact = () => {
+  const createNewContact = () => {
     if (!isFormValid) return;
 
     setShowContactModal(false);
 
-    // TODO: Implement contact creation
+    const values = {
+      accessToken,
+      boardId: board_id,
+      comment: localStorage.getItem('comment'),
+      jobTitle: localStorage.getItem('jobTitle'),
+      lastName: localStorage.getItem('lastName'),
+      firstName: localStorage.getItem('firstName'),
+      gitHubUrl: localStorage.getItem('githubUrl'),
+      twitterUrl: localStorage.getItem('twitterUrl'),
+      linkedinUrl: localStorage.getItem('linkedinUrl'),
+      facebookUrl: localStorage.getItem('facebookUrl'),
+      emails: JSON.parse(localStorage.getItem('emails') || '[]'),
+      phones: JSON.parse(localStorage.getItem('phones') || '[]'),
+      companyIds: JSON.parse(localStorage.getItem('companyIds') || '[]'),
+    };
+
+    dispatch(createContact(values))
+      .unwrap()
+      .then((result) => {
+        const newContactId = result.id;
+        const jobPostId = job_id;
+        localStorage.setItem('contactId', newContactId);
+
+        const assignData = {
+          accessToken,
+          contactId: newContactId,
+          jobApplicationId: jobPostId,
+        };
+
+        dispatch(assignContactToJobPost(assignData));
+      });
+    localStorage.removeItem('jobTitle');
+    localStorage.removeItem('lastName');
+    localStorage.removeItem('companies');
+    localStorage.removeItem('firstName');
+    localStorage.removeItem('companyIds');
+    localStorage.removeItem('jobsConnectedToContact');
   };
 
   return (
@@ -128,7 +168,7 @@ const CreateMenu = () => {
           isFormValid={isFormValid}
           contentWidth="!max-w-[900px]"
           dialogTitle="Save New Contact"
-          actionFunction={createContact}
+          actionFunction={createNewContact}
           onOpenChange={(open) => {
             setShowContactModal(open);
             if (!open) setIsMenuOpen(false);

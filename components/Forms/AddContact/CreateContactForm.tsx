@@ -1,8 +1,9 @@
 import Image from 'next/image';
+import { debounce } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { IoMdContact } from 'react-icons/io';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -17,6 +18,10 @@ import SocialMediaLinks from './SocialMediaLinks';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
+import {
+  createCompany,
+  getCompanyThatStartsWith,
+} from '@/redux/companies/companiesThunk';
 import {
   Form,
   FormItem,
@@ -45,9 +50,13 @@ const CreateContactForm = ({
   const [facebookUrl, setFacebookUrl] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const accessToken = localStorage.getItem('accessToken');
+  const [showDropdown, setShowDropdown] = useState(false);
   const [companies, setCompanies] = useState<string[]>([]);
+  const [companyIds, setCompanyIds] = useState<string[]>([]);
   const [companyLocation, setCompanyLocation] = useState('');
+  const [currentCompanyInput, setCurrentCompanyInput] = useState('');
   const selectedJob = jobs.jobPosts.find((job) => job.id === job_id);
+  const [matchingCompanies, setMatchingCompanies] = useState<string[]>([]);
   const [emails, setEmails] = useState<
     { id: string; value: string; type: string }[]
   >([]);
@@ -97,6 +106,16 @@ const CreateContactForm = ({
       localStorage.setItem('companies', JSON.stringify([selectedCompanyName]));
     }
   }, [selectedCompanyName]);
+
+  useEffect(() => {
+    if (selectedCompanyName && selectedJob?.company.id) {
+      setCompanyIds([selectedJob.company.id]);
+      localStorage.setItem(
+        'companyIds',
+        JSON.stringify([selectedJob.company.id])
+      );
+    }
+  }, [selectedCompanyName, selectedJob]);
 
   const watchLastName = form.watch('lastName');
   const watchFirstName = form.watch('firstName');
@@ -212,8 +231,91 @@ const CreateContactForm = ({
     localStorage.setItem('phones', JSON.stringify(phonesToSave));
   };
 
-  console.log('Emails array: ', emails);
-  console.log('Phones array: ', phones);
+  // New changes
+  const debouncedSearch = useCallback(
+    debounce((searchTerm: string) => {
+      if (searchTerm.length >= 2) {
+        const values = {
+          accessToken,
+          companyName: searchTerm,
+        };
+        dispatch(getCompanyThatStartsWith(values))
+          .unwrap()
+          .then((result) => {
+            const companyNames: string[] = result.map(
+              (company: { name: string }) => company.name
+            );
+            setMatchingCompanies(companyNames);
+            setShowDropdown(true);
+          })
+          .catch((error) => {
+            console.error('Search error:', error);
+            setMatchingCompanies([]);
+            setShowDropdown(false);
+          });
+      } else {
+        setMatchingCompanies([]);
+        setShowDropdown(false);
+      }
+    }, 300),
+    [dispatch, accessToken]
+  );
+
+  const handleCompanyInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setCurrentCompanyInput(value);
+    debouncedSearch(value);
+  };
+
+  const handleCompanySelect = async (selectedCompany: string) => {
+    const values = {
+      accessToken,
+      companyName: selectedCompany,
+    };
+
+    const result = await dispatch(getCompanyThatStartsWith(values)).unwrap();
+    const existingCompany = result.find(
+      (comp: any) => comp.name === selectedCompany
+    );
+
+    if (existingCompany) {
+      const newCompanies = [...companies, selectedCompany];
+      const newCompanyIds = [...companyIds, existingCompany.id];
+      setCompanies(newCompanies);
+      setCompanyIds(newCompanyIds);
+      localStorage.setItem('companies', JSON.stringify(newCompanies));
+      localStorage.setItem('companyIds', JSON.stringify(newCompanyIds));
+    }
+
+    setCurrentCompanyInput('');
+    setShowDropdown(false);
+  };
+
+  const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && currentCompanyInput.trim()) {
+      e.preventDefault();
+
+      if (matchingCompanies.includes(currentCompanyInput)) {
+        handleCompanySelect(currentCompanyInput);
+      } else {
+        const result = await dispatch(
+          createCompany({
+            accessToken,
+            name: currentCompanyInput,
+          })
+        ).unwrap();
+
+        const newCompanies = [...companies, currentCompanyInput];
+        const newCompanyIds = [...companyIds, result.id];
+        setCompanies(newCompanies);
+        setCompanyIds(newCompanyIds);
+        localStorage.setItem('companies', JSON.stringify(newCompanies));
+        localStorage.setItem('companyIds', JSON.stringify(newCompanyIds));
+      }
+
+      setCurrentCompanyInput('');
+    }
+  };
 
   return (
     <div className="min-h-[660px]">
@@ -334,7 +436,16 @@ const CreateContactForm = ({
                           </FormLabel>
                           <CompaniesInput
                             companies={companies}
+                            companyIds={companyIds}
+                            onKeyDown={handleKeyDown}
                             setCompanies={setCompanies}
+                            showDropdown={showDropdown}
+                            setCompanyIds={setCompanyIds}
+                            currentInput={currentCompanyInput}
+                            matchingCompanies={matchingCompanies}
+                            onCompanySelect={handleCompanySelect}
+                            setCurrentInput={setCurrentCompanyInput}
+                            onInputChange={handleCompanyInputChange}
                           />
                           <FormMessage />
                         </FormItem>

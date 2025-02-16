@@ -2,6 +2,11 @@ import { useState, useEffect } from 'react';
 import { BsThreeDots } from 'react-icons/bs';
 
 import ComboJobsBox from './ComboJobsBox';
+import { useAppDispatch } from '@/redux/hooks';
+import {
+  assignContactToJobPost,
+  unassignContactFromJobPost,
+} from '@/redux/contacts/contactsThunk';
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -16,6 +21,9 @@ interface ContactSideBarProps {
 }
 
 const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
+  const dispatch = useAppDispatch();
+  const contactId = localStorage.getItem('contactId');
+  const accessToken = localStorage.getItem('accessToken');
   const [jobsConnectedToContact, setJobsConnectedToContact] = useState<
     JobApplication[]
   >([]);
@@ -44,6 +52,13 @@ const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
         'jobsConnectedToContact',
         JSON.stringify([...jobsConnectedToContact, jobToAdd])
       );
+
+      const assignData = {
+        contactId,
+        accessToken,
+        jobApplicationId: jobId,
+      };
+      dispatch(assignContactToJobPost(assignData));
     }
   };
 
@@ -55,6 +70,13 @@ const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
       'jobsConnectedToContact',
       JSON.stringify(jobsConnectedToContact.filter((job) => job.id !== jobId))
     );
+
+    const unassignData = {
+      contactId,
+      accessToken,
+      jobApplicationId: jobId,
+    };
+    dispatch(unassignContactFromJobPost(unassignData));
   };
 
   return (

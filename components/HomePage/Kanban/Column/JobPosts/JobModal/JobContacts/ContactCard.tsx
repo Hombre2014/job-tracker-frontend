@@ -25,15 +25,17 @@ import {
 } from '@/components/ui/dropdown-menu';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 
-const ContactCard = (contactId: { contactId: string }) => {
-  const { job_id } = useParams();
+const ContactCard = ({ contact }: { contact: Contact }) => {
+  // const { job_id } = useParams();
   const dispatch = useAppDispatch();
-  const jobs = useAppSelector((state) => state.jobs);
+  // const jobs = useAppSelector((state) => state.jobs);
   const accessToken = localStorage.getItem('accessToken');
   const [showContactModal, setShowContactModal] = useState(false);
   const { firstName, lastName } = useAppSelector((state) => state.user);
-  const currentJobPost = jobs.jobPosts.find((job) => job.id === job_id);
+  // const currentJobPost = jobs.jobPosts.find((job) => job.id === job_id);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+
+  console.log('contacts in the child: ', contact);
 
   useEffect(() => {
     const jobPostsData = {
@@ -60,7 +62,7 @@ const ContactCard = (contactId: { contactId: string }) => {
   };
 
   return (
-    <div className="flex gap-4 w-full flex-wrap max-h-[500px] overflow-y-auto">
+    <div className="">
       <div className="flex flex-col gap-1 basis-[calc(33.333%-16px)] border border-gray-200 rounded-md">
         <div className="flex justify-between px-2 mt-2 items-start">
           <div className="flex justify-start gap-4 items-center">
@@ -68,22 +70,24 @@ const ContactCard = (contactId: { contactId: string }) => {
               width={40}
               height={40}
               alt="Contact photo"
-              src="/images/Yuriy.jpg"
+              src={contact.photoUrl || '/images/Yuriy.jpg'}
             />
             <div className="flex flex-col items-start justify-center text-sm">
-              <p className="font-bold">Benny Hill</p>
+              <p className="font-bold">
+                {contact.firstName} {contact.lastName}
+              </p>
               <p className="font-semibold text-muted-foreground">
-                {currentJobPost?.title}
+                {contact.jobTitle}
               </p>
               <p className="text-muted-foreground">
-                {currentJobPost?.company.name}
+                {/* {currentJobPost?.company.name} */}
               </p>
             </div>
           </div>
           <DropdownMenu
-            open={openDropdownId === contactId.contactId}
+            open={openDropdownId === contact.id}
             onOpenChange={(isOpen) =>
-              setOpenDropdownId(isOpen ? contactId.contactId : null)
+              setOpenDropdownId(isOpen ? contact.id : null)
             }
           >
             <DropdownMenuTrigger asChild>
@@ -98,7 +102,7 @@ const ContactCard = (contactId: { contactId: string }) => {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="!absolute !-right-4 !top-0 rsw-dropdown-menu">
               <DropdownMenuItem
-                onClick={() => handleEditContact(contactId.contactId)}
+                onClick={() => handleEditContact(contact.id)}
                 className="rsw-dropdown-menu-item"
               >
                 Edit Contact
@@ -117,9 +121,7 @@ const ContactCard = (contactId: { contactId: string }) => {
                   buttonLabel="Delete Contact"
                   dialogText="Are you sure you want to delete this contact?"
                   stylings="ml-0 pl-2 font-normal inline-flex justify-start w-full text-left"
-                  actionFunction={() =>
-                    handleDeleteContact(contactId.contactId)
-                  }
+                  actionFunction={() => handleDeleteContact(contact.id)}
                   onOpenChange={(isOpen) => {
                     if (!isOpen) handleCancel();
                   }}
@@ -132,9 +134,7 @@ const ContactCard = (contactId: { contactId: string }) => {
         <div className="p-2 flex flex-col gap-1">
           <div className="flex justify-start gap-2 items-center">
             <IoLocationOutline className="size-6" />
-            <p className="text-sm text-muted-foreground">
-              {currentJobPost?.contacts[0].companyLocation}
-            </p>
+            {/* <p className="text-sm text-muted-foreground">{contact.location}</p> */}
           </div>
           <div className="flex justify-start gap-2 items-center">
             <RxEnvelopeClosed className="size-6" />
@@ -154,14 +154,51 @@ const ContactCard = (contactId: { contactId: string }) => {
           <Link
             target="_blank"
             rel="noopener noreferrer"
-            href="https://linkedin.com/in/${linkedinUrl}"
-            className="text-blue-500 hover:cursor-pointer"
+            href={contact.linkedinUrl || '#'}
+            className={
+              contact.linkedinUrl
+                ? 'text-blue-500 hover:cursor-pointer'
+                : 'text-gray-400 cursor-not-allowed'
+            }
           >
             <SlSocialLinkedin className="size-6" />
           </Link>
-          <SlSocialFacebook className="size-6" />
-          <SlSocialTwitter className="size-6" />
-          <SlSocialGithub className="size-6" />
+          <Link
+            target="_blank"
+            rel="noopener noreferrer"
+            href={contact.githubUrl || '#'}
+            className={
+              contact.githubUrl
+                ? 'text-blue-500 hover:cursor-pointer'
+                : 'text-gray-400 cursor-not-allowed'
+            }
+          >
+            <SlSocialFacebook className="size-6" />
+          </Link>
+          <Link
+            target="_blank"
+            rel="noopener noreferrer"
+            href={contact.twitterUrl || '#'}
+            className={
+              contact.twitterUrl
+                ? 'text-blue-500 hover:cursor-pointer'
+                : 'text-gray-400 cursor-not-allowed'
+            }
+          >
+            <SlSocialTwitter className="size-6" />
+          </Link>
+          <Link
+            target="_blank"
+            rel="noopener noreferrer"
+            href={contact.githubUrl || '#'}
+            className={
+              contact.githubUrl
+                ? 'text-blue-500 hover:cursor-pointer'
+                : 'text-gray-400 cursor-not-allowed'
+            }
+          >
+            <SlSocialGithub className="size-6" />
+          </Link>
         </div>
         <hr />
         <div className="flex justify-start p-2 mb-1">

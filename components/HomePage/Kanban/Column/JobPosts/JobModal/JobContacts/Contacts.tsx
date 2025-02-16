@@ -25,7 +25,11 @@ const Contacts = () => {
 
   console.log('number of contacts', numberOfContactsPerJob);
 
-  const contactId = jobs.jobPosts.find((job) => job.id === job_id)?.contacts[0];
+  const jobPostContacts = jobs.jobPosts.find(
+    (job) => job.id === job_id
+  )?.contacts;
+
+  console.log('contacts: ', jobPostContacts);
 
   return numberOfContactsPerJob === 0 ? (
     <Card className="min-h-[560px] flex flex-col gap-4">
@@ -51,7 +55,13 @@ const Contacts = () => {
         <CreateContactModal showButton={true} buttonLabel="+ Create Contact" />
         <Button variant="outline">+ Link contact</Button>
       </div>
-      <ContactCard contactId="abcd" />
+      <div className="flex flex-wrap gap-4">
+        {jobPostContacts?.map((contact) => (
+          <div key={contact.id} className="">
+            <ContactCard contact={contact} />
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
