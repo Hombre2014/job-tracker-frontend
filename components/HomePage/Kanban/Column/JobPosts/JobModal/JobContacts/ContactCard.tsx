@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
 import { BsThreeDots } from 'react-icons/bs';
 import { HiOutlinePhone } from 'react-icons/hi';
 import { RxEnvelopeClosed } from 'react-icons/rx';
@@ -13,9 +12,11 @@ import {
   SlSocialLinkedin,
 } from 'react-icons/sl';
 
+import { getCompany } from '@/redux/companies/companiesThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
 import CreateContactModal from '@/components/Misc/CreateContactModal';
+import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -23,19 +24,13 @@ import {
   DropdownMenuContent,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
-import { getCompany } from '@/redux/companies/companiesThunk';
-import { get } from 'lodash';
 
 const ContactCard = ({ contact }: { contact: Contact }) => {
-  // const { job_id } = useParams();
   const dispatch = useAppDispatch();
-  // const jobs = useAppSelector((state) => state.jobs);
   const accessToken = localStorage.getItem('accessToken');
   const [companyNames, setCompanyNames] = useState<string[]>([]);
   const [showContactModal, setShowContactModal] = useState(false);
   const { firstName, lastName } = useAppSelector((state) => state.user);
-  // const currentJobPost = jobs.jobPosts.find((job) => job.id === job_id);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -66,15 +61,15 @@ const ContactCard = ({ contact }: { contact: Contact }) => {
     const accessToken = localStorage.getItem('accessToken');
     const companyNames: string[] = [];
 
-    for (const companyId of companyIds) {
-      const company = await dispatch(
-        getCompany({
-          companyId: companyId.id,
-          accessToken,
-        })
-      ).unwrap();
-      companyNames.push(company.name);
-    }
+    // for (const companyId of companyIds) {
+    //   const company = await dispatch(
+    //     getCompany({
+    //       companyId: companyId.id,
+    //       accessToken,
+    //     })
+    //   ).unwrap();
+    //   companyNames.push(company.name);
+    // }
 
     return companyNames;
   };
@@ -88,7 +83,7 @@ const ContactCard = ({ contact }: { contact: Contact }) => {
   }, [contact.companyIds]);
 
   return (
-    <div className="min-w-[250px]">
+    <div className="min-w-[268px]">
       <div className="flex flex-col gap-1 basis-[calc(33.333%-16px)] border border-gray-200 rounded-md">
         <div className="flex justify-between px-2 mt-2 items-start">
           <div className="flex justify-start gap-4 items-center">

@@ -54,6 +54,8 @@ const CreateContactModal = ({
       comment: localStorage.getItem('comment'),
       jobTitle: localStorage.getItem('jobTitle'),
       lastName: localStorage.getItem('lastName'),
+      location: localStorage.getItem('location'),
+      photoUrl: localStorage.getItem('photoUrl'),
       firstName: localStorage.getItem('firstName'),
       githubUrl: localStorage.getItem('githubUrl'),
       twitterUrl: localStorage.getItem('twitterUrl'),
@@ -89,7 +91,6 @@ const CreateContactModal = ({
     localStorage.removeItem('companies');
     localStorage.removeItem('firstName');
     localStorage.removeItem('githubUrl');
-    localStorage.removeItem('companies');
     localStorage.removeItem('companyIds');
     localStorage.removeItem('twitterUrl');
     localStorage.removeItem('linkedinUrl');
