@@ -78,7 +78,7 @@ export const AddContactSchema = z.object({
       message: 'Invalid email address',
     })
   ),
-  gitHubUrl: z.string().min(1),
+  githubUrl: z.string().min(1),
   twitterUrl: z.string().min(1),
   linkedinUrl: z.string().min(1),
   facebookUrl: z.string().min(1),

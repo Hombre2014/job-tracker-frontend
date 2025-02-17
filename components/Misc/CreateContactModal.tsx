@@ -55,7 +55,7 @@ const CreateContactModal = ({
       jobTitle: localStorage.getItem('jobTitle'),
       lastName: localStorage.getItem('lastName'),
       firstName: localStorage.getItem('firstName'),
-      gitHubUrl: localStorage.getItem('githubUrl'),
+      githubUrl: localStorage.getItem('githubUrl'),
       twitterUrl: localStorage.getItem('twitterUrl'),
       linkedinUrl: localStorage.getItem('linkedinUrl'),
       facebookUrl: localStorage.getItem('facebookUrl'),

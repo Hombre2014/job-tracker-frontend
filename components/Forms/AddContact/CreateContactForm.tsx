@@ -42,7 +42,7 @@ const CreateContactForm = ({
   const [photoUrl, setPhotoUrl] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [firstName, setFirstName] = useState('');
-  const [gitHubUrl, setGitHubUrl] = useState('');
+  const [githubUrl, setGithubUrl] = useState('');
   const [twitterUrl, setTwitterUrl] = useState('');
   const { job_id } = useParams<{ job_id: string }>();
   const user = useAppSelector((state) => state.user);
@@ -77,7 +77,7 @@ const CreateContactForm = ({
       jobTitle: '',
       companies: [],
       firstName: '',
-      gitHubUrl: '',
+      githubUrl: '',
       twitterUrl: '',
       linkedinUrl: '',
       facebookUrl: '',
@@ -163,9 +163,9 @@ const CreateContactForm = ({
         setTwitterUrl(value);
         localStorage.setItem('twitterUrl', value);
         break;
-      case 'gitHubUrl':
-        setGitHubUrl(value);
-        localStorage.setItem('gitHubUrl', value);
+      case 'githubUrl':
+        setGithubUrl(value);
+        localStorage.setItem('githubUrl', value);
         break;
       case 'linkedinUrl':
         setLinkedinUrl(value);
@@ -580,7 +580,7 @@ const CreateContactForm = ({
                 />
                 <SocialMediaLinks
                   twitterUrl={twitterUrl}
-                  gitHubUrl={gitHubUrl}
+                  githubUrl={githubUrl}
                   linkedinUrl={linkedinUrl}
                   facebookUrl={facebookUrl}
                   handleFieldChange={handleFieldChange}

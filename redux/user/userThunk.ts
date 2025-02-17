@@ -40,7 +40,7 @@ export const logout = createAsyncThunk('user/logout', async () => {
   localStorage.removeItem('jobTitle');
   localStorage.removeItem('columnId');
   localStorage.removeItem('lastName');
-  localStorage.removeItem('gitHubUrl');
+  localStorage.removeItem('githubUrl');
   localStorage.removeItem('companies');
   localStorage.removeItem('firstName');
   localStorage.removeItem('companyId');
