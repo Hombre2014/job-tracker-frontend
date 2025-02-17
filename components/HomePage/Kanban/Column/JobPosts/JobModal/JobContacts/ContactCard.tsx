@@ -24,18 +24,19 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
+import { getCompany } from '@/redux/companies/companiesThunk';
+import { get } from 'lodash';
 
 const ContactCard = ({ contact }: { contact: Contact }) => {
   // const { job_id } = useParams();
   const dispatch = useAppDispatch();
   // const jobs = useAppSelector((state) => state.jobs);
   const accessToken = localStorage.getItem('accessToken');
+  const [companyNames, setCompanyNames] = useState<string[]>([]);
   const [showContactModal, setShowContactModal] = useState(false);
   const { firstName, lastName } = useAppSelector((state) => state.user);
   // const currentJobPost = jobs.jobPosts.find((job) => job.id === job_id);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
-
-  console.log('contacts in the child: ', contact);
 
   useEffect(() => {
     const jobPostsData = {
@@ -61,8 +62,33 @@ const ContactCard = ({ contact }: { contact: Contact }) => {
     setOpenDropdownId(null);
   };
 
+  const getCompanyNames = async (companyIds: CompanyIds[]) => {
+    const accessToken = localStorage.getItem('accessToken');
+    const companyNames: string[] = [];
+
+    for (const companyId of companyIds) {
+      const company = await dispatch(
+        getCompany({
+          companyId: companyId.id,
+          accessToken,
+        })
+      ).unwrap();
+      companyNames.push(company.name);
+    }
+
+    return companyNames;
+  };
+
+  useEffect(() => {
+    const fetchCompanyNames = async () => {
+      const names = await getCompanyNames(contact.companyIds);
+      setCompanyNames(names);
+    };
+    fetchCompanyNames();
+  }, [contact.companyIds]);
+
   return (
-    <div className="">
+    <div className="min-w-[250px]">
       <div className="flex flex-col gap-1 basis-[calc(33.333%-16px)] border border-gray-200 rounded-md">
         <div className="flex justify-between px-2 mt-2 items-start">
           <div className="flex justify-start gap-4 items-center">
@@ -79,8 +105,11 @@ const ContactCard = ({ contact }: { contact: Contact }) => {
               <p className="font-semibold text-muted-foreground">
                 {contact.jobTitle}
               </p>
-              <p className="text-muted-foreground">
-                {/* {currentJobPost?.company.name} */}
+              <p className="text-sm text-muted-foreground">
+                {companyNames.length > 0
+                  ? companyNames.join(', ').slice(0, 24) +
+                    (companyNames.join(', ').length > 24 ? '...' : '')
+                  : 'none'}
               </p>
             </div>
           </div>
@@ -134,18 +163,34 @@ const ContactCard = ({ contact }: { contact: Contact }) => {
         <div className="p-2 flex flex-col gap-1">
           <div className="flex justify-start gap-2 items-center">
             <IoLocationOutline className="size-6" />
-            {/* <p className="text-sm text-muted-foreground">{contact.location}</p> */}
+            <p className="text-sm text-muted-foreground">{contact.location}</p>
           </div>
           <div className="flex justify-start gap-2 items-center">
             <RxEnvelopeClosed className="size-6" />
             <p className="text-sm text-muted-foreground">
-              Work: john.dow@nokia.com
+              {contact.emails && contact.emails.length > 0
+                ? contact.emails
+                    .map((e) => e.email)
+                    .join(', ')
+                    .slice(0, 24) +
+                  (contact.emails.map((e) => e.email).join(', ').length > 24
+                    ? '...'
+                    : '')
+                : 'none'}
             </p>
           </div>
           <div className="flex justify-start gap-2 items-center">
             <HiOutlinePhone className="size-6" />
             <p className="text-sm text-muted-foreground">
-              Work: +(380) 213-456-7890
+              {contact.phones && contact.phones.length > 0
+                ? contact.phones
+                    .map((p) => p.phone)
+                    .join(', ')
+                    .slice(0, 24) +
+                  (contact.phones.map((p) => p.phone).join(', ').length > 24
+                    ? '...'
+                    : '')
+                : 'none'}
             </p>
           </div>
         </div>
