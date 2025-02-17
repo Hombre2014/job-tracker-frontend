@@ -12,6 +12,7 @@ import AlertDialogModal from '../../Boards/AlertDialogModal';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getBoards, updateColumnName } from '@/redux/boards/boardsThunk';
 import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
+import { cleanupAfterJobPost } from '@/utils/helpers';
 
 const BoardColumns = () => {
   const router = useRouter();
@@ -83,9 +84,8 @@ const BoardColumns = () => {
       router.push(`/home/boards/${board_id}/job/${newJobPostId}/job-details`);
     });
     dispatch(getBoards(accessToken as string));
-    localStorage.setItem('boardValueChanged', 'false');
-    localStorage.removeItem('jobTitle');
-    localStorage.removeItem('company');
+
+    cleanupAfterJobPost();
   };
 
   return (

@@ -12,6 +12,7 @@ import {
   AlertDialogContent,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { cleanupAfterJobPost } from '@/utils/helpers';
 
 const AlertDialogModal = ({
   open,
@@ -29,12 +30,6 @@ const AlertDialogModal = ({
   destructiveVariant,
   isFormValid = true,
 }: AlertDialogProps) => {
-  const clearLocalStorage = () => {
-    localStorage.setItem('boardValueChanged', 'false');
-    localStorage.removeItem('jobTitle');
-    localStorage.removeItem('company');
-  };
-
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogTrigger asChild>
@@ -64,7 +59,7 @@ const AlertDialogModal = ({
           </AlertDialogAction>
           <AlertDialogCancel
             onClick={() => {
-              clearLocalStorage();
+              cleanupAfterJobPost();
               onOpenChange && onOpenChange(false); // Close the alert dialog and dropdown menu
             }}
           >

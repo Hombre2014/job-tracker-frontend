@@ -11,6 +11,7 @@ import {
   assignContactToJobPost,
   createContact,
 } from '@/redux/contacts/contactsThunk';
+import { cleanupAfterContact } from '@/utils/helpers';
 
 interface CreateContactModalProps {
   showButton: boolean;
@@ -81,21 +82,9 @@ const CreateContactModal = ({
 
         dispatch(assignContactToJobPost(assignData));
       });
-    localStorage.removeItem('phones');
-    localStorage.removeItem('emails');
-    localStorage.removeItem('comment');
-    localStorage.removeItem('jobTitle');
-    localStorage.removeItem('lastName');
-    localStorage.removeItem('location');
-    localStorage.removeItem('photoUrl');
-    localStorage.removeItem('companies');
-    localStorage.removeItem('firstName');
-    localStorage.removeItem('githubUrl');
-    localStorage.removeItem('companyIds');
-    localStorage.removeItem('twitterUrl');
-    localStorage.removeItem('linkedinUrl');
-    localStorage.removeItem('facebookUrl');
-    localStorage.removeItem('jobsConnectedToContact');
+
+    // Clear local storage
+    cleanupAfterContact();
   };
 
   return (
