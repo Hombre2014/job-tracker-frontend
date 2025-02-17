@@ -49,3 +49,23 @@ export const createCompany = createAsyncThunk(
     }
   }
 );
+
+export const getCompany = createAsyncThunk(
+  'companies/getCompany',
+  async (values: any, thunkAPI) => {
+    const { companyId, accessToken } = values;
+    try {
+      const res = await client.get(`/companies/${companyId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      return res.data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error fetching company'
+      );
+    }
+  }
+);

@@ -20,6 +20,7 @@ import {
   NavigationMenuContent,
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
+import { cleanupAfterContact, cleanupAfterJobPost } from '@/utils/helpers';
 
 const CreateMenu = () => {
   const router = useRouter();
@@ -49,9 +50,8 @@ const CreateMenu = () => {
       router.push(`/home/boards/${board_id}/job/${newJobPostId}/job-details`);
     });
     dispatch(getBoards(accessToken as string));
-    localStorage.setItem('boardValueChanged', 'false');
-    localStorage.removeItem('jobTitle');
-    localStorage.removeItem('company');
+
+    cleanupAfterJobPost();
   };
 
   const createNewContact = () => {
@@ -65,8 +65,10 @@ const CreateMenu = () => {
       comment: localStorage.getItem('comment'),
       jobTitle: localStorage.getItem('jobTitle'),
       lastName: localStorage.getItem('lastName'),
+      location: localStorage.getItem('location'),
+      photoUrl: localStorage.getItem('photoUrl'),
       firstName: localStorage.getItem('firstName'),
-      gitHubUrl: localStorage.getItem('githubUrl'),
+      githubUrl: localStorage.getItem('githubUrl'),
       twitterUrl: localStorage.getItem('twitterUrl'),
       linkedinUrl: localStorage.getItem('linkedinUrl'),
       facebookUrl: localStorage.getItem('facebookUrl'),
@@ -90,12 +92,8 @@ const CreateMenu = () => {
 
         dispatch(assignContactToJobPost(assignData));
       });
-    localStorage.removeItem('jobTitle');
-    localStorage.removeItem('lastName');
-    localStorage.removeItem('companies');
-    localStorage.removeItem('firstName');
-    localStorage.removeItem('companyIds');
-    localStorage.removeItem('jobsConnectedToContact');
+
+    cleanupAfterContact();
   };
 
   return (

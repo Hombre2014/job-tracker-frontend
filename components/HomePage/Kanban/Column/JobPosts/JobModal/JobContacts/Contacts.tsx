@@ -2,8 +2,8 @@ import { SlPeople } from 'react-icons/sl';
 import { useParams } from 'next/navigation';
 
 import ContactCard from './ContactCard';
-import { Button } from '@/components/ui/button';
 import { useAppSelector } from '@/redux/hooks';
+import { Button } from '@/components/ui/button';
 import CreateContactModal from '@/components/Misc/CreateContactModal';
 import {
   Card,
@@ -18,18 +18,12 @@ const Contacts = () => {
   const { job_id } = useParams();
   const jobs = useAppSelector((state) => state.jobs);
 
-  console.log('jobs in Contacts: ', jobs);
-
   const numberOfContactsPerJob =
     jobs.jobPosts.find((job) => job.id === job_id)?.contacts.length || 0;
-
-  console.log('number of contacts', numberOfContactsPerJob);
 
   const jobPostContacts = jobs.jobPosts.find(
     (job) => job.id === job_id
   )?.contacts;
-
-  console.log('contacts: ', jobPostContacts);
 
   return numberOfContactsPerJob === 0 ? (
     <Card className="min-h-[560px] flex flex-col gap-4">
@@ -55,7 +49,7 @@ const Contacts = () => {
         <CreateContactModal showButton={true} buttonLabel="+ Create Contact" />
         <Button variant="outline">+ Link contact</Button>
       </div>
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-4 overflow-y-auto h-[506px]">
         {jobPostContacts?.map((contact) => (
           <div key={contact.id} className="">
             <ContactCard contact={contact} />

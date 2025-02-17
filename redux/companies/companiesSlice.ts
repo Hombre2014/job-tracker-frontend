@@ -1,7 +1,11 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 import { RootState } from '../store';
-import { getCompanyThatStartsWith, createCompany } from './companiesThunk';
+import {
+  getCompanyThatStartsWith,
+  createCompany,
+  getCompany,
+} from './companiesThunk';
 
 interface CompanyState {
   companies: Company[];
@@ -44,6 +48,18 @@ export const companiesSlice = createSlice({
       .addCase(createCompany.rejected, (state, action) => {
         state.companiesStatus = 'failed';
         state.error = action.error.message || 'Failed to create company';
+      })
+      .addCase(getCompany.pending, (state) => {
+        state.companiesStatus = 'loading';
+      })
+      .addCase(getCompany.fulfilled, (state, action) => {
+        state.companiesStatus = 'succeeded';
+        state.companies = action.payload;
+        state.error = null;
+      })
+      .addCase(getCompany.rejected, (state, action) => {
+        state.companiesStatus = 'failed';
+        state.error = action.error.message || 'Failed to fetch company';
       });
   },
 });

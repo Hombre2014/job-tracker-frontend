@@ -2,7 +2,8 @@ import jwt from 'jsonwebtoken';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
 import client from '@/api/client';
-import { RootState } from '../store';
+import { RootState } from '@/redux/store';
+import { cleanupAfterLogout } from '@/utils/helpers';
 
 export const login = createAsyncThunk(
   'user/login',
@@ -33,29 +34,7 @@ export const login = createAsyncThunk(
 );
 
 export const logout = createAsyncThunk('user/logout', async () => {
-  localStorage.removeItem('user');
-  localStorage.removeItem('emails');
-  localStorage.removeItem('phones');
-  localStorage.removeItem('comment');
-  localStorage.removeItem('jobTitle');
-  localStorage.removeItem('columnId');
-  localStorage.removeItem('lastName');
-  localStorage.removeItem('gitHubUrl');
-  localStorage.removeItem('companies');
-  localStorage.removeItem('firstName');
-  localStorage.removeItem('companyId');
-  localStorage.removeItem('companyIds');
-  localStorage.removeItem('twitterUrl');
-  localStorage.removeItem('linkedinUrl');
-  localStorage.removeItem('chosenBoard');
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('facebookUrl');
-  localStorage.removeItem('refreshToken');
-  localStorage.removeItem('chosenColumn');
-  localStorage.removeItem('companyLocation');
-  localStorage.removeItem('boardValueChanged');
-  localStorage.removeItem('firstColumnOfTheBoard');
-  localStorage.removeItem('jobsConnectedToContact');
+  cleanupAfterLogout();
 
   return {
     email: '',

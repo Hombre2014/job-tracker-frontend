@@ -12,7 +12,7 @@ import {
 
 interface SocialMediaLinksProps {
   twitterUrl: string;
-  gitHubUrl: string;
+  githubUrl: string;
   linkedinUrl: string;
   facebookUrl: string;
   handleFieldChange: (
@@ -23,7 +23,7 @@ interface SocialMediaLinksProps {
 
 const SocialMediaLinks = ({
   twitterUrl,
-  gitHubUrl,
+  githubUrl,
   linkedinUrl,
   facebookUrl,
   handleFieldChange,
@@ -96,21 +96,21 @@ const SocialMediaLinks = ({
           </div>
           <div className="flex justify-start gap-2 items-center mb-2">
             <SlSocialGithub
-              className={cn('block', gitHubUrl !== '' && 'text-blue-500')}
+              className={cn('block', githubUrl !== '' && 'text-blue-500')}
             />
             <Input
-              value={gitHubUrl}
+              value={githubUrl}
               placeholder="GitHub profile"
-              onChange={(e) => handleFieldChange('gitHubUrl', e)}
+              onChange={(e) => handleFieldChange('githubUrl', e)}
               className="!outline-none !border-none shadow-none focus-visible:ring-0"
             />
             <Link
               target="_blank"
-              href={`https://github.com/${gitHubUrl}`}
+              href={`https://github.com/${githubUrl}`}
               className="text-blue-500 hover:cursor-pointer"
             >
               <LiaLinkSolid
-                className={cn('hidden', gitHubUrl !== '' && 'block')}
+                className={cn('hidden', githubUrl !== '' && 'block')}
               />
             </Link>
           </div>

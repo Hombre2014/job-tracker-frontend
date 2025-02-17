@@ -52,6 +52,7 @@ type Contact = {
   phones: Phone[];
   comment: string;
   photoUrl: string;
+  location: string;
   lastName: string;
   jobTitle: string;
   firstName: string;
@@ -60,7 +61,6 @@ type Contact = {
   updatedAt: string;
   twitterUrl: string;
   facebookUrl: string;
-  companyName: string;
   linkedinUrl: string;
   companyIds: CompanyIds[];
 };

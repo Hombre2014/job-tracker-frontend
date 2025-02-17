@@ -3,9 +3,9 @@ import { debounce } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
 import { IoMdContact } from 'react-icons/io';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useCallback, useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 import EmailAndPhone from './EmailAndPhone';
@@ -38,11 +38,12 @@ const CreateContactForm = ({
 }) => {
   const dispatch = useAppDispatch();
   const [comment, setComment] = useState('');
+  const [location, setLocation] = useState('');
   const [lastName, setLastName] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [firstName, setFirstName] = useState('');
-  const [gitHubUrl, setGitHubUrl] = useState('');
+  const [githubUrl, setGithubUrl] = useState('');
   const [twitterUrl, setTwitterUrl] = useState('');
   const { job_id } = useParams<{ job_id: string }>();
   const user = useAppSelector((state) => state.user);
@@ -53,7 +54,6 @@ const CreateContactForm = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [companies, setCompanies] = useState<string[]>([]);
   const [companyIds, setCompanyIds] = useState<string[]>([]);
-  const [companyLocation, setCompanyLocation] = useState('');
   const [currentCompanyInput, setCurrentCompanyInput] = useState('');
   const selectedJob = jobs.jobPosts.find((job) => job.id === job_id);
   const [matchingCompanies, setMatchingCompanies] = useState<string[]>([]);
@@ -77,11 +77,11 @@ const CreateContactForm = ({
       jobTitle: '',
       companies: [],
       firstName: '',
-      gitHubUrl: '',
+      githubUrl: '',
       twitterUrl: '',
       linkedinUrl: '',
       facebookUrl: '',
-      companyLocation: '',
+      location: '',
     },
   });
 
@@ -155,25 +155,25 @@ const CreateContactForm = ({
 
   const handleFieldChange = (
     fieldName: string,
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const value = e.target.value;
     switch (fieldName) {
       case 'twitterUrl':
         setTwitterUrl(value);
-        localStorage.setItem('twitterUrl', value);
+        localStorage.setItem('twitterUrl', `https://twitter.com/${value}`);
         break;
-      case 'gitHubUrl':
-        setGitHubUrl(value);
-        localStorage.setItem('gitHubUrl', value);
+      case 'githubUrl':
+        setGithubUrl(value);
+        localStorage.setItem('githubUrl', `https://github.com/${value}`);
         break;
       case 'linkedinUrl':
         setLinkedinUrl(value);
-        localStorage.setItem('linkedinUrl', value);
+        localStorage.setItem('linkedinUrl', `https://linkedin.com/in/${value}`);
         break;
       case 'facebookUrl':
         setFacebookUrl(value);
-        localStorage.setItem('facebookUrl', value);
+        localStorage.setItem('facebookUrl', `https://facebook.com/${value}`);
         break;
       case 'lastName':
         setLastName(value as string);
@@ -185,13 +185,17 @@ const CreateContactForm = ({
         form.setValue('firstName', value);
         localStorage.setItem('firstName', value);
         break;
-      case 'companyLocation':
-        setCompanyLocation(value);
-        localStorage.setItem('companyLocation', value);
+      case 'location':
+        setLocation(value);
+        localStorage.setItem('location', value);
         break;
       case 'jobTitle':
         setJobTitle(value);
         localStorage.setItem('jobTitle', value);
+        break;
+      case 'comment':
+        setComment(value);
+        localStorage.setItem('comment', value);
         break;
       default:
         break;
@@ -452,7 +456,7 @@ const CreateContactForm = ({
                       )}
                     />
                     <FormField
-                      name="companyLocation"
+                      name="location"
                       control={form.control}
                       render={({ field }) => (
                         <FormItem className="!text-left w-full">
@@ -461,12 +465,10 @@ const CreateContactForm = ({
                           </FormLabel>
                           <Input
                             {...field}
-                            value={companyLocation}
+                            value={location}
                             placeholder="New York, NY, USA"
                             className="focus:border-blue-500"
-                            onChange={(e) =>
-                              handleFieldChange('companyLocation', e)
-                            }
+                            onChange={(e) => handleFieldChange('location', e)}
                           />
                           <FormMessage />
                         </FormItem>
@@ -484,13 +486,10 @@ const CreateContactForm = ({
                         <FormControl>
                           <Textarea
                             {...field}
+                            value={comment}
                             placeholder="Any comment about the contact"
                             className="resize-none focus:border-blue-500"
-                            onChange={(e) => {
-                              field.onChange(e);
-                              setComment(e.target.value);
-                              localStorage.setItem('comment', e.target.value);
-                            }}
+                            onChange={(e) => handleFieldChange('comment', e)}
                           />
                         </FormControl>
                         <FormMessage />
@@ -579,8 +578,8 @@ const CreateContactForm = ({
                   )}
                 />
                 <SocialMediaLinks
+                  githubUrl={githubUrl}
                   twitterUrl={twitterUrl}
-                  gitHubUrl={gitHubUrl}
                   linkedinUrl={linkedinUrl}
                   facebookUrl={facebookUrl}
                   handleFieldChange={handleFieldChange}
