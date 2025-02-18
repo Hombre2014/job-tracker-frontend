@@ -1,6 +1,7 @@
 'use client';
 
 import * as z from 'zod';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,6 +27,8 @@ interface EditCompanyFormProps {
   schema: z.Schema;
   buttonText: string;
   onClose: () => void;
+  updateCompanyInfo: (data: any) => void; // Add the callback prop
+  initialData: any; // Add the initialData prop
   errorMessage?: string;
   successMessage?: string;
 }
@@ -34,6 +37,8 @@ const EditCompanyForm = ({
   schema,
   onClose,
   buttonText,
+  updateCompanyInfo, // Destructure the callback prop
+  initialData, // Destructure the initialData prop
   errorMessage,
   successMessage,
 }: EditCompanyFormProps) => {
@@ -45,33 +50,34 @@ const EditCompanyForm = ({
     ? jobPosts.find((jobPost) => jobPost.id === job_id)
     : null;
 
-  const onSubmit = (data: z.infer<typeof EditCompanySchema>) => {
-    const accessToken = localStorage.getItem('accessToken');
-    dispatch(
-      updateCompany({
-        ...data,
-        accessToken,
-        companyId: currentJobPost?.company?.id,
-      })
-    );
-
-    onClose();
-  };
-
   const form = useForm<z.infer<typeof EditCompanySchema>>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      url: currentJobPost?.company?.url || '',
-      name: currentJobPost?.company?.name || '',
-      industry: currentJobPost?.company?.industry || '',
-      description: currentJobPost?.company?.description || '',
-    },
+    defaultValues: initialData,
   });
 
   const {
     handleSubmit,
     formState: { errors },
+    reset,
   } = form;
+
+  useEffect(() => {
+    reset(initialData); // Reset the form values whenever initialData changes
+  }, [initialData, reset]);
+
+  const onSubmit = async (data: z.infer<typeof EditCompanySchema>) => {
+    const accessToken = localStorage.getItem('accessToken');
+    await dispatch(
+      updateCompany({
+        ...data,
+        accessToken,
+        companyId: currentJobPost?.company?.id,
+      })
+    ).unwrap();
+
+    onClose();
+    updateCompanyInfo(data); // Call the callback to update the company information in the parent component
+  };
 
   return (
     <div>
@@ -144,7 +150,11 @@ const EditCompanyForm = ({
             <Button
               type="button"
               variant="destructive"
-              onClick={() => form.reset()}
+              className="cursor-pointer"
+              onClick={() => {
+                form.reset(); // Reset the form first
+                onClose(); // Then close the modal
+              }}
             >
               Discard
             </Button>
