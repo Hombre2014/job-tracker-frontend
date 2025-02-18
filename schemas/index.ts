@@ -85,3 +85,14 @@ export const AddContactSchema = z.object({
   phones: z.array(z.string().min(10)),
   companies: z.array(z.string().min(1)),
 });
+
+export const EditCompanySchema = z.object({
+  industry: z.string().min(1),
+  description: z.string().min(1),
+  url: z.string().url({
+    message: 'Invalid URL',
+  }),
+  name: z.string().min(1, {
+    message: 'Company name is required',
+  }),
+});

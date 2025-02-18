@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 import { RootState } from '../store';
 import {
+  getJobPost,
   createJobPost,
   updateJobPost,
   deleteJobPost,
@@ -77,6 +78,18 @@ export const jobsSlice = createSlice({
       .addCase(deleteJobPost.rejected, (state, action) => {
         state.jobPostsStatus = 'failed';
         state.error = action.error.message || 'Failed to delete job post';
+      })
+      .addCase(getJobPost.pending, (state) => {
+        state.jobPostsStatus = 'loading';
+      })
+      .addCase(getJobPost.fulfilled, (state, action) => {
+        state.jobPostsStatus = 'succeeded';
+        state.jobPosts = action.payload;
+        state.error = null;
+      })
+      .addCase(getJobPost.rejected, (state, action) => {
+        state.jobPostsStatus = 'failed';
+        state.error = action.error.message || 'Failed to fetch job post';
       });
   },
 });
