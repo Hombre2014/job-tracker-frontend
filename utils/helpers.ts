@@ -33,6 +33,7 @@ export const cleanupAfterLogout = () => {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('chosenBoard');
   localStorage.removeItem('refreshToken');
+  localStorage.removeItem('currentJobPost');
   localStorage.removeItem('boardValueChanged');
   localStorage.removeItem('firstColumnOfTheBoard');
 };

@@ -121,3 +121,24 @@ export const deleteJobPost = createAsyncThunk(
     }
   }
 );
+
+export const getJobPost = createAsyncThunk(
+  'jobs/getJobPost',
+  async (values: any, thunkAPI) => {
+    const { accessToken, jobPostId } = values;
+    try {
+      const res = await client.get(`/job-applications/${jobPostId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error fetching job post'
+      );
+    }
+  }
+);

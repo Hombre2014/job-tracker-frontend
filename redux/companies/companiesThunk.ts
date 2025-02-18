@@ -69,3 +69,23 @@ export const getCompany = createAsyncThunk(
     }
   }
 );
+
+export const updateCompany = createAsyncThunk(
+  'companies/updateCompany',
+  async (values: any, thunkAPI) => {
+    const { companyId, accessToken, ...rest } = values;
+    try {
+      const res = await client.put(`/companies/${companyId}`, rest, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      return res.data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error updating company'
+      );
+    }
+  }
+);

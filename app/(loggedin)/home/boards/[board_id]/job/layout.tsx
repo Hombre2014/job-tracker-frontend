@@ -54,6 +54,9 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   const currentJobPost = jobPosts.find((jobPost) => jobPost.id === job_id);
+  if (currentJobPost) {
+    localStorage.setItem('currentJobPost', JSON.stringify(currentJobPost));
+  }
 
   const handleSelectList = (value: string) => {
     setSelectedListName(value);
