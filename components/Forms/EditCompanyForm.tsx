@@ -63,16 +63,27 @@ const EditCompanyForm = ({
 
   const onSubmit = async (data: z.infer<typeof EditCompanySchema>) => {
     const accessToken = localStorage.getItem('accessToken');
+    const formattedUrl = data.url?.trim()
+      ? data.url.startsWith('http')
+        ? data.url
+        : `https://${data.url.replace(/^(https?:\/\/)/, '')}`
+      : '';
+
+    const formattedData = {
+      ...data,
+      url: formattedUrl,
+    };
+
     await dispatch(
       updateCompany({
-        ...data,
+        ...formattedData,
         accessToken,
         companyId: currentJobPost?.company?.id,
       })
     ).unwrap();
 
+    updateCompanyInfo(formattedData);
     onClose();
-    updateCompanyInfo(data); // Call the callback to update the company information in the parent component
   };
 
   return (

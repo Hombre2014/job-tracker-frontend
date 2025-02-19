@@ -8,19 +8,33 @@ import { Card, CardContent, CardDescription } from '@/components/ui/card';
 
 const Company = () => {
   const [showModal, setShowModal] = useState(false);
+
   const [companyInfo, setCompanyInfo] = useState(() => {
     const currentJobPost = JSON.parse(
       localStorage.getItem('currentJobPost') || '{}'
     );
-    return currentJobPost?.company || {};
+    const company = currentJobPost?.company || {};
+
+    return {
+      name: company.name || '',
+      description: company.description || '',
+      industry: company.industry || '',
+      url: company.url
+        ? company.url.startsWith('http')
+          ? company.url
+          : `https://${company.url}`
+        : '',
+    };
   });
 
   const editCompanyDetails = () => {
     setShowModal(true);
   };
 
-  const updateCompanyInfo = (data: Company) => {
-    setCompanyInfo((prevInfo: Company) => ({
+  type CompanyStateType = Omit<Company, 'id'>;
+
+  const updateCompanyInfo = (data: CompanyStateType) => {
+    setCompanyInfo((prevInfo: CompanyStateType) => ({
       ...prevInfo,
       ...data,
     }));
@@ -46,7 +60,7 @@ const Company = () => {
           <div className="flex gap-8">
             <div className="flex flex-col gap-4 w-2/3">
               <h2 className="text-2xl">{companyInfo.name}</h2>
-              <p className="text-muted-foreground mb-8 h-100 overflow-y-auto">
+              <p className="text-muted-foreground mb-8 max-h-[360px] overflow-y-auto">
                 {companyInfo.description}
               </p>
 
