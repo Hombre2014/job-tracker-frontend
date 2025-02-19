@@ -87,12 +87,15 @@ export const AddContactSchema = z.object({
 });
 
 export const EditCompanySchema = z.object({
-  industry: z.string().min(1),
-  description: z.string().min(1),
-  url: z.string().url({
-    message: 'Invalid URL',
-  }),
-  name: z.string().min(1, {
-    message: 'Company name is required',
-  }),
+  name: z.string().min(1, 'Company name is required'),
+  description: z.string().or(z.literal('')).optional(),
+  industry: z.string().or(z.literal('')).optional(),
+  url: z
+    .string()
+    .regex(
+      /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/,
+      'Please enter a valid URL (e.g., example.com or https://example.com)'
+    )
+    .or(z.literal(''))
+    .optional(),
 });
