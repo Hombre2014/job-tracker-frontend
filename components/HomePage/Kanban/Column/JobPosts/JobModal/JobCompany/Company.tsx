@@ -30,11 +30,11 @@ const Company = () => {
     <>
       {showModal ? (
         <EditCompanyForm
-          buttonText="Save"
+          buttonText="Update"
+          initialData={companyInfo} // Pass the latest companyInfo as initial data
           schema={EditCompanySchema}
           onClose={() => setShowModal(false)}
           updateCompanyInfo={updateCompanyInfo} // Pass the callback to update the company information
-          initialData={companyInfo} // Pass the latest companyInfo as initial data
         />
       ) : (
         <div className="flex flex-col gap-4 w-full">
@@ -43,10 +43,12 @@ const Company = () => {
               Edit Company
             </Button>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-8">
             <div className="flex flex-col gap-4 w-2/3">
               <h2 className="text-2xl">{companyInfo.name}</h2>
-              <p className="text-muted-foreground">{companyInfo.description}</p>
+              <p className="text-muted-foreground mb-8 h-100 overflow-y-auto">
+                {companyInfo.description}
+              </p>
 
               <Link
                 target="_blank"
@@ -63,7 +65,7 @@ const Company = () => {
                 </Button>
               </Link>
             </div>
-            <Card className="w-1/3">
+            <Card className="w-1/3 h-fit">
               <CardContent className="flex flex-col gap-4">
                 <h3 className="mt-4">Website</h3>
                 <CardDescription>{companyInfo.url}</CardDescription>

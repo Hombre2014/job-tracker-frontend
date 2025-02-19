@@ -25,22 +25,22 @@ import {
 
 interface EditCompanyFormProps {
   schema: z.Schema;
+  initialData: any;
   buttonText: string;
   onClose: () => void;
-  updateCompanyInfo: (data: any) => void; // Add the callback prop
-  initialData: any; // Add the initialData prop
   errorMessage?: string;
   successMessage?: string;
+  updateCompanyInfo: (data: any) => void; // Add the callback prop
 }
 
 const EditCompanyForm = ({
   schema,
   onClose,
   buttonText,
-  updateCompanyInfo, // Destructure the callback prop
-  initialData, // Destructure the initialData prop
+  initialData,
   errorMessage,
   successMessage,
+  updateCompanyInfo, // Destructure the callback prop
 }: EditCompanyFormProps) => {
   const dispatch = useAppDispatch();
   const { job_id } = useParams();
@@ -55,11 +55,7 @@ const EditCompanyForm = ({
     defaultValues: initialData,
   });
 
-  const {
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = form;
+  const { handleSubmit, reset } = form;
 
   useEffect(() => {
     reset(initialData); // Reset the form values whenever initialData changes
@@ -84,8 +80,8 @@ const EditCompanyForm = ({
       <Form {...form}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <FormField
-            control={form.control}
             name="name"
+            control={form.control}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Name</FormLabel>
@@ -98,16 +94,16 @@ const EditCompanyForm = ({
           />
 
           <FormField
-            control={form.control}
             name="description"
+            control={form.control}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Description</FormLabel>
                 <FormControl>
                   <Textarea
-                    placeholder="Company Description"
+                    rows={8}
                     {...field}
-                    rows={4}
+                    placeholder="Company Description"
                   />
                 </FormControl>
                 <FormMessage />
@@ -116,8 +112,8 @@ const EditCompanyForm = ({
           />
 
           <FormField
-            control={form.control}
             name="industry"
+            control={form.control}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Industry</FormLabel>
@@ -130,8 +126,8 @@ const EditCompanyForm = ({
           />
 
           <FormField
-            control={form.control}
             name="url"
+            control={form.control}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>URL</FormLabel>
@@ -143,7 +139,7 @@ const EditCompanyForm = ({
             )}
           />
 
-          <div className="flex gap-4 items-center mt-4">
+          <div className="flex gap-4 items-center mt-4 pt-4">
             <Button type="submit" variant="normal">
               {buttonText}
             </Button>
@@ -160,13 +156,6 @@ const EditCompanyForm = ({
             </Button>
           </div>
 
-          {Object.keys(errors).length > 0 && (
-            <FormError
-              message={Object.values(errors)
-                .map((error) => error?.message)
-                .join(', ')}
-            />
-          )}
           {successMessage && <FormSuccess message={successMessage} />}
           {errorMessage && <FormError message={errorMessage} />}
         </form>
