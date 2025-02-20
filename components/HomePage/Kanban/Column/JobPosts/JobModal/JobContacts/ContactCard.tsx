@@ -84,7 +84,7 @@ const ContactCard = ({ contact }: { contact: Contact }) => {
 
   return (
     <div className="min-w-[268px]">
-      <div className="flex flex-col gap-1 basis-[calc(33.333%-16px)] border border-gray-200 rounded-md">
+      <div className="flex flex-col gap-1 border border-gray-200 rounded-md">
         <div className="flex justify-between px-2 mt-2 items-start">
           <div className="flex justify-start gap-4 items-center">
             <Image
