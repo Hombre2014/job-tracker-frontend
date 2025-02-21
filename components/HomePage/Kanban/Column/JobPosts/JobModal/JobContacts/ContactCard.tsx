@@ -39,6 +39,8 @@ const ContactCard = ({ contact }: { contact: Contact }) => {
       columnId: localStorage.getItem('columnId'),
     };
 
+    if (!jobPostsData.columnId) return;
+
     dispatch(getAllJobPostsPerColumn(jobPostsData));
   }, [dispatch, accessToken]);
 
@@ -126,8 +128,8 @@ const ContactCard = ({ contact }: { contact: Contact }) => {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="!absolute !-right-4 !top-0 rsw-dropdown-menu">
               <DropdownMenuItem
-                onClick={() => handleEditContact(contact.id)}
                 className="rsw-dropdown-menu-item"
+                onClick={() => handleEditContact(contact.id)}
               >
                 Edit Contact
               </DropdownMenuItem>
@@ -143,9 +145,9 @@ const ContactCard = ({ contact }: { contact: Contact }) => {
                   destructiveVariant={true}
                   dialogTitle="Delete Contact"
                   buttonLabel="Delete Contact"
+                  actionFunction={() => handleDeleteContact(contact.id)}
                   dialogText="Are you sure you want to delete this contact?"
                   stylings="ml-0 pl-2 font-normal inline-flex justify-start w-full text-left"
-                  actionFunction={() => handleDeleteContact(contact.id)}
                   onOpenChange={(isOpen) => {
                     if (!isOpen) handleCancel();
                   }}
