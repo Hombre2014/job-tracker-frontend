@@ -1,38 +1,29 @@
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import documents from '@/data/documents';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardTitle,
-  CardFooter,
-  CardHeader,
-  CardContent,
-  CardDescription,
-} from '@/components/ui/card';
+import { LinkDocument } from '@/components/HomePage/HomeNavbar/LinkDocument';
 
 const Documents = () => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Documents</CardTitle>
-        <CardDescription>
-          Change your Documents here. After saving, you will be logged out.
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        <div className="space-y-1">
-          <Label htmlFor="current">Current Documents</Label>
-          <Input id="current" type="Documents" />
+    <>
+      <div className="w-full mx-auto mt-6">
+        <div className="w-full flex justify-between items-center pb-4 border-b">
+          <div className="text-blue-500 font-medium bg-blue-200/40 rounded-md px-2">
+            All
+          </div>
+          <div className="flex gap-4">
+            <LinkDocument
+              docs={documents}
+              searchItem="Documents"
+              initialString="+ Link Document"
+            />
+            <Button variant="normal">+ Upload</Button>
+          </div>
         </div>
-        <div className="space-y-1">
-          <Label htmlFor="new">New Documents</Label>
-          <Input id="new" type="Documents" />
-        </div>
-      </CardContent>
-      <CardFooter>
-        <Button>Save Documents</Button>
-      </CardFooter>
-    </Card>
+        <p className="text-center text-xl text-slate-400 mt-48">
+          You have not created any documents yet
+        </p>
+      </div>
+    </>
   );
 };
 
