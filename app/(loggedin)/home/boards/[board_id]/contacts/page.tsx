@@ -1,14 +1,25 @@
-import CreateContactModal from '@/components/Misc/CreateContactModal';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { useAppDispatch } from '@/redux/hooks';
+
+import ContactsList from '@/components/Misc/ContactsList';
+import { getAllContactsPerBoard } from '@/redux/contacts/contactsThunk';
 
 const BoardContacts = () => {
-  return (
-    <div className="w-1/2 flex items-center pt-2 pb-4 border-b mx-auto mt-24">
-      <div className="flex justify-between w-full">
-        <h1 className="font-semibold text-center">Contacts</h1>
-      </div>
-      <CreateContactModal showButton={true} />
-    </div>
-  );
+  const { board_id } = useParams();
+  const dispatch = useAppDispatch();
+  const accessToken = localStorage.getItem('accessToken');
+  const [allContacts, setAllContacts] = useState<Contact[]>([]);
+
+  useEffect(() => {
+    dispatch(getAllContactsPerBoard({ accessToken, boardId: board_id }))
+      .unwrap()
+      .then((contacts) => setAllContacts(contacts));
+  }, [dispatch, accessToken, board_id]);
+
+  return <ContactsList contacts={allContacts} />;
 };
 
 export default BoardContacts;
