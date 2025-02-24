@@ -5,13 +5,14 @@ import { useParams } from 'next/navigation';
 
 import { useAppDispatch } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
+import { cleanupAfterContact } from '@/utils/helpers';
+import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
 import {
   assignContactToJobPost,
   createContact,
 } from '@/redux/contacts/contactsThunk';
-import { cleanupAfterContact } from '@/utils/helpers';
 
 interface CreateContactModalProps {
   showButton: boolean;
@@ -43,7 +44,7 @@ const CreateContactModal = ({
     }
   }, [isVisible]);
 
-  const createNewContact = () => {
+  const createNewContact = async () => {
     if (!isFormValid) return;
 
     setShowContactModal(false);
@@ -67,24 +68,34 @@ const CreateContactModal = ({
       companyIds: JSON.parse(localStorage.getItem('companyIds') || '[]'),
     };
 
-    dispatch(createContact(values))
-      .unwrap()
-      .then((result) => {
-        const newContactId = result.id;
-        const jobPostId = job_id;
-        localStorage.setItem('contactId', newContactId);
+    try {
+      const result = await dispatch(createContact(values)).unwrap();
+      const newContactId = result.id;
+      const jobPostId = job_id;
+      localStorage.setItem('contactId', newContactId);
 
-        const assignData = {
+      const assignData = {
+        accessToken,
+        contactId: newContactId,
+        jobApplicationId: jobPostId,
+      };
+
+      await dispatch(assignContactToJobPost(assignData)).unwrap();
+
+      // Fetch updated job posts data to show the new contact
+      const columnId = localStorage.getItem('columnId');
+      await dispatch(
+        getAllJobPostsPerColumn({
           accessToken,
-          contactId: newContactId,
-          jobApplicationId: jobPostId,
-        };
+          columnId,
+        })
+      );
 
-        dispatch(assignContactToJobPost(assignData));
-      });
-
-    // Clear local storage
-    cleanupAfterContact();
+      // Clear local storage
+      cleanupAfterContact();
+    } catch (error) {
+      console.error('Error creating/assigning contact:', error);
+    }
   };
 
   return (
