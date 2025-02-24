@@ -145,10 +145,8 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
             <CardTitle className="mt-8 mx-4 text-xl font-bold">
               {currentJobPost?.title}
             </CardTitle>
-            <CardDescription className="mx-4 mt-8 pb-12">
-              <span className="min-h-[20px]">
-                {currentJobPost?.company.name}
-              </span>
+            <CardDescription className="mx-4 mt-8 pb-12 min-h-[20px]">
+              {currentJobPost?.company.name}
             </CardDescription>
           </CardHeader>
           <div className="flex mr-6 gap-4">
