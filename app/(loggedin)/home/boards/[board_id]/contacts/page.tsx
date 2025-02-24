@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useAppDispatch } from '@/redux/hooks';
 
@@ -11,15 +11,29 @@ const BoardContacts = () => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const accessToken = localStorage.getItem('accessToken');
-  const [allContacts, setAllContacts] = useState<Contact[]>([]);
+  const [allBoardContacts, setAllBoardContacts] = useState<Contact[]>([]);
 
-  useEffect(() => {
-    dispatch(getAllContactsPerBoard({ accessToken, boardId: board_id }))
-      .unwrap()
-      .then((contacts) => setAllContacts(contacts));
+  const fetchBoardContacts = useCallback(async () => {
+    try {
+      const contacts = await dispatch(
+        getAllContactsPerBoard({ accessToken, boardId: board_id })
+      ).unwrap();
+      setAllBoardContacts(contacts);
+    } catch (error) {
+      console.error('Error fetching board contacts:', error);
+    }
   }, [dispatch, accessToken, board_id]);
 
-  return <ContactsList contacts={allContacts} />;
+  useEffect(() => {
+    fetchBoardContacts();
+  }, [fetchBoardContacts]);
+
+  return (
+    <ContactsList
+      contacts={allBoardContacts}
+      refetchContacts={fetchBoardContacts}
+    />
+  );
 };
 
 export default BoardContacts;

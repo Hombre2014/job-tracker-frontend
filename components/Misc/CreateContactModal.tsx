@@ -21,6 +21,7 @@ interface CreateContactModalProps {
   dialogTitle?: string;
   onClose?: () => void;
   buttonConfirm?: string;
+  onContactCreated?: () => void;
 }
 
 const CreateContactModal = ({
@@ -30,6 +31,7 @@ const CreateContactModal = ({
   buttonLabel,
   dialogTitle,
   buttonConfirm,
+  onContactCreated,
 }: CreateContactModalProps) => {
   const dispatch = useAppDispatch();
   const { board_id, job_id } = useParams();
@@ -71,25 +73,42 @@ const CreateContactModal = ({
     try {
       const result = await dispatch(createContact(values)).unwrap();
       const newContactId = result.id;
-      const jobPostId = job_id;
       localStorage.setItem('contactId', newContactId);
 
-      const assignData = {
-        accessToken,
-        contactId: newContactId,
-        jobApplicationId: jobPostId,
-      };
+      // Get job posts connected to contact from localStorage
+      const jobsConnectedToContact = JSON.parse(
+        localStorage.getItem('jobsConnectedToContact') || '[]'
+      );
 
-      await dispatch(assignContactToJobPost(assignData)).unwrap();
+      // Assign contact to all connected jobs
+      if (jobsConnectedToContact.length > 0) {
+        await Promise.all(
+          jobsConnectedToContact.map(async (jobPost: JobApplication) => {
+            const assignData = {
+              accessToken,
+              contactId: newContactId,
+              jobApplicationId: jobPost.id,
+            };
+            await dispatch(assignContactToJobPost(assignData)).unwrap();
+          })
+        );
+      }
 
       // Fetch updated job posts data to show the new contact
       const columnId = localStorage.getItem('columnId');
-      await dispatch(
-        getAllJobPostsPerColumn({
-          accessToken,
-          columnId,
-        })
-      );
+      if (columnId) {
+        await dispatch(
+          getAllJobPostsPerColumn({
+            accessToken,
+            columnId,
+          })
+        );
+      }
+
+      // Call onContactCreated if provided
+      if (onContactCreated) {
+        onContactCreated();
+      }
 
       // Clear local storage
       cleanupAfterContact();

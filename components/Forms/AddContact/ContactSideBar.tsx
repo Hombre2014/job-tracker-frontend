@@ -2,11 +2,6 @@ import { useState, useEffect } from 'react';
 import { BsThreeDots } from 'react-icons/bs';
 
 import ComboJobsBox from './ComboJobsBox';
-import { useAppDispatch } from '@/redux/hooks';
-import {
-  assignContactToJobPost,
-  unassignContactFromJobPost,
-} from '@/redux/contacts/contactsThunk';
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -15,27 +10,31 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 interface ContactSideBarProps {
-  job_id: string;
+  job_id?: string;
   jobs: { jobPosts: JobApplication[] };
   user: { firstName: string; lastName: string; email: string };
 }
 
 const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
-  const dispatch = useAppDispatch();
-  const contactId = localStorage.getItem('contactId');
-  const accessToken = localStorage.getItem('accessToken');
   const [jobsConnectedToContact, setJobsConnectedToContact] = useState<
     JobApplication[]
   >([]);
 
   useEffect(() => {
-    const currentJob = jobs.jobPosts.find((job) => job.id === job_id);
-    if (currentJob) {
-      setJobsConnectedToContact([currentJob]);
-      localStorage.setItem(
-        'jobsConnectedToContact',
-        JSON.stringify([currentJob])
-      );
+    if (job_id) {
+      // Only set initial job if job_id exists
+      const currentJob = jobs.jobPosts.find((job) => job.id === job_id);
+      if (currentJob) {
+        setJobsConnectedToContact([currentJob]);
+        localStorage.setItem(
+          'jobsConnectedToContact',
+          JSON.stringify([currentJob])
+        );
+      }
+    } else {
+      // Clear jobs connected to contact when no job_id
+      setJobsConnectedToContact([]);
+      localStorage.setItem('jobsConnectedToContact', JSON.stringify([]));
     }
   }, [job_id, jobs.jobPosts]);
 
@@ -52,13 +51,6 @@ const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
         'jobsConnectedToContact',
         JSON.stringify([...jobsConnectedToContact, jobToAdd])
       );
-
-      const assignData = {
-        contactId,
-        accessToken,
-        jobApplicationId: jobId,
-      };
-      dispatch(assignContactToJobPost(assignData));
     }
   };
 
@@ -70,13 +62,6 @@ const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
       'jobsConnectedToContact',
       JSON.stringify(jobsConnectedToContact.filter((job) => job.id !== jobId))
     );
-
-    const unassignData = {
-      contactId,
-      accessToken,
-      jobApplicationId: jobId,
-    };
-    dispatch(unassignContactFromJobPost(unassignData));
   };
 
   return (

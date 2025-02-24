@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { GoPersonAdd } from 'react-icons/go';
 import { PiBriefcaseLight } from 'react-icons/pi';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, usePathname } from 'next/navigation';
 
 import { useAppDispatch } from '@/redux/hooks';
 import { createJobPost } from '@/redux/jobs/jobsThunk';
@@ -12,6 +12,7 @@ import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
 import {
   assignContactToJobPost,
   createContact,
+  getAllContactsPerBoard,
 } from '@/redux/contacts/contactsThunk';
 import {
   NavigationMenu,
@@ -24,8 +25,9 @@ import { cleanupAfterContact, cleanupAfterJobPost } from '@/utils/helpers';
 
 const CreateMenu = () => {
   const router = useRouter();
+  const pathname = usePathname();
+  const { board_id } = useParams();
   const dispatch = useAppDispatch();
-  const { board_id, job_id } = useParams();
   const [, setIsMenuOpen] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
@@ -54,7 +56,7 @@ const CreateMenu = () => {
     cleanupAfterJobPost();
   };
 
-  const createNewContact = () => {
+  const createNewContact = async () => {
     if (!isFormValid) return;
 
     setShowContactModal(false);
@@ -77,23 +79,45 @@ const CreateMenu = () => {
       companyIds: JSON.parse(localStorage.getItem('companyIds') || '[]'),
     };
 
-    dispatch(createContact(values))
-      .unwrap()
-      .then((result) => {
-        const newContactId = result.id;
-        const jobPostId = job_id;
-        localStorage.setItem('contactId', newContactId);
+    try {
+      const result = await dispatch(createContact(values)).unwrap();
+      const newContactId = result.id;
+      localStorage.setItem('contactId', newContactId);
 
-        const assignData = {
-          accessToken,
-          contactId: newContactId,
-          jobApplicationId: jobPostId,
-        };
+      // Get job posts connected to contact from localStorage
+      const jobsConnectedToContact = JSON.parse(
+        localStorage.getItem('jobsConnectedToContact') || '[]'
+      );
 
-        dispatch(assignContactToJobPost(assignData));
-      });
+      // Assign contact to all connected jobs
+      if (jobsConnectedToContact.length > 0) {
+        await Promise.all(
+          jobsConnectedToContact.map(async (jobPost: JobApplication) => {
+            const assignData = {
+              accessToken,
+              contactId: newContactId,
+              jobApplicationId: jobPost.id,
+            };
+            await dispatch(assignContactToJobPost(assignData)).unwrap();
+          })
+        );
+      }
 
-    cleanupAfterContact();
+      // Fetch all contacts for the board
+      await dispatch(
+        getAllContactsPerBoard({ accessToken, boardId: board_id })
+      ).unwrap();
+
+      // If we're on the contacts page, force a refresh by navigating to the same route
+      if (pathname.includes('/contacts')) {
+        router.refresh();
+      }
+
+      // Clear local storage
+      cleanupAfterContact();
+    } catch (error) {
+      console.error('Error creating/assigning contact:', error);
+    }
   };
 
   return (
@@ -172,7 +196,10 @@ const CreateMenu = () => {
             if (!open) setIsMenuOpen(false);
           }}
         >
-          <CreateContactForm onValidationChange={setIsFormValid} />
+          <CreateContactForm
+            defaultJobPost={false}
+            onValidationChange={setIsFormValid}
+          />
         </AlertDialogModal>
       )}
     </div>

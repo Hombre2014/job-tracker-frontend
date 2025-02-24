@@ -1,17 +1,51 @@
+import { useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import CreateContactModal from './CreateContactModal';
+import { useAppDispatch } from '@/redux/hooks';
+import { getAllContactsPerBoard } from '@/redux/contacts/contactsThunk';
 import ContactCard from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/ContactCard';
 
 interface ContactsListProps {
   contacts: Contact[];
+  refetchContacts?: () => void; // Add this prop
 }
 
-const ContactsList = ({ contacts }: ContactsListProps) => {
+const ContactsList = ({ contacts, refetchContacts }: ContactsListProps) => {
+  const dispatch = useAppDispatch();
+  const { board_id } = useParams();
+  const accessToken = localStorage.getItem('accessToken');
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+      try {
+        await dispatch(
+          getAllContactsPerBoard({
+            accessToken,
+            boardId: board_id,
+          })
+        ).unwrap();
+
+        // Call refetchContacts if provided
+        if (refetchContacts) {
+          refetchContacts();
+        }
+      } catch (error) {
+        console.error('Error fetching contacts:', error);
+      }
+    };
+
+    fetchContacts();
+  }, [dispatch, accessToken, board_id, refetchContacts]);
+
   return (
     <div className="w-2/3 flex flex-col mx-auto mt-8">
       <div className="w-full flex items-center py-2 border-b mb-8">
         <div className="w-full flex justify-between items-center">
           <h1 className="font-semibold text-center">Contacts</h1>
-          <CreateContactModal showButton={true} />
+          <CreateContactModal
+            showButton={true}
+            onContactCreated={refetchContacts}
+          />
         </div>
       </div>
       <div className="w-full flex flex-wrap items-center justify-start gap-4 max-h-[80vh] overflow-y-auto">
