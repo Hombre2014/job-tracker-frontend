@@ -30,12 +30,17 @@ import {
   FormMessage,
   FormControl,
 } from '@/components/ui/form';
+import { getBoardWithColumns } from '@/redux/boards/boardsThunk';
+
+interface CreateContactFormProps {
+  onValidationChange: (isValid: boolean) => void;
+  defaultJobPost: boolean;
+}
 
 const CreateContactForm = ({
+  defaultJobPost,
   onValidationChange,
-}: {
-  onValidationChange: (isValid: boolean) => void;
-}) => {
+}: CreateContactFormProps) => {
   const dispatch = useAppDispatch();
   const [comment, setComment] = useState('');
   const [location, setLocation] = useState('');
@@ -50,12 +55,14 @@ const CreateContactForm = ({
   const jobs = useAppSelector((state) => state.jobs);
   const [facebookUrl, setFacebookUrl] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
+  const { board_id } = useParams<{ board_id: string }>();
   const accessToken = localStorage.getItem('accessToken');
   const [showDropdown, setShowDropdown] = useState(false);
   const [companies, setCompanies] = useState<string[]>([]);
   const [companyIds, setCompanyIds] = useState<string[]>([]);
   const [currentCompanyInput, setCurrentCompanyInput] = useState('');
   const selectedJob = jobs.jobPosts.find((job) => job.id === job_id);
+  const [allJobPosts, setAllJobPosts] = useState<JobApplication[]>([]);
   const [matchingCompanies, setMatchingCompanies] = useState<string[]>([]);
   const [emails, setEmails] = useState<
     { id: string; value: string; type: string }[]
@@ -91,14 +98,66 @@ const CreateContactForm = ({
     }
   }, [dispatch, accessToken]);
 
+  // useEffect(() => {
+  //   const jobPostsData = {
+  //     accessToken: accessToken as string,
+  //     columnId: localStorage.getItem('columnId'),
+  //   };
+
+  //   dispatch(getAllJobPostsPerColumn(jobPostsData));
+  // }, [dispatch, accessToken]);
+
   useEffect(() => {
-    const jobPostsData = {
-      accessToken: accessToken as string,
-      columnId: localStorage.getItem('columnId'),
+    const fetchJobs = async () => {
+      if (defaultJobPost) {
+        // Fetch jobs for specific column
+        const jobPostsData = {
+          accessToken: accessToken as string,
+          columnId: localStorage.getItem('columnId'),
+        };
+        const result = await dispatch(
+          getAllJobPostsPerColumn(jobPostsData)
+        ).unwrap();
+        setAllJobPosts(result);
+      } else {
+        // Fetch jobs from all columns
+        try {
+          // First get the board with all columns
+          const boardData = await dispatch(
+            getBoardWithColumns({
+              accessToken,
+              boardId: board_id,
+            })
+          ).unwrap();
+
+          // Then fetch jobs for each column
+          const jobsPromises = boardData.columns.map((column: Column) =>
+            dispatch(
+              getAllJobPostsPerColumn({
+                accessToken,
+                columnId: column.id,
+              })
+            ).unwrap()
+          );
+
+          // Wait for all promises to resolve and flatten the arrays
+          const jobsArrays = await Promise.all(jobsPromises);
+          const allJobs = jobsArrays.flat();
+
+          // Remove duplicates if any
+          const uniqueJobs = Array.from(
+            new Map(allJobs.map((job) => [job.id, job])).values()
+          );
+
+          setAllJobPosts(uniqueJobs);
+        } catch (error) {
+          console.error('Error fetching jobs:', error);
+        }
+      }
     };
 
-    dispatch(getAllJobPostsPerColumn(jobPostsData));
-  }, [dispatch, accessToken]);
+    fetchJobs();
+  }, [dispatch, accessToken, defaultJobPost, board_id]);
 
   useEffect(() => {
     if (selectedCompanyName) {
@@ -588,7 +647,11 @@ const CreateContactForm = ({
             </form>
           </Form>
         </div>
-        <ContactSideBar user={user} jobs={jobs} job_id={job_id} />
+        <ContactSideBar
+          user={user}
+          jobs={{ jobPosts: allJobPosts }}
+          job_id={defaultJobPost ? job_id : undefined}
+        />
       </div>
     </div>
   );
