@@ -1,5 +1,5 @@
 import { SlPeople } from 'react-icons/sl';
-import { useParams } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 
 import ContactCard from './ContactCard';
 import { useAppSelector } from '@/redux/hooks';
@@ -16,7 +16,9 @@ import {
 
 const Contacts = () => {
   const { job_id } = useParams();
+  const pathname = usePathname();
   const jobs = useAppSelector((state) => state.jobs);
+  const isContactsPage = pathname?.includes('/home/contacts');
 
   const numberOfContactsPerJob =
     jobs.jobPosts.find((job) => job.id === job_id)?.contacts.length || 0;
@@ -36,7 +38,11 @@ const Contacts = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4 items-center">
-        <CreateContactModal showButton={true} buttonLabel="+ Create Contact" />
+        <CreateContactModal
+          showButton={true}
+          userContactsPage={isContactsPage}
+          buttonLabel="+ Create Contact"
+        />
         <Button className="w-fit mt-4" variant="outline">
           + Link contact
         </Button>
@@ -46,7 +52,11 @@ const Contacts = () => {
   ) : (
     <div className="flex flex-col gap-4 w-full">
       <div className="flex justify-end items-center gap-2 mb-4">
-        <CreateContactModal showButton={true} buttonLabel="+ Create Contact" />
+        <CreateContactModal
+          showButton={true}
+          userContactsPage={isContactsPage}
+          buttonLabel="+ Create Contact"
+        />
         <Button variant="outline">+ Link contact</Button>
       </div>
       <div className="flex flex-wrap gap-4 overflow-y-auto h-[506px]">
