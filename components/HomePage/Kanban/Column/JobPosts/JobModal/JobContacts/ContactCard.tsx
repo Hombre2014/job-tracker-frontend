@@ -252,6 +252,7 @@ const ContactCard = ({ contact }: { contact: Contact }) => {
       <CreateContactModal
         showButton={false}
         buttonConfirm="Update"
+        userContactsPage={false}
         buttonLabel="Edit Contact"
         dialogTitle="Edit Contact"
         isVisible={showContactModal}

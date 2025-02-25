@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, usePathname } from 'next/navigation';
 
 import { useAppDispatch } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,7 @@ interface CreateContactModalProps {
   dialogTitle?: string;
   onClose?: () => void;
   buttonConfirm?: string;
+  userContactsPage?: boolean;
   onContactCreated?: () => void;
 }
 
@@ -31,13 +32,16 @@ const CreateContactModal = ({
   buttonLabel,
   dialogTitle,
   buttonConfirm,
+  userContactsPage,
   onContactCreated,
 }: CreateContactModalProps) => {
+  const pathname = usePathname();
+  const { board_id } = useParams();
   const dispatch = useAppDispatch();
-  const { board_id, job_id } = useParams();
   const [, setIsMenuOpen] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
+  const isContactsPage = pathname?.includes('/home/contacts');
   const [showContactModal, setShowContactModal] = useState(false);
 
   useEffect(() => {
@@ -45,6 +49,77 @@ const CreateContactModal = ({
       setShowContactModal(isVisible);
     }
   }, [isVisible]);
+
+  // const createNewContact = async () => {
+  //   if (!isFormValid) return;
+
+  //   setShowContactModal(false);
+  //   if (onClose) onClose();
+
+  //   const values = {
+  //     accessToken,
+  //     boardId: board_id,
+  //     comment: localStorage.getItem('comment'),
+  //     jobTitle: localStorage.getItem('jobTitle'),
+  //     lastName: localStorage.getItem('lastName'),
+  //     location: localStorage.getItem('location'),
+  //     photoUrl: localStorage.getItem('photoUrl'),
+  //     firstName: localStorage.getItem('firstName'),
+  //     githubUrl: localStorage.getItem('githubUrl'),
+  //     twitterUrl: localStorage.getItem('twitterUrl'),
+  //     linkedinUrl: localStorage.getItem('linkedinUrl'),
+  //     facebookUrl: localStorage.getItem('facebookUrl'),
+  //     emails: JSON.parse(localStorage.getItem('emails') || '[]'),
+  //     phones: JSON.parse(localStorage.getItem('phones') || '[]'),
+  //     companyIds: JSON.parse(localStorage.getItem('companyIds') || '[]'),
+  //   };
+
+  //   try {
+  //     const result = await dispatch(createContact(values)).unwrap();
+  //     const newContactId = result.id;
+  //     localStorage.setItem('contactId', newContactId);
+
+  //     // Get job posts connected to contact from localStorage
+  //     const jobsConnectedToContact = JSON.parse(
+  //       localStorage.getItem('jobsConnectedToContact') || '[]'
+  //     );
+
+  //     // Assign contact to all connected jobs
+  //     if (jobsConnectedToContact.length > 0) {
+  //       await Promise.all(
+  //         jobsConnectedToContact.map(async (jobPost: JobApplication) => {
+  //           const assignData = {
+  //             accessToken,
+  //             contactId: newContactId,
+  //             jobApplicationId: jobPost.id,
+  //           };
+  //           await dispatch(assignContactToJobPost(assignData)).unwrap();
+  //         })
+  //       );
+  //     }
+
+  //     // Fetch updated job posts data to show the new contact
+  //     const columnId = localStorage.getItem('columnId');
+  //     if (columnId) {
+  //       await dispatch(
+  //         getAllJobPostsPerColumn({
+  //           accessToken,
+  //           columnId,
+  //         })
+  //       );
+  //     }
+
+  //     // Call onContactCreated if provided
+  //     if (onContactCreated) {
+  //       onContactCreated();
+  //     }
+
+  //     // Clear local storage
+  //     cleanupAfterContact();
+  //   } catch (error) {
+  //     console.error('Error creating/assigning contact:', error);
+  //   }
+  // };
 
   const createNewContact = async () => {
     if (!isFormValid) return;
@@ -71,6 +146,7 @@ const CreateContactModal = ({
     };
 
     try {
+      // Create the contact
       const result = await dispatch(createContact(values)).unwrap();
       const newContactId = result.id;
       localStorage.setItem('contactId', newContactId);
@@ -94,18 +170,7 @@ const CreateContactModal = ({
         );
       }
 
-      // Fetch updated job posts data to show the new contact
-      const columnId = localStorage.getItem('columnId');
-      if (columnId) {
-        await dispatch(
-          getAllJobPostsPerColumn({
-            accessToken,
-            columnId,
-          })
-        );
-      }
-
-      // Call onContactCreated if provided
+      // Call onContactCreated to refresh the contacts list in the parent component
       if (onContactCreated) {
         onContactCreated();
       }
@@ -148,7 +213,11 @@ const CreateContactModal = ({
             }
           }}
         >
-          <CreateContactForm onValidationChange={setIsFormValid} />
+          <CreateContactForm
+            defaultJobPost={!isContactsPage}
+            isUserContactsPage={isContactsPage}
+            onValidationChange={setIsFormValid}
+          />
         </AlertDialogModal>
       )}
     </div>

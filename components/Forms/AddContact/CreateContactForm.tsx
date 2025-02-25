@@ -18,6 +18,7 @@ import SocialMediaLinks from './SocialMediaLinks';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
+import { getBoardsOnly, getBoardWithColumns } from '@/redux/boards/boardsThunk';
 import {
   createCompany,
   getCompanyThatStartsWith,
@@ -30,16 +31,17 @@ import {
   FormMessage,
   FormControl,
 } from '@/components/ui/form';
-import { getBoardWithColumns } from '@/redux/boards/boardsThunk';
 
 interface CreateContactFormProps {
-  onValidationChange: (isValid: boolean) => void;
   defaultJobPost: boolean;
+  isUserContactsPage?: boolean;
+  onValidationChange: (isValid: boolean) => void;
 }
 
 const CreateContactForm = ({
   defaultJobPost,
   onValidationChange,
+  isUserContactsPage,
 }: CreateContactFormProps) => {
   const dispatch = useAppDispatch();
   const [comment, setComment] = useState('');
@@ -99,30 +101,166 @@ const CreateContactForm = ({
   }, [dispatch, accessToken]);
 
   // useEffect(() => {
-  //   const jobPostsData = {
-  //     accessToken: accessToken as string,
-  //     columnId: localStorage.getItem('columnId'),
+  //   const fetchJobs = async () => {
+  //     if (defaultJobPost) {
+  //       // Fetch jobs for specific column
+  //       const jobPostsData = {
+  //         accessToken: accessToken as string,
+  //         columnId: localStorage.getItem('columnId'),
+  //       };
+  //       const result = await dispatch(
+  //         getAllJobPostsPerColumn(jobPostsData)
+  //       ).unwrap();
+  //       setAllJobPosts(result);
+  //     } else {
+  //       // Fetch jobs from all columns
+  //       try {
+  //         // First get the board with all columns
+  //         const boardData = await dispatch(
+  //           getBoardWithColumns({
+  //             accessToken,
+  //             boardId: board_id,
+  //           })
+  //         ).unwrap();
+
+  //         // Then fetch jobs for each column
+  //         const jobsPromises = boardData.columns.map((column: Column) =>
+  //           dispatch(
+  //             getAllJobPostsPerColumn({
+  //               accessToken,
+  //               columnId: column.id,
+  //             })
+  //           ).unwrap()
+  //         );
+
+  //         // Wait for all promises to resolve and flatten the arrays
+  //         const jobsArrays = await Promise.all(jobsPromises);
+  //         const allJobs = jobsArrays.flat();
+
+  //         // Remove duplicates if any
+  //         const uniqueJobs = Array.from(
+  //           new Map(allJobs.map((job) => [job.id, job])).values()
+  //         );
+
+  //         setAllJobPosts(uniqueJobs);
+  //       } catch (error) {
+  //         console.error('Error fetching jobs:', error);
+  //       }
+  //     }
   //   };
 
-  //   dispatch(getAllJobPostsPerColumn(jobPostsData));
-  // }, [dispatch, accessToken]);
+  //   fetchJobs();
+  // }, [dispatch, accessToken, defaultJobPost, board_id]);
+
+  // useEffect(() => {
+  //   const fetchJobs = async () => {
+  //     if (defaultJobPost) {
+  //       // Fetch jobs for specific column
+  //       const jobPostsData = {
+  //         accessToken: accessToken as string,
+  //         columnId: localStorage.getItem('columnId'),
+  //       };
+  //       const result = await dispatch(
+  //         getAllJobPostsPerColumn(jobPostsData)
+  //       ).unwrap();
+  //       setAllJobPosts(result);
+  //     } else {
+  //       // Fetch jobs from all boards and columns
+  //       try {
+  //         // First get all boards
+  //         const boardsResponse = await dispatch(
+  //           getBoardsOnly(accessToken as string)
+  //         ).unwrap();
+
+  //         // Then get all columns from each board
+  //         const jobsPromises = boardsResponse.flatMap(async (board: Board) => {
+  //           const boardData = await dispatch(
+  //             getBoardWithColumns({
+  //               accessToken,
+  //               boardId: board.id,
+  //             })
+  //           ).unwrap();
+
+  //           // Get jobs from each column
+  //           const columnPromises = boardData.columns.map((column: Column) =>
+  //             dispatch(
+  //               getAllJobPostsPerColumn({
+  //                 accessToken,
+  //                 columnId: column.id,
+  //               })
+  //             ).unwrap()
+  //           );
+
+  //           const columnJobs = await Promise.all(columnPromises);
+  //           return columnJobs.flat();
+  //         });
+
+  //         // Wait for all jobs to be fetched
+  //         const allJobsArrays = await Promise.all(jobsPromises);
+
+  //         // Flatten and remove duplicates
+  //         const uniqueJobs = Array.from(
+  //           new Map(allJobsArrays.flat().map((job) => [job.id, job])).values()
+  //         );
+
+  //         setAllJobPosts(uniqueJobs);
+  //       } catch (error) {
+  //         console.error('Error fetching jobs:', error);
+  //       }
+  //     }
+  //   };
+
+  //   fetchJobs();
+  // }, [dispatch, accessToken, defaultJobPost, board_id]);
 
   useEffect(() => {
     const fetchJobs = async () => {
-      if (defaultJobPost) {
-        // Fetch jobs for specific column
-        const jobPostsData = {
-          accessToken: accessToken as string,
-          columnId: localStorage.getItem('columnId'),
-        };
-        const result = await dispatch(
-          getAllJobPostsPerColumn(jobPostsData)
-        ).unwrap();
-        setAllJobPosts(result);
-      } else {
-        // Fetch jobs from all columns
-        try {
-          // First get the board with all columns
+      try {
+        if (defaultJobPost) {
+          // Case 1: From Job Post Modal - fetch jobs for specific column
+          const jobPostsData = {
+            accessToken: accessToken as string,
+            columnId: localStorage.getItem('columnId'),
+          };
+          const result = await dispatch(
+            getAllJobPostsPerColumn(jobPostsData)
+          ).unwrap();
+          setAllJobPosts(result);
+        } else if (isUserContactsPage) {
+          // Case 3: From User's Contacts page - fetch jobs from all boards
+          const boardsResponse = await dispatch(
+            getBoardsOnly(accessToken as string)
+          ).unwrap();
+
+          const jobsPromises = boardsResponse.flatMap(async (board: Board) => {
+            const boardData = await dispatch(
+              getBoardWithColumns({
+                accessToken,
+                boardId: board.id,
+              })
+            ).unwrap();
+
+            const columnPromises = boardData.columns.map((column: Column) =>
+              dispatch(
+                getAllJobPostsPerColumn({
+                  accessToken,
+                  columnId: column.id,
+                })
+              ).unwrap()
+            );
+
+            const columnJobs = await Promise.all(columnPromises);
+            return columnJobs.flat();
+          });
+
+          const allJobsArrays = await Promise.all(jobsPromises);
+          const uniqueJobs = Array.from(
+            new Map(allJobsArrays.flat().map((job) => [job.id, job])).values()
+          );
+
+          setAllJobPosts(uniqueJobs);
+        } else {
+          // Case 2: From Board's Contacts page - fetch jobs from current board
           const boardData = await dispatch(
             getBoardWithColumns({
               accessToken,
@@ -130,7 +268,6 @@ const CreateContactForm = ({
             })
           ).unwrap();
 
-          // Then fetch jobs for each column
           const jobsPromises = boardData.columns.map((column: Column) =>
             dispatch(
               getAllJobPostsPerColumn({
@@ -140,24 +277,20 @@ const CreateContactForm = ({
             ).unwrap()
           );
 
-          // Wait for all promises to resolve and flatten the arrays
           const jobsArrays = await Promise.all(jobsPromises);
-          const allJobs = jobsArrays.flat();
-
-          // Remove duplicates if any
           const uniqueJobs = Array.from(
-            new Map(allJobs.map((job) => [job.id, job])).values()
+            new Map(jobsArrays.flat().map((job) => [job.id, job])).values()
           );
 
           setAllJobPosts(uniqueJobs);
-        } catch (error) {
-          console.error('Error fetching jobs:', error);
         }
+      } catch (error) {
+        console.error('Error fetching jobs:', error);
       }
     };
 
     fetchJobs();
-  }, [dispatch, accessToken, defaultJobPost, board_id]);
+  }, [dispatch, accessToken, defaultJobPost, board_id, isUserContactsPage]);
 
   useEffect(() => {
     if (selectedCompanyName) {
@@ -294,34 +427,36 @@ const CreateContactForm = ({
     localStorage.setItem('phones', JSON.stringify(phonesToSave));
   };
 
-  // New changes
   const debouncedSearch = useCallback(
-    debounce((searchTerm: string) => {
-      if (searchTerm.length >= 2) {
-        const values = {
-          accessToken,
-          companyName: searchTerm,
-        };
-        dispatch(getCompanyThatStartsWith(values))
-          .unwrap()
-          .then((result) => {
-            const companyNames: string[] = result.map(
-              (company: { name: string }) => company.name
-            );
-            setMatchingCompanies(companyNames);
-            setShowDropdown(true);
-          })
-          .catch((error) => {
-            console.error('Search error:', error);
-            setMatchingCompanies([]);
-            setShowDropdown(false);
-          });
-      } else {
-        setMatchingCompanies([]);
-        setShowDropdown(false);
-      }
-    }, 300),
-    [dispatch, accessToken]
+    (searchTerm: string) => {
+      const debounced = debounce((searchTerm: string) => {
+        if (searchTerm.length >= 2) {
+          const values = {
+            accessToken,
+            companyName: searchTerm,
+          };
+          dispatch(getCompanyThatStartsWith(values))
+            .unwrap()
+            .then((result) => {
+              const companyNames: string[] = result.map(
+                (company: { name: string }) => company.name
+              );
+              setMatchingCompanies(companyNames);
+              setShowDropdown(true);
+            })
+            .catch((error) => {
+              console.error('Search error:', error);
+              setMatchingCompanies([]);
+              setShowDropdown(false);
+            });
+        } else {
+          setMatchingCompanies([]);
+          setShowDropdown(false);
+        }
+      }, 300);
+      return debounced(searchTerm);
+    },
+    [dispatch, accessToken, setMatchingCompanies, setShowDropdown]
   );
 
   const handleCompanyInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

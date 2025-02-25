@@ -1,18 +1,16 @@
 import { useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import CreateContactModal from './CreateContactModal';
+import { useParams, usePathname } from 'next/navigation';
+
 import { useAppDispatch } from '@/redux/hooks';
+import CreateContactModal from './CreateContactModal';
 import { getAllContactsPerBoard } from '@/redux/contacts/contactsThunk';
 import ContactCard from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/ContactCard';
 
-interface ContactsListProps {
-  contacts: Contact[];
-  refetchContacts?: () => void; // Add this prop
-}
-
 const ContactsList = ({ contacts, refetchContacts }: ContactsListProps) => {
-  const dispatch = useAppDispatch();
+  const pathname = usePathname();
   const { board_id } = useParams();
+  const dispatch = useAppDispatch();
+  const isContactsPage = pathname?.includes('/home/contacts');
   const accessToken = localStorage.getItem('accessToken');
 
   useEffect(() => {
@@ -44,6 +42,7 @@ const ContactsList = ({ contacts, refetchContacts }: ContactsListProps) => {
           <h1 className="font-semibold text-center">Contacts</h1>
           <CreateContactModal
             showButton={true}
+            userContactsPage={isContactsPage}
             onContactCreated={refetchContacts}
           />
         </div>

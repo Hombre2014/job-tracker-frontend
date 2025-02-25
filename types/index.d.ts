@@ -65,6 +65,17 @@ type Contact = {
   companyIds: CompanyIds[];
 };
 
+interface ContactsListProps {
+  contacts: Contact[];
+  refetchContacts?: () => void;
+}
+
+interface ContactSideBarProps {
+  job_id?: string;
+  jobs: { jobPosts: JobApplication[] };
+  user: { firstName: string; lastName: string; email: string };
+}
+
 type JobApplication = {
   id: string;
   title: string;

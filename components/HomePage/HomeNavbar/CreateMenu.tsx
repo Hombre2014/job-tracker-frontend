@@ -6,12 +6,13 @@ import { useParams, useRouter, usePathname } from 'next/navigation';
 import { useAppDispatch } from '@/redux/hooks';
 import { createJobPost } from '@/redux/jobs/jobsThunk';
 import { getBoards } from '@/redux/boards/boardsThunk';
+import { cleanupAfterContact, cleanupAfterJobPost } from '@/utils/helpers';
 import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
 import {
-  assignContactToJobPost,
   createContact,
+  assignContactToJobPost,
   getAllContactsPerBoard,
 } from '@/redux/contacts/contactsThunk';
 import {
@@ -21,7 +22,6 @@ import {
   NavigationMenuContent,
   NavigationMenuTrigger,
 } from '@/components/ui/navigation-menu';
-import { cleanupAfterContact, cleanupAfterJobPost } from '@/utils/helpers';
 
 const CreateMenu = () => {
   const router = useRouter();
@@ -32,6 +32,7 @@ const CreateMenu = () => {
   const [isFormValid, setIsFormValid] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const [showJobModal, setShowJobModal] = useState(false);
+  const isContactsPage = pathname?.includes('/home/contacts');
   const [showContactModal, setShowContactModal] = useState(false);
 
   const createJobApplication = () => {
@@ -198,6 +199,7 @@ const CreateMenu = () => {
         >
           <CreateContactForm
             defaultJobPost={false}
+            isUserContactsPage={isContactsPage}
             onValidationChange={setIsFormValid}
           />
         </AlertDialogModal>
