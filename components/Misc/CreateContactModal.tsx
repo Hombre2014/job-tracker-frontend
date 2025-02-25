@@ -33,8 +33,8 @@ const CreateContactModal = ({
   buttonConfirm,
   onContactCreated,
 }: CreateContactModalProps) => {
+  const { board_id } = useParams();
   const dispatch = useAppDispatch();
-  const { board_id, job_id } = useParams();
   const [, setIsMenuOpen] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
@@ -148,7 +148,10 @@ const CreateContactModal = ({
             }
           }}
         >
-          <CreateContactForm onValidationChange={setIsFormValid} />
+          <CreateContactForm
+            defaultJobPost={true}
+            onValidationChange={setIsFormValid}
+          />
         </AlertDialogModal>
       )}
     </div>

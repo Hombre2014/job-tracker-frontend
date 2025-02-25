@@ -1,14 +1,10 @@
 import { useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import CreateContactModal from './CreateContactModal';
+
 import { useAppDispatch } from '@/redux/hooks';
+import CreateContactModal from './CreateContactModal';
 import { getAllContactsPerBoard } from '@/redux/contacts/contactsThunk';
 import ContactCard from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/ContactCard';
-
-interface ContactsListProps {
-  contacts: Contact[];
-  refetchContacts?: () => void; // Add this prop
-}
 
 const ContactsList = ({ contacts, refetchContacts }: ContactsListProps) => {
   const dispatch = useAppDispatch();

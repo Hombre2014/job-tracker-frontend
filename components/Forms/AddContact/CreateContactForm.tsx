@@ -18,6 +18,7 @@ import SocialMediaLinks from './SocialMediaLinks';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
+import { getBoardWithColumns } from '@/redux/boards/boardsThunk';
 import {
   createCompany,
   getCompanyThatStartsWith,
@@ -30,7 +31,6 @@ import {
   FormMessage,
   FormControl,
 } from '@/components/ui/form';
-import { getBoardWithColumns } from '@/redux/boards/boardsThunk';
 
 interface CreateContactFormProps {
   onValidationChange: (isValid: boolean) => void;
@@ -97,15 +97,6 @@ const CreateContactForm = ({
       dispatch(getUser(accessToken));
     }
   }, [dispatch, accessToken]);
-
-  // useEffect(() => {
-  //   const jobPostsData = {
-  //     accessToken: accessToken as string,
-  //     columnId: localStorage.getItem('columnId'),
-  //   };
-
-  //   dispatch(getAllJobPostsPerColumn(jobPostsData));
-  // }, [dispatch, accessToken]);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -294,34 +285,36 @@ const CreateContactForm = ({
     localStorage.setItem('phones', JSON.stringify(phonesToSave));
   };
 
-  // New changes
   const debouncedSearch = useCallback(
-    debounce((searchTerm: string) => {
-      if (searchTerm.length >= 2) {
-        const values = {
-          accessToken,
-          companyName: searchTerm,
-        };
-        dispatch(getCompanyThatStartsWith(values))
-          .unwrap()
-          .then((result) => {
-            const companyNames: string[] = result.map(
-              (company: { name: string }) => company.name
-            );
-            setMatchingCompanies(companyNames);
-            setShowDropdown(true);
-          })
-          .catch((error) => {
-            console.error('Search error:', error);
-            setMatchingCompanies([]);
-            setShowDropdown(false);
-          });
-      } else {
-        setMatchingCompanies([]);
-        setShowDropdown(false);
-      }
-    }, 300),
-    [dispatch, accessToken]
+    (searchTerm: string) => {
+      const debounced = debounce((searchTerm: string) => {
+        if (searchTerm.length >= 2) {
+          const values = {
+            accessToken,
+            companyName: searchTerm,
+          };
+          dispatch(getCompanyThatStartsWith(values))
+            .unwrap()
+            .then((result) => {
+              const companyNames: string[] = result.map(
+                (company: { name: string }) => company.name
+              );
+              setMatchingCompanies(companyNames);
+              setShowDropdown(true);
+            })
+            .catch((error) => {
+              console.error('Search error:', error);
+              setMatchingCompanies([]);
+              setShowDropdown(false);
+            });
+        } else {
+          setMatchingCompanies([]);
+          setShowDropdown(false);
+        }
+      }, 300);
+      return debounced(searchTerm);
+    },
+    [dispatch, accessToken, setMatchingCompanies, setShowDropdown]
   );
 
   const handleCompanyInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

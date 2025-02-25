@@ -9,16 +9,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-interface ContactSideBarProps {
-  job_id?: string;
-  jobs: { jobPosts: JobApplication[] };
-  user: { firstName: string; lastName: string; email: string };
-}
-
 const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
   const [jobsConnectedToContact, setJobsConnectedToContact] = useState<
     JobApplication[]
   >([]);
+
+  console.log('Job_id: ', job_id);
 
   useEffect(() => {
     if (job_id) {
