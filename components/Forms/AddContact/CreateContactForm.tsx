@@ -520,7 +520,7 @@ const CreateContactForm = ({
       <div className="flex gap-2">
         <div className="w-3/4">
           <Form {...form}>
-            <form className="space-y-8 max-h-[660px] overflow-y-auto">
+            <form className="space-y-8 max-h-[665px] overflow-y-auto">
               <div className="pr-4">
                 <div className="flex flex-row items-center justify-between gap-8 mb-8">
                   <FormField

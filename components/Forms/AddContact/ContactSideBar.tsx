@@ -14,7 +14,7 @@ const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
     JobApplication[]
   >([]);
 
-  console.log('Job_id: ', job_id);
+  // console.log('Job_id: ', job_id);
 
   useEffect(() => {
     if (job_id) {
