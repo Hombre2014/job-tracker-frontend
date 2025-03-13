@@ -1,7 +1,11 @@
+import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { BsThreeDots } from 'react-icons/bs';
 
 import ComboJobsBox from './ComboJobsBox';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { getAllJobPostsPerBoard } from '@/redux/jobs/jobsThunk';
+import { getBoardWithColumns } from '@/redux/boards/boardsThunk';
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -10,11 +14,38 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
+  const { board_id } = useParams();
+  const dispatch = useAppDispatch();
+  const accessToken = localStorage.getItem('accessToken');
+  const [boardJobs, setBoardJobs] = useState<JobApplication[]>([]);
   const [jobsConnectedToContact, setJobsConnectedToContact] = useState<
     JobApplication[]
   >([]);
 
-  // console.log('Job_id: ', job_id);
+  useEffect(() => {
+    const fetchBoardJobs = async () => {
+      if (board_id && accessToken) {
+        try {
+          // Get board with columns and job applications
+          const boardData = await dispatch(
+            getBoardWithColumns({ boardId: board_id, accessToken })
+          ).unwrap();
+
+          // Extract job applications from all columns
+          const allJobsFromBoard = boardData.columns.flatMap(
+            (column) => column.jobApplications || []
+          );
+
+          setBoardJobs(allJobsFromBoard);
+        } catch (error) {
+          console.error('Error fetching board data:', error);
+          setBoardJobs([]);
+        }
+      }
+    };
+
+    fetchBoardJobs();
+  }, [board_id, dispatch, accessToken]);
 
   useEffect(() => {
     if (job_id) {
@@ -35,9 +66,13 @@ const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
   }, [job_id, jobs.jobPosts]);
 
   const handleAddJob = (jobTitle: string, jobId: string) => {
-    const jobToAdd = jobs.jobPosts.find(
+    // Use boardJobs instead of jobs.jobPosts if we're on a specific board page
+    const jobsList = board_id ? boardJobs : jobs.jobPosts;
+
+    const jobToAdd = jobsList.find(
       (job) => job.title === jobTitle && job.id === jobId
     );
+
     if (
       jobToAdd &&
       !jobsConnectedToContact.some((job) => job.id === jobToAdd.id)
@@ -109,8 +144,8 @@ const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
       <div className="m-0 p-0 mt-2">
         <ComboJobsBox
           buttonWidth="w-full"
-          jobPosts={jobs.jobPosts}
           onJobSelect={handleAddJob}
+          jobPosts={board_id ? boardJobs : jobs.jobPosts}
           jobsConnectedToContact={jobsConnectedToContact}
         />
       </div>
