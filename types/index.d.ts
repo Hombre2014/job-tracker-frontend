@@ -67,7 +67,6 @@ type Contact = {
 
 interface ContactsListProps {
   contacts: Contact[];
-  defaultJobPost?: boolean;
   refetchContacts?: () => void;
 }
 

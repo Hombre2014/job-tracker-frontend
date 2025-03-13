@@ -84,13 +84,13 @@ const CreateContactForm = ({
       lastName: '',
       photoUrl: '',
       jobTitle: '',
-      location: '',
       companies: [],
       firstName: '',
       githubUrl: '',
       twitterUrl: '',
       linkedinUrl: '',
       facebookUrl: '',
+      location: '',
     },
   });
 

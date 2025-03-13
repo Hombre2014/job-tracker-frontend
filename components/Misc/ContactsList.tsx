@@ -6,18 +6,12 @@ import CreateContactModal from './CreateContactModal';
 import { getAllContactsPerBoard } from '@/redux/contacts/contactsThunk';
 import ContactCard from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/ContactCard';
 
-const ContactsList = ({
-  contacts,
-  defaultJobPost,
-  refetchContacts,
-}: ContactsListProps) => {
+const ContactsList = ({ contacts, refetchContacts }: ContactsListProps) => {
   const pathname = usePathname();
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const isContactsPage = pathname?.includes('/home/contacts');
   const accessToken = localStorage.getItem('accessToken');
-
-  // TODO: If called from the contacts page, there is no board_id. It needs to fetch all contacts from all boards.
 
   useEffect(() => {
     const fetchContacts = async () => {
@@ -48,7 +42,6 @@ const ContactsList = ({
           <h1 className="font-semibold text-center">Contacts</h1>
           <CreateContactModal
             showButton={true}
-            defaultJobPost={defaultJobPost}
             userContactsPage={isContactsPage}
             onContactCreated={refetchContacts}
           />
