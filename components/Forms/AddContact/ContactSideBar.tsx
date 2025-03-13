@@ -33,7 +33,7 @@ const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
 
           // Extract job applications from all columns
           const allJobsFromBoard = boardData.columns.flatMap(
-            (column) => column.jobApplications || []
+            (column: Column) => column.jobApplications || []
           );
 
           setBoardJobs(allJobsFromBoard);

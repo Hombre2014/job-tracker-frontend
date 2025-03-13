@@ -15,6 +15,8 @@ const ContactsList = ({ contacts, refetchContacts }: ContactsListProps) => {
 
   useEffect(() => {
     const fetchContacts = async () => {
+      if (!accessToken || !board_id) return;
+
       try {
         await dispatch(
           getAllContactsPerBoard({
@@ -23,7 +25,6 @@ const ContactsList = ({ contacts, refetchContacts }: ContactsListProps) => {
           })
         ).unwrap();
 
-        // Call refetchContacts if provided
         if (refetchContacts) {
           refetchContacts();
         }
