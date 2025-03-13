@@ -21,6 +21,7 @@ interface CreateContactModalProps {
   dialogTitle?: string;
   onClose?: () => void;
   buttonConfirm?: string;
+  defaultJobPost?: boolean;
   userContactsPage?: boolean;
   onContactCreated?: () => void;
 }
@@ -32,6 +33,7 @@ const CreateContactModal = ({
   buttonLabel,
   dialogTitle,
   buttonConfirm,
+  defaultJobPost,
   userContactsPage,
   onContactCreated,
 }: CreateContactModalProps) => {
@@ -214,9 +216,9 @@ const CreateContactModal = ({
           }}
         >
           <CreateContactForm
-            defaultJobPost={!isContactsPage}
             isUserContactsPage={isContactsPage}
             onValidationChange={setIsFormValid}
+            defaultJobPost={!isContactsPage && !!defaultJobPost}
           />
         </AlertDialogModal>
       )}
