@@ -17,21 +17,29 @@ const ContactsList = ({
   const isContactsPage = pathname?.includes('/home/contacts');
   const accessToken = localStorage.getItem('accessToken');
 
-  // TODO: If called from the contacts page, there is no board_id. It needs to fetch all contacts from all boards.
-
   useEffect(() => {
     const fetchContacts = async () => {
       try {
-        await dispatch(
-          getAllContactsPerBoard({
-            accessToken,
-            boardId: board_id,
-          })
-        ).unwrap();
+        if (isContactsPage) {
+          // If we're on the contacts page, don't fetch contacts, since there is no board_id
+          // Just call refetchContacts if provided (for refreshing)
+          if (refetchContacts) {
+            refetchContacts();
+          }
+          return;
+        }
+        // Only fetch contacts if we have a board_id (on board-specific pages)
+        if (board_id) {
+          await dispatch(
+            getAllContactsPerBoard({
+              accessToken,
+              boardId: board_id,
+            })
+          ).unwrap();
 
-        // Call refetchContacts if provided
-        if (refetchContacts) {
-          refetchContacts();
+          if (refetchContacts) {
+            refetchContacts();
+          }
         }
       } catch (error) {
         console.error('Error fetching contacts:', error);
@@ -39,7 +47,7 @@ const ContactsList = ({
     };
 
     fetchContacts();
-  }, [dispatch, accessToken, board_id, refetchContacts]);
+  }, [dispatch, accessToken, board_id, refetchContacts, isContactsPage]);
 
   return (
     <div className="w-2/3 flex flex-col mx-auto mt-8">
