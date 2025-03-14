@@ -100,119 +100,6 @@ const CreateContactForm = ({
     }
   }, [dispatch, accessToken]);
 
-  // useEffect(() => {
-  //   const fetchJobs = async () => {
-  //     if (defaultJobPost) {
-  //       // Fetch jobs for specific column
-  //       const jobPostsData = {
-  //         accessToken: accessToken as string,
-  //         columnId: localStorage.getItem('columnId'),
-  //       };
-  //       const result = await dispatch(
-  //         getAllJobPostsPerColumn(jobPostsData)
-  //       ).unwrap();
-  //       setAllJobPosts(result);
-  //     } else {
-  //       // Fetch jobs from all columns
-  //       try {
-  //         // First get the board with all columns
-  //         const boardData = await dispatch(
-  //           getBoardWithColumns({
-  //             accessToken,
-  //             boardId: board_id,
-  //           })
-  //         ).unwrap();
-
-  //         // Then fetch jobs for each column
-  //         const jobsPromises = boardData.columns.map((column: Column) =>
-  //           dispatch(
-  //             getAllJobPostsPerColumn({
-  //               accessToken,
-  //               columnId: column.id,
-  //             })
-  //           ).unwrap()
-  //         );
-
-  //         // Wait for all promises to resolve and flatten the arrays
-  //         const jobsArrays = await Promise.all(jobsPromises);
-  //         const allJobs = jobsArrays.flat();
-
-  //         // Remove duplicates if any
-  //         const uniqueJobs = Array.from(
-  //           new Map(allJobs.map((job) => [job.id, job])).values()
-  //         );
-
-  //         setAllJobPosts(uniqueJobs);
-  //       } catch (error) {
-  //         console.error('Error fetching jobs:', error);
-  //       }
-  //     }
-  //   };
-
-  //   fetchJobs();
-  // }, [dispatch, accessToken, defaultJobPost, board_id]);
-
-  // useEffect(() => {
-  //   const fetchJobs = async () => {
-  //     if (defaultJobPost) {
-  //       // Fetch jobs for specific column
-  //       const jobPostsData = {
-  //         accessToken: accessToken as string,
-  //         columnId: localStorage.getItem('columnId'),
-  //       };
-  //       const result = await dispatch(
-  //         getAllJobPostsPerColumn(jobPostsData)
-  //       ).unwrap();
-  //       setAllJobPosts(result);
-  //     } else {
-  //       // Fetch jobs from all boards and columns
-  //       try {
-  //         // First get all boards
-  //         const boardsResponse = await dispatch(
-  //           getBoardsOnly(accessToken as string)
-  //         ).unwrap();
-
-  //         // Then get all columns from each board
-  //         const jobsPromises = boardsResponse.flatMap(async (board: Board) => {
-  //           const boardData = await dispatch(
-  //             getBoardWithColumns({
-  //               accessToken,
-  //               boardId: board.id,
-  //             })
-  //           ).unwrap();
-
-  //           // Get jobs from each column
-  //           const columnPromises = boardData.columns.map((column: Column) =>
-  //             dispatch(
-  //               getAllJobPostsPerColumn({
-  //                 accessToken,
-  //                 columnId: column.id,
-  //               })
-  //             ).unwrap()
-  //           );
-
-  //           const columnJobs = await Promise.all(columnPromises);
-  //           return columnJobs.flat();
-  //         });
-
-  //         // Wait for all jobs to be fetched
-  //         const allJobsArrays = await Promise.all(jobsPromises);
-
-  //         // Flatten and remove duplicates
-  //         const uniqueJobs = Array.from(
-  //           new Map(allJobsArrays.flat().map((job) => [job.id, job])).values()
-  //         );
-
-  //         setAllJobPosts(uniqueJobs);
-  //       } catch (error) {
-  //         console.error('Error fetching jobs:', error);
-  //       }
-  //     }
-  //   };
-
-  //   fetchJobs();
-  // }, [dispatch, accessToken, defaultJobPost, board_id]);
-
   useEffect(() => {
     const fetchJobs = async () => {
       try {
@@ -520,7 +407,7 @@ const CreateContactForm = ({
       <div className="flex gap-2">
         <div className="w-3/4">
           <Form {...form}>
-            <form className="space-y-8 max-h-[660px] overflow-y-auto">
+            <form className="space-y-8 max-h-[665px] overflow-y-auto">
               <div className="pr-4">
                 <div className="flex flex-row items-center justify-between gap-8 mb-8">
                   <FormField
