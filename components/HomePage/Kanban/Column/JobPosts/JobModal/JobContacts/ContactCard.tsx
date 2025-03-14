@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { BsThreeDots } from 'react-icons/bs';
 import { HiOutlinePhone } from 'react-icons/hi';
@@ -12,9 +13,8 @@ import {
   SlSocialLinkedin,
 } from 'react-icons/sl';
 
-import { getCompany } from '@/redux/companies/companiesThunk';
+import { getContact } from '@/redux/contacts/contactsThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
 import CreateContactModal from '@/components/Misc/CreateContactModal';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import {
@@ -26,6 +26,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 const ContactCard = ({ contact }: { contact: Contact }) => {
+  const contactId = contact.id;
+  const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const accessToken = localStorage.getItem('accessToken');
   const [companyNames, setCompanyNames] = useState<string[]>([]);
@@ -34,15 +36,25 @@ const ContactCard = ({ contact }: { contact: Contact }) => {
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
 
   useEffect(() => {
-    const jobPostsData = {
-      accessToken: accessToken as string,
-      columnId: localStorage.getItem('columnId'),
+    const getCurrentContact = async () => {
+      try {
+        const value = {
+          boardId: board_id,
+          contactId: contactId,
+          accessToken: accessToken as string,
+        };
+        const contact = await dispatch(getContact(value)).unwrap();
+
+        const names = contact[0].companies.map(
+          (company: Company) => company.name
+        );
+        setCompanyNames(names);
+      } catch (error) {
+        console.error('Error fetching contact data:', error);
+      }
     };
-
-    if (!jobPostsData.columnId) return;
-
-    dispatch(getAllJobPostsPerColumn(jobPostsData));
-  }, [dispatch, accessToken]);
+    getCurrentContact();
+  }, [dispatch, accessToken, contactId, board_id]);
 
   const handleEditContact = (contactId: string) => {
     console.log('Edit contact with id: ', contactId);
@@ -58,31 +70,6 @@ const ContactCard = ({ contact }: { contact: Contact }) => {
   const handleCancel = () => {
     setOpenDropdownId(null);
   };
-
-  const getCompanyNames = async (companyIds: CompanyIds[]) => {
-    const accessToken = localStorage.getItem('accessToken');
-    const companyNames: string[] = [];
-
-    // for (const companyId of companyIds) {
-    //   const company = await dispatch(
-    //     getCompany({
-    //       companyId: companyId.id,
-    //       accessToken,
-    //     })
-    //   ).unwrap();
-    //   companyNames.push(company.name);
-    // }
-
-    return companyNames;
-  };
-
-  useEffect(() => {
-    const fetchCompanyNames = async () => {
-      const names = await getCompanyNames(contact.companyIds);
-      setCompanyNames(names);
-    };
-    fetchCompanyNames();
-  }, [contact.companyIds]);
 
   return (
     <div className="min-w-[268px]">
