@@ -35,6 +35,8 @@ const ContactCard = ({ contact }: { contact: Contact }) => {
   const { firstName, lastName } = useAppSelector((state) => state.user);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
 
+  console.log('Contact:', contact);
+
   useEffect(() => {
     const getCurrentContact = async () => {
       try {
