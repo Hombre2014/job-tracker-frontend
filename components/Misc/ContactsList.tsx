@@ -1,40 +1,120 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, usePathname } from 'next/navigation';
 
 import { useAppDispatch } from '@/redux/hooks';
 import CreateContactModal from './CreateContactModal';
+import { getBoardsOnly } from '@/redux/boards/boardsThunk';
 import { getAllContactsPerBoard } from '@/redux/contacts/contactsThunk';
 import ContactCard from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/ContactCard';
 
-const ContactsList = ({ contacts, refetchContacts }: ContactsListProps) => {
+const ContactsList = ({
+  contacts: initialContacts,
+  refetchContacts,
+}: ContactsListProps) => {
+  const params = useParams();
   const pathname = usePathname();
-  const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const isContactsPage = pathname?.includes('/home/contacts');
   const accessToken = localStorage.getItem('accessToken');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [contactsWithBoardIds, setContactsWithBoardIds] = useState<Contact[]>(
+    initialContacts || []
+  );
+  const board_id = params.board_id
+    ? Array.isArray(params.board_id)
+      ? params.board_id[0]
+      : params.board_id
+    : undefined;
 
-  useEffect(() => {
-    const fetchContacts = async () => {
-      if (!accessToken || !board_id) return;
-
+  // Fetch contacts for a specific board
+  const fetchContactsForBoard = useCallback(
+    async (boardId: string) => {
       try {
-        await dispatch(
+        const boardContacts = await dispatch(
           getAllContactsPerBoard({
             accessToken,
-            boardId: board_id,
+            boardId,
           })
         ).unwrap();
 
-        if (refetchContacts) {
-          refetchContacts();
+        return boardContacts.map((contact: Contact) => ({
+          ...contact,
+          boardId, // Ensure boardId is set
+        }));
+      } catch (error) {
+        console.error(`Error fetching contacts for board ${boardId}:`, error);
+        return [];
+      }
+    },
+    [dispatch, accessToken]
+  );
+
+  // Fetch contacts from all boards
+  const fetchAllContacts = useCallback(async () => {
+    try {
+      const boards = await dispatch(
+        getBoardsOnly(accessToken as string)
+      ).unwrap();
+
+      // Fetch contacts for all boards in parallel
+      const contactPromises = boards.map((board: Board) =>
+        fetchContactsForBoard(board.id)
+      );
+
+      // Wait for all promises to resolve
+      const contactsArrays = await Promise.all(contactPromises);
+
+      // Flatten the array of arrays
+      return contactsArrays.flat();
+    } catch (error) {
+      console.error('Error fetching boards:', error);
+      setError('Failed to fetch contacts from all boards');
+      return [];
+    }
+  }, [dispatch, accessToken, fetchContactsForBoard]);
+
+  useEffect(() => {
+    const loadContacts = async () => {
+      if (!accessToken) return;
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        // If we have a board_id, fetch contacts for that board
+        if (board_id) {
+          const boardContacts = await fetchContactsForBoard(board_id);
+          setContactsWithBoardIds(boardContacts);
+        }
+        // If we're on the contacts page (no board_id), fetch all contacts
+        else if (isContactsPage) {
+          const allContacts = await fetchAllContacts();
+          setContactsWithBoardIds(allContacts);
         }
       } catch (error) {
-        console.error('Error fetching contacts:', error);
+        console.error('Error loading contacts:', error);
+        setError('Failed to load contacts');
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchContacts();
-  }, [dispatch, accessToken, board_id, refetchContacts]);
+    loadContacts();
+  }, [
+    board_id,
+    accessToken,
+    isContactsPage,
+    fetchAllContacts,
+    fetchContactsForBoard,
+  ]);
+
+  // Handle data refresh separately to avoid creating loops
+  useEffect(() => {
+    if (refetchContacts) {
+      refetchContacts();
+    }
+  }, [refetchContacts]);
 
   return (
     <div className="w-2/3 flex flex-col mx-auto mt-8">
@@ -48,13 +128,38 @@ const ContactsList = ({ contacts, refetchContacts }: ContactsListProps) => {
           />
         </div>
       </div>
-      <div className="w-full flex flex-wrap items-center justify-start gap-4 max-h-[80vh] overflow-y-auto">
-        {contacts.map((contact) => (
-          <div key={contact.id} className="">
-            <ContactCard contact={contact} />
-          </div>
-        ))}
-      </div>
+
+      {isLoading && (
+        <div className="text-center p-4">
+          <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent mx-auto mb-2"></div>
+          <p>Loading contacts...</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="text-center p-4 text-red-500">
+          <p>{error}</p>
+        </div>
+      )}
+
+      {!isLoading && !error && contactsWithBoardIds.length === 0 && (
+        <div className="text-center p-8 border border-dashed rounded-md">
+          <p className="text-lg text-gray-500">No contacts found</p>
+          <p className="text-sm text-gray-400 mt-2">
+            Create a new contact to get started
+          </p>
+        </div>
+      )}
+
+      {!isLoading && !error && contactsWithBoardIds.length > 0 && (
+        <div className="w-full flex flex-wrap items-center justify-start gap-4 max-h-[80vh] overflow-y-auto">
+          {contactsWithBoardIds.map((contact) => (
+            <div key={contact.id}>
+              <ContactCard contact={contact} />
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

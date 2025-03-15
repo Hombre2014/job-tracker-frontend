@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import { BsThreeDots } from 'react-icons/bs';
 import { HiOutlinePhone } from 'react-icons/hi';
 import { RxEnvelopeClosed } from 'react-icons/rx';
 import { IoLocationOutline } from 'react-icons/io5';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import {
   SlSocialGithub,
   SlSocialTwitter,
@@ -26,52 +26,137 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 const ContactCard = ({ contact }: { contact: Contact }) => {
+  const params = useParams();
   const contactId = contact.id;
-  const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const accessToken = localStorage.getItem('accessToken');
   const [companyNames, setCompanyNames] = useState<string[]>([]);
   const [showContactModal, setShowContactModal] = useState(false);
   const { firstName, lastName } = useAppSelector((state) => state.user);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const board_id = params.board_id
+    ? Array.isArray(params.board_id)
+      ? params.board_id[0]
+      : params.board_id
+    : undefined;
 
-  console.log('Contact:', contact);
+  // Memoized formatter functions for better performance
+  const formatTextWithEllipsis = useCallback((text: string, maxLength = 24) => {
+    return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
+  }, []);
+
+  const formatList = useCallback(
+    (items: any[] | undefined, propertyName: string) => {
+      if (!items || items.length === 0) return 'none';
+      const joinedText = items.map((item) => item[propertyName]).join(', ');
+      return formatTextWithEllipsis(joinedText);
+    },
+    [formatTextWithEllipsis]
+  );
+
+  // Memoized company name display
+  const displayedCompanyNames = useMemo(() => {
+    if (companyNames.length === 0) return 'none';
+    return formatTextWithEllipsis(companyNames.join(', '));
+  }, [companyNames, formatTextWithEllipsis]);
 
   useEffect(() => {
     const getCurrentContact = async () => {
       try {
-        const value = {
-          boardId: board_id,
-          contactId: contactId,
-          accessToken: accessToken as string,
-        };
-        const contact = await dispatch(getContact(value)).unwrap();
+        // Option 1: If companies data is already available in the contact, use it
+        if (contact.companies && contact.companies.length > 0) {
+          const names = contact.companies.map(
+            (company: { name: string }) => company.name
+          );
+          setCompanyNames(names);
+          return;
+        }
 
-        const names = contact[0].companies.map(
-          (company: Company) => company.name
-        );
-        setCompanyNames(names);
+        // Option 2: Try to get company names from job applications
+        if (contact.jobApplications && contact.jobApplications.length > 0) {
+          const companiesFromJobs = contact.jobApplications
+            .filter((job) => job.company && job.company.name)
+            .map((job) => job.company.name);
+
+          if (companiesFromJobs.length > 0) {
+            setCompanyNames(Array.from(new Set(companiesFromJobs)));
+            return;
+          }
+        }
+
+        // Option 3: Use board_id if available
+        // Find a valid board ID from any available source
+        const effectiveBoardId =
+          board_id || contact.boardId || (contact as any).board?.id;
+
+        // Only proceed with API call if we have a boardId
+        if (effectiveBoardId) {
+          const value = {
+            boardId: effectiveBoardId,
+            contactId: contactId,
+            accessToken: accessToken as string,
+          };
+
+          try {
+            const contactData = await dispatch(getContact(value)).unwrap();
+            if (contactData[0]?.companies?.length > 0) {
+              const names = contactData[0].companies.map(
+                (company: { name: string }) => company.name
+              );
+              setCompanyNames(names);
+              return;
+            }
+          } catch (apiError) {
+            console.error('API error fetching contact data:', apiError);
+            // Continue to fallback
+          }
+        }
+
+        // Fallback if nothing else worked
+        setCompanyNames(['No company']);
       } catch (error) {
         console.error('Error fetching contact data:', error);
+        setCompanyNames(['Error loading company data']);
       }
     };
+
     getCurrentContact();
-  }, [dispatch, accessToken, contactId, board_id]);
+  }, [dispatch, accessToken, contactId, board_id, contact]);
 
   const handleEditContact = (contactId: string) => {
-    console.log('Edit contact with id: ', contactId);
     setShowContactModal(true);
     setOpenDropdownId(null);
   };
 
   const handleDeleteContact = (contactId: string) => {
-    console.log('Delete contact with id: ', contactId);
+    // Implement delete logic here
     setOpenDropdownId(null);
   };
 
   const handleCancel = () => {
     setOpenDropdownId(null);
   };
+
+  const SocialLink = ({
+    url,
+    Icon,
+  }: {
+    url: string | null;
+    Icon: React.ComponentType<any>;
+  }) => (
+    <Link
+      target="_blank"
+      href={url || '#'}
+      rel="noopener noreferrer"
+      className={
+        url
+          ? 'text-blue-500 hover:cursor-pointer'
+          : 'text-gray-400 cursor-not-allowed'
+      }
+    >
+      <Icon className="size-6" />
+    </Link>
+  );
 
   return (
     <div className="min-w-[268px]">
@@ -92,10 +177,7 @@ const ContactCard = ({ contact }: { contact: Contact }) => {
                 {contact.jobTitle}
               </p>
               <p className="text-sm text-muted-foreground">
-                {companyNames.length > 0
-                  ? companyNames.join(', ').slice(0, 24) +
-                    (companyNames.join(', ').length > 24 ? '...' : '')
-                  : 'none'}
+                {displayedCompanyNames}
               </p>
             </div>
           </div>
@@ -154,82 +236,22 @@ const ContactCard = ({ contact }: { contact: Contact }) => {
           <div className="flex justify-start gap-2 items-center">
             <RxEnvelopeClosed className="size-6" />
             <p className="text-sm text-muted-foreground">
-              {contact.emails && contact.emails.length > 0
-                ? contact.emails
-                    .map((e) => e.email)
-                    .join(', ')
-                    .slice(0, 24) +
-                  (contact.emails.map((e) => e.email).join(', ').length > 24
-                    ? '...'
-                    : '')
-                : 'none'}
+              {formatList(contact.emails, 'email')}
             </p>
           </div>
           <div className="flex justify-start gap-2 items-center">
             <HiOutlinePhone className="size-6" />
             <p className="text-sm text-muted-foreground">
-              {contact.phones && contact.phones.length > 0
-                ? contact.phones
-                    .map((p) => p.phone)
-                    .join(', ')
-                    .slice(0, 24) +
-                  (contact.phones.map((p) => p.phone).join(', ').length > 24
-                    ? '...'
-                    : '')
-                : 'none'}
+              {formatList(contact.phones, 'phone')}
             </p>
           </div>
         </div>
         <hr />
         <div className="flex justify-around my-2">
-          <Link
-            target="_blank"
-            rel="noopener noreferrer"
-            href={contact.linkedinUrl || '#'}
-            className={
-              contact.linkedinUrl
-                ? 'text-blue-500 hover:cursor-pointer'
-                : 'text-gray-400 cursor-not-allowed'
-            }
-          >
-            <SlSocialLinkedin className="size-6" />
-          </Link>
-          <Link
-            target="_blank"
-            rel="noopener noreferrer"
-            href={contact.githubUrl || '#'}
-            className={
-              contact.githubUrl
-                ? 'text-blue-500 hover:cursor-pointer'
-                : 'text-gray-400 cursor-not-allowed'
-            }
-          >
-            <SlSocialFacebook className="size-6" />
-          </Link>
-          <Link
-            target="_blank"
-            rel="noopener noreferrer"
-            href={contact.twitterUrl || '#'}
-            className={
-              contact.twitterUrl
-                ? 'text-blue-500 hover:cursor-pointer'
-                : 'text-gray-400 cursor-not-allowed'
-            }
-          >
-            <SlSocialTwitter className="size-6" />
-          </Link>
-          <Link
-            target="_blank"
-            rel="noopener noreferrer"
-            href={contact.githubUrl || '#'}
-            className={
-              contact.githubUrl
-                ? 'text-blue-500 hover:cursor-pointer'
-                : 'text-gray-400 cursor-not-allowed'
-            }
-          >
-            <SlSocialGithub className="size-6" />
-          </Link>
+          <SocialLink url={contact.linkedinUrl} Icon={SlSocialLinkedin} />
+          <SocialLink url={contact.facebookUrl} Icon={SlSocialFacebook} />
+          <SocialLink url={contact.twitterUrl} Icon={SlSocialTwitter} />
+          <SocialLink url={contact.githubUrl} Icon={SlSocialGithub} />
         </div>
         <hr />
         <div className="flex justify-start p-2 mb-1">
