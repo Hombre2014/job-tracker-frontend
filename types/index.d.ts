@@ -62,7 +62,8 @@ type Contact = {
   twitterUrl: string;
   facebookUrl: string;
   linkedinUrl: string;
-  companyIds: CompanyIds[];
+  companies: Company[];
+  jobApplications: JobApplication[];
 };
 
 interface ContactsListProps {
@@ -83,6 +84,7 @@ type JobApplication = {
   salary: string;
   notes: Notes[];
   postUrl: string;
+  boardId?: string;
   location: string;
   deadline: string;
   company: Company;
