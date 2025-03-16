@@ -9,6 +9,7 @@ export const cleanupAfterContact = () => {
   localStorage.removeItem('companies');
   localStorage.removeItem('firstName');
   localStorage.removeItem('githubUrl');
+  localStorage.removeItem('contactId');
   localStorage.removeItem('companyIds');
   localStorage.removeItem('twitterUrl');
   localStorage.removeItem('companyIds');
