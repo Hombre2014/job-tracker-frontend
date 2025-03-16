@@ -47,6 +47,15 @@ const Contacts = () => {
     }
   }, [dispatch, accessToken]);
 
+  const handleContactDeleted = () => {
+    dispatch(
+      getAllJobPostsPerColumn({
+        accessToken,
+        columnId: localStorage.getItem('columnId') as string,
+      })
+    );
+  };
+
   return numberOfContactsPerJob === 0 ? (
     <Card className="min-h-[560px] flex flex-col gap-4">
       <CardHeader className="flex flex-col gap-2 items-center">
@@ -84,7 +93,7 @@ const Contacts = () => {
       <div className="flex flex-wrap gap-4 overflow-y-auto h-[506px]">
         {jobPostContacts?.map((contact) => (
           <div key={contact.id} className="">
-            <ContactCard contact={contact} />
+            <ContactCard contact={contact} onDelete={handleContactDeleted} />
           </div>
         ))}
       </div>

@@ -13,7 +13,7 @@ import {
   SlSocialLinkedin,
 } from 'react-icons/sl';
 
-import { getContact } from '@/redux/contacts/contactsThunk';
+import { deleteContact, getContact } from '@/redux/contacts/contactsThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import CreateContactModal from '@/components/Misc/CreateContactModal';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
@@ -25,7 +25,13 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 
-const ContactCard = ({ contact }: { contact: Contact }) => {
+const ContactCard = ({
+  contact,
+  onDelete,
+}: {
+  contact: Contact;
+  onDelete: (id: string) => void;
+}) => {
   const params = useParams();
   const contactId = contact.id;
   const dispatch = useAppDispatch();
@@ -129,7 +135,11 @@ const ContactCard = ({ contact }: { contact: Contact }) => {
   };
 
   const handleDeleteContact = (contactId: string) => {
-    // Implement delete logic here
+    dispatch(
+      deleteContact({ id: contactId, accessToken: accessToken as string })
+    ).then(() => {
+      onDelete(contactId);
+    });
     setOpenDropdownId(null);
   };
 

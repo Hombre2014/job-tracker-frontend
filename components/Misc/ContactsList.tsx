@@ -8,16 +8,16 @@ import { getAllContactsPerBoard } from '@/redux/contacts/contactsThunk';
 import ContactCard from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/ContactCard';
 
 const ContactsList = ({
-  contacts: initialContacts,
   refetchContacts,
+  contacts: initialContacts,
 }: ContactsListProps) => {
   const params = useParams();
   const pathname = usePathname();
   const dispatch = useAppDispatch();
-  const isContactsPage = pathname?.includes('/home/contacts');
-  const accessToken = localStorage.getItem('accessToken');
   const [isLoading, setIsLoading] = useState(false);
+  const accessToken = localStorage.getItem('accessToken');
   const [error, setError] = useState<string | null>(null);
+  const isContactsPage = pathname?.includes('/home/contacts');
   const [contactsWithBoardIds, setContactsWithBoardIds] = useState<Contact[]>(
     initialContacts || []
   );
@@ -116,6 +116,12 @@ const ContactsList = ({
     }
   }, [refetchContacts]);
 
+  const handleContactDeleted = (deletedContactId: string) => {
+    setContactsWithBoardIds((prevContacts) =>
+      prevContacts.filter((contact) => contact.id !== deletedContactId)
+    );
+  };
+
   return (
     <div className="w-2/3 flex flex-col mx-auto mt-8">
       <div className="w-full flex items-center py-2 border-b mb-8">
@@ -155,7 +161,7 @@ const ContactsList = ({
         <div className="w-full flex flex-wrap items-center justify-start gap-4 max-h-[80vh] overflow-y-auto">
           {contactsWithBoardIds.map((contact) => (
             <div key={contact.id}>
-              <ContactCard contact={contact} />
+              <ContactCard contact={contact} onDelete={handleContactDeleted} />
             </div>
           ))}
         </div>
