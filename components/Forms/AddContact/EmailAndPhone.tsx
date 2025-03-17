@@ -29,6 +29,8 @@ const types = [
 
 interface EmailAndPhoneProps {
   id: string;
+  initialType?: string;
+  initialValue?: string;
   contact: 'email' | 'phone';
   returnData: (contact: 'email' | 'phone', id: string) => void;
   handleChange: (id: string, value: string, type: string) => void;
@@ -39,10 +41,12 @@ const EmailAndPhone = ({
   contact,
   returnData,
   handleChange,
+  initialValue = '',
+  initialType = 'WORK',
 }: EmailAndPhoneProps) => {
   const [open, setOpen] = useState(false);
-  const [type, setType] = useState('WORK');
-  const [inputValue, setInputValue] = useState('');
+  const [type, setType] = useState(initialType);
+  const [inputValue, setInputValue] = useState(initialValue);
 
   const removeContact = () => {
     returnData(contact, id);

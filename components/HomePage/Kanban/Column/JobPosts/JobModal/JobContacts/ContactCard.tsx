@@ -40,6 +40,7 @@ const ContactCard = ({
   const [showContactModal, setShowContactModal] = useState(false);
   const { firstName, lastName } = useAppSelector((state) => state.user);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [companyIds, setCompanyIds] = useState<string[]>([]);
   const board_id = params.board_id
     ? Array.isArray(params.board_id)
       ? params.board_id[0]
@@ -75,6 +76,13 @@ const ContactCard = ({
             (company: { name: string }) => company.name
           );
           setCompanyNames(names);
+
+          // Also store company IDs in a ref or state for later use
+          const ids = contact.companies.map(
+            (company: { id: string }) => company.id
+          );
+          // We'll need to add a state variable for this
+          setCompanyIds(ids);
           return;
         }
 
@@ -110,6 +118,12 @@ const ContactCard = ({
                 (company: { name: string }) => company.name
               );
               setCompanyNames(names);
+
+              // Also store company IDs
+              const ids = contactData[0].companies.map(
+                (company: { id: string }) => company.id
+              );
+              setCompanyIds(ids);
               return;
             }
           } catch (apiError) {
@@ -130,6 +144,72 @@ const ContactCard = ({
   }, [dispatch, accessToken, contactId, board_id, contact]);
 
   const handleEditContact = (contactId: string) => {
+    // Store the contact data in localStorage for the form to access
+    localStorage.setItem('contactId', contactId);
+
+    console.log('Edit contact triggered for:', contactId);
+    console.log('Contact object:', contact);
+    console.log('Companies from contact:', contact.companies);
+    console.log('Companies from state:', companyNames);
+
+    // Pre-populate form data with current contact information
+    localStorage.setItem('firstName', contact.firstName || '');
+    localStorage.setItem('lastName', contact.lastName || '');
+    localStorage.setItem('jobTitle', contact.jobTitle || '');
+    localStorage.setItem('location', contact.location || '');
+    localStorage.setItem('comment', contact.comment || '');
+    localStorage.setItem('photoUrl', contact.photoUrl || '');
+    localStorage.setItem(
+      'githubUrl',
+      contact.githubUrl?.replace('https://github.com/', '') || ''
+    );
+    localStorage.setItem(
+      'twitterUrl',
+      contact.twitterUrl?.replace('https://twitter.com/', '') || ''
+    );
+    localStorage.setItem(
+      'linkedinUrl',
+      contact.linkedinUrl?.replace('https://linkedin.com/in/', '') || ''
+    );
+    localStorage.setItem(
+      'facebookUrl',
+      contact.facebookUrl?.replace('https://facebook.com/', '') || ''
+    );
+
+    // Store emails and phones
+    if (contact.emails && contact.emails.length > 0) {
+      localStorage.setItem('emails', JSON.stringify(contact.emails));
+    }
+    if (contact.phones && contact.phones.length > 0) {
+      localStorage.setItem('phones', JSON.stringify(contact.phones));
+    }
+
+    // Store companies and companyIds
+    // if (contact.companies && contact.companies.length > 0) {
+    //   const companyNames = contact.companies.map((company) => company.name);
+    //   const companyIds = contact.companies.map((company) => company.id);
+    //   localStorage.setItem('companies', JSON.stringify(companyNames));
+    //   localStorage.setItem('companyIds', JSON.stringify(companyIds));
+    // }
+
+    console.log('About to store companies:', companyNames);
+
+    if (companyNames && companyNames.length > 0) {
+      localStorage.setItem('companies', JSON.stringify(companyNames));
+      console.log(
+        'After storing companies, localStorage value:',
+        localStorage.getItem('companies')
+      );
+
+      if (companyIds && companyIds.length > 0) {
+        localStorage.setItem('companyIds', JSON.stringify(companyIds));
+        console.log(
+          'After storing companyIds, localStorage value:',
+          localStorage.getItem('companyIds')
+        );
+      }
+    }
+
     setShowContactModal(true);
     setOpenDropdownId(null);
   };
@@ -210,7 +290,10 @@ const ContactCard = ({
             <DropdownMenuContent className="!absolute !-right-4 !top-0 rsw-dropdown-menu">
               <DropdownMenuItem
                 className="rsw-dropdown-menu-item"
-                onClick={() => handleEditContact(contact.id)}
+                onClick={() => {
+                  console.log('Edit Contact clicked for ID:', contact.id);
+                  handleEditContact(contact.id);
+                }}
               >
                 Edit Contact
               </DropdownMenuItem>

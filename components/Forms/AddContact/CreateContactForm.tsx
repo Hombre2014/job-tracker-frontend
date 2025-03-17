@@ -33,12 +33,14 @@ import {
 } from '@/components/ui/form';
 
 interface CreateContactFormProps {
+  isEditMode?: boolean;
   defaultJobPost: boolean;
   isUserContactsPage?: boolean;
   onValidationChange: (isValid: boolean) => void;
 }
 
 const CreateContactForm = ({
+  isEditMode,
   defaultJobPost,
   onValidationChange,
   isUserContactsPage,
@@ -73,6 +75,134 @@ const CreateContactForm = ({
     { id: string; value: string; type: string }[]
   >([]);
   const selectedCompanyName = selectedJob?.company.name;
+
+  useEffect(() => {
+    // If in edit mode and we have firstName and lastName values, consider the form valid
+    if (isEditMode && firstName.length > 1 && lastName.length > 1) {
+      onValidationChange(true);
+      console.log('Form set to valid in edit mode');
+    }
+  }, [isEditMode, firstName, lastName, onValidationChange]);
+
+  useEffect(() => {
+    // Check if we're in edit mode (contactId exists in localStorage)
+    const contactId = localStorage.getItem('contactId');
+    if (contactId) {
+      console.log('In edit mode, loading data from localStorage');
+
+      // Load companies and companyIds from localStorage
+      const storedCompanies = localStorage.getItem('companies');
+      const storedCompanyIds = localStorage.getItem('companyIds');
+
+      console.log('Stored companies:', storedCompanies);
+      console.log('Stored companyIds:', storedCompanyIds);
+
+      if (storedCompanies) {
+        try {
+          const parsedCompanies = JSON.parse(storedCompanies);
+          console.log('Parsed companies:', parsedCompanies);
+          setCompanies(parsedCompanies);
+        } catch (e) {
+          console.error('Error parsing companies from localStorage:', e);
+        }
+      }
+
+      if (storedCompanyIds) {
+        try {
+          const parsedCompanyIds = JSON.parse(storedCompanyIds);
+          console.log('Parsed companyIds:', parsedCompanyIds);
+          setCompanyIds(parsedCompanyIds);
+        } catch (e) {
+          console.error('Error parsing companyIds from localStorage:', e);
+        }
+      }
+
+      // Load other fields as needed
+      setComment(localStorage.getItem('comment') || '');
+      setJobTitle(localStorage.getItem('jobTitle') || '');
+      setLocation(localStorage.getItem('location') || '');
+
+      // Load firstName and lastName both for form control AND state variables
+      const storedFirstName = localStorage.getItem('firstName') || '';
+      const storedLastName = localStorage.getItem('lastName') || '';
+
+      // Set state variables
+      setFirstName(storedFirstName);
+      setLastName(storedLastName);
+
+      // Set form control values
+      form.setValue('firstName', storedFirstName);
+      form.setValue('lastName', storedLastName);
+
+      // Manually trigger validation if values are valid
+      if (storedFirstName.length > 1 && storedLastName.length > 1) {
+        onValidationChange(true);
+      }
+
+      // Load photo URL if available
+      const storedPhotoUrl = localStorage.getItem('photoUrl');
+      if (storedPhotoUrl && storedPhotoUrl !== 'null') {
+        setPhotoUrl(storedPhotoUrl);
+      }
+
+      // Load social media links
+      setGithubUrl(localStorage.getItem('githubUrl') || '');
+      setTwitterUrl(localStorage.getItem('twitterUrl') || '');
+      setLinkedinUrl(localStorage.getItem('linkedinUrl') || '');
+      setFacebookUrl(localStorage.getItem('facebookUrl') || '');
+
+      // Load emails and phones if needed
+      // Load emails
+      const storedEmails = localStorage.getItem('emails');
+      if (storedEmails) {
+        try {
+          const parsedEmails = JSON.parse(storedEmails);
+          console.log('Parsed emails:', parsedEmails);
+
+          // Convert the format from API format to component format
+          // API format: [{email: "example@example.com", type: "WORK"}]
+          // Component format: [{id: "uuid", value: "example@example.com", type: "WORK"}]
+          if (parsedEmails.length > 0) {
+            const formattedEmails = parsedEmails.map((emailObj: any) => ({
+              id: uuidv4(),
+              value: emailObj.email || '',
+              type: emailObj.type || 'WORK',
+            }));
+
+            console.log('Formatted emails for component:', formattedEmails);
+            setEmails(formattedEmails);
+          }
+        } catch (e) {
+          console.error('Error parsing emails from localStorage:', e);
+        }
+      }
+
+      // Load phones
+      const storedPhones = localStorage.getItem('phones');
+      if (storedPhones) {
+        try {
+          const parsedPhones = JSON.parse(storedPhones);
+          console.log('Parsed phones:', parsedPhones);
+
+          // Convert the format from API format to component format
+          // API format: [{phone: "1234567890", type: "WORK"}]
+          // Component format: [{id: "uuid", value: "1234567890", type: "WORK"}]
+          if (parsedPhones.length > 0) {
+            const formattedPhones = parsedPhones.map((phoneObj: any) => ({
+              id: uuidv4(),
+              value: phoneObj.phone || '',
+              type: phoneObj.type || 'WORK',
+            }));
+
+            console.log('Formatted phones for component:', formattedPhones);
+            setPhones(formattedPhones);
+          }
+        } catch (e) {
+          console.error('Error parsing phones from localStorage:', e);
+        }
+      }
+    }
+  }, []);
 
   const form = useForm({
     resolver: zodResolver(AddContactSchema),
@@ -180,7 +310,9 @@ const CreateContactForm = ({
   }, [dispatch, accessToken, defaultJobPost, board_id, isUserContactsPage]);
 
   useEffect(() => {
-    if (selectedCompanyName) {
+    // Only set companies from selectedCompanyName if we're not in edit mode
+    const contactId = localStorage.getItem('contactId');
+    if (selectedCompanyName && !contactId) {
       setCompanies([selectedCompanyName]);
       localStorage.setItem('companies', JSON.stringify([selectedCompanyName]));
     }
@@ -256,12 +388,12 @@ const CreateContactForm = ({
         break;
       case 'lastName':
         setLastName(value as string);
-        form.setValue('lastName', value);
+        form.setValue('lastName', value, { shouldValidate: true });
         localStorage.setItem('lastName', value);
         break;
       case 'firstName':
         setFirstName(value as string);
-        form.setValue('firstName', value);
+        form.setValue('firstName', value, { shouldValidate: true });
         localStorage.setItem('firstName', value);
         break;
       case 'location':
@@ -295,9 +427,15 @@ const CreateContactForm = ({
         email.id === id ? { ...email, value, type } : email
       )
     );
+
+    // Format emails for localStorage and API
     const emailsToSave = emails
-      .filter((email) => email.value !== '') // Filter out empty emails
-      .map(({ value, type }) => ({ email: value, type }));
+      .map(({ value, type }) => {
+        if (value === '') return null; // Skip empty emails
+        return { email: value, type };
+      })
+      .filter(Boolean); // Remove null entries
+
     localStorage.setItem('emails', JSON.stringify(emailsToSave));
   };
 
@@ -307,10 +445,15 @@ const CreateContactForm = ({
         phone.id === id ? { ...phone, value, type } : phone
       )
     );
-    const phonesToSave = phones.map(({ value, type }) => ({
-      phone: value,
-      type,
-    }));
+
+    // Format phones for localStorage and API
+    const phonesToSave = phones
+      .map(({ value, type }) => {
+        if (value === '') return null; // Skip empty phones
+        return { phone: value, type };
+      })
+      .filter(Boolean); // Remove null entries
+
     localStorage.setItem('phones', JSON.stringify(phonesToSave));
   };
 
@@ -600,6 +743,8 @@ const CreateContactForm = ({
                               <EmailAndPhone
                                 id={email.id}
                                 contact="email"
+                                initialType={email.type}
+                                initialValue={email.value}
                                 handleChange={handleEmailChange}
                                 returnData={handleRemoveContactType}
                               />
@@ -639,6 +784,8 @@ const CreateContactForm = ({
                               <EmailAndPhone
                                 id={phone.id}
                                 contact="phone"
+                                initialType={phone.type}
+                                initialValue={phone.value}
                                 handleChange={handlePhoneChange}
                                 returnData={handleRemoveContactType}
                               />

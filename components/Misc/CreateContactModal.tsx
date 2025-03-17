@@ -11,6 +11,7 @@ import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
 import {
   assignContactToJobPost,
   createContact,
+  updateContact,
 } from '@/redux/contacts/contactsThunk';
 
 interface CreateContactModalProps {
@@ -38,6 +39,7 @@ const CreateContactModal = ({
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const [, setIsMenuOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const isDefaultJobPost = pathname?.includes('job-details');
@@ -49,11 +51,33 @@ const CreateContactModal = ({
     }
   }, [isVisible]);
 
-  const createNewContact = async () => {
+  useEffect(() => {
+    // Check if we're in edit mode
+    const contactId = localStorage.getItem('contactId');
+    if (contactId) {
+      // In edit mode, initialize isFormValid to true since data is already validated
+      setIsFormValid(true);
+      console.log('Edit mode detected, setting form as valid');
+    } else {
+      // Reset form validity for new contacts
+      setIsFormValid(false);
+    }
+  }, [showContactModal]);
+
+  useEffect(() => {
+    const contactId = localStorage.getItem('contactId');
+    setIsEditMode(!!contactId);
+  }, [showContactModal]);
+
+  const createOrEditContact = async () => {
     if (!isFormValid) return;
 
     setShowContactModal(false);
     if (onClose) onClose();
+
+    // Check if we're in edit mode
+    const contactId = localStorage.getItem('contactId');
+    const isEditMode = !!contactId;
 
     const values = {
       accessToken,
@@ -74,28 +98,39 @@ const CreateContactModal = ({
     };
 
     try {
-      // Create the contact
-      const result = await dispatch(createContact(values)).unwrap();
-      const newContactId = result.id;
-      localStorage.setItem('contactId', newContactId);
+      if (isEditMode) {
+        // Update existing contact
+        const updateValues = {
+          ...values,
+          id: contactId,
+        };
 
-      // Get job posts connected to contact from localStorage
-      const jobsConnectedToContact = JSON.parse(
-        localStorage.getItem('jobsConnectedToContact') || '[]'
-      );
+        await dispatch(updateContact(updateValues)).unwrap();
+        console.log('Contact updated successfully');
+      } else {
+        // Create new contact
+        const result = await dispatch(createContact(values)).unwrap();
+        const newContactId = result.id;
+        localStorage.setItem('contactId', newContactId);
 
-      // Assign contact to all connected jobs
-      if (jobsConnectedToContact.length > 0) {
-        await Promise.all(
-          jobsConnectedToContact.map(async (jobPost: JobApplication) => {
-            const assignData = {
-              accessToken,
-              contactId: newContactId,
-              jobApplicationId: jobPost.id,
-            };
-            await dispatch(assignContactToJobPost(assignData)).unwrap();
-          })
+        // Get job posts connected to contact from localStorage
+        const jobsConnectedToContact = JSON.parse(
+          localStorage.getItem('jobsConnectedToContact') || '[]'
         );
+
+        // Assign contact to all connected jobs
+        if (jobsConnectedToContact.length > 0) {
+          await Promise.all(
+            jobsConnectedToContact.map(async (jobPost: JobApplication) => {
+              const assignData = {
+                accessToken,
+                contactId: newContactId,
+                jobApplicationId: jobPost.id,
+              };
+              await dispatch(assignContactToJobPost(assignData)).unwrap();
+            })
+          );
+        }
       }
 
       // Call onContactCreated to refresh the contacts list in the parent component
@@ -106,7 +141,7 @@ const CreateContactModal = ({
       // Clear local storage
       cleanupAfterContact();
     } catch (error) {
-      console.error('Error creating/assigning contact:', error);
+      console.error('Error creating/updating contact:', error);
     }
   };
 
@@ -130,9 +165,15 @@ const CreateContactModal = ({
           open={showContactModal}
           isFormValid={isFormValid}
           contentWidth="!max-w-[910px]"
-          actionFunction={createNewContact}
-          buttonConfirm={buttonConfirm || 'Create'}
-          dialogTitle={dialogTitle || 'Save New Contact'}
+          actionFunction={createOrEditContact}
+          buttonConfirm={
+            isEditMode ? buttonConfirm || 'Update' : buttonConfirm || 'Create'
+          }
+          dialogTitle={
+            isEditMode
+              ? dialogTitle || 'Edit Contact'
+              : dialogTitle || 'Save New Contact'
+          }
           onOpenChange={(open) => {
             setShowContactModal(open);
             if (!open) {
@@ -142,6 +183,7 @@ const CreateContactModal = ({
           }}
         >
           <CreateContactForm
+            isEditMode={isEditMode}
             defaultJobPost={isDefaultJobPost}
             onValidationChange={setIsFormValid}
             isUserContactsPage={userContactsPage}
