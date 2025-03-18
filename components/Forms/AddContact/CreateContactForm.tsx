@@ -33,8 +33,10 @@ import {
 } from '@/components/ui/form';
 
 interface CreateContactFormProps {
+  isEditMode?: boolean;
   defaultJobPost: boolean;
   isUserContactsPage?: boolean;
+  contactToEdit?: Contact | null;
   onValidationChange: (isValid: boolean) => void;
 }
 
@@ -42,6 +44,8 @@ const CreateContactForm = ({
   defaultJobPost,
   onValidationChange,
   isUserContactsPage,
+  isEditMode = false,
+  contactToEdit = null,
 }: CreateContactFormProps) => {
   const dispatch = useAppDispatch();
   const [comment, setComment] = useState('');
@@ -93,6 +97,58 @@ const CreateContactForm = ({
       facebookUrl: '',
     },
   });
+
+  console.log('isEditMode:', isEditMode);
+  console.log('contactToEdit:', contactToEdit);
+
+  // Pre-populate fields in edit mode
+  useEffect(() => {
+    if (isEditMode && contactToEdit) {
+      console.log('Pre-populating form with contact data:', contactToEdit);
+
+      setFirstName(contactToEdit.firstName || '');
+      setLastName(contactToEdit.lastName || '');
+      setJobTitle(contactToEdit.jobTitle || '');
+      setLocation(contactToEdit.location || '');
+      setComment(contactToEdit.comment || '');
+
+      // Map emails and phones to the correct structure
+      setEmails(
+        (contactToEdit.emails || []).map((email, index) => ({
+          id: `email-${index}`,
+          value: email.email,
+          type: email.type || 'Personal',
+        }))
+      );
+      setPhones(
+        (contactToEdit.phones || []).map((phone, index) => ({
+          id: `phone-${index}`,
+          value: phone.phone,
+          type: phone.type || 'Mobile',
+        }))
+      );
+
+      // Log the companies array from contactToEdit
+      console.log('contactToEdit.companies:', contactToEdit.companies);
+
+      // Set companies and company IDs
+      if (contactToEdit.companies && contactToEdit.companies.length > 0) {
+        const companyNames = contactToEdit.companies.map(
+          (company) => company.name
+        );
+        const companyIds = contactToEdit.companies.map((company) => company.id);
+
+        console.log('Setting companies:', companyNames);
+        console.log('Setting companyIds:', companyIds);
+
+        setCompanies(companyNames); // Set all company names
+        setCompanyIds(companyIds); // Set all company IDs
+      } else {
+        setCompanies([]);
+        setCompanyIds([]);
+      }
+    }
+  }, [isEditMode, contactToEdit]);
 
   useEffect(() => {
     if (accessToken) {
@@ -180,11 +236,11 @@ const CreateContactForm = ({
   }, [dispatch, accessToken, defaultJobPost, board_id, isUserContactsPage]);
 
   useEffect(() => {
-    if (selectedCompanyName) {
+    if (selectedCompanyName && !isEditMode) {
       setCompanies([selectedCompanyName]);
       localStorage.setItem('companies', JSON.stringify([selectedCompanyName]));
     }
-  }, [selectedCompanyName]);
+  }, [selectedCompanyName, isEditMode]);
 
   useEffect(() => {
     if (selectedCompanyName && selectedJob?.company.id) {
@@ -600,6 +656,8 @@ const CreateContactForm = ({
                               <EmailAndPhone
                                 id={email.id}
                                 contact="email"
+                                initialType={email.type}
+                                initialValue={email.value}
                                 handleChange={handleEmailChange}
                                 returnData={handleRemoveContactType}
                               />
@@ -639,6 +697,8 @@ const CreateContactForm = ({
                               <EmailAndPhone
                                 id={phone.id}
                                 contact="phone"
+                                initialType={phone.type}
+                                initialValue={phone.value}
                                 handleChange={handlePhoneChange}
                                 returnData={handleRemoveContactType}
                               />

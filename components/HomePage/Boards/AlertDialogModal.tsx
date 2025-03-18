@@ -30,6 +30,8 @@ const AlertDialogModal = ({
   destructiveVariant,
   isFormValid = true,
 }: AlertDialogProps) => {
+  console.log('AlertDialog isFormValid prop:', isFormValid);
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogTrigger asChild>
@@ -49,7 +51,10 @@ const AlertDialogModal = ({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogAction
-            onClick={actionFunction}
+            onClick={() => {
+              console.log('AlertDialogAction clicked');
+              actionFunction && actionFunction();
+            }}
             disabled={!isFormValid}
             className={cn(
               destructiveVariant && 'bg-destructive hover:bg-destructive/90'

@@ -39,12 +39,15 @@ const ContactCard = ({
   const [companyNames, setCompanyNames] = useState<string[]>([]);
   const [showContactModal, setShowContactModal] = useState(false);
   const { firstName, lastName } = useAppSelector((state) => state.user);
+  const [contactToEdit, setContactToEdit] = useState<Contact | null>(null);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const board_id = params.board_id
     ? Array.isArray(params.board_id)
       ? params.board_id[0]
       : params.board_id
     : undefined;
+
+  console.log('contactToEdit in ContactCard:', contactToEdit);
 
   // Memoized formatter functions for better performance
   const formatTextWithEllipsis = useCallback((text: string, maxLength = 24) => {
@@ -129,9 +132,22 @@ const ContactCard = ({
     getCurrentContact();
   }, [dispatch, accessToken, contactId, board_id, contact]);
 
-  const handleEditContact = (contactId: string) => {
+  const handleEditContact = () => {
+    const updatedContact = {
+      ...contact,
+      companies: companyNames.map((name, index) => ({
+        id: contact.companies?.[index]?.id || `temp-id-${index}`, // Use existing ID or generate a temporary one
+        name,
+        url: contact.companies?.[index]?.url || '', // Default value for missing property
+        industry: contact.companies?.[index]?.industry || '', // Default value for missing property
+        description: contact.companies?.[index]?.description || '', // Default value for missing property
+      })),
+    };
+
+    console.log('Updated contact:', updatedContact);
+
+    setContactToEdit(updatedContact); // Pass the updated contact with all companies
     setShowContactModal(true);
-    setOpenDropdownId(null);
   };
 
   const handleDeleteContact = (contactId: string) => {
@@ -144,7 +160,8 @@ const ContactCard = ({
   };
 
   const handleCancel = () => {
-    setOpenDropdownId(null);
+    setShowContactModal(false);
+    setContactToEdit(null);
   };
 
   const SocialLink = ({
@@ -209,15 +226,15 @@ const ContactCard = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent className="!absolute !-right-4 !top-0 rsw-dropdown-menu">
               <DropdownMenuItem
+                onClick={handleEditContact}
                 className="rsw-dropdown-menu-item"
-                onClick={() => handleEditContact(contact.id)}
               >
                 Edit Contact
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <div
-                onClick={(e) => e.stopPropagation()}
                 className="rsw-dropdown-menu-item"
+                onClick={(e) => e.stopPropagation()}
               >
                 <AlertDialogModal
                   buttonCancel="Cancel"
@@ -271,13 +288,19 @@ const ContactCard = ({
         </div>
       </div>
       <CreateContactModal
+        isEditMode={true}
         showButton={false}
         buttonConfirm="Update"
+        onClose={handleCancel}
         userContactsPage={false}
         buttonLabel="Edit Contact"
         dialogTitle="Edit Contact"
         isVisible={showContactModal}
-        onClose={() => setShowContactModal(false)}
+        contactToEdit={contactToEdit}
+        onContactCreated={() => {
+          setShowContactModal(false);
+          setContactToEdit(null);
+        }}
       />
     </div>
   );

@@ -36,6 +36,8 @@ const CompaniesInput = ({
     localStorage.setItem('companyIds', JSON.stringify(newCompanyIds));
   };
 
+  console.log('CompaniesInput props:', { companies, companyIds });
+
   return (
     <div className="w-full flex flex-col gap-2 relative">
       <Input
@@ -62,7 +64,7 @@ const CompaniesInput = ({
       <div className="flex flex-wrap gap-2">
         {companies.map((company, index) => (
           <div
-            key={company}
+            key={companyIds[index]}
             className="flex items-center bg-gray-200 rounded-full px-2 py-[2px]"
           >
             <span className="mr-2">{company}</span>
