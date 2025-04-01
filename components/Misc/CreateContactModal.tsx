@@ -9,8 +9,10 @@ import { cleanupAfterContact } from '@/utils/helpers';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
 import {
-  assignContactToJobPost,
   createContact,
+  updateContact,
+  uploadContactImage,
+  assignContactToJobPost,
 } from '@/redux/contacts/contactsThunk';
 
 interface CreateContactModalProps {
@@ -22,6 +24,7 @@ interface CreateContactModalProps {
   buttonConfirm?: string;
   userContactsPage?: boolean;
   onContactCreated?: () => void;
+  onContactUpdated?: (updatedContact: Contact) => void;
 }
 
 const CreateContactModal = ({
@@ -33,6 +36,7 @@ const CreateContactModal = ({
   buttonConfirm,
   userContactsPage,
   onContactCreated,
+  onContactUpdated,
 }: CreateContactModalProps) => {
   const pathname = usePathname();
   const { board_id } = useParams();
@@ -42,6 +46,7 @@ const CreateContactModal = ({
   const accessToken = localStorage.getItem('accessToken');
   const isDefaultJobPost = pathname?.includes('job-details');
   const [showContactModal, setShowContactModal] = useState(false);
+  const [pendingImage, setPendingImage] = useState<File | null>(null);
 
   useEffect(() => {
     if (isVisible !== undefined) {
@@ -74,17 +79,40 @@ const CreateContactModal = ({
     };
 
     try {
-      // Create the contact
+      // Step 1: Create the contact
       const result = await dispatch(createContact(values)).unwrap();
       const newContactId = result.id;
-      localStorage.setItem('contactId', newContactId);
 
-      // Get job posts connected to contact from localStorage
+      // Step 2: Upload the pending image if it exists
+      if (pendingImage) {
+        const uploadResult = await dispatch(
+          uploadContactImage({
+            file: pendingImage,
+            contactId: newContactId,
+            accessToken: accessToken as string,
+          })
+        ).unwrap();
+
+        // Dispatch updateContact to update the photoUrl
+        const updatedContact = await dispatch(
+          updateContact({
+            id: newContactId,
+            boardId: board_id,
+            photoUrl: uploadResult.imageUrl, // Update the photoUrl
+            accessToken: accessToken as string,
+          })
+        ).unwrap();
+
+        // Notify parent component about the updated contact
+        if (onContactUpdated) {
+          onContactUpdated(updatedContact);
+        }
+      }
+
+      // Step 3: Assign contact to connected jobs (if any)
       const jobsConnectedToContact = JSON.parse(
         localStorage.getItem('jobsConnectedToContact') || '[]'
       );
-
-      // Assign contact to all connected jobs
       if (jobsConnectedToContact.length > 0) {
         await Promise.all(
           jobsConnectedToContact.map(async (jobPost: JobApplication) => {
@@ -98,12 +126,13 @@ const CreateContactModal = ({
         );
       }
 
-      // Call onContactCreated to refresh the contacts list in the parent component
+      // Step 4: Call onContactCreated to refresh the contacts list
       if (onContactCreated) {
+        console.log('Calling onContactCreated...'); // Debug log
         onContactCreated();
       }
 
-      // Clear local storage
+      // Step 5: Clear local storage
       cleanupAfterContact();
     } catch (error) {
       console.error('Error creating/assigning contact:', error);
@@ -143,6 +172,7 @@ const CreateContactModal = ({
         >
           <CreateContactForm
             defaultJobPost={isDefaultJobPost}
+            setPendingImage={setPendingImage}
             onValidationChange={setIsFormValid}
             isUserContactsPage={userContactsPage}
           />

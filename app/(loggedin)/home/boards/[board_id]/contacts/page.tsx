@@ -15,9 +15,11 @@ const BoardContacts = () => {
 
   const fetchBoardContacts = useCallback(async () => {
     try {
+      console.log('Fetching board contacts...'); // Debug log
       const contacts = await dispatch(
         getAllContactsPerBoard({ accessToken, boardId: board_id })
       ).unwrap();
+      console.log('Fetched contacts:', contacts); // Debug log
       setAllBoardContacts(contacts);
     } catch (error) {
       console.error('Error fetching board contacts:', error);
