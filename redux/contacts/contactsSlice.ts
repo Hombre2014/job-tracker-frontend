@@ -6,6 +6,7 @@ import {
   createContact,
   updateContact,
   deleteContact,
+  uploadContactImage,
   getAllContactsPerBoard,
   assignContactToJobPost,
   unassignContactFromJobPost,
@@ -46,8 +47,11 @@ export const contactsSlice = createSlice({
       })
       .addCase(updateContact.fulfilled, (state, action) => {
         state.contactsStatus = 'succeeded';
+        const updatedContact = action.payload;
         state.contacts = state.contacts.map((contact) =>
-          contact.id === action.payload.id ? action.payload : contact
+          contact.id === updatedContact.id
+            ? { ...contact, ...updatedContact }
+            : contact
         );
         state.error = null;
       })
@@ -126,6 +130,23 @@ export const contactsSlice = createSlice({
         state.contactsStatus = 'failed';
         state.error =
           action.error.message || 'Failed to unassign contact from job post';
+      })
+      .addCase(uploadContactImage.pending, (state) => {
+        state.contactsStatus = 'loading';
+      })
+      .addCase(uploadContactImage.fulfilled, (state, action) => {
+        state.contactsStatus = 'succeeded';
+        const { contactId, imageUrl } = action.payload;
+        state.contacts = state.contacts.map((contact) =>
+          contact.id === contactId
+            ? { ...contact, photoUrl: imageUrl }
+            : contact
+        );
+        state.error = null;
+      })
+      .addCase(uploadContactImage.rejected, (state, action) => {
+        state.contactsStatus = 'failed';
+        state.error = action.error.message || 'Failed to upload contact image';
       });
   },
 });

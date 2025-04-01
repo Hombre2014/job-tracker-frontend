@@ -35,11 +35,13 @@ import {
 interface CreateContactFormProps {
   defaultJobPost: boolean;
   isUserContactsPage?: boolean;
+  setPendingImage: (file: File | null) => void;
   onValidationChange: (isValid: boolean) => void;
 }
 
 const CreateContactForm = ({
   defaultJobPost,
+  setPendingImage,
   onValidationChange,
   isUserContactsPage,
 }: CreateContactFormProps) => {
@@ -66,6 +68,7 @@ const CreateContactForm = ({
   const selectedJob = jobs.jobPosts.find((job) => job.id === job_id);
   const [allJobPosts, setAllJobPosts] = useState<JobApplication[]>([]);
   const [matchingCompanies, setMatchingCompanies] = useState<string[]>([]);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [emails, setEmails] = useState<
     { id: string; value: string; type: string }[]
   >([]);
@@ -204,15 +207,11 @@ const CreateContactForm = ({
     onValidationChange(isValid);
   }, [watchFirstName, watchLastName, onValidationChange]);
 
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setPhotoUrl(reader.result as string);
-        // TODO: Implement image upload to the server and save the URL to the local storage
-      };
-      reader.readAsDataURL(file);
+      setPendingImage(file); // Call the setter function passed from CreateContactModal
+      setPreviewImageUrl(URL.createObjectURL(file)); // Generate a temporary URL for the image
     }
   };
 
@@ -402,6 +401,14 @@ const CreateContactForm = ({
     }
   };
 
+  useEffect(() => {
+    return () => {
+      if (previewImageUrl) {
+        URL.revokeObjectURL(previewImageUrl); // Clean up the URL
+      }
+    };
+  }, [previewImageUrl]);
+
   return (
     <div className="min-h-[660px]">
       <div className="flex gap-2">
@@ -416,7 +423,15 @@ const CreateContactForm = ({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel htmlFor="file-input">
-                          {photoUrl === '' ? (
+                          {previewImageUrl ? (
+                            <Image
+                              width={50}
+                              height={50}
+                              src={previewImageUrl}
+                              alt="User profile picture"
+                              className="cursor-pointer rounded-lg"
+                            />
+                          ) : photoUrl === '' ? (
                             <IoMdContact size={50} className="cursor-pointer" />
                           ) : (
                             <Image
@@ -434,7 +449,9 @@ const CreateContactForm = ({
                             accept="image/*"
                             name="file-input"
                             title="file-input"
-                            onChange={handleFileInput}
+                            onChange={(e) => {
+                              handleFileInput(e);
+                            }}
                             className="file-input file-input-ghost max-w-xs opacity-0 absolute top-[100px] h-[62px] w-[50px]"
                           />
                         </FormLabel>

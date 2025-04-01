@@ -72,6 +72,7 @@ const Contacts = () => {
           buttonLabel="+ Create Contact"
           userContactsPage={isContactsPage}
           onContactCreated={refreshContacts}
+          onContactUpdated={refreshContacts}
         />
         <Button className="w-fit mt-4" variant="outline">
           + Link contact
@@ -87,6 +88,7 @@ const Contacts = () => {
           buttonLabel="+ Create Contact"
           userContactsPage={isContactsPage}
           onContactCreated={refreshContacts}
+          onContactUpdated={refreshContacts}
         />
         <Button variant="outline">+ Link contact</Button>
       </div>

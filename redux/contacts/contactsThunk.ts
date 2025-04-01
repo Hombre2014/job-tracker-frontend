@@ -21,6 +21,7 @@ export const createContact = createAsyncThunk(
       accessToken,
       facebookUrl,
     } = values;
+
     const body = {
       emails: emails,
       phones: phones,
@@ -37,6 +38,7 @@ export const createContact = createAsyncThunk(
       linkedinUrl: linkedinUrl,
       facebookUrl: facebookUrl,
     };
+
     try {
       const res = await client.post(`/contacts`, body, {
         headers: {
@@ -44,8 +46,9 @@ export const createContact = createAsyncThunk(
         },
       });
       const data = res.data;
-      return data;
+      return { id: data.id, ...data }; // Return the contact ID along with other data
     } catch (err: any) {
+      console.error('Error creating contact:', err);
       return thunkAPI.rejectWithValue(
         err.response?.data || 'Error creating contact'
       );
@@ -212,6 +215,37 @@ export const unassignContactFromJobPost = createAsyncThunk(
     } catch (err: any) {
       return thunkAPI.rejectWithValue(
         err.response?.data || 'Error removing contact from job application'
+      );
+    }
+  }
+);
+
+export const uploadContactImage = createAsyncThunk(
+  'contacts/uploadContactImage',
+  async (
+    {
+      file,
+      contactId,
+      accessToken,
+    }: { file: File; contactId: string; accessToken: string },
+    thunkAPI
+  ) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await client.post('/appwrite-uploads', formData, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      const data = res.data;
+      return { contactId, imageUrl: data.url };
+    } catch (err: any) {
+      console.error('Error in uploadContactImage thunk:', err);
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error uploading contact image'
       );
     }
   }

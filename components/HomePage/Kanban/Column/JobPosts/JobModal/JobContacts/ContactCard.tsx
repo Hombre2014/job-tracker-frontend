@@ -13,9 +13,9 @@ import {
   SlSocialLinkedin,
 } from 'react-icons/sl';
 
-import { deleteContact, getContact } from '@/redux/contacts/contactsThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import CreateContactModal from '@/components/Misc/CreateContactModal';
+import { deleteContact, getContact } from '@/redux/contacts/contactsThunk';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import {
   DropdownMenu,

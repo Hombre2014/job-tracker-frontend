@@ -112,15 +112,25 @@ const ContactsList = ({
   // Handle data refresh separately to avoid creating loops
   useEffect(() => {
     if (refetchContacts) {
+      console.log('Refetching contacts...');
       refetchContacts();
     }
   }, [refetchContacts]);
+
+  useEffect(() => {
+    console.log('Updated contactsWithBoardIds:', contactsWithBoardIds); // Debug log
+  }, [contactsWithBoardIds]);
 
   const handleContactDeleted = (deletedContactId: string) => {
     setContactsWithBoardIds((prevContacts) =>
       prevContacts.filter((contact) => contact.id !== deletedContactId)
     );
   };
+
+  useEffect(() => {
+    console.log('Initial contacts updated:', initialContacts); // Debug log
+    setContactsWithBoardIds(initialContacts || []);
+  }, [initialContacts]);
 
   return (
     <div className="w-2/3 flex flex-col mx-auto mt-8">
@@ -131,6 +141,13 @@ const ContactsList = ({
             showButton={true}
             userContactsPage={isContactsPage}
             onContactCreated={refetchContacts}
+            onContactUpdated={(updatedContact) => {
+              setContactsWithBoardIds((prevContacts) =>
+                prevContacts.map((contact) =>
+                  contact.id === updatedContact.id ? updatedContact : contact
+                )
+              );
+            }}
           />
         </div>
       </div>
