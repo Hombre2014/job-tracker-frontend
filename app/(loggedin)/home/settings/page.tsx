@@ -12,76 +12,52 @@ import { Input } from '@/components/ui/input';
 import { useAppSelector } from '@/redux/hooks';
 import { useAppDispatch } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
-import { updateUser, uploadUserPhoto } from '@/redux/user/userThunk';
+import { updateUser } from '@/redux/user/userThunk';
 
 const Settings = () => {
   const dispatch = useAppDispatch();
   const [open, setOpen] = useState(true);
-  const [file, setFile] = useState<File | null>(null);
   const accessToken = localStorage.getItem('accessToken');
   const { lastName } = useAppSelector((state) => state.user);
   const [newLastName, setNewLastName] = useState(lastName);
   const { firstName } = useAppSelector((state) => state.user);
   const [newFirstName, setNewFirstName] = useState(firstName);
-  const [isFileUploaded, setIsFileUploaded] = useState(false);
   const { email, profilePicUrl } = useAppSelector((state) => state.user);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
-  // console.log('Profile Picture:', profilePicUrl);
-  console.log('Preview Image URL:', previewImageUrl);
-  // console.log('Email:', email);
-
-  // useEffect(() => {
-  //   dispatch(
-  //     updateUser({
-  //       email,
-  //       accessToken,
-  //       role: 'user',
-  //       lastName: newLastName,
-  //       firstName: newFirstName,
-  //       profilePicUrl: previewImageUrl,
-  //     })
-  //   );
-  // }, [newFirstName, newLastName, dispatch, accessToken, previewImageUrl]);
-
   useEffect(() => {
-    console.log('Profile Picture updated:', profilePicUrl);
-  }, [profilePicUrl]);
+    dispatch(
+      updateUser({
+        email,
+        accessToken,
+        role: 'user',
+        lastName: newLastName,
+        firstName: newFirstName,
+      })
+    );
+  }, [newFirstName, newLastName, dispatch, accessToken, email]);
 
   const handleWeeklyDigest = () => {
-    console.log('Weekly Digest');
+    // TODO: Implement weekly digest functionality
   };
 
   const handleDailyDigest = () => {
-    console.log('Daily Digest');
+    // TODO: Implement daily digest functionality
   };
 
   const handleFileInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
       const selectedFile = files[0];
-      setFile(selectedFile); // Store the selected file
-      setPreviewImageUrl(URL.createObjectURL(selectedFile)); // Generate a preview URL
-      setIsFileUploaded(true);
+      setPreviewImageUrl(URL.createObjectURL(selectedFile));
 
       try {
-        // Step 1: Upload the photo
-        const uploadedPhotoUrl = await dispatch(
-          uploadUserPhoto({
-            email,
-            file: selectedFile,
-            accessToken: accessToken as string,
-          })
-        ).unwrap();
-
-        // Step 2: Update the user's profile with the new photoUrl
         await dispatch(
           updateUser({
             email,
             role: 'user',
             lastName: newLastName,
             firstName: newFirstName,
-            // profilePic: uploadedPhotoUrl.imageUrl,
             profilePic: selectedFile,
             accessToken: accessToken as string,
           })
@@ -100,20 +76,12 @@ const Settings = () => {
   };
 
   useEffect(() => {
-    if (isFileUploaded) {
-      console.log('File uploaded:0', file);
-    }
-  }, [isFileUploaded, file]);
-
-  useEffect(() => {
     return () => {
       if (previewImageUrl) {
-        URL.revokeObjectURL(previewImageUrl); // Clean up the URL
+        URL.revokeObjectURL(previewImageUrl);
       }
     };
   }, [previewImageUrl]);
-
-  console.log('Profile Picture in UI:', profilePicUrl);
 
   return (
     <Modal stylings="sm:w-5/6 md:w-2/3 lg:w-1/2 xl:w-5/12">
@@ -126,16 +94,16 @@ const Settings = () => {
                   width={50}
                   height={50}
                   src={previewImageUrl} // Show the preview image if available
+                  className="rounded-full"
                   alt="User profile picture"
-                  className="rounded-full cursor-pointer"
                 />
               ) : profilePicUrl ? (
                 <Image
                   width={50}
                   height={50}
                   src={profilePicUrl} // Show the user's current photo if available
+                  className="rounded-full"
                   alt="User profile picture"
-                  className="rounded-full cursor-pointer"
                 />
               ) : (
                 <IoMdContact size={50} /> // Show the default icon if no photo is available
@@ -146,16 +114,13 @@ const Settings = () => {
             </p>
             <span className="pl-0">{email}</span>
           </div>
-          <div
-            role="tablist"
-            className="tabs tabs-lifted flex flex-col justify-start items-start w-full"
-          >
+          <div className="tabs tabs-lifted flex flex-col justify-start items-start w-full">
             <div className="w-full pt-40">
               <input
-                role="tab"
                 type="radio"
                 defaultChecked
                 name="my_tabs_2"
+                id="tab-account"
                 aria-label="My Account"
                 className={cn(
                   'tab focus:!bg-blue-500 !rounded-md ml-2 focus:!text-white',
@@ -163,7 +128,11 @@ const Settings = () => {
                   open ? 'text-white' : 'text-black'
                 )}
               />
-              <div className="tab-content bg-base-100 rounded-box p-6 w-auto min-h-[600px] ml-64 mt-[-340px] border-b">
+              <div
+                role="tabpanel"
+                aria-labelledby="tab-account"
+                className="tab-content bg-base-100 rounded-box p-6 w-auto min-h-[600px] ml-64 mt-[-340px] border-b"
+              >
                 <div className="w-full border-b pb-2">General Info</div>
                 <div className="flex gap-6">
                   <div className="w-1/4">
@@ -192,6 +161,7 @@ const Settings = () => {
                       )}
                       <input
                         type="file"
+                        id="file-input"
                         accept="image/*"
                         name="file-input"
                         title="file-input"
@@ -226,21 +196,25 @@ const Settings = () => {
             </div>
             <div className="w-full">
               <input
-                role="tab"
                 type="radio"
                 name="my_tabs_2"
+                id="tab-notifications"
                 onClick={() => setOpen(false)}
                 aria-label="Notes & Notifications"
                 className="tab focus:bg-blue-500 !rounded-md ml-2 absolute top-[400px] focus:text-white"
               />
-              <div className="tab-content bg-base-100 rounded-box p-6 w-auto min-h-[600px] ml-64 mt-[-340px]">
+              <div
+                role="tabpanel"
+                aria-labelledby="tab-notifications"
+                className="tab-content bg-base-100 rounded-box p-6 w-auto min-h-[600px] ml-64 mt-[-340px]"
+              >
                 <div className="w-full border-b pb-2">Email Subscriptions</div>
                 <div className="form-control">
                   <label className="label cursor-pointer">
                     <span className="label-text">Weekly Digest</span>
                     <input
-                      type="checkbox"
                       defaultChecked
+                      type="checkbox"
                       className="checkbox"
                       onClick={handleWeeklyDigest}
                     />

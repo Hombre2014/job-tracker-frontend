@@ -1,14 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 import { RootState } from '../store';
-import {
-  login,
-  logout,
-  getUser,
-  isLoggedIn,
-  updateUser,
-  uploadUserPhoto,
-} from './userThunk';
+import { login, logout, getUser, isLoggedIn, updateUser } from './userThunk';
 
 interface UserState {
   email: string;
@@ -64,7 +57,6 @@ export const userSlice = createSlice({
           state.firstName = action.payload?.decoded.firstName;
           state.profilePicUrl = action.payload?.decoded.profilePicUrl;
         }
-        console.log('Login successful:', action.payload);
         state.error = null;
       })
       .addCase(login.rejected, (state, action) => {
@@ -122,7 +114,6 @@ export const userSlice = createSlice({
         state.status = 'loading';
       })
       .addCase(updateUser.fulfilled, (state, action) => {
-        console.log('Updated user data in Redux:', action.payload);
         state.error = null;
         state.status = 'succeeded';
         state.email = action.payload?.email;
@@ -132,22 +123,8 @@ export const userSlice = createSlice({
         state.profilePicUrl = action.payload?.profilePicUrl;
       })
       .addCase(updateUser.rejected, (state, action) => {
-        console.error('updateUser rejected:', action.error.message); // Debug log
         state.status = 'failed';
         state.error = action.error.message || 'Error updating user';
-      })
-      .addCase(uploadUserPhoto.pending, (state) => {
-        state.status = 'loading';
-      })
-      .addCase(uploadUserPhoto.fulfilled, (state, action) => {
-        state.error = null;
-        state.status = 'succeeded';
-        const { imageUrl } = action.payload;
-        state.profilePicUrl = imageUrl; // Update the profilePicUrl field
-      })
-      .addCase(uploadUserPhoto.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.error.message || 'Error uploading photo';
       });
   },
 });

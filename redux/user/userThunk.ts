@@ -88,41 +88,6 @@ export const getUser = createAsyncThunk(
   }
 );
 
-// export const updateUser = createAsyncThunk(
-//   'user/updateUser',
-//   async (values: any, thunkAPI) => {
-//     const { accessToken, firstName, lastName, email, profilePic, role } =
-//       values;
-//     const postData = { firstName, lastName, email, profilePic, role };
-//     try {
-//       console.log('updateUser API request payload:', {
-//         role,
-//         firstName,
-//         email,
-//         lastName,
-//         profilePic,
-//       }); // Debug log
-//       const res = await client.patch('/users', postData, {
-//         headers: {
-//           Authorization: `Bearer ${accessToken}`,
-//         },
-//       });
-
-//       console.log('updateUser API response:', res.data); // Debug log
-//       if (res.status === 200) {
-//         return res.data;
-//       } else {
-//         return thunkAPI.rejectWithValue('Error updating user');
-//       }
-//     } catch (err: any) {
-//       console.error('Error in updateUser thunk:', err); // Debug log
-//       return thunkAPI.rejectWithValue(
-//         err.response?.data || 'Error updating user'
-//       );
-//     }
-//   }
-// );
-
 export const updateUser = createAsyncThunk(
   'user/updateUser',
   async (values: any, thunkAPI) => {
@@ -138,22 +103,10 @@ export const updateUser = createAsyncThunk(
 
     // Check if profilePic is a valid File object
     if (profilePic && profilePic instanceof File && profilePic.size > 0) {
-      console.log(
-        'Appending file to form data:',
-        profilePic.name,
-        profilePic.size
-      );
       formData.append('profilePic', profilePic);
-    } else {
-      console.log('No valid file to append:', profilePic);
     }
 
     try {
-      // Log the form data entries to verify content
-      for (let [key, value] of formData.entries()) {
-        console.log(`Form data entry - ${key}:`, value);
-      }
-
       const res = await client.patch('/users', formData, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -161,47 +114,14 @@ export const updateUser = createAsyncThunk(
         },
       });
 
-      console.log('updateUser API response:', res.data);
       if (res.status === 200) {
         return res.data;
       } else {
         return thunkAPI.rejectWithValue('Error updating user');
       }
     } catch (err: any) {
-      console.error('Error in updateUser thunk:', err);
       return thunkAPI.rejectWithValue(
         err.response?.data || 'Error updating user'
-      );
-    }
-  }
-);
-
-export const uploadUserPhoto = createAsyncThunk(
-  'user/uploadUserPhoto',
-  async (
-    {
-      file,
-      email,
-      accessToken,
-    }: { file: File; email: string; accessToken: string },
-    thunkAPI
-  ) => {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const res = await client.post('/appwrite-uploads', formData, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      const data = res.data;
-      return { email, imageUrl: data.url }; // Return email and uploaded photo URL
-    } catch (err: any) {
-      console.error('Error in uploadUserPhoto thunk:', err);
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error uploading user photo'
       );
     }
   }
