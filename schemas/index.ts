@@ -14,6 +14,7 @@ export const RegisterSchema = z.object({
   lastName: z.string().min(2, {
     message: 'Name is required',
   }),
+  profilePic: z.string().optional(),
 });
 
 export const LoginSchema = z.object({
