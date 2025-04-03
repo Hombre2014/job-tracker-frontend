@@ -1,28 +1,32 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 import { RootState } from '../store';
-import { login, logout, isLoggedIn, getUser, updateUser } from './userThunk';
+import { login, logout, getUser, isLoggedIn, updateUser } from './userThunk';
 
 interface UserState {
   email: string;
-  firstName: string;
   lastName: string;
+  firstName: string;
   accessToken?: string;
+  error: string | null;
   refreshToken?: string;
   userId: string | null;
+  profilePicUrl?: string;
+  role?: 'admin' | 'user' | null;
   status: 'idle' | 'loading' | 'succeeded' | 'failed';
-  error: string | null;
 }
 
 const initialState: UserState = {
+  email: '',
+  error: null,
+  lastName: '',
+  role: 'user',
+  userId: null,
+  firstName: '',
+  status: 'idle',
   accessToken: '',
   refreshToken: '',
-  firstName: '',
-  lastName: '',
-  email: '',
-  userId: null,
-  status: 'idle',
-  error: null,
+  profilePicUrl: '',
 };
 
 export const userSlice = createSlice({
@@ -41,13 +45,17 @@ export const userSlice = createSlice({
       .addCase(login.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.accessToken = action.payload?.data.accessToken;
-        state.refreshToken = action.payload?.data.refreshToken;
         state.userId = action.payload?.decoded.sub as string;
+        state.refreshToken = action.payload?.data.refreshToken;
         if (
           typeof action.payload?.decoded === 'object' &&
           action.payload?.decoded !== null
         ) {
+          state.role = 'user';
           state.email = action.payload?.decoded.email;
+          state.lastName = action.payload?.decoded.lastName;
+          state.firstName = action.payload?.decoded.firstName;
+          state.profilePicUrl = action.payload?.decoded.profilePicUrl;
         }
         state.error = null;
       })
@@ -59,12 +67,12 @@ export const userSlice = createSlice({
         state.status = 'loading';
       })
       .addCase(logout.fulfilled, (state) => {
+        state.email = '';
+        state.error = null;
+        state.userId = null;
         state.status = 'idle';
         state.accessToken = '';
         state.refreshToken = '';
-        state.email = '';
-        state.userId = null;
-        state.error = null;
       })
       .addCase(logout.rejected, (state, action) => {
         state.status = 'failed';
@@ -74,12 +82,13 @@ export const userSlice = createSlice({
         state.status = 'loading';
       })
       .addCase(isLoggedIn.fulfilled, (state, action) => {
+        state.error = null;
+        state.role = 'user';
         state.status = 'succeeded';
+        state.email = action.payload?.email;
+        state.userId = action.payload?.userId;
         state.accessToken = action.payload?.accessToken;
         state.refreshToken = action.payload?.refreshToken;
-        state.userId = action.payload?.userId;
-        state.email = action.payload?.email;
-        state.error = null;
       })
       .addCase(isLoggedIn.rejected, (state, action) => {
         state.status = 'failed';
@@ -89,12 +98,13 @@ export const userSlice = createSlice({
         state.status = 'loading';
       })
       .addCase(getUser.fulfilled, (state, action) => {
+        state.error = null;
         state.status = 'succeeded';
         state.email = action.payload?.email;
-        state.firstName = action.payload?.firstName;
-        state.lastName = action.payload?.lastName;
         state.userId = action.payload?.userId;
-        state.error = null;
+        state.lastName = action.payload?.lastName;
+        state.firstName = action.payload?.firstName;
+        state.profilePicUrl = action.payload?.profilePicUrl;
       })
       .addCase(getUser.rejected, (state, action) => {
         state.status = 'failed';
@@ -104,10 +114,13 @@ export const userSlice = createSlice({
         state.status = 'loading';
       })
       .addCase(updateUser.fulfilled, (state, action) => {
-        state.status = 'succeeded';
-        state.firstName = action.payload?.firstName;
-        state.lastName = action.payload?.lastName;
         state.error = null;
+        state.status = 'succeeded';
+        state.email = action.payload?.email;
+        state.lastName = action.payload?.lastName;
+        state.firstName = action.payload?.firstName;
+        state.role = action.payload?.role || 'user';
+        state.profilePicUrl = action.payload?.profilePicUrl;
       })
       .addCase(updateUser.rejected, (state, action) => {
         state.status = 'failed';

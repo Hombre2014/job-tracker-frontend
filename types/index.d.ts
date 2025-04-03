@@ -89,9 +89,9 @@ type JobApplication = {
   deadline: string;
   company: Company;
   column_id: string;
-  contacts: Contact[];
   createdAt: string;
   updatedAt: string;
+  contacts: Contact[];
   description: string;
   status: jobPostStatus;
   statusChangedAt: string;

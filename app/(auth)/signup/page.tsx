@@ -35,12 +35,20 @@ const SignUp = () => {
       password: '',
       lastName: '',
       firstName: '',
+      profilePic: '',
     },
   });
 
   const onSubmit = async (values: z.infer<typeof RegisterSchema>) => {
     setError('');
-    const { email, password, firstName, lastName, role = 'user' } = values;
+    const {
+      email,
+      password,
+      lastName,
+      firstName,
+      profilePic,
+      role = 'user',
+    } = values;
     setLoading(true);
     startTransition(async () => {
       try {
@@ -50,6 +58,7 @@ const SignUp = () => {
           password,
           lastName,
           firstName,
+          profilePic,
         });
 
         if (res.status === 201) {

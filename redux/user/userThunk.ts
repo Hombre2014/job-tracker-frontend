@@ -91,12 +91,26 @@ export const getUser = createAsyncThunk(
 export const updateUser = createAsyncThunk(
   'user/updateUser',
   async (values: any, thunkAPI) => {
-    const { accessToken, firstName, lastName } = values;
-    const postData = { firstName, lastName };
+    const { accessToken, firstName, lastName, email, profilePic, role } =
+      values;
+
+    // Create FormData object
+    const formData = new FormData();
+    formData.append('firstName', firstName);
+    formData.append('lastName', lastName);
+    formData.append('email', email);
+    formData.append('role', role);
+
+    // Check if profilePic is a valid File object
+    if (profilePic && profilePic instanceof File && profilePic.size > 0) {
+      formData.append('profilePic', profilePic);
+    }
+
     try {
-      const res = await client.patch('/users', postData, {
+      const res = await client.patch('/users', formData, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'multipart/form-data',
         },
       });
 
