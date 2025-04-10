@@ -40,6 +40,7 @@ const ContactCard = ({
   const [showContactModal, setShowContactModal] = useState(false);
   const { firstName, lastName } = useAppSelector((state) => state.user);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const [contactWithCompanies, setContactWithCompanies] = useState(contact);
   const board_id = params.board_id
     ? Array.isArray(params.board_id)
       ? params.board_id[0]
@@ -75,6 +76,7 @@ const ContactCard = ({
             (company: { name: string }) => company.name
           );
           setCompanyNames(names);
+          setContactWithCompanies(contact);
           return;
         }
 
@@ -98,18 +100,20 @@ const ContactCard = ({
         // Only proceed with API call if we have a boardId
         if (effectiveBoardId) {
           const value = {
-            boardId: effectiveBoardId,
             contactId: contactId,
+            boardId: effectiveBoardId,
             accessToken: accessToken as string,
           };
 
           try {
             const contactData = await dispatch(getContact(value)).unwrap();
+            console.log('Contact data:', contactData);
             if (contactData[0]?.companies?.length > 0) {
               const names = contactData[0].companies.map(
                 (company: { name: string }) => company.name
               );
               setCompanyNames(names);
+              setContactWithCompanies(contactData[0]);
               return;
             }
           } catch (apiError) {
@@ -273,11 +277,11 @@ const ContactCard = ({
       <CreateContactModal
         showButton={false}
         buttonConfirm="Update"
-        contactToEdit={contact}
         userContactsPage={false}
         buttonLabel="Edit Contact"
         dialogTitle="Edit Contact"
         isVisible={showContactModal}
+        contactToEdit={contactWithCompanies}
         onClose={() => setShowContactModal(false)}
       />
     </div>
