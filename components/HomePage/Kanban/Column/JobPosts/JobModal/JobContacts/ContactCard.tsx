@@ -273,6 +273,7 @@ const ContactCard = ({
       <CreateContactModal
         showButton={false}
         buttonConfirm="Update"
+        contactToEdit={contact}
         userContactsPage={false}
         buttonLabel="Edit Contact"
         dialogTitle="Edit Contact"

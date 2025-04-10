@@ -31,15 +31,18 @@ import {
   FormMessage,
   FormControl,
 } from '@/components/ui/form';
+import { OK } from 'zod';
 
 interface CreateContactFormProps {
   defaultJobPost: boolean;
   isUserContactsPage?: boolean;
+  contactToEdit?: Contact | null;
   setPendingImage: (file: File | null) => void;
   onValidationChange: (isValid: boolean) => void;
 }
 
 const CreateContactForm = ({
+  contactToEdit,
   defaultJobPost,
   setPendingImage,
   onValidationChange,
@@ -76,6 +79,90 @@ const CreateContactForm = ({
     { id: string; value: string; type: string }[]
   >([]);
   const selectedCompanyName = selectedJob?.company.name;
+
+  useEffect(() => {
+    console.log(
+      'CreateContactForm - useEffect triggered with contactToEdit:',
+      contactToEdit
+    );
+
+    if (contactToEdit) {
+      const twitterHandle = contactToEdit.twitterUrl
+        ? contactToEdit.twitterUrl.split('/').pop()
+        : '';
+      const facebookHandle = contactToEdit.facebookUrl
+        ? contactToEdit.facebookUrl.split('/').pop()
+        : '';
+      const githubHandle = contactToEdit.githubUrl
+        ? contactToEdit.githubUrl.split('/').pop()
+        : '';
+      const linkedinHandle = contactToEdit.linkedinUrl
+        ? contactToEdit.linkedinUrl.split('/').pop()
+        : '';
+      // Populate form fields with contact data
+      localStorage.setItem('githubUrl', githubHandle || '');
+      localStorage.setItem('twitterUrl', twitterHandle || '');
+      localStorage.setItem('facebookUrl', facebookHandle || '');
+      localStorage.setItem('linkedinUrl', linkedinHandle || '');
+      localStorage.setItem('comment', contactToEdit.comment || '');
+      localStorage.setItem('lastName', contactToEdit.lastName || '');
+      localStorage.setItem('jobTitle', contactToEdit.jobTitle || '');
+      localStorage.setItem('location', contactToEdit.location || '');
+      localStorage.setItem('photoUrl', contactToEdit.photoUrl || '');
+      localStorage.setItem('firstName', contactToEdit.firstName || '');
+
+      console.log('Original emails:', contactToEdit.emails);
+      console.log('Original phones:', contactToEdit.phones);
+
+      // Transform and handle emails
+      const transformedEmails = (contactToEdit.emails || []).map((email) => ({
+        id: email.id,
+        type: email.type,
+        value: email.email,
+      }));
+
+      console.log('Transformed emails:', transformedEmails);
+
+      // Transform and handle phones
+      const transformedPhones = (contactToEdit.phones || []).map((phone) => ({
+        id: phone.id,
+        type: phone.type,
+        value: phone.phone,
+      }));
+
+      console.log('Transformed phones:', transformedPhones);
+
+      localStorage.setItem('emails', JSON.stringify(transformedEmails));
+      localStorage.setItem('phones', JSON.stringify(transformedPhones));
+
+      // Handle companies
+      const companies = contactToEdit.companies || [];
+      const companyIds = companies.map((company) => company.id);
+      const companyNames = companies.map((company) => company.name);
+
+      localStorage.setItem('companies', JSON.stringify(companyNames));
+      localStorage.setItem('companyIds', JSON.stringify(companyIds));
+
+      // Update state variables
+      setCompanyIds(companyIds);
+      setCompanies(companyNames);
+      setEmails(transformedEmails);
+      setPhones(transformedPhones);
+      setGithubUrl(githubHandle || '');
+      setTwitterUrl(twitterHandle || '');
+      setFacebookUrl(facebookHandle || '');
+      setLinkedinUrl(linkedinHandle || '');
+      setComment(contactToEdit.comment || '');
+      setLastName(contactToEdit.lastName || '');
+      setJobTitle(contactToEdit.jobTitle || '');
+      setLocation(contactToEdit.location || '');
+      setPhotoUrl(contactToEdit.photoUrl || '');
+      setFirstName(contactToEdit.firstName || '');
+
+      console.log('After setting state - emails state:', emails);
+      console.log('After setting state - phones state:', phones);
+    }
+  }, [contactToEdit]);
 
   const form = useForm({
     resolver: zodResolver(AddContactSchema),
@@ -617,6 +704,8 @@ const CreateContactForm = ({
                               <EmailAndPhone
                                 id={email.id}
                                 contact="email"
+                                value={email.value}
+                                initialType={email.type}
                                 handleChange={handleEmailChange}
                                 returnData={handleRemoveContactType}
                               />
@@ -656,6 +745,8 @@ const CreateContactForm = ({
                               <EmailAndPhone
                                 id={phone.id}
                                 contact="phone"
+                                value={phone.value}
+                                initialType={phone.type}
                                 handleChange={handlePhoneChange}
                                 returnData={handleRemoveContactType}
                               />
