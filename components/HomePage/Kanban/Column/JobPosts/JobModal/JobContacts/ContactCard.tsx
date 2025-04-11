@@ -107,7 +107,6 @@ const ContactCard = ({
 
           try {
             const contactData = await dispatch(getContact(value)).unwrap();
-            console.log('Contact data:', contactData);
             if (contactData[0]?.companies?.length > 0) {
               const names = contactData[0].companies.map(
                 (company: { name: string }) => company.name
@@ -283,6 +282,7 @@ const ContactCard = ({
         isVisible={showContactModal}
         contactToEdit={contactWithCompanies}
         onClose={() => setShowContactModal(false)}
+        onContactUpdated={() => onDelete(contact.id)}
       />
     </div>
   );

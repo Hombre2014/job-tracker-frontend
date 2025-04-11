@@ -70,7 +70,6 @@ const EmailAndPhone = ({
         (item) => item.email || item.phone
       ); // Filter out empty items
       localStorage.setItem(storageKey, JSON.stringify(nonEmptyItems));
-      console.log('updatedItems: ', nonEmptyItems);
     }, 300),
     [contact]
   );

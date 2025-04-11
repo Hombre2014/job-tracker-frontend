@@ -77,12 +77,29 @@ const CreateContactModal = ({
       companyIds: JSON.parse(localStorage.getItem('companyIds') || '[]'),
     };
 
+    const photoUrl = localStorage.getItem('photoUrl');
+    if (photoUrl) {
+      values.photoUrl = photoUrl;
+    }
+
     try {
       if (contactToEdit) {
         // Handle update
+        const updateValues = { ...values } as Partial<typeof values>;
+
+        // Only include photoUrl if it exists
+        if (!updateValues.photoUrl) {
+          delete updateValues.photoUrl;
+        }
+
+        // Format phones and emails from contactToEdit
+        updateValues.phones = contactToEdit.phones || [];
+        updateValues.emails = contactToEdit.emails || [];
+
         const updatedContact = await dispatch(
           updateContact({
-            ...values,
+            ...updateValues,
+            accessToken,
             id: contactToEdit.id,
           })
         ).unwrap();

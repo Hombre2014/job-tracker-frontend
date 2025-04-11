@@ -31,6 +31,13 @@ import {
   FormMessage,
   FormControl,
 } from '@/components/ui/form';
+import {
+  createContactEmail,
+  createContactPhone,
+  updateContact,
+  updateContactEmail,
+  updateContactPhone,
+} from '@/redux/contacts/contactsThunk';
 
 interface CreateContactFormProps {
   defaultJobPost: boolean;
@@ -77,7 +84,61 @@ const CreateContactForm = ({
   const [phones, setPhones] = useState<
     { id: string; value: string; type: string }[]
   >([]);
+
+  const [formData, setFormData] = useState({
+    firstName: contactToEdit?.firstName || '',
+    lastName: contactToEdit?.lastName || '',
+    jobTitle: contactToEdit?.jobTitle || '',
+    location: contactToEdit?.location || '',
+    comment: contactToEdit?.comment || '',
+  });
+
+  const [hasChanges, setHasChanges] = useState({
+    basicInfo: false, // for firstName, lastName, jobTitle, location, comment
+    emails: new Set<string>(), // store IDs of changed emails
+    phones: new Set<string>(), // store IDs of changed phones
+    companies: false,
+    socialMedia: false,
+  });
   const selectedCompanyName = selectedJob?.company.name;
+
+  const markFieldChanged = (
+    field: 'basicInfo' | 'companies' | 'socialMedia'
+  ) => {
+    setHasChanges((prev) => ({ ...prev, [field]: true }));
+  };
+
+  const markContactMethodChanged = (type: 'emails' | 'phones', id: string) => {
+    setHasChanges((prev) => {
+      const updatedSet = new Set(prev[type]);
+      updatedSet.add(id);
+      return { ...prev, [type]: updatedSet };
+    });
+  };
+
+  const handleBasicInfoChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    markFieldChanged('basicInfo');
+
+    // Also update the individual state variables
+    switch (field) {
+      case 'firstName':
+        setFirstName(value);
+        break;
+      case 'lastName':
+        setLastName(value);
+        break;
+      case 'jobTitle':
+        setJobTitle(value);
+        break;
+      case 'location':
+        setLocation(value);
+        break;
+      case 'comment':
+        setComment(value);
+        break;
+    }
+  };
 
   useEffect(() => {
     if (contactToEdit) {
@@ -105,17 +166,12 @@ const CreateContactForm = ({
       localStorage.setItem('photoUrl', contactToEdit.photoUrl || '');
       localStorage.setItem('firstName', contactToEdit.firstName || '');
 
-      console.log('Original emails:', contactToEdit.emails);
-      console.log('Original phones:', contactToEdit.phones);
-
       // Transform and handle emails
       const transformedEmails = (contactToEdit.emails || []).map((email) => ({
         id: email.id,
         type: email.type,
         value: email.email,
       }));
-
-      console.log('Transformed emails:', transformedEmails);
 
       // Transform and handle phones
       const transformedPhones = (contactToEdit.phones || []).map((phone) => ({
@@ -149,6 +205,9 @@ const CreateContactForm = ({
       setLocation(contactToEdit.location || '');
       setPhotoUrl(contactToEdit.photoUrl || '');
       setFirstName(contactToEdit.firstName || '');
+
+      form.setValue('lastName', contactToEdit.lastName || '');
+      form.setValue('firstName', contactToEdit.firstName || '');
     }
   }, [contactToEdit]);
 
@@ -157,18 +216,18 @@ const CreateContactForm = ({
     defaultValues: {
       emails: [],
       phones: [],
-      comment: '',
       boardId: '',
-      lastName: '',
       photoUrl: '',
-      jobTitle: '',
-      location: '',
       companies: [],
-      firstName: '',
       githubUrl: '',
       twitterUrl: '',
       linkedinUrl: '',
       facebookUrl: '',
+      comment: contactToEdit?.comment || '',
+      lastName: contactToEdit?.lastName || '',
+      jobTitle: contactToEdit?.jobTitle || '',
+      location: contactToEdit?.location || '',
+      firstName: contactToEdit?.firstName || '',
     },
   });
 
@@ -311,6 +370,7 @@ const CreateContactForm = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const value = e.target.value;
+    handleBasicInfoChange(fieldName, value);
     switch (fieldName) {
       case 'githubUrl':
         setGithubUrl(value);
@@ -364,28 +424,147 @@ const CreateContactForm = ({
   };
 
   const handleEmailChange = (id: string, value: string, type: string) => {
-    setEmails((prevEmails) =>
-      prevEmails.map((email) =>
-        email.id === id ? { ...email, value, type } : email
-      )
-    );
-    const emailsToSave = emails
-      .filter((email) => email.value !== '') // Filter out empty emails
-      .map(({ value, type }) => ({ email: value, type }));
-    localStorage.setItem('emails', JSON.stringify(emailsToSave));
+    // Find if this email already exists
+    const emailExists = emails.find((email) => email.id === id);
+
+    if (emailExists) {
+      // Update existing email
+      dispatch(
+        updateContactEmail({
+          id,
+          type,
+          email: value,
+          accessToken: accessToken as string,
+        })
+      );
+    } else {
+      // Create new email - only if we have a contactToEdit
+      if (contactToEdit?.id) {
+        dispatch(
+          createContactEmail({
+            type,
+            email: value,
+            contactId: contactToEdit.id,
+            accessToken: accessToken as string,
+          })
+        );
+      } else {
+        console.error('Cannot create email: no contact ID available');
+        return;
+      }
+    }
+    markContactMethodChanged('emails', id);
   };
 
   const handlePhoneChange = (id: string, value: string, type: string) => {
-    setPhones((prevPhones) =>
-      prevPhones.map((phone) =>
-        phone.id === id ? { ...phone, value, type } : phone
-      )
-    );
-    const phonesToSave = phones.map(({ value, type }) => ({
-      phone: value,
-      type,
-    }));
-    localStorage.setItem('phones', JSON.stringify(phonesToSave));
+    const phoneExists = phones.find((phone) => phone.id === id);
+
+    if (phoneExists) {
+      dispatch(
+        updateContactPhone({
+          id,
+          type,
+          phone: value,
+          accessToken: accessToken as string,
+        })
+      );
+    } else {
+      // Create new phone - only if we have a contactToEdit
+      if (contactToEdit?.id) {
+        dispatch(
+          createContactPhone({
+            type,
+            phone: value,
+            contactId: contactToEdit.id,
+            accessToken: accessToken as string,
+          })
+        );
+      } else {
+        console.error('Cannot create phone: no contact ID available');
+        return;
+      }
+    }
+    markContactMethodChanged('phones', id);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!contactToEdit) {
+      console.error('No contact to edit');
+      return;
+    }
+
+    try {
+      // Update basic contact info if changed
+      if (hasChanges.basicInfo) {
+        await dispatch(
+          updateContact({
+            ...contactToEdit, // Spread the original contact data first
+            // Then override only the changed fields
+            firstName: firstName || contactToEdit.firstName,
+            lastName: lastName || contactToEdit.lastName,
+            jobTitle: jobTitle || contactToEdit.jobTitle,
+            location: location || contactToEdit.location,
+            comment: comment || contactToEdit.comment,
+            companyIds,
+            accessToken: accessToken as string,
+          })
+        ).unwrap();
+      }
+
+      // Handle email updates
+      if (hasChanges.emails.size > 0) {
+        await Promise.all(
+          [...hasChanges.emails].map((emailId) => {
+            const email = emails.find((e) => e.id === emailId);
+            if (email) {
+              return dispatch(
+                updateContactEmail({
+                  id: emailId,
+                  email: email.value,
+                  type: email.type,
+                  accessToken: accessToken as string,
+                })
+              ).unwrap();
+            }
+            return Promise.resolve();
+          })
+        );
+      }
+
+      // Handle phone updates
+      if (hasChanges.phones.size > 0) {
+        await Promise.all(
+          [...hasChanges.phones].map((phoneId) => {
+            const phone = phones.find((p) => p.id === phoneId);
+            if (phone) {
+              return dispatch(
+                updateContactPhone({
+                  id: phoneId,
+                  phone: phone.value,
+                  type: phone.type,
+                  accessToken: accessToken as string,
+                })
+              ).unwrap();
+            }
+            return Promise.resolve();
+          })
+        );
+      }
+
+      // Reset change tracking
+      setHasChanges({
+        basicInfo: false,
+        emails: new Set(),
+        phones: new Set(),
+        companies: false,
+        socialMedia: false,
+      });
+    } catch (error) {
+      console.error('Error updating contact:', error);
+      // Handle error (show toast/notification)
+    }
   };
 
   const debouncedSearch = useCallback(
