@@ -80,11 +80,6 @@ const CreateContactForm = ({
   const selectedCompanyName = selectedJob?.company.name;
 
   useEffect(() => {
-    console.log(
-      'CreateContactForm - useEffect triggered with contactToEdit:',
-      contactToEdit
-    );
-
     if (contactToEdit) {
       const twitterHandle = contactToEdit.twitterUrl
         ? contactToEdit.twitterUrl.split('/').pop()
@@ -129,8 +124,6 @@ const CreateContactForm = ({
         value: phone.phone,
       }));
 
-      console.log('Transformed phones:', transformedPhones);
-
       localStorage.setItem('emails', JSON.stringify(transformedEmails));
       localStorage.setItem('phones', JSON.stringify(transformedPhones));
 
@@ -138,7 +131,6 @@ const CreateContactForm = ({
       const companies = contactToEdit.companies || [];
       const companyIds = companies.map((company) => company.id);
       const companyNames = companies.map((company) => company.name);
-
       localStorage.setItem('companies', JSON.stringify(companyNames));
       localStorage.setItem('companyIds', JSON.stringify(companyIds));
 
@@ -157,9 +149,6 @@ const CreateContactForm = ({
       setLocation(contactToEdit.location || '');
       setPhotoUrl(contactToEdit.photoUrl || '');
       setFirstName(contactToEdit.firstName || '');
-
-      console.log('After setting state - emails state:', emails);
-      console.log('After setting state - phones state:', phones);
     }
   }, [contactToEdit]);
 
@@ -323,21 +312,21 @@ const CreateContactForm = ({
   ) => {
     const value = e.target.value;
     switch (fieldName) {
-      case 'twitterUrl':
-        setTwitterUrl(value);
-        localStorage.setItem('twitterUrl', `https://twitter.com/${value}`);
-        break;
       case 'githubUrl':
         setGithubUrl(value);
         localStorage.setItem('githubUrl', `https://github.com/${value}`);
         break;
-      case 'linkedinUrl':
-        setLinkedinUrl(value);
-        localStorage.setItem('linkedinUrl', `https://linkedin.com/in/${value}`);
+      case 'twitterUrl':
+        setTwitterUrl(value);
+        localStorage.setItem('twitterUrl', `https://twitter.com/${value}`);
         break;
       case 'facebookUrl':
         setFacebookUrl(value);
         localStorage.setItem('facebookUrl', `https://facebook.com/${value}`);
+        break;
+      case 'linkedinUrl':
+        setLinkedinUrl(value);
+        localStorage.setItem('linkedinUrl', `https://linkedin.com/in/${value}`);
         break;
       case 'lastName':
         setLastName(value as string);

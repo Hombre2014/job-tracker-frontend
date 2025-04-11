@@ -50,11 +50,6 @@ const CreateContactModal = ({
   const [showContactModal, setShowContactModal] = useState(false);
   const [pendingImage, setPendingImage] = useState<File | null>(null);
 
-  console.log(
-    'CreateContactModal - contactToEdit before passing to form:',
-    contactToEdit
-  );
-
   useEffect(() => {
     if (isVisible !== undefined) {
       setShowContactModal(isVisible);
