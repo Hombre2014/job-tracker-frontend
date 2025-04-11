@@ -6,6 +6,14 @@ import {
   createContact,
   updateContact,
   deleteContact,
+  getContactEmails,
+  getContactPhones,
+  createContactEmail,
+  createContactPhone,
+  updateContactEmail,
+  updateContactPhone,
+  deleteContactEmail,
+  deleteContactPhone,
   uploadContactImage,
   getAllContactsPerBoard,
   assignContactToJobPost,
@@ -147,6 +155,140 @@ export const contactsSlice = createSlice({
       .addCase(uploadContactImage.rejected, (state, action) => {
         state.contactsStatus = 'failed';
         state.error = action.error.message || 'Failed to upload contact image';
+      })
+      .addCase(getContactEmails.pending, (state) => {
+        state.contactsStatus = 'loading';
+      })
+      .addCase(getContactEmails.fulfilled, (state, action) => {
+        state.contactsStatus = 'succeeded';
+        const { contactId, emails } = action.payload;
+        const contact = state.contacts.find((c) => c.id === contactId);
+        if (contact) {
+          contact.emails = emails;
+        }
+        state.error = null;
+      })
+      .addCase(getContactEmails.rejected, (state, action) => {
+        state.contactsStatus = 'failed';
+        state.error = action.error.message || 'Failed to get contact emails';
+      })
+      .addCase(getContactPhones.pending, (state) => {
+        state.contactsStatus = 'loading';
+      })
+      .addCase(getContactPhones.fulfilled, (state, action) => {
+        state.contactsStatus = 'succeeded';
+        const { contactId, phones } = action.payload;
+        const contact = state.contacts.find((c) => c.id === contactId);
+        if (contact) {
+          contact.phones = phones;
+        }
+        state.error = null;
+      })
+      .addCase(getContactPhones.rejected, (state, action) => {
+        state.contactsStatus = 'failed';
+        state.error = action.error.message || 'Failed to get contact phones';
+      })
+      .addCase(createContactEmail.pending, (state) => {
+        state.contactsStatus = 'loading';
+      })
+      .addCase(createContactEmail.fulfilled, (state, action) => {
+        state.contactsStatus = 'succeeded';
+        const { contactId, email } = action.payload;
+        const contact = state.contacts.find((c) => c.id === contactId);
+        if (contact) {
+          contact.emails.push(email);
+        }
+        state.error = null;
+      })
+      .addCase(createContactEmail.rejected, (state, action) => {
+        state.contactsStatus = 'failed';
+        state.error = action.error.message || 'Failed to create contact email';
+      })
+      .addCase(updateContactEmail.pending, (state) => {
+        state.contactsStatus = 'loading';
+      })
+      .addCase(updateContactEmail.fulfilled, (state, action) => {
+        state.contactsStatus = 'succeeded';
+        const { contactId, email } = action.payload;
+        const contact = state.contacts.find((c) => c.id === contactId);
+        if (contact) {
+          const index = contact.emails.findIndex((e) => e.id === email.id);
+          if (index !== -1) {
+            contact.emails[index] = email;
+          }
+        }
+        state.error = null;
+      })
+      .addCase(updateContactEmail.rejected, (state, action) => {
+        state.contactsStatus = 'failed';
+        state.error = action.error.message || 'Failed to update contact email';
+      })
+      .addCase(deleteContactEmail.pending, (state) => {
+        state.contactsStatus = 'loading';
+      })
+      .addCase(deleteContactEmail.fulfilled, (state, action) => {
+        state.contactsStatus = 'succeeded';
+        const { contactId, emailId } = action.payload;
+        const contact = state.contacts.find((c) => c.id === contactId);
+        if (contact) {
+          contact.emails = contact.emails.filter((e) => e.id !== emailId);
+        }
+        state.error = null;
+      })
+      .addCase(deleteContactEmail.rejected, (state, action) => {
+        state.contactsStatus = 'failed';
+        state.error = action.error.message || 'Failed to delete contact email';
+      })
+      .addCase(createContactPhone.pending, (state) => {
+        state.contactsStatus = 'loading';
+      })
+      .addCase(createContactPhone.fulfilled, (state, action) => {
+        state.contactsStatus = 'succeeded';
+        const { contactId, phone } = action.payload;
+        const contact = state.contacts.find((c) => c.id === contactId);
+        if (contact) {
+          contact.phones.push(phone);
+        }
+        state.error = null;
+      })
+      .addCase(createContactPhone.rejected, (state, action) => {
+        state.contactsStatus = 'failed';
+        state.error = action.error.message || 'Failed to create contact phone';
+      })
+      .addCase(updateContactPhone.pending, (state) => {
+        state.contactsStatus = 'loading';
+      })
+      .addCase(updateContactPhone.fulfilled, (state, action) => {
+        state.contactsStatus = 'succeeded';
+        const { contactId, phone } = action.payload;
+        const contact = state.contacts.find((c) => c.id === contactId);
+        if (contact) {
+          const index = contact.phones.findIndex((p) => p.id === phone.id);
+          if (index !== -1) {
+            contact.phones[index] = phone;
+          }
+        }
+        state.error = null;
+      })
+      .addCase(updateContactPhone.rejected, (state, action) => {
+        state.contactsStatus = 'failed';
+        state.error = action.error.message || 'Failed to update contact phone';
+      })
+      .addCase(deleteContactPhone.pending, (state) => {
+        state.contactsStatus = 'loading';
+      })
+      .addCase(deleteContactPhone.fulfilled, (state, action) => {
+        state.contactsStatus = 'succeeded';
+        const { contactId, phoneId } = action.payload;
+        const contact = state.contacts.find((c) => c.id === contactId);
+        if (contact) {
+          contact.phones = contact.phones.filter((p) => p.id !== phoneId);
+        }
+        state.error = null;
+      })
+      .addCase(deleteContactPhone.rejected, (state, action) => {
+        state.contactsStatus = 'failed';
+        state.error = action.error.message || 'Failed to delete contact phone';
       });
   },
 });

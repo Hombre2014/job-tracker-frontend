@@ -250,3 +250,189 @@ export const uploadContactImage = createAsyncThunk(
     }
   }
 );
+
+export const createContactEmail = createAsyncThunk(
+  'contacts/createContactEmail',
+  async (values: any, thunkAPI) => {
+    const { accessToken, contactId, email, type } = values;
+    const body = {
+      type: type,
+      email: email,
+      contactId: contactId,
+    };
+    try {
+      const res = await client.post(`/contacts/contact-method/email`, body, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error creating contact email'
+      );
+    }
+  }
+);
+
+export const createContactPhone = createAsyncThunk(
+  'contacts/createContactPhone',
+  async (values: any, thunkAPI) => {
+    const { accessToken, contactId, phone, type } = values;
+    const body = {
+      type: type,
+      phone: phone,
+      contactId: contactId,
+    };
+    try {
+      const res = await client.post(`/contacts/contact-method/phone`, body, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error creating contact phone'
+      );
+    }
+  }
+);
+
+export const updateContactEmail = createAsyncThunk(
+  'contacts/updateContactEmail',
+  async (values: any, thunkAPI) => {
+    const { accessToken, email, type, id } = values;
+    const body = {
+      id: id,
+      type: type,
+      email: email,
+    };
+    try {
+      const res = await client.put(`/contacts/contact-method/email`, body, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error updating contact email'
+      );
+    }
+  }
+);
+
+export const updateContactPhone = createAsyncThunk(
+  'contacts/updateContactPhone',
+  async (values: any, thunkAPI) => {
+    const { accessToken, phone, type, id } = values;
+    const body = {
+      id: id,
+      type: type,
+      phone: phone,
+    };
+    try {
+      const res = await client.put(`/contacts/contact-method/phone`, body, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error updating contact phone'
+      );
+    }
+  }
+);
+
+export const deleteContactEmail = createAsyncThunk(
+  'contacts/deleteContactEmail',
+  async (values: any, thunkAPI) => {
+    const { accessToken, id } = values;
+    try {
+      const res = await client.delete(`/contacts/contact-method/email/${id}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error deleting contact email'
+      );
+    }
+  }
+);
+
+export const deleteContactPhone = createAsyncThunk(
+  'contacts/deleteContactPhone',
+  async (values: any, thunkAPI) => {
+    const { accessToken, id } = values;
+    try {
+      const res = await client.delete(`/contacts/contact-method/phone/${id}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error deleting contact phone'
+      );
+    }
+  }
+);
+
+export const getContactEmails = createAsyncThunk(
+  'contacts/getContactEmails',
+  async (values: any, thunkAPI) => {
+    const { accessToken, contactId } = values;
+    try {
+      const res = await client.get(
+        `/contacts/contact-method/email?contactId=${contactId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error getting contact emails'
+      );
+    }
+  }
+);
+
+export const getContactPhones = createAsyncThunk(
+  'contacts/getContactPhones',
+  async (values: any, thunkAPI) => {
+    const { accessToken, contactId } = values;
+    try {
+      const res = await client.get(
+        `/contacts/contact-method/phone?contactId=${contactId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error getting contact phones'
+      );
+    }
+  }
+);

@@ -29,6 +29,8 @@ const types = [
 
 interface EmailAndPhoneProps {
   id: string;
+  value: string;
+  initialType: string;
   contact: 'email' | 'phone';
   returnData: (contact: 'email' | 'phone', id: string) => void;
   handleChange: (id: string, value: string, type: string) => void;
@@ -36,13 +38,15 @@ interface EmailAndPhoneProps {
 
 const EmailAndPhone = ({
   id,
+  value,
   contact,
   returnData,
+  initialType,
   handleChange,
 }: EmailAndPhoneProps) => {
   const [open, setOpen] = useState(false);
-  const [type, setType] = useState('WORK');
-  const [inputValue, setInputValue] = useState('');
+  const [type, setType] = useState(initialType);
+  const [inputValue, setInputValue] = useState(value);
 
   const removeContact = () => {
     returnData(contact, id);
@@ -66,7 +70,6 @@ const EmailAndPhone = ({
         (item) => item.email || item.phone
       ); // Filter out empty items
       localStorage.setItem(storageKey, JSON.stringify(nonEmptyItems));
-      console.log('updatedItems: ', nonEmptyItems);
     }, 300),
     [contact]
   );

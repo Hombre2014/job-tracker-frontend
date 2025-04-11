@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { SlPeople } from 'react-icons/sl';
 import { useParams, usePathname } from 'next/navigation';
 
@@ -21,6 +21,7 @@ const Contacts = () => {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
   const jobs = useAppSelector((state) => state.jobs);
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const accessToken = localStorage.getItem('accessToken');
   const isContactsPage = pathname?.includes('/home/contacts');
 
@@ -31,16 +32,26 @@ const Contacts = () => {
     (job) => job.id === job_id
   )?.contacts;
 
+  const handleContactUpdated = (updatedContact: Contact) => {
+    setContacts((prevContacts) =>
+      prevContacts.map((contact) =>
+        contact.id === updatedContact.id ? updatedContact : contact
+      )
+    );
+  };
+
   const refreshContacts = useCallback(async () => {
     try {
       const columnId = localStorage.getItem('columnId');
       if (columnId) {
-        await dispatch(
-          getAllJobPostsPerColumn({
-            accessToken,
-            columnId,
-          })
-        ).unwrap();
+        setTimeout(async () => {
+          await dispatch(
+            getAllJobPostsPerColumn({
+              accessToken,
+              columnId,
+            })
+          ).unwrap();
+        }, 100);
       }
     } catch (error) {
       console.error('Error refreshing contacts:', error);

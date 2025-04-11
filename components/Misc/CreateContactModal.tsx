@@ -24,6 +24,7 @@ interface CreateContactModalProps {
   buttonConfirm?: string;
   userContactsPage?: boolean;
   onContactCreated?: () => void;
+  contactToEdit?: Contact | null;
   onContactUpdated?: (updatedContact: Contact) => void;
 }
 
@@ -34,6 +35,7 @@ const CreateContactModal = ({
   buttonLabel,
   dialogTitle,
   buttonConfirm,
+  contactToEdit,
   userContactsPage,
   onContactCreated,
   onContactUpdated,
@@ -54,11 +56,8 @@ const CreateContactModal = ({
     }
   }, [isVisible]);
 
-  const createNewContact = async () => {
+  const handleContact = async () => {
     if (!isFormValid) return;
-
-    setShowContactModal(false);
-    if (onClose) onClose();
 
     const values = {
       accessToken,
@@ -78,64 +77,113 @@ const CreateContactModal = ({
       companyIds: JSON.parse(localStorage.getItem('companyIds') || '[]'),
     };
 
+    const photoUrl = localStorage.getItem('photoUrl');
+    if (photoUrl) {
+      values.photoUrl = photoUrl;
+    }
+
     try {
-      // Step 1: Create the contact
-      const result = await dispatch(createContact(values)).unwrap();
-      const newContactId = result.id;
+      if (contactToEdit) {
+        // Handle update
+        const updateValues = { ...values } as Partial<typeof values>;
 
-      // Step 2: Upload the pending image if it exists
-      if (pendingImage) {
-        const uploadResult = await dispatch(
-          uploadContactImage({
-            file: pendingImage,
-            contactId: newContactId,
-            accessToken: accessToken as string,
-          })
-        ).unwrap();
+        // Only include photoUrl if it exists
+        if (!updateValues.photoUrl) {
+          delete updateValues.photoUrl;
+        }
 
-        // Dispatch updateContact to update the photoUrl
+        // Format phones and emails from contactToEdit
+        updateValues.phones = contactToEdit.phones || [];
+        updateValues.emails = contactToEdit.emails || [];
+
         const updatedContact = await dispatch(
           updateContact({
-            id: newContactId,
-            boardId: board_id,
-            photoUrl: uploadResult.imageUrl, // Update the photoUrl
-            accessToken: accessToken as string,
+            ...updateValues,
+            accessToken,
+            id: contactToEdit.id,
           })
         ).unwrap();
 
-        // Notify parent component about the updated contact
-        if (onContactUpdated) {
+        if (pendingImage) {
+          const uploadResult = await dispatch(
+            uploadContactImage({
+              file: pendingImage,
+              contactId: contactToEdit.id,
+              accessToken: accessToken as string,
+            })
+          ).unwrap();
+
+          const finalUpdatedContact = await dispatch(
+            updateContact({
+              ...updatedContact,
+              photoUrl: uploadResult.imageUrl,
+              accessToken: accessToken as string,
+            })
+          ).unwrap();
+
+          if (onContactUpdated) {
+            onContactUpdated(finalUpdatedContact);
+          }
+        } else if (onContactUpdated) {
           onContactUpdated(updatedContact);
         }
-      }
 
-      // Step 3: Assign contact to connected jobs (if any)
-      const jobsConnectedToContact = JSON.parse(
-        localStorage.getItem('jobsConnectedToContact') || '[]'
-      );
-      if (jobsConnectedToContact.length > 0) {
-        await Promise.all(
-          jobsConnectedToContact.map(async (jobPost: JobApplication) => {
-            const assignData = {
-              accessToken,
+        cleanupAfterContact(); // Clean up after successful update
+      } else {
+        // Create new contact
+        const result = await dispatch(createContact(values)).unwrap();
+        const newContactId = result.id;
+
+        if (pendingImage) {
+          const uploadResult = await dispatch(
+            uploadContactImage({
+              file: pendingImage,
               contactId: newContactId,
-              jobApplicationId: jobPost.id,
-            };
-            await dispatch(assignContactToJobPost(assignData)).unwrap();
-          })
+              accessToken: accessToken as string,
+            })
+          ).unwrap();
+
+          const updatedContact = await dispatch(
+            updateContact({
+              id: newContactId,
+              boardId: board_id,
+              photoUrl: uploadResult.imageUrl,
+              accessToken: accessToken as string,
+            })
+          ).unwrap();
+
+          if (onContactUpdated) {
+            onContactUpdated(updatedContact);
+          }
+        }
+
+        const jobsConnectedToContact = JSON.parse(
+          localStorage.getItem('jobsConnectedToContact') || '[]'
         );
+        if (jobsConnectedToContact.length > 0) {
+          await Promise.all(
+            jobsConnectedToContact.map(async (jobPost: JobApplication) => {
+              const assignData = {
+                accessToken,
+                contactId: newContactId,
+                jobApplicationId: jobPost.id,
+              };
+              await dispatch(assignContactToJobPost(assignData)).unwrap();
+            })
+          );
+        }
+
+        if (onContactCreated) {
+          onContactCreated();
+        }
+
+        cleanupAfterContact(); // Clean up after successful creation
       }
 
-      // Step 4: Call onContactCreated to refresh the contacts list
-      if (onContactCreated) {
-        console.log('Calling onContactCreated...'); // Debug log
-        onContactCreated();
-      }
-
-      // Step 5: Clear local storage
-      cleanupAfterContact();
+      setShowContactModal(false);
+      if (onClose) onClose();
     } catch (error) {
-      console.error('Error creating/assigning contact:', error);
+      console.error('Error handling contact:', error);
     }
   };
 
@@ -159,9 +207,11 @@ const CreateContactModal = ({
           open={showContactModal}
           isFormValid={isFormValid}
           contentWidth="!max-w-[910px]"
-          actionFunction={createNewContact}
-          buttonConfirm={buttonConfirm || 'Create'}
-          dialogTitle={dialogTitle || 'Save New Contact'}
+          actionFunction={handleContact}
+          buttonConfirm={buttonConfirm || (contactToEdit ? 'Update' : 'Create')}
+          dialogTitle={
+            dialogTitle || (contactToEdit ? 'Edit Contact' : 'Save New Contact')
+          }
           onOpenChange={(open) => {
             setShowContactModal(open);
             if (!open) {
@@ -171,6 +221,7 @@ const CreateContactModal = ({
           }}
         >
           <CreateContactForm
+            contactToEdit={contactToEdit}
             defaultJobPost={isDefaultJobPost}
             setPendingImage={setPendingImage}
             onValidationChange={setIsFormValid}
