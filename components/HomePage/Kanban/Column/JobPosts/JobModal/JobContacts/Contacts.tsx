@@ -1,5 +1,5 @@
-import { useCallback, useState } from 'react';
 import { SlPeople } from 'react-icons/sl';
+import { useCallback, useState } from 'react';
 import { useParams, usePathname } from 'next/navigation';
 
 import ContactCard from './ContactCard';

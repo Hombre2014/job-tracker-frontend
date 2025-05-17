@@ -3,7 +3,6 @@ import { debounce } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'next/navigation';
-import { IoMdContact } from 'react-icons/io';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -20,6 +19,10 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
 import { getBoardsOnly, getBoardWithColumns } from '@/redux/boards/boardsThunk';
 import {
+  updateContactEmail,
+  updateContactPhone,
+} from '@/redux/contacts/contactsThunk';
+import {
   createCompany,
   getCompanyThatStartsWith,
 } from '@/redux/companies/companiesThunk';
@@ -31,12 +34,6 @@ import {
   FormMessage,
   FormControl,
 } from '@/components/ui/form';
-import {
-  createContactEmail,
-  createContactPhone,
-  updateContactEmail,
-  updateContactPhone,
-} from '@/redux/contacts/contactsThunk';
 
 interface CreateContactFormProps {
   defaultJobPost: boolean;
@@ -219,18 +216,11 @@ const CreateContactForm = ({
       setLocation('');
       setComment('');
       setPhotoUrl('/images/Yuriy.jpg');
-      // localStorage.removeItem('photoUrl');
       setGithubUrl('');
       setTwitterUrl('');
       setFacebookUrl('');
       setLinkedinUrl('');
-      // Optionally reset preview image
       setPreviewImageUrl(null);
-      // Clear social media links from localStorage as well
-      // localStorage.removeItem('githubUrl');
-      // localStorage.removeItem('twitterUrl');
-      // localStorage.removeItem('facebookUrl');
-      // localStorage.removeItem('linkedinUrl');
     }
   }, [contactToEdit]);
 
@@ -397,19 +387,31 @@ const CreateContactForm = ({
     switch (fieldName) {
       case 'githubUrl':
         setGithubUrl(value);
-        localStorage.setItem('githubUrl', value ? `https://github.com/${value}` : '');
+        localStorage.setItem(
+          'githubUrl',
+          value ? `https://github.com/${value}` : ''
+        );
         break;
       case 'twitterUrl':
         setTwitterUrl(value);
-        localStorage.setItem('twitterUrl', value ? `https://twitter.com/${value}` : '');
+        localStorage.setItem(
+          'twitterUrl',
+          value ? `https://twitter.com/${value}` : ''
+        );
         break;
       case 'facebookUrl':
         setFacebookUrl(value);
-        localStorage.setItem('facebookUrl', value ? `https://facebook.com/${value}` : '');
+        localStorage.setItem(
+          'facebookUrl',
+          value ? `https://facebook.com/${value}` : ''
+        );
         break;
       case 'linkedinUrl':
         setLinkedinUrl(value);
-        localStorage.setItem('linkedinUrl', value ? `https://linkedin.com/in/${value}` : '');
+        localStorage.setItem(
+          'linkedinUrl',
+          value ? `https://linkedin.com/in/${value}` : ''
+        );
         break;
       case 'lastName':
         setLastName(value as string);

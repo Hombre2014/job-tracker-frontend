@@ -9,15 +9,15 @@ import { cleanupAfterContact } from '@/utils/helpers';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
 import {
+  getContact,
   createContact,
   updateContact,
-  uploadContactImage,
-  assignContactToJobPost,
   createContactEmail,
   createContactPhone,
   updateContactEmail,
   updateContactPhone,
-  getContact,
+  uploadContactImage,
+  assignContactToJobPost,
 } from '@/redux/contacts/contactsThunk';
 
 interface CreateContactModalProps {
@@ -73,18 +73,20 @@ const CreateContactModal = ({
       .filter((e: any) => e.value || e.email)
       .map((e: any) => ({
         id: e.id,
-        email: e.email ?? e.value,
         type: e.type,
+        email: e.email ?? e.value,
       }));
     const phones = rawPhones
       .filter((p: any) => p.value || p.phone)
       .map((p: any) => ({
         id: p.id,
-        phone: p.phone ?? p.value,
         type: p.type,
+        phone: p.phone ?? p.value,
       }));
 
     const values = {
+      emails,
+      phones,
       accessToken,
       boardId: board_id,
       comment: localStorage.getItem('comment'),
@@ -97,8 +99,6 @@ const CreateContactModal = ({
       twitterUrl: localStorage.getItem('twitterUrl') || null,
       linkedinUrl: localStorage.getItem('linkedinUrl') || null,
       facebookUrl: localStorage.getItem('facebookUrl') || null,
-      emails,
-      phones,
       companyIds: JSON.parse(localStorage.getItem('companyIds') || '[]'),
     };
 
@@ -155,12 +155,12 @@ const CreateContactModal = ({
     // Check if basic info/social links changed
     if (contactToEdit) {
       const fieldsToCheck: (keyof Contact)[] = [
-        'firstName',
+        'comment',
         'lastName',
         'jobTitle',
         'location',
-        'comment',
         'photoUrl',
+        'firstName',
         'githubUrl',
         'twitterUrl',
         'linkedinUrl',
@@ -186,8 +186,8 @@ const CreateContactModal = ({
           await dispatch(
             createContactEmail({
               type: email.type,
-              email: email.email ?? email.value,
               contactId: contactToEdit.id,
+              email: email.email ?? email.value,
               accessToken: accessToken as string,
             })
           ).unwrap();
@@ -196,8 +196,8 @@ const CreateContactModal = ({
           await dispatch(
             createContactPhone({
               type: phone.type,
-              phone: phone.phone ?? phone.value,
               contactId: contactToEdit.id,
+              phone: phone.phone ?? phone.value,
               accessToken: accessToken as string,
             })
           ).unwrap();
