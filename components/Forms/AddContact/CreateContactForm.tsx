@@ -3,7 +3,6 @@ import { debounce } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'next/navigation';
-import { IoMdContact } from 'react-icons/io';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -20,6 +19,10 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
 import { getBoardsOnly, getBoardWithColumns } from '@/redux/boards/boardsThunk';
 import {
+  updateContactEmail,
+  updateContactPhone,
+} from '@/redux/contacts/contactsThunk';
+import {
   createCompany,
   getCompanyThatStartsWith,
 } from '@/redux/companies/companiesThunk';
@@ -31,13 +34,6 @@ import {
   FormMessage,
   FormControl,
 } from '@/components/ui/form';
-import {
-  createContactEmail,
-  createContactPhone,
-  updateContact,
-  updateContactEmail,
-  updateContactPhone,
-} from '@/redux/contacts/contactsThunk';
 
 interface CreateContactFormProps {
   defaultJobPost: boolean;
@@ -203,11 +199,28 @@ const CreateContactForm = ({
       setLastName(contactToEdit.lastName || '');
       setJobTitle(contactToEdit.jobTitle || '');
       setLocation(contactToEdit.location || '');
-      setPhotoUrl(contactToEdit.photoUrl || '');
+      setPhotoUrl(contactToEdit.photoUrl || '/images/Yuriy.jpg');
       setFirstName(contactToEdit.firstName || '');
 
       form.setValue('lastName', contactToEdit.lastName || '');
       form.setValue('firstName', contactToEdit.firstName || '');
+    } else {
+      // New contact: reset all state variables
+      setEmails([]);
+      setPhones([]);
+      setCompanies([]);
+      setCompanyIds([]);
+      setFirstName('');
+      setLastName('');
+      setJobTitle('');
+      setLocation('');
+      setComment('');
+      setPhotoUrl('/images/Yuriy.jpg');
+      setGithubUrl('');
+      setTwitterUrl('');
+      setFacebookUrl('');
+      setLinkedinUrl('');
+      setPreviewImageUrl(null);
     }
   }, [contactToEdit]);
 
@@ -374,19 +387,31 @@ const CreateContactForm = ({
     switch (fieldName) {
       case 'githubUrl':
         setGithubUrl(value);
-        localStorage.setItem('githubUrl', `https://github.com/${value}`);
+        localStorage.setItem(
+          'githubUrl',
+          value ? `https://github.com/${value}` : ''
+        );
         break;
       case 'twitterUrl':
         setTwitterUrl(value);
-        localStorage.setItem('twitterUrl', `https://twitter.com/${value}`);
+        localStorage.setItem(
+          'twitterUrl',
+          value ? `https://twitter.com/${value}` : ''
+        );
         break;
       case 'facebookUrl':
         setFacebookUrl(value);
-        localStorage.setItem('facebookUrl', `https://facebook.com/${value}`);
+        localStorage.setItem(
+          'facebookUrl',
+          value ? `https://facebook.com/${value}` : ''
+        );
         break;
       case 'linkedinUrl':
         setLinkedinUrl(value);
-        localStorage.setItem('linkedinUrl', `https://linkedin.com/in/${value}`);
+        localStorage.setItem(
+          'linkedinUrl',
+          value ? `https://linkedin.com/in/${value}` : ''
+        );
         break;
       case 'lastName':
         setLastName(value as string);
@@ -423,12 +448,28 @@ const CreateContactForm = ({
     setPhones([...phones, { id: uuidv4(), value: '', type: 'WORK' }]);
   };
 
-  const handleEmailChange = (id: string, value: string, type: string) => {
-    // Find if this email already exists
-    const emailExists = emails.find((email) => email.id === id);
+  const isValidEmail = (email: string) =>
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-    if (emailExists) {
-      // Update existing email
+  const isValidPhone = (phone: string) =>
+    /^\+?\d{10,}$/.test(phone.replace(/\D/g, '')); // simple check: 10+ digits
+
+  const handleEmailChange = (id: string, value: string, type: string) => {
+    setEmails((prev) => {
+      const updated = prev.map((email) =>
+        email.id === id ? { ...email, value, type } : email
+      );
+      localStorage.setItem('emails', JSON.stringify(updated));
+      return updated;
+    });
+
+    if (!contactToEdit) return;
+
+    const wasExisting = !!(contactToEdit.emails || []).find(
+      (email) => email.id === id
+    );
+
+    if (wasExisting) {
       dispatch(
         updateContactEmail({
           id,
@@ -437,29 +478,26 @@ const CreateContactForm = ({
           accessToken: accessToken as string,
         })
       );
-    } else {
-      // Create new email - only if we have a contactToEdit
-      if (contactToEdit?.id) {
-        dispatch(
-          createContactEmail({
-            type,
-            email: value,
-            contactId: contactToEdit.id,
-            accessToken: accessToken as string,
-          })
-        );
-      } else {
-        console.error('Cannot create email: no contact ID available');
-        return;
-      }
+      markContactMethodChanged('emails', id);
     }
-    markContactMethodChanged('emails', id);
   };
 
   const handlePhoneChange = (id: string, value: string, type: string) => {
-    const phoneExists = phones.find((phone) => phone.id === id);
+    setPhones((prev) => {
+      const updated = prev.map((phone) =>
+        phone.id === id ? { ...phone, value, type } : phone
+      );
+      localStorage.setItem('phones', JSON.stringify(updated));
+      return updated;
+    });
 
-    if (phoneExists) {
+    if (!contactToEdit) return;
+
+    const wasExisting = !!(contactToEdit.phones || []).find(
+      (phone) => phone.id === id
+    );
+
+    if (wasExisting) {
       dispatch(
         updateContactPhone({
           id,
@@ -468,102 +506,7 @@ const CreateContactForm = ({
           accessToken: accessToken as string,
         })
       );
-    } else {
-      // Create new phone - only if we have a contactToEdit
-      if (contactToEdit?.id) {
-        dispatch(
-          createContactPhone({
-            type,
-            phone: value,
-            contactId: contactToEdit.id,
-            accessToken: accessToken as string,
-          })
-        );
-      } else {
-        console.error('Cannot create phone: no contact ID available');
-        return;
-      }
-    }
-    markContactMethodChanged('phones', id);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!contactToEdit) {
-      console.error('No contact to edit');
-      return;
-    }
-
-    try {
-      // Update basic contact info if changed
-      if (hasChanges.basicInfo) {
-        await dispatch(
-          updateContact({
-            ...contactToEdit, // Spread the original contact data first
-            // Then override only the changed fields
-            firstName: firstName || contactToEdit.firstName,
-            lastName: lastName || contactToEdit.lastName,
-            jobTitle: jobTitle || contactToEdit.jobTitle,
-            location: location || contactToEdit.location,
-            comment: comment || contactToEdit.comment,
-            companyIds,
-            accessToken: accessToken as string,
-          })
-        ).unwrap();
-      }
-
-      // Handle email updates
-      if (hasChanges.emails.size > 0) {
-        await Promise.all(
-          [...hasChanges.emails].map((emailId) => {
-            const email = emails.find((e) => e.id === emailId);
-            if (email) {
-              return dispatch(
-                updateContactEmail({
-                  id: emailId,
-                  email: email.value,
-                  type: email.type,
-                  accessToken: accessToken as string,
-                })
-              ).unwrap();
-            }
-            return Promise.resolve();
-          })
-        );
-      }
-
-      // Handle phone updates
-      if (hasChanges.phones.size > 0) {
-        await Promise.all(
-          [...hasChanges.phones].map((phoneId) => {
-            const phone = phones.find((p) => p.id === phoneId);
-            if (phone) {
-              return dispatch(
-                updateContactPhone({
-                  id: phoneId,
-                  phone: phone.value,
-                  type: phone.type,
-                  accessToken: accessToken as string,
-                })
-              ).unwrap();
-            }
-            return Promise.resolve();
-          })
-        );
-      }
-
-      // Reset change tracking
-      setHasChanges({
-        basicInfo: false,
-        emails: new Set(),
-        phones: new Set(),
-        companies: false,
-        socialMedia: false,
-      });
-    } catch (error) {
-      console.error('Error updating contact:', error);
-      // Handle error (show toast/notification)
+      markContactMethodChanged('phones', id);
     }
   };
 
@@ -685,13 +628,11 @@ const CreateContactForm = ({
                               alt="User profile picture"
                               className="cursor-pointer rounded-lg"
                             />
-                          ) : photoUrl === '' ? (
-                            <IoMdContact size={50} className="cursor-pointer" />
                           ) : (
                             <Image
                               width={50}
                               height={50}
-                              src={photoUrl}
+                              src={photoUrl || '/images/Yuriy.jpg'}
                               alt="User profile picture"
                               className="cursor-pointer rounded-lg"
                             />
