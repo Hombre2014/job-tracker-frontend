@@ -32,7 +32,7 @@ interface EmailAndPhoneProps {
   initialType: string;
   contact: 'email' | 'phone';
   returnData: (contact: 'email' | 'phone', id: string) => void;
-  handleChange: (id: string, value: string, type: string) => void;
+  handleChange: (id: string, value: string, type: string, options?: { blur?: boolean }) => void;
 }
 
 const EmailAndPhone = ({
@@ -49,6 +49,12 @@ const EmailAndPhone = ({
 
   const removeContact = () => {
     returnData(contact, id);
+  };
+
+  // Helper to trigger backend creation on blur (only for editing)
+  const handleBlur = () => {
+    // Pass a special flag to handleChange to indicate blur event
+    handleChange(id, inputValue, type, { blur: true });
   };
 
   // Update localStorage and parent state directly on change
@@ -87,6 +93,7 @@ const EmailAndPhone = ({
             onChange={(e) => {
               setInputValue(e.target.value);
             }}
+            onBlur={handleBlur}
             className="outline-none bg-transparent border-none pl-2 text-sm"
             placeholder={contact.charAt(0).toUpperCase() + contact.slice(1)}
           />

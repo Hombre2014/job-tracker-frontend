@@ -63,13 +63,21 @@ const CreateContactModal = ({
     const rawEmails = JSON.parse(localStorage.getItem('emails') || '[]');
     const rawPhones = JSON.parse(localStorage.getItem('phones') || '[]');
 
-    // Transform to backend format
+    // Transform to backend format for create
     const emails = rawEmails
-      .filter((e: any) => e.value) // skip empty
-      .map((e: any) => ({ email: e.value, type: e.type }));
+      .filter((e: any) => e.value || e.email)
+      .map((e: any) => ({
+        id: e.id,
+        email: e.email ?? e.value,
+        type: e.type,
+      }));
     const phones = rawPhones
-      .filter((p: any) => p.value)
-      .map((p: any) => ({ phone: p.value, type: p.type }));
+      .filter((p: any) => p.value || p.phone)
+      .map((p: any) => ({
+        id: p.id,
+        phone: p.phone ?? p.value,
+        type: p.type,
+      }));
 
     const values = {
       accessToken,
@@ -90,14 +98,14 @@ const CreateContactModal = ({
     };
 
     // If a new image is being uploaded, do not send photoUrl in the initial create request
-    let createValues = { ...values };
+    let createValues: any = { ...values };
     if (pendingImage) {
       delete createValues.photoUrl;
     }
 
     try {
       if (contactToEdit) {
-        // Handle update
+        // For update, also transform contactToEdit.phones/emails if used
         const updateValues = { ...values } as Partial<typeof values>;
 
         // Only include photoUrl if it exists
@@ -105,9 +113,9 @@ const CreateContactModal = ({
           delete updateValues.photoUrl;
         }
 
-        // Format phones and emails from contactToEdit
-        updateValues.phones = contactToEdit.phones || [];
-        updateValues.emails = contactToEdit.emails || [];
+        // Use the transformed emails/phones, not the raw ones
+        updateValues.phones = phones;
+        updateValues.emails = emails;
 
         const updatedContact = await dispatch(
           updateContact({
