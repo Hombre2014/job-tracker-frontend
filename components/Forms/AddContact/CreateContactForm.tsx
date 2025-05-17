@@ -34,7 +34,6 @@ import {
 import {
   createContactEmail,
   createContactPhone,
-  updateContact,
   updateContactEmail,
   updateContactPhone,
 } from '@/redux/contacts/contactsThunk';
@@ -424,11 +423,21 @@ const CreateContactForm = ({
   };
 
   const handleEmailChange = (id: string, value: string, type: string) => {
-    // Find if this email already exists
-    const emailExists = emails.find((email) => email.id === id);
+    if (!contactToEdit) {
+      // New contact: update local state and localStorage only
+      setEmails((prev) => {
+        const updated = prev.map((email) =>
+          email.id === id ? { ...email, value, type } : email
+        );
+        localStorage.setItem('emails', JSON.stringify(updated));
+        return updated;
+      });
+      return;
+    }
 
+    // Editing existing contact: keep backend logic
+    const emailExists = emails.find((email) => email.id === id);
     if (emailExists) {
-      // Update existing email
       dispatch(
         updateContactEmail({
           id,
@@ -438,7 +447,6 @@ const CreateContactForm = ({
         })
       );
     } else {
-      // Create new email - only if we have a contactToEdit
       if (contactToEdit?.id) {
         dispatch(
           createContactEmail({
@@ -457,8 +465,20 @@ const CreateContactForm = ({
   };
 
   const handlePhoneChange = (id: string, value: string, type: string) => {
-    const phoneExists = phones.find((phone) => phone.id === id);
+    if (!contactToEdit) {
+      // New contact: update local state and localStorage only
+      setPhones((prev) => {
+        const updated = prev.map((phone) =>
+          phone.id === id ? { ...phone, value, type } : phone
+        );
+        localStorage.setItem('phones', JSON.stringify(updated));
+        return updated;
+      });
+      return;
+    }
 
+    // Editing existing contact: keep backend logic
+    const phoneExists = phones.find((phone) => phone.id === id);
     if (phoneExists) {
       dispatch(
         updateContactPhone({
@@ -469,7 +489,6 @@ const CreateContactForm = ({
         })
       );
     } else {
-      // Create new phone - only if we have a contactToEdit
       if (contactToEdit?.id) {
         dispatch(
           createContactPhone({
@@ -485,86 +504,6 @@ const CreateContactForm = ({
       }
     }
     markContactMethodChanged('phones', id);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!contactToEdit) {
-      console.error('No contact to edit');
-      return;
-    }
-
-    try {
-      // Update basic contact info if changed
-      if (hasChanges.basicInfo) {
-        await dispatch(
-          updateContact({
-            ...contactToEdit, // Spread the original contact data first
-            // Then override only the changed fields
-            firstName: firstName || contactToEdit.firstName,
-            lastName: lastName || contactToEdit.lastName,
-            jobTitle: jobTitle || contactToEdit.jobTitle,
-            location: location || contactToEdit.location,
-            comment: comment || contactToEdit.comment,
-            companyIds,
-            accessToken: accessToken as string,
-          })
-        ).unwrap();
-      }
-
-      // Handle email updates
-      if (hasChanges.emails.size > 0) {
-        await Promise.all(
-          [...hasChanges.emails].map((emailId) => {
-            const email = emails.find((e) => e.id === emailId);
-            if (email) {
-              return dispatch(
-                updateContactEmail({
-                  id: emailId,
-                  email: email.value,
-                  type: email.type,
-                  accessToken: accessToken as string,
-                })
-              ).unwrap();
-            }
-            return Promise.resolve();
-          })
-        );
-      }
-
-      // Handle phone updates
-      if (hasChanges.phones.size > 0) {
-        await Promise.all(
-          [...hasChanges.phones].map((phoneId) => {
-            const phone = phones.find((p) => p.id === phoneId);
-            if (phone) {
-              return dispatch(
-                updateContactPhone({
-                  id: phoneId,
-                  phone: phone.value,
-                  type: phone.type,
-                  accessToken: accessToken as string,
-                })
-              ).unwrap();
-            }
-            return Promise.resolve();
-          })
-        );
-      }
-
-      // Reset change tracking
-      setHasChanges({
-        basicInfo: false,
-        emails: new Set(),
-        phones: new Set(),
-        companies: false,
-        socialMedia: false,
-      });
-    } catch (error) {
-      console.error('Error updating contact:', error);
-      // Handle error (show toast/notification)
-    }
   };
 
   const debouncedSearch = useCallback(

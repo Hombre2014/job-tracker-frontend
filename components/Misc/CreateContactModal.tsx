@@ -59,6 +59,18 @@ const CreateContactModal = ({
   const handleContact = async () => {
     if (!isFormValid) return;
 
+    // Get raw emails/phones from localStorage
+    const rawEmails = JSON.parse(localStorage.getItem('emails') || '[]');
+    const rawPhones = JSON.parse(localStorage.getItem('phones') || '[]');
+
+    // Transform to backend format
+    const emails = rawEmails
+      .filter((e: any) => e.value) // skip empty
+      .map((e: any) => ({ email: e.value, type: e.type }));
+    const phones = rawPhones
+      .filter((p: any) => p.value)
+      .map((p: any) => ({ phone: p.value, type: p.type }));
+
     const values = {
       accessToken,
       boardId: board_id,
@@ -72,8 +84,8 @@ const CreateContactModal = ({
       twitterUrl: localStorage.getItem('twitterUrl'),
       linkedinUrl: localStorage.getItem('linkedinUrl'),
       facebookUrl: localStorage.getItem('facebookUrl'),
-      emails: JSON.parse(localStorage.getItem('emails') || '[]'),
-      phones: JSON.parse(localStorage.getItem('phones') || '[]'),
+      emails,
+      phones,
       companyIds: JSON.parse(localStorage.getItem('companyIds') || '[]'),
     };
 

@@ -1,8 +1,7 @@
-import { debounce } from 'lodash';
+import { useState, useEffect } from 'react';
 import { RiCloseLine } from 'react-icons/ri';
 import { HiOutlinePhone } from 'react-icons/hi';
 import { Button } from '@/components/ui/button';
-import { useState, useEffect, useCallback } from 'react';
 import { RxEnvelopeClosed, RxChevronDown } from 'react-icons/rx';
 import {
   Popover,
@@ -52,36 +51,25 @@ const EmailAndPhone = ({
     returnData(contact, id);
   };
 
-  const debouncedHandleChange = useCallback(
-    debounce((id: string, value: string, type: string) => {
-      handleChange(id, value, type);
-
-      const storageKey = contact === 'email' ? 'emails' : 'phones';
-      const existingItems = JSON.parse(
-        localStorage.getItem(storageKey) || '[]'
-      ) as any[];
-      const updatedItems = existingItems.filter((item) => item.id !== id); // Remove any existing item with the same id
-      if (contact === 'email') {
-        updatedItems.push({ email: value, type });
-      } else {
-        updatedItems.push({ phone: value, type });
-      }
-      const nonEmptyItems = updatedItems.filter(
-        (item) => item.email || item.phone
-      ); // Filter out empty items
-      localStorage.setItem(storageKey, JSON.stringify(nonEmptyItems));
-    }, 300),
-    [contact]
-  );
-
+  // Update localStorage and parent state directly on change
   useEffect(() => {
-    if (inputValue) {
-      debouncedHandleChange(id, inputValue, type);
+    const storageKey = contact === 'email' ? 'emails' : 'phones';
+    const existingItems = JSON.parse(
+      localStorage.getItem(storageKey) || '[]'
+    ) as any[];
+    const updatedItems = existingItems.filter((item) => item.id !== id);
+    if (contact === 'email') {
+      updatedItems.push({ id, email: inputValue, type });
+    } else {
+      updatedItems.push({ id, phone: inputValue, type });
     }
-    return () => {
-      debouncedHandleChange.cancel();
-    };
-  }, [inputValue, id, type, debouncedHandleChange]);
+    const nonEmptyItems = updatedItems.filter(
+      (item) => item.email || item.phone
+    );
+    localStorage.setItem(storageKey, JSON.stringify(nonEmptyItems));
+    handleChange(id, inputValue, type);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputValue, type]);
 
   return (
     <div className="w-full px-2">
@@ -98,15 +86,7 @@ const EmailAndPhone = ({
             value={inputValue}
             onChange={(e) => {
               setInputValue(e.target.value);
-              if (e.target.value) {
-                handleChange(id, e.target.value, type); // Add the record to the state when the user types a value
-              }
             }}
-            onBlur={() => {
-              if (inputValue) {
-                debouncedHandleChange(id, inputValue, type);
-              }
-            }} // Save on blur if inputValue is not empty
             className="outline-none bg-transparent border-none pl-2 text-sm"
             placeholder={contact.charAt(0).toUpperCase() + contact.slice(1)}
           />
@@ -136,9 +116,6 @@ const EmailAndPhone = ({
                         onSelect={(currentValue) => {
                           setType(currentValue);
                           setOpen(false);
-                          if (inputValue) {
-                            debouncedHandleChange(id, inputValue, currentValue); // Ensure the type is saved when changed
-                          }
                         }}
                       >
                         <span className="text-xs">{type.label}</span>
