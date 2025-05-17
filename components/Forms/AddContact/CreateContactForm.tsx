@@ -202,11 +202,29 @@ const CreateContactForm = ({
       setLastName(contactToEdit.lastName || '');
       setJobTitle(contactToEdit.jobTitle || '');
       setLocation(contactToEdit.location || '');
-      setPhotoUrl(contactToEdit.photoUrl || '');
+      setPhotoUrl(contactToEdit.photoUrl || '/images/Yuriy.jpg');
       setFirstName(contactToEdit.firstName || '');
 
       form.setValue('lastName', contactToEdit.lastName || '');
       form.setValue('firstName', contactToEdit.firstName || '');
+    } else {
+      // New contact: reset all state variables
+      setEmails([]);
+      setPhones([]);
+      setCompanies([]);
+      setCompanyIds([]);
+      setFirstName('');
+      setLastName('');
+      setJobTitle('');
+      setLocation('');
+      setComment('');
+      setPhotoUrl('/images/Yuriy.jpg');
+      setGithubUrl('');
+      setTwitterUrl('');
+      setFacebookUrl('');
+      setLinkedinUrl('');
+      // Optionally reset preview image
+      setPreviewImageUrl(null);
     }
   }, [contactToEdit]);
 
@@ -624,13 +642,11 @@ const CreateContactForm = ({
                               alt="User profile picture"
                               className="cursor-pointer rounded-lg"
                             />
-                          ) : photoUrl === '' ? (
-                            <IoMdContact size={50} className="cursor-pointer" />
                           ) : (
                             <Image
                               width={50}
                               height={50}
-                              src={photoUrl}
+                              src={photoUrl || '/images/Yuriy.jpg'}
                               alt="User profile picture"
                               className="cursor-pointer rounded-lg"
                             />

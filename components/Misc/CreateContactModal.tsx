@@ -89,9 +89,10 @@ const CreateContactModal = ({
       companyIds: JSON.parse(localStorage.getItem('companyIds') || '[]'),
     };
 
-    const photoUrl = localStorage.getItem('photoUrl');
-    if (photoUrl) {
-      values.photoUrl = photoUrl;
+    // If a new image is being uploaded, do not send photoUrl in the initial create request
+    let createValues = { ...values };
+    if (pendingImage) {
+      delete createValues.photoUrl;
     }
 
     try {
@@ -142,10 +143,11 @@ const CreateContactModal = ({
 
         cleanupAfterContact(); // Clean up after successful update
       } else {
-        // Create new contact
-        const result = await dispatch(createContact(values)).unwrap();
+        // Create new contact (without photoUrl if uploading)
+        const result = await dispatch(createContact(createValues)).unwrap();
         const newContactId = result.id;
 
+        // If user uploaded a photo, upload it and update the contact
         if (pendingImage) {
           const uploadResult = await dispatch(
             uploadContactImage({
@@ -155,7 +157,7 @@ const CreateContactModal = ({
             })
           ).unwrap();
 
-          const updatedContact = await dispatch(
+          await dispatch(
             updateContact({
               id: newContactId,
               boardId: board_id,
@@ -163,10 +165,6 @@ const CreateContactModal = ({
               accessToken: accessToken as string,
             })
           ).unwrap();
-
-          if (onContactUpdated) {
-            onContactUpdated(updatedContact);
-          }
         }
 
         const jobsConnectedToContact = JSON.parse(
