@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useRef, useState } from 'react';
 import { RiCloseLine } from 'react-icons/ri';
 import { HiOutlinePhone } from 'react-icons/hi';
 import { Button } from '@/components/ui/button';
@@ -16,14 +16,8 @@ import {
 } from '@/components/ui/command';
 
 const types = [
-  {
-    value: 'WORK',
-    label: 'WORK',
-  },
-  {
-    value: 'PERSONAL',
-    label: 'PERSONAL',
-  },
+  { value: 'WORK', label: 'WORK' },
+  { value: 'PERSONAL', label: 'PERSONAL' },
 ];
 
 interface EmailAndPhoneProps {
@@ -46,36 +40,21 @@ const EmailAndPhone = ({
   const [open, setOpen] = useState(false);
   const [type, setType] = useState(initialType);
   const [inputValue, setInputValue] = useState(value);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleTypeChange = (newType: string) => {
+    setType(newType);
+    handleChange(id, inputValue, newType);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+    handleChange(id, e.target.value, type);
+  };
 
   const removeContact = () => {
     returnData(contact, id);
   };
-
-  // Helper to trigger backend creation on blur (only for editing)
-  const handleBlur = () => {
-    // Pass a special flag to handleChange to indicate blur event
-    handleChange(id, inputValue, type, { blur: true });
-  };
-
-  // Update localStorage and parent state directly on change
-  useEffect(() => {
-    const storageKey = contact === 'email' ? 'emails' : 'phones';
-    const existingItems = JSON.parse(
-      localStorage.getItem(storageKey) || '[]'
-    ) as any[];
-    const updatedItems = existingItems.filter((item) => item.id !== id);
-    if (contact === 'email') {
-      updatedItems.push({ id, email: inputValue, type });
-    } else {
-      updatedItems.push({ id, phone: inputValue, type });
-    }
-    const nonEmptyItems = updatedItems.filter(
-      (item) => item.email || item.phone
-    );
-    localStorage.setItem(storageKey, JSON.stringify(nonEmptyItems));
-    handleChange(id, inputValue, type);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputValue, type]);
 
   return (
     <div className="w-full px-2">
@@ -87,13 +66,11 @@ const EmailAndPhone = ({
             <HiOutlinePhone size={20} className="text-gray-500" />
           )}
           <input
+            ref={inputRef}
             name="contact"
             title="contact"
             value={inputValue}
-            onChange={(e) => {
-              setInputValue(e.target.value);
-            }}
-            onBlur={handleBlur}
+            onChange={handleInputChange}
             className="outline-none bg-transparent border-none pl-2 text-sm"
             placeholder={contact.charAt(0).toUpperCase() + contact.slice(1)}
           />
@@ -116,16 +93,16 @@ const EmailAndPhone = ({
               <Command>
                 <CommandList>
                   <CommandGroup>
-                    {types.map((type) => (
+                    {types.map((typeOption) => (
                       <CommandItem
-                        key={type.value}
-                        value={type.value}
+                        key={typeOption.value}
+                        value={typeOption.value}
                         onSelect={(currentValue) => {
-                          setType(currentValue);
+                          handleTypeChange(currentValue);
                           setOpen(false);
                         }}
                       >
-                        <span className="text-xs">{type.label}</span>
+                        <span className="text-xs">{typeOption.label}</span>
                       </CommandItem>
                     ))}
                   </CommandGroup>

@@ -219,13 +219,18 @@ const CreateContactForm = ({
       setLocation('');
       setComment('');
       setPhotoUrl('/images/Yuriy.jpg');
-      localStorage.removeItem('photoUrl');
+      // localStorage.removeItem('photoUrl');
       setGithubUrl('');
       setTwitterUrl('');
       setFacebookUrl('');
       setLinkedinUrl('');
       // Optionally reset preview image
       setPreviewImageUrl(null);
+      // Clear social media links from localStorage as well
+      // localStorage.removeItem('githubUrl');
+      // localStorage.removeItem('twitterUrl');
+      // localStorage.removeItem('facebookUrl');
+      // localStorage.removeItem('linkedinUrl');
     }
   }, [contactToEdit]);
 
@@ -392,19 +397,19 @@ const CreateContactForm = ({
     switch (fieldName) {
       case 'githubUrl':
         setGithubUrl(value);
-        localStorage.setItem('githubUrl', `https://github.com/${value}`);
+        localStorage.setItem('githubUrl', value ? `https://github.com/${value}` : '');
         break;
       case 'twitterUrl':
         setTwitterUrl(value);
-        localStorage.setItem('twitterUrl', `https://twitter.com/${value}`);
+        localStorage.setItem('twitterUrl', value ? `https://twitter.com/${value}` : '');
         break;
       case 'facebookUrl':
         setFacebookUrl(value);
-        localStorage.setItem('facebookUrl', `https://facebook.com/${value}`);
+        localStorage.setItem('facebookUrl', value ? `https://facebook.com/${value}` : '');
         break;
       case 'linkedinUrl':
         setLinkedinUrl(value);
-        localStorage.setItem('linkedinUrl', `https://linkedin.com/in/${value}`);
+        localStorage.setItem('linkedinUrl', value ? `https://linkedin.com/in/${value}` : '');
         break;
       case 'lastName':
         setLastName(value as string);
@@ -447,12 +452,7 @@ const CreateContactForm = ({
   const isValidPhone = (phone: string) =>
     /^\+?\d{10,}$/.test(phone.replace(/\D/g, '')); // simple check: 10+ digits
 
-  const handleEmailChange = async (
-    id: string,
-    value: string,
-    type: string,
-    options?: { blur?: boolean }
-  ) => {
+  const handleEmailChange = (id: string, value: string, type: string) => {
     setEmails((prev) => {
       const updated = prev.map((email) =>
         email.id === id ? { ...email, value, type } : email
@@ -463,7 +463,9 @@ const CreateContactForm = ({
 
     if (!contactToEdit) return;
 
-    const wasExisting = !!(contactToEdit.emails || []).find((email) => email.id === id);
+    const wasExisting = !!(contactToEdit.emails || []).find(
+      (email) => email.id === id
+    );
 
     if (wasExisting) {
       dispatch(
@@ -475,42 +477,10 @@ const CreateContactForm = ({
         })
       );
       markContactMethodChanged('emails', id);
-    } else if (options?.blur && value) {
-      // New email: only create on blur, and only if value is not empty
-      const result = await dispatch(
-        createContactEmail({
-          type,
-          email: value,
-          contactId: contactToEdit.id,
-          accessToken: accessToken as string,
-        })
-      ).unwrap();
-
-      // Replace the temporary email in state with the backend response (which has the real id and all fields)
-      setEmails((prev) => {
-        const updated = prev.map((email) =>
-          email.id === id
-            ? {
-                id: result.id,
-                value: result.email,
-                type: result.type,
-                // Optionally include other fields from result if needed
-              }
-            : email
-        );
-        localStorage.setItem('emails', JSON.stringify(updated));
-        return updated;
-      });
-      markContactMethodChanged('emails', result.id);
     }
   };
 
-  const handlePhoneChange = async (
-    id: string,
-    value: string,
-    type: string,
-    options?: { blur?: boolean }
-  ) => {
+  const handlePhoneChange = (id: string, value: string, type: string) => {
     setPhones((prev) => {
       const updated = prev.map((phone) =>
         phone.id === id ? { ...phone, value, type } : phone
@@ -521,7 +491,9 @@ const CreateContactForm = ({
 
     if (!contactToEdit) return;
 
-    const wasExisting = !!(contactToEdit.phones || []).find((phone) => phone.id === id);
+    const wasExisting = !!(contactToEdit.phones || []).find(
+      (phone) => phone.id === id
+    );
 
     if (wasExisting) {
       dispatch(
@@ -533,33 +505,6 @@ const CreateContactForm = ({
         })
       );
       markContactMethodChanged('phones', id);
-    } else if (options?.blur && value) {
-      // New phone: only create on blur, and only if value is not empty
-      const result = await dispatch(
-        createContactPhone({
-          type,
-          phone: value,
-          contactId: contactToEdit.id,
-          accessToken: accessToken as string,
-        })
-      ).unwrap();
-
-      // Replace the temporary phone in state with the backend response (which has the real id and all fields)
-      setPhones((prev) => {
-        const updated = prev.map((phone) =>
-          phone.id === id
-            ? {
-                id: result.id,
-                value: result.phone,
-                type: result.type,
-                // Optionally include other fields from result if needed
-              }
-            : phone
-        );
-        localStorage.setItem('phones', JSON.stringify(updated));
-        return updated;
-      });
-      markContactMethodChanged('phones', result.id);
     }
   };
 

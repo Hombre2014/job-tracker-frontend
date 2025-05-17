@@ -39,14 +39,14 @@ const SocialMediaLinks = ({
               />
               <Input
                 value={twitterUrl}
-                placeholder="Twitter handle"
+                placeholder="Twitter URL"
                 onChange={(e) => handleFieldChange('twitterUrl', e)}
                 className="!outline-none !border-none shadow-none focus-visible:ring-0"
               />
             </div>
             <Link
               target="_blank"
-              href={`https://twitter.com/${twitterUrl}`}
+              href={twitterUrl || '#'}
               className="text-blue-500 hover:cursor-pointer"
             >
               <LiaLinkSolid
@@ -60,13 +60,13 @@ const SocialMediaLinks = ({
             />
             <Input
               value={facebookUrl}
-              placeholder="Facebook profile"
+              placeholder="Facebook URL"
               onChange={(e) => handleFieldChange('facebookUrl', e)}
               className="!outline-none !border-none shadow-none focus-visible:ring-0"
             />
             <Link
               target="_blank"
-              href={`https://facebook.com/${facebookUrl}`}
+              href={facebookUrl || '#'}
               className="text-blue-500 hover:cursor-pointer"
             >
               <LiaLinkSolid
@@ -80,14 +80,14 @@ const SocialMediaLinks = ({
             />
             <Input
               value={linkedinUrl}
-              placeholder="LinkedIn profile"
+              placeholder="LinkedIn URL"
               onChange={(e) => handleFieldChange('linkedinUrl', e)}
               className="!outline-none !border-none shadow-none focus-visible:ring-0"
             />
             <Link
               target="_blank"
               className="text-blue-500 hover:cursor-pointer"
-              href={`https://linkedin.com/in/${linkedinUrl}`}
+              href={linkedinUrl || '#'}
             >
               <LiaLinkSolid
                 className={cn('hidden', linkedinUrl !== '' && 'block')}
@@ -100,13 +100,13 @@ const SocialMediaLinks = ({
             />
             <Input
               value={githubUrl}
-              placeholder="GitHub profile"
+              placeholder="GitHub URL"
               onChange={(e) => handleFieldChange('githubUrl', e)}
               className="!outline-none !border-none shadow-none focus-visible:ring-0"
             />
             <Link
               target="_blank"
-              href={`https://github.com/${githubUrl}`}
+              href={githubUrl || '#'}
               className="text-blue-500 hover:cursor-pointer"
             >
               <LiaLinkSolid

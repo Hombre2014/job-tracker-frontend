@@ -13,6 +13,11 @@ import {
   updateContact,
   uploadContactImage,
   assignContactToJobPost,
+  createContactEmail,
+  createContactPhone,
+  updateContactEmail,
+  updateContactPhone,
+  getContact,
 } from '@/redux/contacts/contactsThunk';
 
 interface CreateContactModalProps {
@@ -88,43 +93,152 @@ const CreateContactModal = ({
       location: localStorage.getItem('location'),
       photoUrl: localStorage.getItem('photoUrl'),
       firstName: localStorage.getItem('firstName'),
-      githubUrl: localStorage.getItem('githubUrl'),
-      twitterUrl: localStorage.getItem('twitterUrl'),
-      linkedinUrl: localStorage.getItem('linkedinUrl'),
-      facebookUrl: localStorage.getItem('facebookUrl'),
+      githubUrl: localStorage.getItem('githubUrl') || null,
+      twitterUrl: localStorage.getItem('twitterUrl') || null,
+      linkedinUrl: localStorage.getItem('linkedinUrl') || null,
+      facebookUrl: localStorage.getItem('facebookUrl') || null,
       emails,
       phones,
       companyIds: JSON.parse(localStorage.getItem('companyIds') || '[]'),
     };
 
-    // If a new image is being uploaded, do not send photoUrl in the initial create request
-    let createValues: any = { ...values };
-    if (pendingImage) {
-      delete createValues.photoUrl;
+    // Before sending updateContact, ensure empty strings are converted to null
+    ['githubUrl', 'twitterUrl', 'linkedinUrl', 'facebookUrl'].forEach(
+      (field) => {
+        if (values[field as keyof typeof values] === '')
+          values[field as keyof typeof values] = null;
+      }
+    );
+
+    // Track what changed
+    let hasNewOrUpdatedEmailOrPhone = false;
+    let hasBasicInfoChange = false;
+
+    // Find new emails/phones (those not present in contactToEdit)
+    const existingEmailIds = new Set<string | number>(
+      (contactToEdit?.emails || []).map((e) => e.id)
+    );
+    const existingPhoneIds = new Set<string | number>(
+      (contactToEdit?.phones || []).map((p) => p.id)
+    );
+    const newEmails = emails.filter((e: any) => !existingEmailIds.has(e.id));
+    const newPhones = phones.filter((p: any) => !existingPhoneIds.has(p.id));
+
+    // Find updated emails/phones (existing ones with changed value/type)
+    const updatedEmails = emails.filter((e: any) => {
+      const orig = (contactToEdit?.emails || []).find(
+        (origE) => origE.id === e.id
+      );
+      return (
+        orig &&
+        ((orig.email !== e.email && orig.email !== e.value) ||
+          orig.type !== e.type)
+      );
+    });
+    const updatedPhones = phones.filter((p: any) => {
+      const orig = (contactToEdit?.phones || []).find(
+        (origP) => origP.id === p.id
+      );
+      return (
+        orig &&
+        ((orig.phone !== p.phone && orig.phone !== p.value) ||
+          orig.type !== p.type)
+      );
+    });
+
+    hasNewOrUpdatedEmailOrPhone =
+      newEmails.length > 0 ||
+      newPhones.length > 0 ||
+      updatedEmails.length > 0 ||
+      updatedPhones.length > 0;
+
+    // Check if basic info/social links changed
+    if (contactToEdit) {
+      const fieldsToCheck: (keyof Contact)[] = [
+        'firstName',
+        'lastName',
+        'jobTitle',
+        'location',
+        'comment',
+        'photoUrl',
+        'githubUrl',
+        'twitterUrl',
+        'linkedinUrl',
+        'facebookUrl',
+      ];
+      for (const field of fieldsToCheck) {
+        if (
+          values[field as keyof typeof values] !== undefined &&
+          values[field as keyof typeof values] !== contactToEdit[field]
+        ) {
+          hasBasicInfoChange = true;
+          break;
+        }
+      }
     }
+
+    let updatedContactData = contactToEdit;
 
     try {
       if (contactToEdit) {
-        // For update, also transform contactToEdit.phones/emails if used
-        const updateValues = { ...values } as Partial<typeof values>;
-
-        // Only include photoUrl if it exists
-        if (!updateValues.photoUrl) {
-          delete updateValues.photoUrl;
+        // 1. Handle emails/phones
+        for (const email of newEmails) {
+          await dispatch(
+            createContactEmail({
+              type: email.type,
+              email: email.email ?? email.value,
+              contactId: contactToEdit.id,
+              accessToken: accessToken as string,
+            })
+          ).unwrap();
+        }
+        for (const phone of newPhones) {
+          await dispatch(
+            createContactPhone({
+              type: phone.type,
+              phone: phone.phone ?? phone.value,
+              contactId: contactToEdit.id,
+              accessToken: accessToken as string,
+            })
+          ).unwrap();
+        }
+        for (const email of updatedEmails) {
+          await dispatch(
+            updateContactEmail({
+              id: email.id,
+              type: email.type,
+              email: email.email ?? email.value,
+              accessToken: accessToken as string,
+            })
+          ).unwrap();
+        }
+        for (const phone of updatedPhones) {
+          await dispatch(
+            updateContactPhone({
+              id: phone.id,
+              type: phone.type,
+              phone: phone.phone ?? phone.value,
+              accessToken: accessToken as string,
+            })
+          ).unwrap();
         }
 
-        // Use the transformed emails/phones, not the raw ones
-        updateValues.phones = phones;
-        updateValues.emails = emails;
+        // 2. Only send updateContact if NO email/phone was added/updated, but basic info/social links changed
+        if (!hasNewOrUpdatedEmailOrPhone && hasBasicInfoChange) {
+          const updateValues = { ...values } as Partial<typeof values>;
+          if (!updateValues.photoUrl) {
+            delete updateValues.photoUrl;
+          }
+          await dispatch(
+            updateContact({
+              ...updateValues,
+              accessToken,
+              id: contactToEdit.id,
+            })
+          ).unwrap();
+        }
 
-        const updatedContact = await dispatch(
-          updateContact({
-            ...updateValues,
-            accessToken,
-            id: contactToEdit.id,
-          })
-        ).unwrap();
-
+        // If user uploaded a photo, upload it and update the contact
         if (pendingImage) {
           const uploadResult = await dispatch(
             uploadContactImage({
@@ -134,25 +248,34 @@ const CreateContactModal = ({
             })
           ).unwrap();
 
-          const finalUpdatedContact = await dispatch(
+          // Now update only the photoUrl
+          await dispatch(
             updateContact({
-              ...updatedContact,
+              id: contactToEdit.id,
+              boardId: board_id,
               photoUrl: uploadResult.imageUrl,
               accessToken: accessToken as string,
             })
           ).unwrap();
+        }
 
-          if (onContactUpdated) {
-            onContactUpdated(finalUpdatedContact);
-          }
-        } else if (onContactUpdated) {
-          onContactUpdated(updatedContact);
+        // Fetch the updated contact info
+        const value = {
+          contactId: contactToEdit.id,
+          boardId: board_id,
+          accessToken: accessToken as string,
+        };
+        const contactDataArr = await dispatch(getContact(value)).unwrap();
+        updatedContactData = contactDataArr[0] || contactToEdit;
+
+        if (onContactUpdated && updatedContactData) {
+          onContactUpdated(updatedContactData);
         }
 
         cleanupAfterContact(); // Clean up after successful update
       } else {
         // Create new contact (without photoUrl if uploading)
-        const result = await dispatch(createContact(createValues)).unwrap();
+        const result = await dispatch(createContact(values)).unwrap();
         const newContactId = result.id;
 
         // If user uploaded a photo, upload it and update the contact

@@ -61,8 +61,8 @@ export const updateContact = createAsyncThunk(
   async (values: any, thunkAPI) => {
     const {
       id,
-      emails,
-      phones,
+      // emails,
+      // phones,
       boardId,
       comment,
       lastName,
@@ -79,8 +79,8 @@ export const updateContact = createAsyncThunk(
     } = values;
     const body = {
       id: id,
-      emails: emails,
-      phones: phones,
+      // emails: emails,
+      // phones: phones,
       boardId: boardId,
       comment: comment,
       lastName: lastName,

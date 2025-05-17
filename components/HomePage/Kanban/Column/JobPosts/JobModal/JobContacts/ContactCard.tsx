@@ -159,10 +159,10 @@ const ContactCard = ({
   }) => (
     <Link
       target="_blank"
-      href={url || '#'}
+      href={url && url.trim() !== '' ? url : '#'}
       rel="noopener noreferrer"
       className={
-        url
+        url && url.trim() !== ''
           ? 'text-blue-500 hover:cursor-pointer'
           : 'text-gray-400 cursor-not-allowed'
       }
