@@ -1,8 +1,10 @@
 import { useRef, useState } from 'react';
 import { RiCloseLine } from 'react-icons/ri';
 import { HiOutlinePhone } from 'react-icons/hi';
-import { Button } from '@/components/ui/button';
 import { RxEnvelopeClosed, RxChevronDown } from 'react-icons/rx';
+
+import { Button } from '@/components/ui/button';
+import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import {
   Popover,
   PopoverContent,
@@ -26,7 +28,12 @@ interface EmailAndPhoneProps {
   initialType: string;
   contact: 'email' | 'phone';
   returnData: (contact: 'email' | 'phone', id: string) => void;
-  handleChange: (id: string, value: string, type: string, options?: { blur?: boolean }) => void;
+  handleChange: (
+    id: string,
+    value: string,
+    type: string,
+    options?: { blur?: boolean }
+  ) => void;
 }
 
 const EmailAndPhone = ({
@@ -40,6 +47,7 @@ const EmailAndPhone = ({
   const [open, setOpen] = useState(false);
   const [type, setType] = useState(initialType);
   const [inputValue, setInputValue] = useState(value);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleTypeChange = (newType: string) => {
@@ -52,8 +60,17 @@ const EmailAndPhone = ({
     handleChange(id, e.target.value, type);
   };
 
-  const removeContact = () => {
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = () => {
     returnData(contact, id);
+    setShowDeleteModal(false);
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false);
   };
 
   return (
@@ -110,9 +127,23 @@ const EmailAndPhone = ({
               </Command>
             </PopoverContent>
           </Popover>
-          <RiCloseLine
-            onClick={removeContact}
-            className="text-gray-500 hover:cursor-pointer"
+          <AlertDialogModal
+            stylings="p-0 pr-1"
+            buttonVariant="none"
+            buttonCancel="Cancel"
+            buttonConfirm="Delete"
+            open={showDeleteModal}
+            destructiveVariant={true}
+            onOpenChange={setShowDeleteModal}
+            actionFunction={handleConfirmDelete}
+            dialogText={`Are you sure you want to delete this ${contact}?`}
+            dialogTitle={`Delete ${contact === 'email' ? 'Email' : 'Phone'}`}
+            buttonLabel={
+              <RiCloseLine
+                onClick={handleDeleteClick}
+                className="text-gray-500 hover:cursor-pointer hover:bg-red-600 rounded-full p-1 transition duration-300 delay-150 hover:text-white size-6"
+              />
+            }
           />
         </div>
       </div>
