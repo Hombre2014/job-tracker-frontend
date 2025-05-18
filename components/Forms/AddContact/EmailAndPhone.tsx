@@ -141,7 +141,7 @@ const EmailAndPhone = ({
             buttonLabel={
               <RiCloseLine
                 onClick={handleDeleteClick}
-                className="text-gray-500 hover:cursor-pointer"
+                className="text-gray-500 hover:cursor-pointer hover:bg-red-600 rounded-full p-1 transition duration-300 delay-150 hover:text-white size-6"
               />
             }
           />
