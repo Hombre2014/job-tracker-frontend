@@ -15,6 +15,7 @@ import CompaniesInput from './CompaniesInput';
 import { getUser } from '@/redux/user/userThunk';
 import SocialMediaLinks from './SocialMediaLinks';
 import { Textarea } from '@/components/ui/textarea';
+import { cleanupAfterContact } from '@/utils/helpers';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
 import { getBoardsOnly, getBoardWithColumns } from '@/redux/boards/boardsThunk';
@@ -205,7 +206,8 @@ const CreateContactForm = ({
       form.setValue('lastName', contactToEdit.lastName || '');
       form.setValue('firstName', contactToEdit.firstName || '');
     } else {
-      // New contact: reset all state variables
+      // New contact: reset all state variables and cleanup localStorage
+      cleanupAfterContact();
       setEmails([]);
       setPhones([]);
       setCompanies([]);
