@@ -22,6 +22,8 @@ import { getBoardsOnly, getBoardWithColumns } from '@/redux/boards/boardsThunk';
 import {
   updateContactEmail,
   updateContactPhone,
+  deleteContactEmail,
+  deleteContactPhone,
 } from '@/redux/contacts/contactsThunk';
 import {
   createCompany,
@@ -366,13 +368,39 @@ const CreateContactForm = ({
 
   const handleRemoveContactType = (type: 'email' | 'phone', id: string) => {
     if (type === 'email') {
-      setEmails(emails.filter((email) => email.id !== id));
+      // If editing an existing contact and the email exists in backend, delete from backend
+      if (
+        contactToEdit &&
+        contactToEdit.emails &&
+        contactToEdit.emails.some((email) => email.id === id)
+      ) {
+        dispatch(
+          deleteContactEmail({
+            id,
+            accessToken: accessToken as string,
+          })
+        );
+      }
+      // Remove from local state and localStorage
+      setEmails((prev) => prev.filter((email) => email.id !== id));
       localStorage.setItem(
         'emails',
         JSON.stringify(emails.filter((email) => email.id !== id))
       );
     } else if (type === 'phone') {
-      setPhones(phones.filter((phone) => phone.id !== id));
+      if (
+        contactToEdit &&
+        contactToEdit.phones &&
+        contactToEdit.phones.some((phone) => phone.id === id)
+      ) {
+        dispatch(
+          deleteContactPhone({
+            id,
+            accessToken: accessToken as string,
+          })
+        );
+      }
+      setPhones((prev) => prev.filter((phone) => phone.id !== id));
       localStorage.setItem(
         'phones',
         JSON.stringify(phones.filter((phone) => phone.id !== id))
