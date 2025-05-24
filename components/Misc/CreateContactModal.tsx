@@ -223,8 +223,8 @@ const CreateContactModal = ({
           ).unwrap();
         }
 
-        // 2. Only send updateContact if NO email/phone was added/updated, but basic info/social links changed
-        if (!hasNewOrUpdatedEmailOrPhone && hasBasicInfoChange) {
+        // 2. Always update basic info and social links if they changed, regardless of email/phone changes
+        if (hasBasicInfoChange) {
           const updateValues = { ...values } as Partial<typeof values>;
           if (!updateValues.photoUrl) {
             delete updateValues.photoUrl;
