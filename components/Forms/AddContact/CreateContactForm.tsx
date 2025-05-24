@@ -20,15 +20,15 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
 import { getBoardsOnly, getBoardWithColumns } from '@/redux/boards/boardsThunk';
 import {
+  createCompany,
+  getCompanyThatStartsWith,
+} from '@/redux/companies/companiesThunk';
+import {
   updateContactEmail,
   updateContactPhone,
   deleteContactEmail,
   deleteContactPhone,
 } from '@/redux/contacts/contactsThunk';
-import {
-  createCompany,
-  getCompanyThatStartsWith,
-} from '@/redux/companies/companiesThunk';
 import {
   Form,
   FormItem,
@@ -38,14 +38,6 @@ import {
   FormControl,
 } from '@/components/ui/form';
 
-interface CreateContactFormProps {
-  defaultJobPost: boolean;
-  isUserContactsPage?: boolean;
-  contactToEdit?: Contact | null;
-  setPendingImage: (file: File | null) => void;
-  onValidationChange: (isValid: boolean) => void;
-}
-
 const CreateContactForm = ({
   contactToEdit,
   defaultJobPost,
@@ -54,19 +46,23 @@ const CreateContactForm = ({
   isUserContactsPage,
 }: CreateContactFormProps) => {
   const dispatch = useAppDispatch();
-  const [comment, setComment] = useState('');
-  const [location, setLocation] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [photoUrl, setPhotoUrl] = useState('');
-  const [jobTitle, setJobTitle] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [githubUrl, setGithubUrl] = useState('');
-  const [twitterUrl, setTwitterUrl] = useState('');
+  // Replace individual state variables with a single formData state
+  const [formData, setFormData] = useState({
+    comment: '',
+    location: '',
+    lastName: '',
+    jobTitle: '',
+    firstName: '',
+    githubUrl: '',
+    twitterUrl: '',
+    facebookUrl: '',
+    linkedinUrl: '',
+    photoUrl: '/images/Yuriy.jpg',
+  });
+
   const { job_id } = useParams<{ job_id: string }>();
   const user = useAppSelector((state) => state.user);
   const jobs = useAppSelector((state) => state.jobs);
-  const [facebookUrl, setFacebookUrl] = useState('');
-  const [linkedinUrl, setLinkedinUrl] = useState('');
   const { board_id } = useParams<{ board_id: string }>();
   const accessToken = localStorage.getItem('accessToken');
   const [showDropdown, setShowDropdown] = useState(false);
@@ -84,21 +80,14 @@ const CreateContactForm = ({
     { id: string; value: string; type: string }[]
   >([]);
 
-  const [formData, setFormData] = useState({
-    firstName: contactToEdit?.firstName || '',
-    lastName: contactToEdit?.lastName || '',
-    jobTitle: contactToEdit?.jobTitle || '',
-    location: contactToEdit?.location || '',
-    comment: contactToEdit?.comment || '',
-  });
-
   const [hasChanges, setHasChanges] = useState({
-    basicInfo: false, // for firstName, lastName, jobTitle, location, comment
-    emails: new Set<string>(), // store IDs of changed emails
-    phones: new Set<string>(), // store IDs of changed phones
+    basicInfo: false,
+    emails: new Set<string>(),
+    phones: new Set<string>(),
     companies: false,
     socialMedia: false,
   });
+
   const selectedCompanyName = selectedJob?.company.name;
 
   const markFieldChanged = (
@@ -115,32 +104,71 @@ const CreateContactForm = ({
     });
   };
 
-  const handleBasicInfoChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    markFieldChanged('basicInfo');
+  const handleFieldChange = (
+    fieldName: string,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const value = e.target.value;
 
-    // Also update the individual state variables
-    switch (field) {
-      case 'firstName':
-        setFirstName(value);
+    // Update formData state for all fields
+    setFormData((prev) => ({ ...prev, [fieldName]: value }));
+
+    // Mark the field as changed
+    if (
+      ['firstName', 'lastName', 'jobTitle', 'location', 'comment'].includes(
+        fieldName
+      )
+    ) {
+      markFieldChanged('basicInfo');
+    } else if (
+      ['githubUrl', 'twitterUrl', 'facebookUrl', 'linkedinUrl'].includes(
+        fieldName
+      )
+    ) {
+      markFieldChanged('socialMedia');
+    }
+
+    // Update localStorage as needed
+    switch (fieldName) {
+      case 'githubUrl':
+        localStorage.setItem(
+          'githubUrl',
+          value ? `https://github.com/${value}` : ''
+        );
         break;
-      case 'lastName':
-        setLastName(value);
+      case 'twitterUrl':
+        localStorage.setItem(
+          'twitterUrl',
+          value ? `https://twitter.com/${value}` : ''
+        );
         break;
-      case 'jobTitle':
-        setJobTitle(value);
+      case 'facebookUrl':
+        localStorage.setItem(
+          'facebookUrl',
+          value ? `https://facebook.com/${value}` : ''
+        );
         break;
-      case 'location':
-        setLocation(value);
+      case 'linkedinUrl':
+        localStorage.setItem(
+          'linkedinUrl',
+          value ? `https://linkedin.com/in/${value}` : ''
+        );
         break;
-      case 'comment':
-        setComment(value);
+      default:
+        localStorage.setItem(fieldName, value);
         break;
+    }
+
+    // Set form values for required fields
+    if (fieldName === 'firstName' || fieldName === 'lastName') {
+      form.setValue(fieldName, value);
     }
   };
 
+  // Load contact data or reset form
   useEffect(() => {
     if (contactToEdit) {
+      // Extract data from contactToEdit
       const twitterHandle = contactToEdit.twitterUrl
         ? contactToEdit.twitterUrl.split('/').pop()
         : '';
@@ -153,7 +181,22 @@ const CreateContactForm = ({
       const linkedinHandle = contactToEdit.linkedinUrl
         ? contactToEdit.linkedinUrl.split('/').pop()
         : '';
-      // Populate form fields with contact data
+
+      // Update formData state with all contact info
+      setFormData({
+        githubUrl: githubHandle || '',
+        twitterUrl: twitterHandle || '',
+        facebookUrl: facebookHandle || '',
+        linkedinUrl: linkedinHandle || '',
+        comment: contactToEdit.comment || '',
+        lastName: contactToEdit.lastName || '',
+        jobTitle: contactToEdit.jobTitle || '',
+        location: contactToEdit.location || '',
+        firstName: contactToEdit.firstName || '',
+        photoUrl: contactToEdit.photoUrl || '/images/Yuriy.jpg',
+      });
+
+      // Populate localStorage with contact data
       localStorage.setItem('githubUrl', githubHandle || '');
       localStorage.setItem('twitterUrl', twitterHandle || '');
       localStorage.setItem('facebookUrl', facebookHandle || '');
@@ -194,36 +237,25 @@ const CreateContactForm = ({
       setCompanies(companyNames);
       setEmails(transformedEmails);
       setPhones(transformedPhones);
-      setGithubUrl(githubHandle || '');
-      setTwitterUrl(twitterHandle || '');
-      setFacebookUrl(facebookHandle || '');
-      setLinkedinUrl(linkedinHandle || '');
-      setComment(contactToEdit.comment || '');
-      setLastName(contactToEdit.lastName || '');
-      setJobTitle(contactToEdit.jobTitle || '');
-      setLocation(contactToEdit.location || '');
-      setPhotoUrl(contactToEdit.photoUrl || '/images/Yuriy.jpg');
-      setFirstName(contactToEdit.firstName || '');
-
-      form.setValue('lastName', contactToEdit.lastName || '');
-      form.setValue('firstName', contactToEdit.firstName || '');
     } else {
-      // New contact: reset all state variables and cleanup localStorage
+      // New contact: reset form
       cleanupAfterContact();
+      setFormData({
+        comment: '',
+        lastName: '',
+        jobTitle: '',
+        location: '',
+        firstName: '',
+        githubUrl: '',
+        twitterUrl: '',
+        facebookUrl: '',
+        linkedinUrl: '',
+        photoUrl: '/images/Yuriy.jpg',
+      });
       setEmails([]);
       setPhones([]);
       setCompanies([]);
       setCompanyIds([]);
-      setFirstName('');
-      setLastName('');
-      setJobTitle('');
-      setLocation('');
-      setComment('');
-      setPhotoUrl('/images/Yuriy.jpg');
-      setGithubUrl('');
-      setTwitterUrl('');
-      setFacebookUrl('');
-      setLinkedinUrl('');
       setPreviewImageUrl(null);
     }
   }, [contactToEdit]);
@@ -408,68 +440,6 @@ const CreateContactForm = ({
     }
   };
 
-  const handleFieldChange = (
-    fieldName: string,
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const value = e.target.value;
-    handleBasicInfoChange(fieldName, value);
-    switch (fieldName) {
-      case 'githubUrl':
-        setGithubUrl(value);
-        localStorage.setItem(
-          'githubUrl',
-          value ? `https://github.com/${value}` : ''
-        );
-        break;
-      case 'twitterUrl':
-        setTwitterUrl(value);
-        localStorage.setItem(
-          'twitterUrl',
-          value ? `https://twitter.com/${value}` : ''
-        );
-        break;
-      case 'facebookUrl':
-        setFacebookUrl(value);
-        localStorage.setItem(
-          'facebookUrl',
-          value ? `https://facebook.com/${value}` : ''
-        );
-        break;
-      case 'linkedinUrl':
-        setLinkedinUrl(value);
-        localStorage.setItem(
-          'linkedinUrl',
-          value ? `https://linkedin.com/in/${value}` : ''
-        );
-        break;
-      case 'lastName':
-        setLastName(value as string);
-        form.setValue('lastName', value);
-        localStorage.setItem('lastName', value);
-        break;
-      case 'firstName':
-        setFirstName(value as string);
-        form.setValue('firstName', value);
-        localStorage.setItem('firstName', value);
-        break;
-      case 'location':
-        setLocation(value);
-        localStorage.setItem('location', value);
-        break;
-      case 'jobTitle':
-        setJobTitle(value);
-        localStorage.setItem('jobTitle', value);
-        break;
-      case 'comment':
-        setComment(value);
-        localStorage.setItem('comment', value);
-        break;
-      default:
-        break;
-    }
-  };
-
   const handleAddEmail = () => {
     setEmails([...emails, { id: uuidv4(), value: '', type: 'WORK' }]);
   };
@@ -478,11 +448,11 @@ const CreateContactForm = ({
     setPhones([...phones, { id: uuidv4(), value: '', type: 'WORK' }]);
   };
 
-  const isValidEmail = (email: string) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  // const isValidEmail = (email: string) =>
+  //   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const isValidPhone = (phone: string) =>
-    /^\+?\d{10,}$/.test(phone.replace(/\D/g, '')); // simple check: 10+ digits
+  // const isValidPhone = (phone: string) =>
+  //   /^\+?\d{10,}$/.test(phone.replace(/\D/g, '')); // simple check: 10+ digits
 
   const handleEmailChange = (id: string, value: string, type: string) => {
     setEmails((prev) => {
@@ -662,9 +632,9 @@ const CreateContactForm = ({
                             <Image
                               width={50}
                               height={50}
-                              src={photoUrl || '/images/Yuriy.jpg'}
                               alt="User profile picture"
                               className="cursor-pointer rounded-lg"
+                              src={formData.photoUrl || '/images/Yuriy.jpg'}
                             />
                           )}
                           <input
@@ -698,8 +668,8 @@ const CreateContactForm = ({
                         </span>
                         <Input
                           {...field}
-                          value={firstName}
                           placeholder="First Name"
+                          value={formData.firstName}
                           className="focus:border-blue-500"
                           onChange={(e) => handleFieldChange('firstName', e)}
                         />
@@ -722,8 +692,8 @@ const CreateContactForm = ({
                         </span>
                         <Input
                           {...field}
-                          value={lastName}
                           placeholder="Last Name"
+                          value={formData.lastName}
                           className="focus:border-blue-500"
                           onChange={(e) => handleFieldChange('lastName', e)}
                         />
@@ -743,8 +713,8 @@ const CreateContactForm = ({
                         </FormLabel>
                         <Input
                           {...field}
-                          value={jobTitle}
                           placeholder="i.e: CEO"
+                          value={formData.jobTitle}
                           className="focus:border-blue-500"
                           onChange={(e) => handleFieldChange('jobTitle', e)}
                         />
@@ -788,7 +758,7 @@ const CreateContactForm = ({
                           </FormLabel>
                           <Input
                             {...field}
-                            value={location}
+                            value={formData.location}
                             placeholder="New York, NY, USA"
                             className="focus:border-blue-500"
                             onChange={(e) => handleFieldChange('location', e)}
@@ -809,7 +779,7 @@ const CreateContactForm = ({
                         <FormControl>
                           <Textarea
                             {...field}
-                            value={comment}
+                            value={formData.comment}
                             placeholder="Any comment about the contact"
                             className="resize-none focus:border-blue-500"
                             onChange={(e) => handleFieldChange('comment', e)}
@@ -905,10 +875,10 @@ const CreateContactForm = ({
                   )}
                 />
                 <SocialMediaLinks
-                  githubUrl={githubUrl}
-                  twitterUrl={twitterUrl}
-                  linkedinUrl={linkedinUrl}
-                  facebookUrl={facebookUrl}
+                  githubUrl={formData.githubUrl}
+                  twitterUrl={formData.twitterUrl}
+                  linkedinUrl={formData.linkedinUrl}
+                  facebookUrl={formData.facebookUrl}
                   handleFieldChange={handleFieldChange}
                 />
               </div>

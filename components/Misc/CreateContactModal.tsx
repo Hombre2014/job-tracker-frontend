@@ -20,19 +20,6 @@ import {
   assignContactToJobPost,
 } from '@/redux/contacts/contactsThunk';
 
-interface CreateContactModalProps {
-  showButton: boolean;
-  isVisible?: boolean;
-  buttonLabel?: string;
-  dialogTitle?: string;
-  onClose?: () => void;
-  buttonConfirm?: string;
-  userContactsPage?: boolean;
-  onContactCreated?: () => void;
-  contactToEdit?: Contact | null;
-  onContactUpdated?: (updatedContact: Contact) => void;
-}
-
 const CreateContactModal = ({
   onClose,
   isVisible,
