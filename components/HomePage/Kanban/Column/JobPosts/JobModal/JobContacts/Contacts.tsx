@@ -31,40 +31,39 @@ const Contacts = () => {
   const jobPostContacts = jobs.jobPosts.find(
     (job) => job.id === job_id
   )?.contacts;
-
   const handleContactUpdated = (updatedContact: Contact) => {
+    // First update local state
     setContacts((prevContacts) =>
       prevContacts.map((contact) =>
         contact.id === updatedContact.id ? updatedContact : contact
       )
     );
+    
+    // Then refresh data from the backend
+    refreshContacts();
   };
-
   const refreshContacts = useCallback(async () => {
     try {
       const columnId = localStorage.getItem('columnId');
       if (columnId) {
-        setTimeout(async () => {
-          await dispatch(
-            getAllJobPostsPerColumn({
-              accessToken,
-              columnId,
-            })
-          ).unwrap();
-        }, 100);
+        console.log('Refreshing contacts for job application...');
+        // Remove the setTimeout to ensure immediate refresh
+        const response = await dispatch(
+          getAllJobPostsPerColumn({
+            accessToken,
+            columnId,
+          })
+        ).unwrap();
+        
+        console.log('Job posts refreshed:', response);
       }
     } catch (error) {
       console.error('Error refreshing contacts:', error);
     }
   }, [dispatch, accessToken]);
-
   const handleContactDeleted = () => {
-    dispatch(
-      getAllJobPostsPerColumn({
-        accessToken,
-        columnId: localStorage.getItem('columnId') as string,
-      })
-    );
+    // Refresh data from the backend
+    refreshContacts();
   };
 
   return numberOfContactsPerJob === 0 ? (
@@ -103,10 +102,13 @@ const Contacts = () => {
         />
         <Button variant="outline">+ Link contact</Button>
       </div>
-      <div className="flex flex-wrap gap-4 overflow-y-auto h-[506px]">
-        {jobPostContacts?.map((contact) => (
+      <div className="flex flex-wrap gap-4 overflow-y-auto h-[506px]">        {jobPostContacts?.map((contact) => (
           <div key={contact.id} className="">
-            <ContactCard contact={contact} onDelete={handleContactDeleted} />
+            <ContactCard 
+              contact={contact} 
+              onDelete={handleContactDeleted}
+              onUpdate={handleContactUpdated}
+            />
           </div>
         ))}
       </div>

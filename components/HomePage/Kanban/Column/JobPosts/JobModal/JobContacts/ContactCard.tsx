@@ -25,12 +25,13 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 
-const ContactCard = ({
-  contact,
+const ContactCard = ({  contact,
   onDelete,
+  onUpdate,
 }: {
   contact: Contact;
   onDelete: (id: string) => void;
+  onUpdate?: (updatedContact: Contact) => void;
 }) => {
   const params = useParams();
   const contactId = contact.id;
@@ -66,6 +67,10 @@ const ContactCard = ({
     if (companyNames.length === 0) return 'none';
     return formatTextWithEllipsis(companyNames.join(', '));
   }, [companyNames, formatTextWithEllipsis]);
+  // Update local state when contact prop changes
+  useEffect(() => {
+    setContactWithCompanies(contact);
+  }, [contact]);
 
   useEffect(() => {
     const getCurrentContact = async () => {
@@ -277,12 +282,21 @@ const ContactCard = ({
         showButton={false}
         buttonConfirm="Update"
         userContactsPage={false}
-        buttonLabel="Edit Contact"
-        dialogTitle="Edit Contact"
+        buttonLabel="Edit Contact"        dialogTitle="Edit Contact"
         isVisible={showContactModal}
         contactToEdit={contactWithCompanies}
         onClose={() => setShowContactModal(false)}
-        onContactUpdated={() => onDelete(contact.id)}
+        onContactUpdated={(updatedContact) => {
+          // Call onUpdate if provided, otherwise remove and refetch
+          if (onUpdate) {
+            // Update local state first for immediate UI update
+            setContactWithCompanies(updatedContact);
+            // Then call parent component's update function
+            onUpdate(updatedContact);
+          } else {
+            onDelete(contact.id);
+          }
+        }}
       />
     </div>
   );
