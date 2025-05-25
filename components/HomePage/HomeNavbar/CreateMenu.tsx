@@ -12,6 +12,8 @@ import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
 import {
   createContact,
+  updateContact,
+  uploadContactImage,
   assignContactToJobPost,
   getAllContactsPerBoard,
 } from '@/redux/contacts/contactsThunk';
@@ -34,6 +36,7 @@ const CreateMenu = () => {
   const [showJobModal, setShowJobModal] = useState(false);
   const isContactsPage = pathname?.includes('/home/contacts');
   const [showContactModal, setShowContactModal] = useState(false);
+  const [pendingImage, setPendingImage] = useState<File | null>(null);
 
   const createJobApplication = () => {
     if (!isFormValid) return;
@@ -56,13 +59,40 @@ const CreateMenu = () => {
 
     cleanupAfterJobPost();
   };
-
   const createNewContact = async () => {
     if (!isFormValid) return;
 
     setShowContactModal(false);
 
+    // Get raw emails/phones from localStorage
+    const rawEmails = JSON.parse(localStorage.getItem('emails') || '[]');
+    const rawPhones = JSON.parse(localStorage.getItem('phones') || '[]');
+
+    // Transform to backend format for create
+    const emails = rawEmails
+      .filter((e: any) => e.value || e.email)
+      .map((e: any) => ({
+        id: e.id,
+        type: e.type,
+        email: e.email ?? e.value,
+      }));
+    const phones = rawPhones
+      .filter((p: any) => p.value || p.phone)
+      .map((p: any) => ({
+        id: p.id,
+        type: p.type,
+        phone: p.phone ?? p.value,
+      }));
+
+    // Convert empty social media links to null
+    const githubUrl = localStorage.getItem('githubUrl') || null;
+    const twitterUrl = localStorage.getItem('twitterUrl') || null;
+    const linkedinUrl = localStorage.getItem('linkedinUrl') || null;
+    const facebookUrl = localStorage.getItem('facebookUrl') || null;
+
     const values = {
+      emails,
+      phones,
       accessToken,
       boardId: board_id,
       comment: localStorage.getItem('comment'),
@@ -71,19 +101,36 @@ const CreateMenu = () => {
       location: localStorage.getItem('location'),
       photoUrl: localStorage.getItem('photoUrl'),
       firstName: localStorage.getItem('firstName'),
-      githubUrl: localStorage.getItem('githubUrl'),
-      twitterUrl: localStorage.getItem('twitterUrl'),
-      linkedinUrl: localStorage.getItem('linkedinUrl'),
-      facebookUrl: localStorage.getItem('facebookUrl'),
-      emails: JSON.parse(localStorage.getItem('emails') || '[]'),
-      phones: JSON.parse(localStorage.getItem('phones') || '[]'),
+      githubUrl: githubUrl === '' ? null : githubUrl,
+      twitterUrl: twitterUrl === '' ? null : twitterUrl,
+      linkedinUrl: linkedinUrl === '' ? null : linkedinUrl,
+      facebookUrl: facebookUrl === '' ? null : facebookUrl,
       companyIds: JSON.parse(localStorage.getItem('companyIds') || '[]'),
     };
-
     try {
       const result = await dispatch(createContact(values)).unwrap();
       const newContactId = result.id;
       localStorage.setItem('contactId', newContactId);
+
+      // If user uploaded a photo, upload it and update the contact
+      if (pendingImage) {
+        const uploadImageResult = await dispatch(
+          uploadContactImage({
+            file: pendingImage,
+            contactId: newContactId,
+            accessToken: accessToken as string,
+          })
+        ).unwrap();
+
+        await dispatch(
+          updateContact({
+            id: newContactId,
+            boardId: board_id,
+            photoUrl: uploadImageResult.imageUrl,
+            accessToken: accessToken as string,
+          })
+        ).unwrap();
+      }
 
       // Get job posts connected to contact from localStorage
       const jobsConnectedToContact = JSON.parse(
@@ -102,17 +149,13 @@ const CreateMenu = () => {
             await dispatch(assignContactToJobPost(assignData)).unwrap();
           })
         );
-      }
-
-      // Fetch all contacts for the board
+      } // Fetch all contacts for the board
       await dispatch(
         getAllContactsPerBoard({ accessToken, boardId: board_id })
       ).unwrap();
 
-      // If we're on the contacts page, force a refresh by navigating to the same route
-      if (pathname.includes('/contacts')) {
-        router.refresh();
-      }
+      // Redirect to the contacts page to show the newly created contact
+      router.push(`/home/boards/${board_id}/contacts`);
 
       // Clear local storage
       cleanupAfterContact();
@@ -199,6 +242,7 @@ const CreateMenu = () => {
         >
           <CreateContactForm
             defaultJobPost={false}
+            setPendingImage={setPendingImage}
             isUserContactsPage={isContactsPage}
             onValidationChange={setIsFormValid}
           />

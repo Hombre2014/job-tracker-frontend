@@ -25,15 +25,19 @@ const BoardContacts = () => {
       console.error('Error fetching board contacts:', error);
     }
   }, [dispatch, accessToken, board_id]);
-
   useEffect(() => {
+    fetchBoardContacts();
+  }, [fetchBoardContacts]);
+
+  // Function to handle updates to contacts list
+  const handleContactUpdate = useCallback(() => {
     fetchBoardContacts();
   }, [fetchBoardContacts]);
 
   return (
     <ContactsList
       contacts={allBoardContacts}
-      refetchContacts={fetchBoardContacts}
+      refetchContacts={handleContactUpdate}
     />
   );
 };

@@ -120,10 +120,17 @@ const ContactsList = ({
   useEffect(() => {
     console.log('Updated contactsWithBoardIds:', contactsWithBoardIds); // Debug log
   }, [contactsWithBoardIds]);
-
   const handleContactDeleted = (deletedContactId: string) => {
     setContactsWithBoardIds((prevContacts) =>
       prevContacts.filter((contact) => contact.id !== deletedContactId)
+    );
+  };
+
+  const handleContactUpdated = (updatedContact: Contact) => {
+    setContactsWithBoardIds((prevContacts) =>
+      prevContacts.map((contact) =>
+        contact.id === updatedContact.id ? updatedContact : contact
+      )
     );
   };
 
@@ -174,11 +181,14 @@ const ContactsList = ({
         </div>
       )}
 
-      {!isLoading && !error && contactsWithBoardIds.length > 0 && (
-        <div className="w-full flex flex-wrap items-center justify-start gap-4 max-h-[80vh] overflow-y-auto">
+      {!isLoading && !error && contactsWithBoardIds.length > 0 && (        <div className="w-full flex flex-wrap items-center justify-start gap-4 max-h-[80vh] overflow-y-auto">
           {contactsWithBoardIds.map((contact) => (
             <div key={contact.id}>
-              <ContactCard contact={contact} onDelete={handleContactDeleted} />
+              <ContactCard 
+                contact={contact} 
+                onDelete={handleContactDeleted}
+                onUpdate={handleContactUpdated} 
+              />
             </div>
           ))}
         </div>
