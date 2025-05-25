@@ -20,19 +20,6 @@ import {
   assignContactToJobPost,
 } from '@/redux/contacts/contactsThunk';
 
-interface CreateContactModalProps {
-  showButton: boolean;
-  isVisible?: boolean;
-  buttonLabel?: string;
-  dialogTitle?: string;
-  onClose?: () => void;
-  buttonConfirm?: string;
-  userContactsPage?: boolean;
-  onContactCreated?: () => void;
-  contactToEdit?: Contact | null;
-  onContactUpdated?: (updatedContact: Contact) => void;
-}
-
 const CreateContactModal = ({
   onClose,
   isVisible,
@@ -223,8 +210,8 @@ const CreateContactModal = ({
           ).unwrap();
         }
 
-        // 2. Only send updateContact if NO email/phone was added/updated, but basic info/social links changed
-        if (!hasNewOrUpdatedEmailOrPhone && hasBasicInfoChange) {
+        // 2. Always update basic info and social links if they changed, regardless of email/phone changes
+        if (hasBasicInfoChange) {
           const updateValues = { ...values } as Partial<typeof values>;
           if (!updateValues.photoUrl) {
             delete updateValues.photoUrl;

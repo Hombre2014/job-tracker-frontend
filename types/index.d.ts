@@ -66,6 +66,27 @@ type Contact = {
   jobApplications: JobApplication[];
 };
 
+interface CreateContactModalProps {
+  showButton: boolean;
+  isVisible?: boolean;
+  buttonLabel?: string;
+  dialogTitle?: string;
+  onClose?: () => void;
+  buttonConfirm?: string;
+  userContactsPage?: boolean;
+  onContactCreated?: () => void;
+  contactToEdit?: Contact | null;
+  onContactUpdated?: (updatedContact: Contact) => void;
+}
+
+interface CreateContactFormProps {
+  defaultJobPost: boolean;
+  isUserContactsPage?: boolean;
+  contactToEdit?: Contact | null;
+  setPendingImage: (file: File | null) => void;
+  onValidationChange: (isValid: boolean) => void;
+}
+
 interface ContactsListProps {
   contacts: Contact[];
   refetchContacts?: () => void;
