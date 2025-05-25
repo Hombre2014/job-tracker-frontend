@@ -16,6 +16,7 @@ import {
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import CreateContactModal from '@/components/Misc/CreateContactModal';
 import { deleteContact, getContact } from '@/redux/contacts/contactsThunk';
+import { getBoardsOnly } from '@/redux/boards/boardsThunk';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import {
   DropdownMenu,
@@ -25,7 +26,8 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 
-const ContactCard = ({  contact,
+const ContactCard = ({
+  contact,
   onDelete,
   onUpdate,
 }: {
@@ -33,6 +35,7 @@ const ContactCard = ({  contact,
   onDelete: (id: string) => void;
   onUpdate?: (updatedContact: Contact) => void;
 }) => {
+  // Get a reliable board_id - first check URL params, then contact itself, then look for board object
   const params = useParams();
   const contactId = contact.id;
   const dispatch = useAppDispatch();
@@ -42,11 +45,20 @@ const ContactCard = ({  contact,
   const { firstName, lastName } = useAppSelector((state) => state.user);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
   const [contactWithCompanies, setContactWithCompanies] = useState(contact);
+  // Try to get board_id from multiple sources, prioritizing the most reliable
   const board_id = params.board_id
     ? Array.isArray(params.board_id)
       ? params.board_id[0]
       : params.board_id
-    : undefined;
+    : undefined; // Don't set a default here - we'll prioritize the contact's own boardId
+
+  // Ensure the contact has a boardId property (for when editing from main contacts page)
+  useEffect(() => {
+    if (contact && !contact.boardId) {
+      // If the contact does not have a boardId, you may want to handle this case
+      // For now, we just leave it as is, or you can set a default/fallback if needed
+    }
+  }, [contact]);
 
   // Memoized formatter functions for better performance
   const formatTextWithEllipsis = useCallback((text: string, maxLength = 24) => {
@@ -71,10 +83,11 @@ const ContactCard = ({  contact,
   useEffect(() => {
     setContactWithCompanies(contact);
   }, [contact]);
-
   useEffect(() => {
     const getCurrentContact = async () => {
       try {
+        // Initialize effectiveBoardId with the current board_id we have
+        let effectiveBoardId = board_id;
         // Option 1: If companies data is already available in the contact, use it
         if (contact.companies && contact.companies.length > 0) {
           const names = contact.companies.map(
@@ -95,12 +108,28 @@ const ContactCard = ({  contact,
             setCompanyNames(Array.from(new Set(companiesFromJobs)));
             return;
           }
+        } // Option 3: Try to get contact details with boardId
+        // If we don't have a board_id yet, try to find one from the boards
+        if (!effectiveBoardId) {
+          try {
+            // Try to fetch the first board as default
+            const boards = await dispatch(
+              getBoardsOnly(accessToken as string)
+            ).unwrap();
+            if (boards && boards.length > 0) {
+              // Sort by creation date to get the first created board
+              const sortedBoards = [...boards].sort(
+                (a, b) =>
+                  new Date(a.createdAt).getTime() -
+                  new Date(b.createdAt).getTime()
+              );
+              // Use the first board (likely "Job Search YYYY")
+              effectiveBoardId = sortedBoards[0].id;
+            }
+          } catch (boardError) {
+            console.error('Error fetching default board:', boardError);
+          }
         }
-
-        // Option 3: Use board_id if available
-        // Find a valid board ID from any available source
-        const effectiveBoardId =
-          board_id || contact.boardId || (contact as any).board?.id;
 
         // Only proceed with API call if we have a boardId
         if (effectiveBoardId) {
@@ -277,12 +306,13 @@ const ContactCard = ({  contact,
             Created by {firstName} {lastName}
           </p>
         </div>
-      </div>
+      </div>{' '}
       <CreateContactModal
         showButton={false}
         buttonConfirm="Update"
-        userContactsPage={false}
-        buttonLabel="Edit Contact"        dialogTitle="Edit Contact"
+        userContactsPage={!board_id} // If no board_id in URL, we're on main contacts page
+        buttonLabel="Edit Contact"
+        dialogTitle="Edit Contact"
         isVisible={showContactModal}
         contactToEdit={contactWithCompanies}
         onClose={() => setShowContactModal(false)}

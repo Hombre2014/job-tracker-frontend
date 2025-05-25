@@ -5,7 +5,7 @@ import { useParams, useRouter, usePathname } from 'next/navigation';
 
 import { useAppDispatch } from '@/redux/hooks';
 import { createJobPost } from '@/redux/jobs/jobsThunk';
-import { getBoards } from '@/redux/boards/boardsThunk';
+import { getBoards, getBoardsOnly } from '@/redux/boards/boardsThunk';
 import { cleanupAfterContact, cleanupAfterJobPost } from '@/utils/helpers';
 import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
@@ -82,19 +82,37 @@ const CreateMenu = () => {
         id: p.id,
         type: p.type,
         phone: p.phone ?? p.value,
-      }));
-
-    // Convert empty social media links to null
+      }));    // Convert empty social media links to null
     const githubUrl = localStorage.getItem('githubUrl') || null;
     const twitterUrl = localStorage.getItem('twitterUrl') || null;
     const linkedinUrl = localStorage.getItem('linkedinUrl') || null;
     const facebookUrl = localStorage.getItem('facebookUrl') || null;
 
+    // Get the boardId - if no board_id is available, fetch default board
+    let effectiveBoardId = board_id;
+    if (!effectiveBoardId) {
+      try {
+        // Get all boards and use the first one (default "Job Search" board)
+        const boards = await dispatch(getBoardsOnly(accessToken as string)).unwrap();
+        if (boards && boards.length > 0) {
+          // Sort by creation date to get the first created board
+          const sortedBoards = [...boards].sort((a, b) => 
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+          // Use the first board (likely "Job Search YYYY")
+          effectiveBoardId = sortedBoards[0].id;
+          console.log('Using default board:', sortedBoards[0].name, 'with ID:', effectiveBoardId);
+        }
+      } catch (error) {
+        console.error('Error fetching default board:', error);
+      }
+    }
+
     const values = {
       emails,
       phones,
       accessToken,
-      boardId: board_id,
+      boardId: effectiveBoardId,
       comment: localStorage.getItem('comment'),
       jobTitle: localStorage.getItem('jobTitle'),
       lastName: localStorage.getItem('lastName'),

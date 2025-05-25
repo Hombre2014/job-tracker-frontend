@@ -298,8 +298,7 @@ const CreateContactForm = ({
           const result = await dispatch(
             getAllJobPostsPerColumn(jobPostsData)
           ).unwrap();
-          setAllJobPosts(result);
-        } else if (isUserContactsPage) {
+          setAllJobPosts(result);        } else if (isUserContactsPage) {
           // Case 3: From User's Contacts page - fetch jobs from all boards
           const boardsResponse = await dispatch(
             getBoardsOnly(accessToken as string)
@@ -331,13 +330,34 @@ const CreateContactForm = ({
             new Map(allJobsArrays.flat().map((job) => [job.id, job])).values()
           );
 
-          setAllJobPosts(uniqueJobs);
-        } else {
+          setAllJobPosts(uniqueJobs);        } else {
           // Case 2: From Board's Contacts page - fetch jobs from current board
+          // If board_id is undefined (editing from main contacts page), use the first board
+          let effectiveBoardId = board_id;
+          if (!effectiveBoardId) {
+            try {
+              // Get all boards and use the first one (default "Job Search" board)
+              const boards = await dispatch(getBoardsOnly(accessToken as string)).unwrap();
+              if (boards && boards.length > 0) {
+                // Sort by creation date to get the first created board
+                const sortedBoards = [...boards].sort((a, b) => 
+                  new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                );
+                // Use the first board (likely "Job Search YYYY")
+                effectiveBoardId = sortedBoards[0].id;
+                console.log('Using default board for jobs fetch:', sortedBoards[0].name, 'with ID:', effectiveBoardId);
+              }
+            } catch (error) {
+              console.error('Error fetching default board for jobs:', error);
+              // Return early if we can't get a default board
+              return;
+            }
+          }
+          
           const boardData = await dispatch(
             getBoardWithColumns({
               accessToken,
-              boardId: board_id,
+              boardId: effectiveBoardId,
             })
           ).unwrap();
 
