@@ -168,7 +168,6 @@ const CreateContactModal = ({
       updatedPhones.length > 0;
 
     // Check if basic info/social links changed
-    console.log('Contact to edit:', contactToEdit);
     if (contactToEdit) {
       const fieldsToCheck: (keyof Contact)[] = [
         'comment',
@@ -188,12 +187,11 @@ const CreateContactModal = ({
           values[field as keyof typeof values] !== contactToEdit[field]
         ) {
           hasBasicInfoChange = true;
-          console.log('hasBasicInfoChange: ', hasBasicInfoChange);
           break;
         }
       }
 
-      // Check companyIds
+      // Check if companyIds changed
       const prevCompanyIds = (contactToEdit.companies || [])
         .map((c) => c.id)
         .sort();
@@ -279,7 +277,9 @@ const CreateContactModal = ({
               contactId: contactToEdit.id,
               accessToken: accessToken as string,
             })
-          ).unwrap(); // Now update only the photoUrl - use the effectiveBoardId here too
+          ).unwrap();
+
+          // Now update only the photoUrl - use the effectiveBoardId here too
           // Ensure we use the contact's own boardId if available
           const updateBoardId = contactToEdit.boardId || effectiveBoardId;
 
