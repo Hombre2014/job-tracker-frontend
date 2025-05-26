@@ -93,12 +93,6 @@ const CreateContactModal = ({
           );
           // Use the first board (likely "Job Search YYYY")
           effectiveBoardId = sortedBoards[0].id;
-          console.log(
-            'Using default board:',
-            sortedBoards[0].name,
-            'with ID:',
-            effectiveBoardId
-          );
         }
       } catch (error) {
         console.error('Error fetching default board:', error);
@@ -198,6 +192,18 @@ const CreateContactModal = ({
           break;
         }
       }
+
+      // Check companyIds
+      const prevCompanyIds = (contactToEdit.companies || [])
+        .map((c) => c.id)
+        .sort();
+      const newCompanyIds = (values.companyIds || []).slice().sort();
+      if (
+        prevCompanyIds.length !== newCompanyIds.length ||
+        prevCompanyIds.some((id, idx) => id !== newCompanyIds[idx])
+      ) {
+        hasBasicInfoChange = true;
+      }
     }
 
     let updatedContactData = contactToEdit;
@@ -289,7 +295,6 @@ const CreateContactModal = ({
 
         // Fetch the updated contact info - prioritize using the contact's own boardId
         const contactBoardId = contactToEdit.boardId || effectiveBoardId;
-        console.log('Fetching updated contact with boardId:', contactBoardId);
 
         const value = {
           contactId: contactToEdit.id,
