@@ -3,8 +3,7 @@ import { useState, useEffect } from 'react';
 import { BsThreeDots } from 'react-icons/bs';
 
 import ComboJobsBox from './ComboJobsBox';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { getAllJobPostsPerBoard } from '@/redux/jobs/jobsThunk';
+import { useAppDispatch } from '@/redux/hooks';
 import { getBoardWithColumns } from '@/redux/boards/boardsThunk';
 import {
   DropdownMenu,

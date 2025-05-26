@@ -69,27 +69,36 @@ const CreateContactModal = ({
         id: p.id,
         type: p.type,
         phone: p.phone ?? p.value,
-      }));    // Get the boardId - if we're on the main contacts page (no board_id), fetch default board
+      }));
+
+    // Get the boardId - if we're on the main contacts page (no board_id), fetch default board
     let effectiveBoardId = board_id;
-    
+
     // If we're editing an existing contact, prioritize using its boardId
     if (contactToEdit && contactToEdit.boardId) {
-      console.log('Using contact\'s own boardId:', contactToEdit.boardId);
       effectiveBoardId = contactToEdit.boardId;
-    } 
+    }
     // Otherwise, if we're on the main contacts page and need to create/update a contact, get a default board
     else if (!effectiveBoardId && userContactsPage) {
       try {
         // Get all boards and use the first one (default "Job Search" board)
-        const boards = await dispatch(getBoardsOnly(accessToken as string)).unwrap();
+        const boards = await dispatch(
+          getBoardsOnly(accessToken as string)
+        ).unwrap();
         if (boards && boards.length > 0) {
           // Sort by creation date to get the first created board
-          const sortedBoards = [...boards].sort((a, b) => 
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          const sortedBoards = [...boards].sort(
+            (a, b) =>
+              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
           );
           // Use the first board (likely "Job Search YYYY")
           effectiveBoardId = sortedBoards[0].id;
-          console.log('Using default board:', sortedBoards[0].name, 'with ID:', effectiveBoardId);
+          console.log(
+            'Using default board:',
+            sortedBoards[0].name,
+            'with ID:',
+            effectiveBoardId
+          );
         }
       } catch (error) {
         console.error('Error fetching default board:', error);
@@ -165,6 +174,7 @@ const CreateContactModal = ({
       updatedPhones.length > 0;
 
     // Check if basic info/social links changed
+    console.log('Contact to edit:', contactToEdit);
     if (contactToEdit) {
       const fieldsToCheck: (keyof Contact)[] = [
         'comment',
@@ -184,6 +194,7 @@ const CreateContactModal = ({
           values[field as keyof typeof values] !== contactToEdit[field]
         ) {
           hasBasicInfoChange = true;
+          console.log('hasBasicInfoChange: ', hasBasicInfoChange);
           break;
         }
       }
@@ -233,16 +244,18 @@ const CreateContactModal = ({
               accessToken: accessToken as string,
             })
           ).unwrap();
-        }        // 2. Always update basic info and social links if they changed, regardless of email/phone changes
+        }
+
+        // 2. Always update basic info and social links if they changed, regardless of email/phone changes
         if (hasBasicInfoChange) {
           const updateValues = { ...values } as Partial<typeof values>;
           if (!updateValues.photoUrl) {
             delete updateValues.photoUrl;
           }
-          
+
           // Make sure we have a valid boardId from the contact itself or the one we calculated
           updateValues.boardId = contactToEdit.boardId || effectiveBoardId;
-          
+
           await dispatch(
             updateContact({
               ...updateValues,
@@ -260,10 +273,10 @@ const CreateContactModal = ({
               contactId: contactToEdit.id,
               accessToken: accessToken as string,
             })
-          ).unwrap();          // Now update only the photoUrl - use the effectiveBoardId here too
+          ).unwrap(); // Now update only the photoUrl - use the effectiveBoardId here too
           // Ensure we use the contact's own boardId if available
           const updateBoardId = contactToEdit.boardId || effectiveBoardId;
-          
+
           await dispatch(
             updateContact({
               id: contactToEdit.id,
@@ -272,10 +285,12 @@ const CreateContactModal = ({
               accessToken: accessToken as string,
             })
           ).unwrap();
-        }        // Fetch the updated contact info - prioritize using the contact's own boardId
+        }
+
+        // Fetch the updated contact info - prioritize using the contact's own boardId
         const contactBoardId = contactToEdit.boardId || effectiveBoardId;
         console.log('Fetching updated contact with boardId:', contactBoardId);
-        
+
         const value = {
           contactId: contactToEdit.id,
           boardId: contactBoardId,
