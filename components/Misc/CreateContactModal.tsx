@@ -93,12 +93,6 @@ const CreateContactModal = ({
           );
           // Use the first board (likely "Job Search YYYY")
           effectiveBoardId = sortedBoards[0].id;
-          console.log(
-            'Using default board:',
-            sortedBoards[0].name,
-            'with ID:',
-            effectiveBoardId
-          );
         }
       } catch (error) {
         console.error('Error fetching default board:', error);
@@ -174,7 +168,6 @@ const CreateContactModal = ({
       updatedPhones.length > 0;
 
     // Check if basic info/social links changed
-    console.log('Contact to edit:', contactToEdit);
     if (contactToEdit) {
       const fieldsToCheck: (keyof Contact)[] = [
         'comment',
@@ -194,9 +187,20 @@ const CreateContactModal = ({
           values[field as keyof typeof values] !== contactToEdit[field]
         ) {
           hasBasicInfoChange = true;
-          console.log('hasBasicInfoChange: ', hasBasicInfoChange);
           break;
         }
+      }
+
+      // Check if companyIds changed
+      const prevCompanyIds = (contactToEdit.companies || [])
+        .map((c) => c.id)
+        .sort();
+      const newCompanyIds = (values.companyIds || []).slice().sort();
+      if (
+        prevCompanyIds.length !== newCompanyIds.length ||
+        prevCompanyIds.some((id, idx) => id !== newCompanyIds[idx])
+      ) {
+        hasBasicInfoChange = true;
       }
     }
 
@@ -273,7 +277,9 @@ const CreateContactModal = ({
               contactId: contactToEdit.id,
               accessToken: accessToken as string,
             })
-          ).unwrap(); // Now update only the photoUrl - use the effectiveBoardId here too
+          ).unwrap();
+
+          // Now update only the photoUrl - use the effectiveBoardId here too
           // Ensure we use the contact's own boardId if available
           const updateBoardId = contactToEdit.boardId || effectiveBoardId;
 
@@ -289,7 +295,6 @@ const CreateContactModal = ({
 
         // Fetch the updated contact info - prioritize using the contact's own boardId
         const contactBoardId = contactToEdit.boardId || effectiveBoardId;
-        console.log('Fetching updated contact with boardId:', contactBoardId);
 
         const value = {
           contactId: contactToEdit.id,
