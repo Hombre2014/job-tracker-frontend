@@ -201,10 +201,12 @@ export const unassignContactFromJobPost = createAsyncThunk(
       jobApplicationId: jobApplicationId,
     };
     try {
-      const res = await client.post(`/contacts/jobApplication/unassign`, body, {
+      const res = await client.delete(`/contacts/jobApplication/unassign`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
         },
+        data: body,
       });
       const data = res.data;
       return data;

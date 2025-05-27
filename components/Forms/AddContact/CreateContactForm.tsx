@@ -44,6 +44,8 @@ const CreateContactForm = ({
   setPendingImage,
   onValidationChange,
   isUserContactsPage,
+  jobsConnectedToContact,
+  setJobsConnectedToContact,
 }: CreateContactFormProps) => {
   const dispatch = useAppDispatch();
   // Replace individual state variables with a single formData state
@@ -907,7 +909,9 @@ const CreateContactForm = ({
         <ContactSideBar
           user={user}
           jobs={{ jobPosts: allJobPosts }}
-          job_id={defaultJobPost ? job_id : undefined}
+          onJobsChange={setJobsConnectedToContact}
+          job_id={defaultJobPost ? job_id ?? '' : ''}
+          jobsConnectedToContact={jobsConnectedToContact}
         />
       </div>
     </div>

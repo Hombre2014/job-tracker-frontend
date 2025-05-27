@@ -12,29 +12,28 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
+const ContactSideBar = ({
+  jobs,
+  user,
+  job_id,
+  onJobsChange,
+  jobsConnectedToContact,
+}: ContactSideBarProps) => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const accessToken = localStorage.getItem('accessToken');
   const [boardJobs, setBoardJobs] = useState<JobApplication[]>([]);
-  const [jobsConnectedToContact, setJobsConnectedToContact] = useState<
-    JobApplication[]
-  >([]);
 
   useEffect(() => {
     const fetchBoardJobs = async () => {
       if (board_id && accessToken) {
         try {
-          // Get board with columns and job applications
           const boardData = await dispatch(
             getBoardWithColumns({ boardId: board_id, accessToken })
           ).unwrap();
-
-          // Extract job applications from all columns
           const allJobsFromBoard = boardData.columns.flatMap(
             (column: Column) => column.jobApplications || []
           );
-
           setBoardJobs(allJobsFromBoard);
         } catch (error) {
           console.error('Error fetching board data:', error);
@@ -42,55 +41,41 @@ const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
         }
       }
     };
-
     fetchBoardJobs();
   }, [board_id, dispatch, accessToken]);
 
   useEffect(() => {
     if (job_id) {
-      // Only set initial job if job_id exists
-      const currentJob = jobs.jobPosts.find((job) => job.id === job_id);
+      const currentJob = jobs.jobPosts.find(
+        (job: JobApplication) => job.id === job_id
+      );
       if (currentJob) {
-        setJobsConnectedToContact([currentJob]);
-        localStorage.setItem(
-          'jobsConnectedToContact',
-          JSON.stringify([currentJob])
-        );
+        onJobsChange([currentJob]);
       }
     } else {
-      // Clear jobs connected to contact when no job_id
-      setJobsConnectedToContact([]);
-      localStorage.setItem('jobsConnectedToContact', JSON.stringify([]));
+      onJobsChange([]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [job_id, jobs.jobPosts]);
 
   const handleAddJob = (jobTitle: string, jobId: string) => {
-    // Use boardJobs instead of jobs.jobPosts if we're on a specific board page
     const jobsList = board_id ? boardJobs : jobs.jobPosts;
-
     const jobToAdd = jobsList.find(
-      (job) => job.title === jobTitle && job.id === jobId
+      (job: JobApplication) => job.title === jobTitle && job.id === jobId
     );
-
     if (
       jobToAdd &&
-      !jobsConnectedToContact.some((job) => job.id === jobToAdd.id)
+      !jobsConnectedToContact.some(
+        (job: JobApplication) => job.id === jobToAdd.id
+      )
     ) {
-      setJobsConnectedToContact([...jobsConnectedToContact, jobToAdd]);
-      localStorage.setItem(
-        'jobsConnectedToContact',
-        JSON.stringify([...jobsConnectedToContact, jobToAdd])
-      );
+      onJobsChange([...jobsConnectedToContact, jobToAdd]);
     }
   };
 
   const handleUnlinkJob = (jobId: string) => {
-    setJobsConnectedToContact((prevJobs) =>
-      prevJobs.filter((job) => job.id !== jobId)
-    );
-    localStorage.setItem(
-      'jobsConnectedToContact',
-      JSON.stringify(jobsConnectedToContact.filter((job) => job.id !== jobId))
+    onJobsChange(
+      jobsConnectedToContact.filter((job: JobApplication) => job.id !== jobId)
     );
   };
 
@@ -112,7 +97,8 @@ const ContactSideBar = ({ jobs, user, job_id }: ContactSideBarProps) => {
                 style={{ color: `${jobPost.color}` }}
                 className="text-left text-sm"
               >
-                {jobPost.title} @ {jobPost.company.name}
+                {jobPost.title} @{' '}
+                {jobPost.company ? jobPost.company.name : 'Unknown Company'}
               </p>
               <div className="flex flex-row gap-2">
                 <DropdownMenu>

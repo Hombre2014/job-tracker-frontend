@@ -83,8 +83,10 @@ interface CreateContactFormProps {
   defaultJobPost: boolean;
   isUserContactsPage?: boolean;
   contactToEdit?: Contact | null;
+  jobsConnectedToContact: JobApplication[];
   setPendingImage: (file: File | null) => void;
   onValidationChange: (isValid: boolean) => void;
+  setJobsConnectedToContact: (jobs: JobApplication[]) => void;
 }
 
 interface ContactsListProps {
@@ -93,9 +95,11 @@ interface ContactsListProps {
 }
 
 interface ContactSideBarProps {
-  job_id?: string;
-  jobs: { jobPosts: JobApplication[] };
-  user: { firstName: string; lastName: string; email: string };
+  jobs: any;
+  user: any;
+  job_id: string;
+  jobsConnectedToContact: JobApplication[];
+  onJobsChange: (jobs: JobApplication[]) => void;
 }
 
 type JobApplication = {
