@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, usePathname } from 'next/navigation';
 
-import { useAppDispatch } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
 import { cleanupAfterContact } from '@/utils/helpers';
 import { getBoardsOnly } from '@/redux/boards/boardsThunk';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
 import {
@@ -19,6 +19,7 @@ import {
   updateContactPhone,
   uploadContactImage,
   assignContactToJobPost,
+  unassignContactFromJobPost,
 } from '@/redux/contacts/contactsThunk';
 
 const CreateContactModal = ({
@@ -40,14 +41,35 @@ const CreateContactModal = ({
   const [isFormValid, setIsFormValid] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const isDefaultJobPost = pathname?.includes('job-details');
+  const jobs = useAppSelector((state) => state.jobs.jobPosts);
   const [showContactModal, setShowContactModal] = useState(false);
   const [pendingImage, setPendingImage] = useState<File | null>(null);
+  const [initialJobs, setInitialJobs] = useState<JobApplication[]>([]);
+  const [jobsConnectedToContact, setJobsConnectedToContact] = useState<
+    JobApplication[]
+  >([]);
 
   useEffect(() => {
     if (isVisible !== undefined) {
       setShowContactModal(isVisible);
     }
   }, [isVisible]);
+
+  useEffect(() => {
+    if (contactToEdit) {
+      // Map jobApplications to full job objects with company info
+      const fullJobs = (contactToEdit.jobApplications || []).map((jobApp) => {
+        const fullJob = jobs.find((j) => j.id === jobApp.id);
+        return fullJob || jobApp;
+      });
+      setInitialJobs(fullJobs);
+      setJobsConnectedToContact(fullJobs);
+    } else {
+      setInitialJobs([]);
+      setJobsConnectedToContact([]);
+    }
+  }, [contactToEdit, jobs]);
+
   const handleContact = async () => {
     if (!isFormValid) return;
 
@@ -308,6 +330,34 @@ const CreateContactModal = ({
           onContactUpdated(updatedContactData);
         }
 
+        // After updating contact info, handle job assignment/unassignment
+        const initialJobIds = new Set(initialJobs.map((j) => j.id));
+        const currentJobIds = new Set(jobsConnectedToContact.map((j) => j.id));
+        // Assign new jobs
+        for (const job of jobsConnectedToContact) {
+          if (!initialJobIds.has(job.id)) {
+            await dispatch(
+              assignContactToJobPost({
+                accessToken,
+                contactId: contactToEdit.id,
+                jobApplicationId: job.id,
+              })
+            ).unwrap();
+          }
+        }
+        // Unassign removed jobs
+        for (const job of initialJobs) {
+          if (!currentJobIds.has(job.id)) {
+            await dispatch(
+              unassignContactFromJobPost({
+                accessToken,
+                contactId: contactToEdit.id,
+                jobApplicationId: job.id,
+              })
+            ).unwrap();
+          }
+        }
+
         cleanupAfterContact(); // Clean up after successful update
       } else {
         // Create new contact (without photoUrl if uploading)
@@ -334,9 +384,7 @@ const CreateContactModal = ({
           ).unwrap();
         }
 
-        const jobsConnectedToContact = JSON.parse(
-          localStorage.getItem('jobsConnectedToContact') || '[]'
-        );
+        // After creating, assign jobs if any
         if (jobsConnectedToContact.length > 0) {
           await Promise.all(
             jobsConnectedToContact.map(async (jobPost: JobApplication) => {
@@ -403,6 +451,8 @@ const CreateContactModal = ({
             setPendingImage={setPendingImage}
             onValidationChange={setIsFormValid}
             isUserContactsPage={userContactsPage}
+            jobsConnectedToContact={jobsConnectedToContact}
+            setJobsConnectedToContact={setJobsConnectedToContact}
           />
         </AlertDialogModal>
       )}
