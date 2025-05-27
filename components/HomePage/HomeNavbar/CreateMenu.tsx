@@ -265,6 +265,15 @@ const CreateMenu = () => {
             setPendingImage={setPendingImage}
             isUserContactsPage={isContactsPage}
             onValidationChange={setIsFormValid}
+            jobsConnectedToContact={JSON.parse(
+              localStorage.getItem('jobsConnectedToContact') || '[]'
+            )}
+            setJobsConnectedToContact={(jobs: any) =>
+              localStorage.setItem(
+                'jobsConnectedToContact',
+                JSON.stringify(jobs)
+              )
+            }
           />
         </AlertDialogModal>
       )}
