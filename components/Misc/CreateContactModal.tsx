@@ -313,24 +313,7 @@ const CreateContactModal = ({
               accessToken: accessToken as string,
             })
           ).unwrap();
-        }
-
-        // Fetch the updated contact info - prioritize using the contact's own boardId
-        const contactBoardId = contactToEdit.boardId || effectiveBoardId;
-
-        const value = {
-          contactId: contactToEdit.id,
-          boardId: contactBoardId,
-          accessToken: accessToken as string,
-        };
-        const contactDataArr = await dispatch(getContact(value)).unwrap();
-        updatedContactData = contactDataArr[0] || contactToEdit;
-
-        if (onContactUpdated && updatedContactData) {
-          onContactUpdated(updatedContactData);
-        }
-
-        // After updating contact info, handle job assignment/unassignment
+        }        // After updating contact info, handle job assignment/unassignment
         const initialJobIds = new Set(initialJobs.map((j) => j.id));
         const currentJobIds = new Set(jobsConnectedToContact.map((j) => j.id));
         // Assign new jobs
@@ -356,6 +339,21 @@ const CreateContactModal = ({
               })
             ).unwrap();
           }
+        }
+
+        // Fetch the updated contact info AFTER job assignments are complete
+        const contactBoardId = contactToEdit.boardId || effectiveBoardId;
+
+        const value = {
+          contactId: contactToEdit.id,
+          boardId: contactBoardId,
+          accessToken: accessToken as string,
+        };
+        const contactDataArr = await dispatch(getContact(value)).unwrap();
+        updatedContactData = contactDataArr[0] || contactToEdit;
+
+        if (onContactUpdated && updatedContactData) {
+          onContactUpdated(updatedContactData);
         }
 
         cleanupAfterContact(); // Clean up after successful update
