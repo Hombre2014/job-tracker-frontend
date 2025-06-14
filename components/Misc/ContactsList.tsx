@@ -19,7 +19,7 @@ const ContactsList = ({
   const [error, setError] = useState<string | null>(null);
   const isContactsPage = pathname?.includes('/home/contacts');
   const [contactsWithBoardIds, setContactsWithBoardIds] = useState<Contact[]>(
-    initialContacts || []
+    initialContacts || [],
   );
   const board_id = params.board_id
     ? Array.isArray(params.board_id)
@@ -35,7 +35,7 @@ const ContactsList = ({
           getAllContactsPerBoard({
             accessToken,
             boardId,
-          })
+          }),
         ).unwrap();
 
         return boardContacts.map((contact: Contact) => ({
@@ -47,19 +47,19 @@ const ContactsList = ({
         return [];
       }
     },
-    [dispatch, accessToken]
+    [dispatch, accessToken],
   );
 
   // Fetch contacts from all boards
   const fetchAllContacts = useCallback(async () => {
     try {
       const boards = await dispatch(
-        getBoardsOnly(accessToken as string)
+        getBoardsOnly(accessToken as string),
       ).unwrap();
 
       // Fetch contacts for all boards in parallel
       const contactPromises = boards.map((board: Board) =>
-        fetchContactsForBoard(board.id)
+        fetchContactsForBoard(board.id),
       );
 
       // Wait for all promises to resolve
@@ -112,32 +112,23 @@ const ContactsList = ({
   // Handle data refresh separately to avoid creating loops
   useEffect(() => {
     if (refetchContacts) {
-      console.log('Refetching contacts...');
       refetchContacts();
     }
   }, [refetchContacts]);
 
-  useEffect(() => {
-    console.log('Updated contactsWithBoardIds:', contactsWithBoardIds); // Debug log
-  }, [contactsWithBoardIds]);
   const handleContactDeleted = (deletedContactId: string) => {
     setContactsWithBoardIds((prevContacts) =>
-      prevContacts.filter((contact) => contact.id !== deletedContactId)
+      prevContacts.filter((contact) => contact.id !== deletedContactId),
     );
   };
 
   const handleContactUpdated = (updatedContact: Contact) => {
     setContactsWithBoardIds((prevContacts) =>
       prevContacts.map((contact) =>
-        contact.id === updatedContact.id ? updatedContact : contact
-      )
+        contact.id === updatedContact.id ? updatedContact : contact,
+      ),
     );
   };
-
-  useEffect(() => {
-    console.log('Initial contacts updated:', initialContacts); // Debug log
-    setContactsWithBoardIds(initialContacts || []);
-  }, [initialContacts]);
 
   return (
     <div className="w-2/3 flex flex-col mx-auto mt-8">
@@ -151,8 +142,8 @@ const ContactsList = ({
             onContactUpdated={(updatedContact) => {
               setContactsWithBoardIds((prevContacts) =>
                 prevContacts.map((contact) =>
-                  contact.id === updatedContact.id ? updatedContact : contact
-                )
+                  contact.id === updatedContact.id ? updatedContact : contact,
+                ),
               );
             }}
           />
@@ -181,13 +172,14 @@ const ContactsList = ({
         </div>
       )}
 
-      {!isLoading && !error && contactsWithBoardIds.length > 0 && (        <div className="w-full flex flex-wrap items-center justify-start gap-4 max-h-[80vh] overflow-y-auto">
+      {!isLoading && !error && contactsWithBoardIds.length > 0 && (
+        <div className="w-full flex flex-wrap items-center justify-start gap-4 max-h-[80vh] overflow-y-auto">
           {contactsWithBoardIds.map((contact) => (
             <div key={contact.id}>
-              <ContactCard 
-                contact={contact} 
+              <ContactCard
+                contact={contact}
                 onDelete={handleContactDeleted}
-                onUpdate={handleContactUpdated} 
+                onUpdate={handleContactUpdated}
               />
             </div>
           ))}

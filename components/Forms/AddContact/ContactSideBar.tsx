@@ -42,9 +42,8 @@ const ContactSideBar = ({
       }
     };
     fetchBoardJobs();
-  }, [board_id, dispatch, accessToken]);
-
-  useEffect(() => {
+  }, [board_id, dispatch, accessToken]);  useEffect(() => {
+    // Only auto-assign job when coming from job post modal (job_id exists)
     if (job_id) {
       const currentJob = jobs.jobPosts.find(
         (job: JobApplication) => job.id === job_id
@@ -52,9 +51,9 @@ const ContactSideBar = ({
       if (currentJob) {
         onJobsChange([currentJob]);
       }
-    } else {
-      onJobsChange([]);
     }
+    // Don't clear jobs when job_id is empty - this preserves existing assignments
+    // when opening modal from contacts page
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [job_id, jobs.jobPosts]);
 
