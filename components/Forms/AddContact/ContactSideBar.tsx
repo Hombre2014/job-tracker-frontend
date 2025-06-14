@@ -54,8 +54,7 @@ const ContactSideBar = ({
     }
     // Don't clear jobs when job_id is empty - this preserves existing assignments
     // when opening modal from contacts page
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [job_id, jobs.jobPosts]);
+  }, [job_id, jobs.jobPosts, onJobsChange]);
 
   const handleAddJob = (jobTitle: string, jobId: string) => {
     const jobsList = board_id ? boardJobs : jobs.jobPosts;

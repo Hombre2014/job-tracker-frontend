@@ -391,13 +391,12 @@ const CreateContactForm = ({
 
     fetchJobs();
   }, [dispatch, accessToken, defaultJobPost, board_id, isUserContactsPage]);
-
   // Sync allJobPosts with Redux jobs to ensure sidebar always has access to jobs
   useEffect(() => {
-    if (jobs.jobPosts.length > 0 && allJobPosts.length === 0) {
+    if (jobs.jobPosts.length && jobs.jobPosts.length !== allJobPosts.length) {
       setAllJobPosts(jobs.jobPosts);
     }
-  }, [jobs.jobPosts, allJobPosts.length]);
+  }, [jobs.jobPosts.length, allJobPosts.length]); // track only the lengths
 
   useEffect(() => {
     if (selectedCompanyName) {
