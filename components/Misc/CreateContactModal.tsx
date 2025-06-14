@@ -5,7 +5,7 @@ import { useParams, usePathname } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { cleanupAfterContact } from '@/utils/helpers';
-import { getBoardsOnly } from '@/redux/boards/boardsThunk';
+import { getBoardsOnly, getBoardWithColumns } from '@/redux/boards/boardsThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import CreateContactForm from '@/components/Forms/AddContact/CreateContactForm';
@@ -53,22 +53,67 @@ const CreateContactModal = ({
     if (isVisible !== undefined) {
       setShowContactModal(isVisible);
     }
-  }, [isVisible]);
+  }, [isVisible]);useEffect(() => {
+    const fetchCompleteJobData = async () => {
+      if (contactToEdit && contactToEdit.jobApplications) {
+        try {
+          // Fetch complete job data for each job application
+          const jobPromises = contactToEdit.jobApplications.map(async (jobApp) => {
+            try {
+              // Try to get the job from the current board
+              let effectiveBoardId = board_id;
+              
+              // If no board_id in URL, use the contact's boardId
+              if (!effectiveBoardId && contactToEdit.boardId) {
+                effectiveBoardId = contactToEdit.boardId;
+              }
+              
+              if (effectiveBoardId && accessToken) {
+                // Fetch the board data to get complete job information
+                const boardData = await dispatch(
+                  getBoardWithColumns({ 
+                    boardId: effectiveBoardId, 
+                    accessToken 
+                  })
+                ).unwrap();
+                
+                // Find the job in all columns
+                const allJobs = boardData.columns.flatMap(
+                  (column: Column) => column.jobApplications || []
+                );
+                
+                const completeJob = allJobs.find((job: JobApplication) => job.id === jobApp.id);
+                
+                if (completeJob && completeJob.company) {
+                  return completeJob;
+                }
+              }
+              
+              // Fallback: return the original jobApp
+              return jobApp;
+            } catch (error) {
+              console.error('Error fetching job data:', error);
+              return jobApp;
+            }
+          });
+          
+          const completeJobs = await Promise.all(jobPromises);
+          setInitialJobs(completeJobs);
+          setJobsConnectedToContact(completeJobs);
+        } catch (error) {
+          console.error('Error fetching complete job data:', error);
+          // Fallback to original job applications
+          setInitialJobs(contactToEdit.jobApplications || []);
+          setJobsConnectedToContact(contactToEdit.jobApplications || []);
+        }
+      } else {
+        setInitialJobs([]);
+        setJobsConnectedToContact([]);
+      }
+    };
 
-  useEffect(() => {
-    if (contactToEdit) {
-      // Map jobApplications to full job objects with company info
-      const fullJobs = (contactToEdit.jobApplications || []).map((jobApp) => {
-        const fullJob = jobs.find((j) => j.id === jobApp.id);
-        return fullJob || jobApp;
-      });
-      setInitialJobs(fullJobs);
-      setJobsConnectedToContact(fullJobs);
-    } else {
-      setInitialJobs([]);
-      setJobsConnectedToContact([]);
-    }
-  }, [contactToEdit, jobs]);
+    fetchCompleteJobData();
+  }, [contactToEdit, board_id, dispatch, accessToken]);
 
   const handleContact = async () => {
     if (!isFormValid) return;
@@ -313,24 +358,7 @@ const CreateContactModal = ({
               accessToken: accessToken as string,
             })
           ).unwrap();
-        }
-
-        // Fetch the updated contact info - prioritize using the contact's own boardId
-        const contactBoardId = contactToEdit.boardId || effectiveBoardId;
-
-        const value = {
-          contactId: contactToEdit.id,
-          boardId: contactBoardId,
-          accessToken: accessToken as string,
-        };
-        const contactDataArr = await dispatch(getContact(value)).unwrap();
-        updatedContactData = contactDataArr[0] || contactToEdit;
-
-        if (onContactUpdated && updatedContactData) {
-          onContactUpdated(updatedContactData);
-        }
-
-        // After updating contact info, handle job assignment/unassignment
+        }        // After updating contact info, handle job assignment/unassignment
         const initialJobIds = new Set(initialJobs.map((j) => j.id));
         const currentJobIds = new Set(jobsConnectedToContact.map((j) => j.id));
         // Assign new jobs
@@ -356,6 +384,21 @@ const CreateContactModal = ({
               })
             ).unwrap();
           }
+        }
+
+        // Fetch the updated contact info AFTER job assignments are complete
+        const contactBoardId = contactToEdit.boardId || effectiveBoardId;
+
+        const value = {
+          contactId: contactToEdit.id,
+          boardId: contactBoardId,
+          accessToken: accessToken as string,
+        };
+        const contactDataArr = await dispatch(getContact(value)).unwrap();
+        updatedContactData = contactDataArr[0] || contactToEdit;
+
+        if (onContactUpdated && updatedContactData) {
+          onContactUpdated(updatedContactData);
         }
 
         cleanupAfterContact(); // Clean up after successful update

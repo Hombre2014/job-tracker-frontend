@@ -164,9 +164,7 @@ const ContactCard = ({
     };
 
     getCurrentContact();
-  }, [dispatch, accessToken, contactId, board_id, contact]);
-
-  const handleEditContact = (contactId: string) => {
+  }, [dispatch, accessToken, contactId, board_id, contact]);  const handleEditContact = (contactId: string) => {
     setShowContactModal(true);
     setOpenDropdownId(null);
   };

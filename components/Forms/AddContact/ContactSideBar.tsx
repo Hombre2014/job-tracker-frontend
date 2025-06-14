@@ -90,8 +90,7 @@ const ContactSideBar = ({
             <div
               key={jobPost.id}
               className="flex flex-row justify-between items-center border border-gray-300 rounded-lg p-[5px]"
-            >
-              <p
+            >              <p
                 style={{ color: `${jobPost.color}` }}
                 className="text-left text-sm"
               >
