@@ -171,14 +171,14 @@ const CreateContactForm = ({
   useEffect(() => {
     if (contactToEdit) {
       // Extract data from contactToEdit
+      const githubHandle = contactToEdit.githubUrl
+        ? contactToEdit.githubUrl.split('/').pop()
+        : '';
       const twitterHandle = contactToEdit.twitterUrl
         ? contactToEdit.twitterUrl.split('/').pop()
         : '';
       const facebookHandle = contactToEdit.facebookUrl
         ? contactToEdit.facebookUrl.split('/').pop()
-        : '';
-      const githubHandle = contactToEdit.githubUrl
-        ? contactToEdit.githubUrl.split('/').pop()
         : '';
       const linkedinHandle = contactToEdit.linkedinUrl
         ? contactToEdit.linkedinUrl.split('/').pop()
@@ -391,6 +391,7 @@ const CreateContactForm = ({
 
     fetchJobs();
   }, [dispatch, accessToken, defaultJobPost, board_id, isUserContactsPage]);
+
   // Sync allJobPosts with Redux jobs to ensure sidebar always has access to jobs
   useEffect(() => {
     if (jobs.jobPosts.length && jobs.jobPosts.length !== allJobPosts.length) {

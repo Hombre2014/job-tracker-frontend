@@ -38,7 +38,7 @@ const Contacts = () => {
         contact.id === updatedContact.id ? updatedContact : contact
       )
     );
-    
+
     // Then refresh data from the backend
     refreshContacts();
   };
@@ -50,11 +50,11 @@ const Contacts = () => {
         // Remove the setTimeout to ensure immediate refresh
         const response = await dispatch(
           getAllJobPostsPerColumn({
-            accessToken,
             columnId,
+            accessToken,
           })
         ).unwrap();
-        
+
         console.log('Job posts refreshed:', response);
       }
     } catch (error) {
@@ -102,10 +102,12 @@ const Contacts = () => {
         />
         <Button variant="outline">+ Link contact</Button>
       </div>
-      <div className="flex flex-wrap gap-4 overflow-y-auto h-[506px]">        {jobPostContacts?.map((contact) => (
+      <div className="flex flex-wrap gap-4 overflow-y-auto h-[506px]">
+        {' '}
+        {jobPostContacts?.map((contact) => (
           <div key={contact.id} className="">
-            <ContactCard 
-              contact={contact} 
+            <ContactCard
+              contact={contact}
               onDelete={handleContactDeleted}
               onUpdate={handleContactUpdated}
             />
