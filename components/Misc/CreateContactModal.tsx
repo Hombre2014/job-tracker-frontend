@@ -362,34 +362,39 @@ const CreateContactModal = ({
               photoUrl: uploadResult.imageUrl,
               accessToken: accessToken as string,
             })
-          ).unwrap();
-        } // After updating contact info, handle job assignment/unassignment
+          ).unwrap();        } // After updating contact info, handle job assignment/unassignment
         const initialJobIds = new Set(initialJobs.map((j) => j.id));
         const currentJobIds = new Set(jobsConnectedToContact.map((j) => j.id));
-        // Assign new jobs
-        for (const job of jobsConnectedToContact) {
-          if (!initialJobIds.has(job.id)) {
-            await dispatch(
-              assignContactToJobPost({
-                accessToken,
-                jobApplicationId: job.id,
-                contactId: contactToEdit.id,
-              })
-            ).unwrap();
-          }
-        }
-        // Unassign removed jobs
-        for (const job of initialJobs) {
-          if (!currentJobIds.has(job.id)) {
-            await dispatch(
-              unassignContactFromJobPost({
-                accessToken,
-                jobApplicationId: job.id,
-                contactId: contactToEdit.id,
-              })
-            ).unwrap();
-          }
-        }
+        
+        // Assign new jobs in parallel
+        await Promise.all(
+          jobsConnectedToContact
+            .filter((job) => !initialJobIds.has(job.id))
+            .map((job) =>
+              dispatch(
+                assignContactToJobPost({
+                  accessToken,
+                  jobApplicationId: job.id,
+                  contactId: contactToEdit.id,
+                })
+              ).unwrap()
+            )
+        );
+        
+        // Unassign removed jobs in parallel
+        await Promise.all(
+          initialJobs
+            .filter((job) => !currentJobIds.has(job.id))
+            .map((job) =>
+              dispatch(
+                unassignContactFromJobPost({
+                  accessToken,
+                  jobApplicationId: job.id,
+                  contactId: contactToEdit.id,
+                })
+              ).unwrap()
+            )
+        );
 
         // Fetch the updated contact info AFTER job assignments are complete
         const contactBoardId = contactToEdit.boardId || effectiveBoardId;

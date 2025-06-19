@@ -28,6 +28,26 @@ const SocialMediaLinks = ({
   facebookUrl,
   handleFieldChange,
 }: SocialMediaLinksProps) => {
+  // Helper function to construct full URLs from handles
+  const getFullUrl = (handle: string, platform: string) => {
+    if (!handle || handle.trim() === '') return '#';
+    
+    const cleanHandle = handle.trim();
+    
+    switch (platform) {
+      case 'twitter':
+        return `https://twitter.com/${cleanHandle}`;
+      case 'facebook':
+        return `https://facebook.com/${cleanHandle}`;
+      case 'linkedin':
+        return `https://linkedin.com/in/${cleanHandle}`;
+      case 'github':
+        return `https://github.com/${cleanHandle}`;
+      default:
+        return '#';
+    }
+  };
+
   return (
     <div className="flex flex-col min-w-full mb-4">
       <div className="border rounded-md px-4">
@@ -43,10 +63,9 @@ const SocialMediaLinks = ({
                 onChange={(e) => handleFieldChange('twitterUrl', e)}
                 className="!outline-none !border-none shadow-none focus-visible:ring-0"
               />
-            </div>
-            <Link
+            </div>            <Link
               target="_blank"
-              href={twitterUrl || '#'}
+              href={getFullUrl(twitterUrl, 'twitter')}
               className="text-blue-500 hover:cursor-pointer"
             >
               <LiaLinkSolid
@@ -63,10 +82,9 @@ const SocialMediaLinks = ({
               placeholder="Facebook URL"
               onChange={(e) => handleFieldChange('facebookUrl', e)}
               className="!outline-none !border-none shadow-none focus-visible:ring-0"
-            />
-            <Link
+            />            <Link
               target="_blank"
-              href={facebookUrl || '#'}
+              href={getFullUrl(facebookUrl, 'facebook')}
               className="text-blue-500 hover:cursor-pointer"
             >
               <LiaLinkSolid
@@ -83,11 +101,10 @@ const SocialMediaLinks = ({
               placeholder="LinkedIn URL"
               onChange={(e) => handleFieldChange('linkedinUrl', e)}
               className="!outline-none !border-none shadow-none focus-visible:ring-0"
-            />
-            <Link
+            />            <Link
               target="_blank"
               className="text-blue-500 hover:cursor-pointer"
-              href={linkedinUrl || '#'}
+              href={getFullUrl(linkedinUrl, 'linkedin')}
             >
               <LiaLinkSolid
                 className={cn('hidden', linkedinUrl !== '' && 'block')}
@@ -103,10 +120,9 @@ const SocialMediaLinks = ({
               placeholder="GitHub URL"
               onChange={(e) => handleFieldChange('githubUrl', e)}
               className="!outline-none !border-none shadow-none focus-visible:ring-0"
-            />
-            <Link
+            />            <Link
               target="_blank"
-              href={githubUrl || '#'}
+              href={getFullUrl(githubUrl, 'github')}
               className="text-blue-500 hover:cursor-pointer"
             >
               <LiaLinkSolid
