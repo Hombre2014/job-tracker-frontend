@@ -9,8 +9,8 @@ import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
 import { getAllJobApplicationNotes } from '@/redux/notes/notesThunk';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  returnJobPostMenuIcon,
   returnMenuComponent,
+  returnJobPostMenuIcon,
 } from '@/utils/ReturnIcons';
 
 const JobDetails = () => {

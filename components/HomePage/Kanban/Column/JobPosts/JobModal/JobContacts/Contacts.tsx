@@ -1,5 +1,5 @@
+import { useCallback } from 'react';
 import { SlPeople } from 'react-icons/sl';
-import { useCallback, useState } from 'react';
 import { useParams, usePathname } from 'next/navigation';
 
 import ContactCard from './ContactCard';
@@ -19,11 +19,10 @@ import {
 const Contacts = () => {
   const { job_id } = useParams();
   const pathname = usePathname();
-  const dispatch = useAppDispatch();
-  const jobs = useAppSelector((state) => state.jobs);
-  const [contacts, setContacts] = useState<Contact[]>([]);
   const accessToken = localStorage.getItem('accessToken');
   const isContactsPage = pathname?.includes('/home/contacts');
+  const dispatch = useAppDispatch();
+  const jobs = useAppSelector((state) => state.jobs);
 
   const numberOfContactsPerJob =
     jobs.jobPosts.find((job) => job.id === job_id)?.contacts.length || 0;
@@ -32,30 +31,20 @@ const Contacts = () => {
     (job) => job.id === job_id
   )?.contacts;
   const handleContactUpdated = (updatedContact: Contact) => {
-    // First update local state
-    setContacts((prevContacts) =>
-      prevContacts.map((contact) =>
-        contact.id === updatedContact.id ? updatedContact : contact
-      )
-    );
-    
-    // Then refresh data from the backend
+    // Refresh data from the backend to update Redux state
     refreshContacts();
   };
   const refreshContacts = useCallback(async () => {
     try {
       const columnId = localStorage.getItem('columnId');
       if (columnId) {
-        console.log('Refreshing contacts for job application...');
         // Remove the setTimeout to ensure immediate refresh
         const response = await dispatch(
           getAllJobPostsPerColumn({
-            accessToken,
             columnId,
+            accessToken,
           })
         ).unwrap();
-        
-        console.log('Job posts refreshed:', response);
       }
     } catch (error) {
       console.error('Error refreshing contacts:', error);
@@ -102,10 +91,11 @@ const Contacts = () => {
         />
         <Button variant="outline">+ Link contact</Button>
       </div>
-      <div className="flex flex-wrap gap-4 overflow-y-auto h-[506px]">        {jobPostContacts?.map((contact) => (
-          <div key={contact.id} className="">
-            <ContactCard 
-              contact={contact} 
+      <div className="flex flex-wrap gap-4 overflow-y-auto h-[506px]">
+        {jobPostContacts?.map((contact) => (
+          <div key={contact.id}>
+            <ContactCard
+              contact={contact}
               onDelete={handleContactDeleted}
               onUpdate={handleContactUpdated}
             />

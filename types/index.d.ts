@@ -238,3 +238,35 @@ interface ColorPickerProps {
   value?: string;
   sendData: (fieldName: keyof JobApplication, value: string) => void;
 }
+
+interface SocialMediaLinksProps {
+  twitterUrl: string;
+  githubUrl: string;
+  linkedinUrl: string;
+  facebookUrl: string;
+  handleFieldChange: (
+    fieldName: string,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => void;
+}
+
+interface CompaniesInputProps {
+  companies: string[];
+  companyIds: string[];
+  currentInput: string;
+  showDropdown: boolean;
+  matchingCompanies: string[];
+  setCompanyIds: (ids: string[]) => void;
+  setCurrentInput: (input: string) => void;
+  onCompanySelect: (company: string) => void;
+  setCompanies: (companies: string[]) => void;
+  onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+interface ComboJobsBoxProps {
+  buttonWidth: string;
+  jobPosts: JobApplication[];
+  jobsConnectedToContact: JobApplication[];
+  onJobSelect: (jobTitle: string, jobId: string) => void;
+}

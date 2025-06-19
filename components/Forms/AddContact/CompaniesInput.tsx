@@ -1,20 +1,6 @@
 import { RiCloseLine } from 'react-icons/ri';
 import { Input } from '@/components/ui/input';
 
-interface CompaniesInputProps {
-  companies: string[];
-  companyIds: string[];
-  currentInput: string;
-  showDropdown: boolean;
-  matchingCompanies: string[];
-  setCompanyIds: (ids: string[]) => void;
-  setCurrentInput: (input: string) => void;
-  onCompanySelect: (company: string) => void;
-  setCompanies: (companies: string[]) => void;
-  onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-  onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-}
-
 const CompaniesInput = ({
   companies,
   onKeyDown,
@@ -27,7 +13,7 @@ const CompaniesInput = ({
   onCompanySelect,
   matchingCompanies,
 }: CompaniesInputProps) => {
-  const handleRemoveCompany = (company: string, index: number) => {
+  const handleRemoveCompany = (index: number) => {
     const newCompanies = companies.filter((_, i) => i !== index);
     const newCompanyIds = companyIds.filter((_, i) => i !== index);
     setCompanies(newCompanies);
@@ -51,8 +37,8 @@ const CompaniesInput = ({
           {matchingCompanies.map((company, index) => (
             <div
               key={index}
-              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
               onClick={() => onCompanySelect(company)}
+              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
             >
               {company}
             </div>
@@ -68,7 +54,7 @@ const CompaniesInput = ({
             <span className="mr-2">{company}</span>
             <RiCloseLine
               className="cursor-pointer"
-              onClick={() => handleRemoveCompany(company, index)}
+              onClick={() => handleRemoveCompany(index)}
             />
           </div>
         ))}
