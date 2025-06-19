@@ -53,56 +53,33 @@ const CreateContactModal = ({
     if (isVisible !== undefined) {
       setShowContactModal(isVisible);
     }
-  }, [isVisible]);
-  useEffect(() => {
+  }, [isVisible]);  useEffect(() => {
     const fetchCompleteJobData = async () => {
-      if (contactToEdit && contactToEdit.jobApplications) {
+      if (contactToEdit?.jobApplications) {
         try {
-          // Fetch complete job data for each job application
-          const jobPromises = contactToEdit.jobApplications.map(
-            async (jobApp) => {
-              try {
-                // Try to get the job from the current board
-                let effectiveBoardId = board_id;
+          // Determine effective board ID
+          let effectiveBoardId = board_id;
+          if (!effectiveBoardId && contactToEdit.boardId) {
+            effectiveBoardId = contactToEdit.boardId;
+          }
 
-                // If no board_id in URL, use the contact's boardId
-                if (!effectiveBoardId && contactToEdit.boardId) {
-                  effectiveBoardId = contactToEdit.boardId;
-                }
+          // Fetch board data once instead of per job
+          let boardData: Board | null = null;
+          if (effectiveBoardId && accessToken) {
+            boardData = await dispatch(
+              getBoardWithColumns({ boardId: effectiveBoardId, accessToken })
+            ).unwrap();
+          }
 
-                if (effectiveBoardId && accessToken) {
-                  // Fetch the board data to get complete job information
-                  const boardData = await dispatch(
-                    getBoardWithColumns({
-                      boardId: effectiveBoardId,
-                      accessToken,
-                    })
-                  ).unwrap();
+          // Get all jobs from the board in one go
+          const allJobs = boardData?.columns.flatMap((column: Column) => column.jobApplications ?? []) ?? [];
+          
+          // Map each job application to its complete data
+          const completeJobs = contactToEdit.jobApplications.map((jobApp) => {
+            const completeJob = allJobs.find((job: JobApplication) => job.id === jobApp.id);
+            return (completeJob && completeJob.company) ? completeJob : jobApp;
+          });
 
-                  // Find the job in all columns
-                  const allJobs = boardData.columns.flatMap(
-                    (column: Column) => column.jobApplications || []
-                  );
-
-                  const completeJob = allJobs.find(
-                    (job: JobApplication) => job.id === jobApp.id
-                  );
-
-                  if (completeJob && completeJob.company) {
-                    return completeJob;
-                  }
-                }
-
-                // Fallback: return the original jobApp
-                return jobApp;
-              } catch (error) {
-                console.error('Error fetching job data:', error);
-                return jobApp;
-              }
-            }
-          );
-
-          const completeJobs = await Promise.all(jobPromises);
           setInitialJobs(completeJobs);
           setJobsConnectedToContact(completeJobs);
         } catch (error) {
