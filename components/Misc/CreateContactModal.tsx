@@ -41,7 +41,6 @@ const CreateContactModal = ({
   const [isFormValid, setIsFormValid] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const isDefaultJobPost = pathname?.includes('job-details');
-  const jobs = useAppSelector((state) => state.jobs.jobPosts);
   const [showContactModal, setShowContactModal] = useState(false);
   const [pendingImage, setPendingImage] = useState<File | null>(null);
   const [initialJobs, setInitialJobs] = useState<JobApplication[]>([]);
@@ -53,7 +52,8 @@ const CreateContactModal = ({
     if (isVisible !== undefined) {
       setShowContactModal(isVisible);
     }
-  }, [isVisible]);  useEffect(() => {
+  }, [isVisible]);
+  useEffect(() => {
     const fetchCompleteJobData = async () => {
       if (contactToEdit?.jobApplications) {
         try {
@@ -72,12 +72,16 @@ const CreateContactModal = ({
           }
 
           // Get all jobs from the board in one go
-          const allJobs = boardData?.columns.flatMap((column: Column) => column.jobApplications ?? []) ?? [];
-          
+          const allJobs =
+            boardData?.columns.flatMap(
+              (column: Column) => column.jobApplications ?? []
+            ) ?? [];
           // Map each job application to its complete data
           const completeJobs = contactToEdit.jobApplications.map((jobApp) => {
-            const completeJob = allJobs.find((job: JobApplication) => job.id === jobApp.id);
-            return (completeJob && completeJob.company) ? completeJob : jobApp;
+            const completeJob = allJobs.find(
+              (job: JobApplication) => job.id === jobApp.id
+            );
+            return completeJob?.company ? completeJob : jobApp;
           });
 
           setInitialJobs(completeJobs);
@@ -339,10 +343,11 @@ const CreateContactModal = ({
               photoUrl: uploadResult.imageUrl,
               accessToken: accessToken as string,
             })
-          ).unwrap();        } // After updating contact info, handle job assignment/unassignment
+          ).unwrap();
+        } // After updating contact info, handle job assignment/unassignment
         const initialJobIds = new Set(initialJobs.map((j) => j.id));
         const currentJobIds = new Set(jobsConnectedToContact.map((j) => j.id));
-        
+
         // Assign new jobs in parallel
         await Promise.all(
           jobsConnectedToContact
@@ -357,7 +362,7 @@ const CreateContactModal = ({
               ).unwrap()
             )
         );
-        
+
         // Unassign removed jobs in parallel
         await Promise.all(
           initialJobs
