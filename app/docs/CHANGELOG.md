@@ -48,8 +48,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Dead Code Removal
 
 - **Removed unused state variable**: Cleaned up `contacts` state that was not being used for rendering
-  - **Location**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
-  - **Impact**: Simplified component logic, reduced memory usage, single source of truth (Redux)
+  - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/ContactCard.tsx`, `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
+
+- **Removed `hasChanges` tracking system**: Eliminated unused state and functions that were not being used
+  - **Files**: `components/Forms/AddContact/CreateContactForm.tsx`
+
+- **Removed undefined function calls**: Cleaned up calls to `markFieldChanged` and `markContactMethodChanged` functions that were never defined
+  - **Issue**: Functions were being called but never implemented, causing potential runtime errors
+  - **Solution**: Removed all calls to these undefined functions since they served no purpose
+  - **Files**: `components/Forms/AddContact/CreateContactForm.tsx`
+
+- **Removed unused `jobs` variable**: Cleaned up variable that was fetched but never used
+  - **Files**: `components/Misc/CreateContactModal.tsx`
 
 #### Modern JavaScript Practices
 
