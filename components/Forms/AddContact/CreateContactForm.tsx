@@ -77,34 +77,10 @@ const CreateContactForm = ({
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [emails, setEmails] = useState<
     { id: string; value: string; type: string }[]
-  >([]);
-  const [phones, setPhones] = useState<
+  >([]);  const [phones, setPhones] = useState<
     { id: string; value: string; type: string }[]
   >([]);
-
-  const [hasChanges, setHasChanges] = useState({
-    basicInfo: false,
-    companies: false,
-    socialMedia: false,
-    emails: new Set<string>(),
-    phones: new Set<string>(),
-  });
-
   const selectedCompanyName = selectedJob?.company.name;
-
-  const markFieldChanged = (
-    field: 'basicInfo' | 'companies' | 'socialMedia'
-  ) => {
-    setHasChanges((prev) => ({ ...prev, [field]: true }));
-  };
-
-  const markContactMethodChanged = (type: 'emails' | 'phones', id: string) => {
-    setHasChanges((prev) => {
-      const updatedSet = new Set(prev[type]);
-      updatedSet.add(id);
-      return { ...prev, [type]: updatedSet };
-    });
-  };
 
   const handleFieldChange = (
     fieldName: string,
@@ -114,21 +90,6 @@ const CreateContactForm = ({
 
     // Update formData state for all fields
     setFormData((prev) => ({ ...prev, [fieldName]: value }));
-
-    // Mark the field as changed
-    if (
-      ['firstName', 'lastName', 'jobTitle', 'location', 'comment'].includes(
-        fieldName
-      )
-    ) {
-      markFieldChanged('basicInfo');
-    } else if (
-      ['githubUrl', 'twitterUrl', 'facebookUrl', 'linkedinUrl'].includes(
-        fieldName
-      )
-    ) {
-      markFieldChanged('socialMedia');
-    }
 
     // Update localStorage as needed
     switch (fieldName) {
@@ -390,13 +351,12 @@ const CreateContactForm = ({
 
     fetchJobs();
   }, [dispatch, accessToken, defaultJobPost, board_id, isUserContactsPage]);
-
   // Sync allJobPosts with Redux jobs to ensure sidebar always has access to jobs
   useEffect(() => {
     if (jobs.jobPosts.length && jobs.jobPosts.length !== allJobPosts.length) {
       setAllJobPosts(jobs.jobPosts);
     }
-  }, [jobs.jobPosts.length, allJobPosts.length]); // track only the lengths
+  }, [jobs.jobPosts, allJobPosts.length]); // Include full jobs.jobPosts array
 
   useEffect(() => {
     if (selectedCompanyName) {
@@ -496,8 +456,7 @@ const CreateContactForm = ({
       (email) => email.id === id
     );
 
-    if (wasExisting) {
-      dispatch(
+    if (wasExisting) {      dispatch(
         updateContactEmail({
           id,
           type,
@@ -505,7 +464,6 @@ const CreateContactForm = ({
           accessToken: accessToken as string,
         })
       );
-      markContactMethodChanged('emails', id);
     }
   };
 
@@ -524,8 +482,7 @@ const CreateContactForm = ({
       (phone) => phone.id === id
     );
 
-    if (wasExisting) {
-      dispatch(
+    if (wasExisting) {      dispatch(
         updateContactPhone({
           id,
           type,
@@ -533,7 +490,6 @@ const CreateContactForm = ({
           accessToken: accessToken as string,
         })
       );
-      markContactMethodChanged('phones', id);
     }
   };
 
