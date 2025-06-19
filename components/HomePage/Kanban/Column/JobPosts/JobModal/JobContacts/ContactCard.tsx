@@ -61,7 +61,7 @@ const ContactCard = ({
   }, [contact]);
 
   // Memoized formatter functions for better performance
-  const formatTextWithEllipsis = useCallback((text: string, maxLength = 24) => {
+  const formatTextWithEllipsis = useCallback((text: string, maxLength = 22) => {
     return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
   }, []);
 
@@ -164,7 +164,8 @@ const ContactCard = ({
     };
 
     getCurrentContact();
-  }, [dispatch, accessToken, contactId, board_id, contact]);  const handleEditContact = (contactId: string) => {
+  }, [dispatch, accessToken, contactId, board_id, contact]);
+  const handleEditContact = (contactId: string) => {
     setShowContactModal(true);
     setOpenDropdownId(null);
   };
@@ -308,10 +309,10 @@ const ContactCard = ({
       <CreateContactModal
         showButton={false}
         buttonConfirm="Update"
-        userContactsPage={!board_id} // If no board_id in URL, we're on main contacts page
         buttonLabel="Edit Contact"
         dialogTitle="Edit Contact"
         isVisible={showContactModal}
+        userContactsPage={!board_id} // If no board_id in URL, we're on main contacts page
         contactToEdit={contactWithCompanies}
         onClose={() => setShowContactModal(false)}
         onContactUpdated={(updatedContact) => {
