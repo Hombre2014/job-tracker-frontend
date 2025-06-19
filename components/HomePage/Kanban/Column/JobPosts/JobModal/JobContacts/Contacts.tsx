@@ -38,7 +38,6 @@ const Contacts = () => {
     try {
       const columnId = localStorage.getItem('columnId');
       if (columnId) {
-        console.log('Refreshing contacts for job application...');
         // Remove the setTimeout to ensure immediate refresh
         const response = await dispatch(
           getAllJobPostsPerColumn({
@@ -46,8 +45,6 @@ const Contacts = () => {
             accessToken,
           })
         ).unwrap();
-
-        console.log('Job posts refreshed:', response);
       }
     } catch (error) {
       console.error('Error refreshing contacts:', error);
