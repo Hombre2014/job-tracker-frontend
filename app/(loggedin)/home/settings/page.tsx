@@ -1,10 +1,9 @@
 'use client';
 
 import Image from 'next/image';
+import { toast } from 'react-toastify';
 import { useEffect, useState } from 'react';
 import { IoMdContact } from 'react-icons/io';
-import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer, toast } from 'react-toastify';
 
 import { cn } from '@/lib/utils';
 import Modal from '@/components/Misc/Modal';
@@ -250,7 +249,6 @@ const Settings = () => {
           </div>
         </section>
       </div>
-      <ToastContainer autoClose={3000} className="mr-4" />
     </Modal>
   );
 };

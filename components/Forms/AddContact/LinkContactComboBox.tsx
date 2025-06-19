@@ -71,7 +71,9 @@ const LinkContactComboBox: React.FC<LinkContactComboBoxProps> = ({
   };
 
   const getContactCompany = (contact: Contact) => {
-    return contact.companies.length > 0 ? contact.companies[0].name : null;
+    return contact.companies.length > 0
+      ? contact.companies[0].name || null
+      : null;
   };
   return (
     <div className="relative inline-block" ref={dropdownRef}>

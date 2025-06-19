@@ -51,6 +51,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Impact**: Dropdown now correctly shows only unlinked contacts
   - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
 
+### 🐛 Recent Bug Fixes
+
+#### Link Contact Dropdown State Management
+
+- **Fixed dropdown not updating after contact linking**: Resolved issue where linked contacts remained visible in dropdown
+
+  - **Issue**: After linking a contact to a job, the contact would disappear from the Contacts tab but remain in the "+ Link Contact" dropdown list
+  - **Root cause**: `refreshContacts()` function was using stale Redux state instead of fresh API response data for filtering
+  - **Solution**: Modified `refreshContacts()` to use fresh API response from `getAllJobPostsPerColumn()` for immediate filtering
+  - **Impact**: Dropdown now immediately updates after linking, showing only truly available contacts
+  - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
+
+- **Preserved unlinking functionality**: Ensured contact unlinking operations continue to work properly
+  - **Issue**: Initial fix attempt broke existing contact unlinking - contacts would remain in UI after unlinking
+  - **Solution**: Reverted problematic manual state filtering, implemented proper API-response-based filtering instead
+  - **Result**: Both linking and unlinking operations now work correctly with immediate UI updates
+  - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
+
+### 🎨 UX Improvements
+
+#### Toast Notification Refinements
+
+- **Streamlined toast notifications for contact linking**: Simplified notification strategy based on user feedback
+
+  - **Change**: Removed success toasts for contact linking operations (only show error toasts)
+  - **Rationale**: UI already provides immediate visual feedback when contacts are linked, success toasts were redundant
+  - **Implementation**: Added comprehensive error handling with informative error messages for failed operations
+  - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
+
+- **Implemented global toast infrastructure**: Added app-wide toast support for consistent error messaging
+  - **Feature**: Added `ToastContainer` to main logged-in layout for universal toast support
+  - **Configuration**: Configured with optimal positioning, timing, and interaction settings
+  - **Cleanup**: Removed duplicate toast containers from individual pages to avoid conflicts
+  - **Files**: `app/(loggedin)/layout.tsx`, `app/(loggedin)/home/settings/page.tsx`
+
 ### 🧹 Code Quality Improvements
 
 #### Component Architecture
@@ -78,6 +113,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Removed**: Debug event handlers and browser detection code
   - **Impact**: Production-ready codebase with no development artifacts
   - **Files**: Multiple component files
+
+#### Contact Filtering Logic Optimization
+
+- **Extracted duplicate contact filtering logic**: Implemented DRY principle for contact availability filtering
+  - **Issue**: Identical contact filtering logic was duplicated between `useEffect` and `refreshContacts` function
+  - **Solution**: Created `filterUnlinkedContacts` helper function using `useCallback` for performance optimization
+  - **Benefits**: Single source of truth for filtering logic, easier maintenance, consistent behavior
+  - **Implementation**: Helper function takes contact list and job ID, returns filtered contacts not linked to current job
+  - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
+
+#### Data Synchronization Improvements
+
+- **Enhanced API response utilization**: Improved data freshness for contact filtering operations
+  - **Problem**: Filtering relied on potentially stale Redux state, causing timing issues
+  - **Solution**: Use fresh API response data directly from `getAllJobPostsPerColumn()` for immediate filtering
+  - **Benefit**: Eliminates race conditions between Redux state updates and UI filtering operations
+  - **Result**: Immediate and accurate dropdown updates after contact linking/unlinking operations
+  - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
 
 ### 🚀 Performance Improvements
 

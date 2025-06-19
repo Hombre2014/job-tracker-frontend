@@ -1,3 +1,4 @@
+import { toast } from 'react-toastify';
 import { SlPeople } from 'react-icons/sl';
 import { useCallback, useEffect, useState } from 'react';
 import { useParams, usePathname } from 'next/navigation';
@@ -26,7 +27,7 @@ const Contacts = () => {
   const { job_id, board_id } = useParams();
   const jobs = useAppSelector((state) => state.jobs);
   const accessToken = localStorage.getItem('accessToken');
-  const isContactsPage = pathname?.includes('/home/contacts'); // Local state for available contacts
+  const isContactsPage = pathname?.includes('/home/contacts');
   const [availableContacts, setAvailableContacts] = useState<Contact[]>([]);
   const numberOfContactsPerJob =
     jobs.jobPosts.find((job) => job.id === job_id)?.contacts.length || 0;
@@ -34,6 +35,20 @@ const Contacts = () => {
     (job) => job.id === job_id
   )?.contacts;
 
+  // Helper function to filter out contacts already linked to the current job
+  const filterUnlinkedContacts = useCallback(
+    (allContacts: Contact[], jobId: string | string[] | undefined) => {
+      const currentLinkedIds =
+        jobs.jobPosts
+          .find((job) => job.id === jobId)
+          ?.contacts.map((contact: Contact) => contact.id) || [];
+
+      return allContacts.filter(
+        (contact: Contact) => !currentLinkedIds.includes(contact.id)
+      );
+    },
+    [jobs.jobPosts]
+  );
   // Fetch all board contacts when component mounts
   useEffect(() => {
     const fetchBoardContacts = async () => {
@@ -44,15 +59,9 @@ const Contacts = () => {
               boardId: Array.isArray(board_id) ? board_id[0] : board_id,
               accessToken,
             })
-          ).unwrap(); // Filter out contacts that are already linked to this job
-          const currentLinkedIds =
-            jobs.jobPosts
-              .find((job) => job.id === job_id)
-              ?.contacts.map((contact: Contact) => contact.id) || [];
-          const unlinkedContacts = response.filter(
-            (contact: Contact) => !currentLinkedIds.includes(contact.id)
-          );
+          ).unwrap();
 
+          const unlinkedContacts = filterUnlinkedContacts(response, job_id);
           setAvailableContacts(unlinkedContacts);
         } catch (error) {
           console.error('Error fetching board contacts:', error);
@@ -61,7 +70,7 @@ const Contacts = () => {
       }
     };
     fetchBoardContacts();
-  }, [dispatch, board_id, accessToken, job_id, jobs.jobPosts]);
+  }, [dispatch, board_id, accessToken, job_id, filterUnlinkedContacts]);
 
   const handleContactUpdated = (updatedContact: Contact) => {
     // Refresh data from the backend to update Redux state
@@ -72,7 +81,7 @@ const Contacts = () => {
       const columnId = localStorage.getItem('columnId');
       if (columnId) {
         // Refresh job posts to get updated contact assignments
-        const response = await dispatch(
+        const jobPostsResponse = await dispatch(
           getAllJobPostsPerColumn({
             columnId,
             accessToken,
@@ -88,11 +97,13 @@ const Contacts = () => {
             })
           ).unwrap();
 
-          // Filter out contacts that are already linked to this job
+          // Use the fresh job posts data from the API response to filter contacts
+          const currentJob = jobPostsResponse.find(
+            (job: any) => job.id === job_id
+          );
           const currentLinkedIds =
-            jobs.jobPosts
-              .find((job) => job.id === job_id)
-              ?.contacts.map((contact: Contact) => contact.id) || [];
+            currentJob?.contacts?.map((contact: Contact) => contact.id) || [];
+
           const unlinkedContacts = boardContactsResponse.filter(
             (contact: Contact) => !currentLinkedIds.includes(contact.id)
           );
@@ -103,15 +114,15 @@ const Contacts = () => {
     } catch (error) {
       console.error('Error refreshing contacts:', error);
     }
-  }, [dispatch, accessToken, board_id, job_id, jobs.jobPosts]);
+  }, [dispatch, accessToken, board_id, job_id]);
+
+  // Remove the additional useEffect that might cause issues
   const handleContactDeleted = () => {
     // Refresh data from the backend
     refreshContacts();
-  };
-  // Handle linking existing contact to job
+  }; // Handle linking existing contact to job
   const handleLinkContact = async (contact: Contact) => {
     if (!job_id || !accessToken) return;
-
     try {
       await dispatch(
         assignContactToJobPost({
@@ -125,7 +136,19 @@ const Contacts = () => {
       await refreshContacts();
     } catch (error) {
       console.error('Error linking contact to job:', error);
-      // You might want to show a toast notification here
+
+      // Show error toast notification
+      toast.error(
+        `Failed to link ${contact.firstName} ${contact.lastName} to this job. Please try again.`,
+        {
+          autoClose: 5000,
+          draggable: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          position: 'top-right',
+          hideProgressBar: false,
+        }
+      );
     }
   };
   return (
