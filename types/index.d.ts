@@ -263,3 +263,10 @@ interface CompaniesInputProps {
   onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
+
+interface ComboJobsBoxProps {
+  buttonWidth: string;
+  jobPosts: JobApplication[];
+  jobsConnectedToContact: JobApplication[];
+  onJobSelect: (jobTitle: string, jobId: string) => void;
+}

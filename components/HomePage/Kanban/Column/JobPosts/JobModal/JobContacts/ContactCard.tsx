@@ -13,10 +13,10 @@ import {
   SlSocialLinkedin,
 } from 'react-icons/sl';
 
+import { getBoardsOnly } from '@/redux/boards/boardsThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import CreateContactModal from '@/components/Misc/CreateContactModal';
 import { deleteContact, getContact } from '@/redux/contacts/contactsThunk';
-import { getBoardsOnly } from '@/redux/boards/boardsThunk';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import {
   DropdownMenu,
@@ -37,7 +37,6 @@ const ContactCard = ({
 }) => {
   // Get a reliable board_id - first check URL params, then contact itself, then look for board object
   const params = useParams();
-  const contactId = contact.id;
   const dispatch = useAppDispatch();
   const accessToken = localStorage.getItem('accessToken');
   const [companyNames, setCompanyNames] = useState<string[]>([]);
@@ -134,7 +133,7 @@ const ContactCard = ({
         // Only proceed with API call if we have a boardId
         if (effectiveBoardId) {
           const value = {
-            contactId: contactId,
+            contactId: contact.id,
             boardId: effectiveBoardId,
             accessToken: accessToken as string,
           };
@@ -162,19 +161,18 @@ const ContactCard = ({
         setCompanyNames(['Error loading company data']);
       }
     };
-
     getCurrentContact();
-  }, [dispatch, accessToken, contactId, board_id, contact]);
-  const handleEditContact = (contactId: string) => {
+  }, [dispatch, accessToken, board_id, contact]);
+  const handleEditContact = () => {
     setShowContactModal(true);
     setOpenDropdownId(null);
   };
 
-  const handleDeleteContact = (contactId: string) => {
+  const handleDeleteContact = () => {
     dispatch(
-      deleteContact({ id: contactId, accessToken: accessToken as string })
+      deleteContact({ id: contact.id, accessToken: accessToken as string })
     ).then(() => {
-      onDelete(contactId);
+      onDelete(contact.id);
     });
     setOpenDropdownId(null);
   };
@@ -244,9 +242,10 @@ const ContactCard = ({
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="!absolute !-right-4 !top-0 rsw-dropdown-menu">
+              {' '}
               <DropdownMenuItem
                 className="rsw-dropdown-menu-item"
-                onClick={() => handleEditContact(contact.id)}
+                onClick={() => handleEditContact()}
               >
                 Edit Contact
               </DropdownMenuItem>
@@ -255,6 +254,7 @@ const ContactCard = ({
                 onClick={(e) => e.stopPropagation()}
                 className="rsw-dropdown-menu-item"
               >
+                {' '}
                 <AlertDialogModal
                   buttonCancel="Cancel"
                   buttonVariant="ghost"
@@ -262,7 +262,7 @@ const ContactCard = ({
                   destructiveVariant={true}
                   dialogTitle="Delete Contact"
                   buttonLabel="Delete Contact"
-                  actionFunction={() => handleDeleteContact(contact.id)}
+                  actionFunction={() => handleDeleteContact()}
                   dialogText="Are you sure you want to delete this contact?"
                   stylings="ml-0 pl-2 font-normal inline-flex justify-start w-full text-left"
                   onOpenChange={(isOpen) => {

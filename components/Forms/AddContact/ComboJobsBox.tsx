@@ -18,13 +18,6 @@ import {
   CommandInput,
 } from '@/components/ui/command';
 
-interface ComboJobsBoxProps {
-  buttonWidth: string;
-  jobPosts: JobApplication[];
-  jobsConnectedToContact: JobApplication[];
-  onJobSelect: (jobTitle: string, jobId: string) => void;
-}
-
 const ComboJobsBox = ({
   jobPosts,
   buttonWidth,

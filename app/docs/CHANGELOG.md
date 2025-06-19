@@ -61,6 +61,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Removed unused `jobs` variable**: Cleaned up variable that was fetched but never used
   - **Files**: `components/Misc/CreateContactModal.tsx`
 
+- **Cleaned up function parameters in CompaniesInput**: Removed unused `company` parameter from `handleRemoveCompany` function
+  - **Issue**: Function received two parameters (`company`, `index`) but only used `index` for filtering
+  - **Solution**: Removed unused `company` parameter and updated function call to only pass `index`
+  - **Benefit**: Cleaner code with no unused parameters, maintains same functionality
+  - **Files**: `components/Forms/AddContact/CompaniesInput.tsx`
+
+- **Removed redundant variable and unused parameters in ContactCard**: Eliminated unnecessary `contactId` variable and unused function parameters
+  - **Issue**: `const contactId = contact.id;` was created but `contact.id` was used directly in most places; `handleEditContact` had unused `contactId` parameter
+  - **Solution**: Removed `contactId` variable entirely, removed unused parameters from handler functions, used `contact.id` directly
+  - **Benefit**: Cleaner code, better maintainability, removed potential confusion from unused parameters
+  - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/ContactCard.tsx`
+
+- **Fixed React Hook dependency warnings**: Resolved dependency array issues in useEffect hooks
+  - **Issue**: useEffect hooks had missing or unnecessary dependencies causing React warnings
+  - **Solution**: Updated dependency arrays to include proper dependencies and remove unnecessary ones
+  - **Files**: `components/Forms/AddContact/CreateContactForm.tsx`, `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/ContactCard.tsx`
+
 #### Modern JavaScript Practices
 
 - **Enhanced URL parsing**: Implemented modern JavaScript patterns for safer URL handle extraction
