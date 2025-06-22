@@ -7,6 +7,131 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2025-06-19
 
+### ✨ New Features
+
+#### Link Existing Contacts to Jobs
+
+- **Implemented "+ Link Contact" dropdown feature**: Added ability to link existing board contacts to job applications
+  - **Feature**: Interactive dropdown showing available contacts that aren't already linked to the current job
+  - **Search functionality**: Real-time filtering by contact name, job title, or company
+  - **Visual design**: Clean UI with contact photos, names, companies, and job titles
+  - **Smart filtering**: Only shows contacts that are NOT already assigned to the current job
+  - **Immediate feedback**: UI updates instantly after linking, contact disappears from dropdown
+  - **Empty state handling**: Shows "No contacts available to link" when all board contacts are already linked
+  - **Cross-browser compatibility**: Works consistently across Chrome, Firefox, Edge, and Vivaldi
+  - **Files**:
+    - `components/Forms/AddContact/LinkContactComboBox.tsx` (new component)
+    - `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx` (integration)
+
+#### Contact Management UX Improvements
+
+- **Enhanced contact filtering logic**: Implemented intelligent contact availability detection
+  - **Smart filtering**: Automatically excludes contacts already linked to the current job from dropdown
+  - **Real-time updates**: Available contacts list refreshes immediately after linking operations
+  - **Efficient data fetching**: Optimized Redux thunk calls to minimize unnecessary network requests
+  - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
+
+### 🐛 Bug Fixes
+
+#### Cross-Browser Compatibility
+
+- **Resolved Edge browser caching issues**: Fixed JavaScript event handler problems in Microsoft Edge
+  - **Issue**: "+ Link Contact" button clicks were not working in Edge browser (no response, no console logs)
+  - **Root cause**: Browser caching/session state preventing JavaScript execution
+  - **Solution**: Identified that browser restart/cache clearing resolves the issue
+  - **Impact**: Feature now works consistently across all major browsers
+  - **Prevention**: Added debugging infrastructure to quickly identify similar issues in the future
+  - **Files**: Multiple component files during debugging phase
+
+#### Contact Assignment Logic
+
+- **Fixed contact filtering edge cases**: Resolved issues with contact availability calculation
+  - **Issue**: Dropdown sometimes showed already-linked contacts
+  - **Solution**: Enhanced filtering logic to properly exclude linked contacts using contact ID comparison
+  - **Impact**: Dropdown now correctly shows only unlinked contacts
+  - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
+
+### 🐛 Recent Bug Fixes
+
+#### Link Contact Dropdown State Management
+
+- **Fixed dropdown not updating after contact linking**: Resolved issue where linked contacts remained visible in dropdown
+
+  - **Issue**: After linking a contact to a job, the contact would disappear from the Contacts tab but remain in the "+ Link Contact" dropdown list
+  - **Root cause**: `refreshContacts()` function was using stale Redux state instead of fresh API response data for filtering
+  - **Solution**: Modified `refreshContacts()` to use fresh API response from `getAllJobPostsPerColumn()` for immediate filtering
+  - **Impact**: Dropdown now immediately updates after linking, showing only truly available contacts
+  - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
+
+- **Preserved unlinking functionality**: Ensured contact unlinking operations continue to work properly
+  - **Issue**: Initial fix attempt broke existing contact unlinking - contacts would remain in UI after unlinking
+  - **Solution**: Reverted problematic manual state filtering, implemented proper API-response-based filtering instead
+  - **Result**: Both linking and unlinking operations now work correctly with immediate UI updates
+  - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
+
+### 🎨 UX Improvements
+
+#### Toast Notification Refinements
+
+- **Streamlined toast notifications for contact linking**: Simplified notification strategy based on user feedback
+
+  - **Change**: Removed success toasts for contact linking operations (only show error toasts)
+  - **Rationale**: UI already provides immediate visual feedback when contacts are linked, success toasts were redundant
+  - **Implementation**: Added comprehensive error handling with informative error messages for failed operations
+  - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
+
+- **Implemented global toast infrastructure**: Added app-wide toast support for consistent error messaging
+  - **Feature**: Added `ToastContainer` to main logged-in layout for universal toast support
+  - **Configuration**: Configured with optimal positioning, timing, and interaction settings
+  - **Cleanup**: Removed duplicate toast containers from individual pages to avoid conflicts
+  - **Files**: `app/(loggedin)/layout.tsx`, `app/(loggedin)/home/settings/page.tsx`
+
+### 🧹 Code Quality Improvements
+
+#### Component Architecture
+
+- **Created reusable LinkContactComboBox component**: Designed clean, modular dropdown component
+  - **Features**: Self-contained state management, click-outside-to-close, search functionality
+  - **Reusability**: Can be used anywhere in the app that needs contact linking
+  - **Props interface**: Clean TypeScript interface with proper type safety
+  - **Event handling**: Proper React event patterns with useEffect cleanup
+  - **Files**: `components/Forms/AddContact/LinkContactComboBox.tsx`
+
+#### State Management Cleanup
+
+- **Removed unused variables**: Cleaned up unnecessary state and computed values
+  - **Removed**: `linkedContactIds` - was calculated but never used
+  - **Simplified**: Removed loading state functionality to prevent layout shift issues
+  - **Impact**: Cleaner code, better performance, no layout glitches
+  - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
+
+#### Development Tools Cleanup
+
+- **Removed all debugging infrastructure**: Cleaned up temporary debugging code after issue resolution
+  - **Removed**: `EdgeTest.tsx` component (entire file deleted)
+  - **Removed**: All debug console.log statements and alert() calls
+  - **Removed**: Debug event handlers and browser detection code
+  - **Impact**: Production-ready codebase with no development artifacts
+  - **Files**: Multiple component files
+
+#### Contact Filtering Logic Optimization
+
+- **Extracted duplicate contact filtering logic**: Implemented DRY principle for contact availability filtering
+  - **Issue**: Identical contact filtering logic was duplicated between `useEffect` and `refreshContacts` function
+  - **Solution**: Created `filterUnlinkedContacts` helper function using `useCallback` for performance optimization
+  - **Benefits**: Single source of truth for filtering logic, easier maintenance, consistent behavior
+  - **Implementation**: Helper function takes contact list and job ID, returns filtered contacts not linked to current job
+  - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
+
+#### Data Synchronization Improvements
+
+- **Enhanced API response utilization**: Improved data freshness for contact filtering operations
+  - **Problem**: Filtering relied on potentially stale Redux state, causing timing issues
+  - **Solution**: Use fresh API response data directly from `getAllJobPostsPerColumn()` for immediate filtering
+  - **Benefit**: Eliminates race conditions between Redux state updates and UI filtering operations
+  - **Result**: Immediate and accurate dropdown updates after contact linking/unlinking operations
+  - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
+
 ### 🚀 Performance Improvements
 
 #### Contact Modal Job Data Fetching
@@ -25,7 +150,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Impact**: 3x+ speed improvement for multiple job assignments, faster modal closure
   - **Files**: `components/Misc/CreateContactModal.tsx`
 
-### 🐛 Bug Fixes
+### 🐛 Additional Bug Fixes
 
 #### Social Media Links
 
@@ -43,31 +168,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Impact**: Prevents empty handles from URLs ending with slashes
   - **Files**: `components/Forms/AddContact/CreateContactForm.tsx`
 
-### 🧹 Code Quality Improvements
+### 🧹 Additional Code Quality Improvements
 
 #### Dead Code Removal
 
 - **Removed unused state variable**: Cleaned up `contacts` state that was not being used for rendering
+
   - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/ContactCard.tsx`, `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
 
 - **Removed `hasChanges` tracking system**: Eliminated unused state and functions that were not being used
+
   - **Files**: `components/Forms/AddContact/CreateContactForm.tsx`
 
 - **Removed undefined function calls**: Cleaned up calls to `markFieldChanged` and `markContactMethodChanged` functions that were never defined
+
   - **Issue**: Functions were being called but never implemented, causing potential runtime errors
   - **Solution**: Removed all calls to these undefined functions since they served no purpose
   - **Files**: `components/Forms/AddContact/CreateContactForm.tsx`
 
 - **Removed unused `jobs` variable**: Cleaned up variable that was fetched but never used
+
   - **Files**: `components/Misc/CreateContactModal.tsx`
 
 - **Cleaned up function parameters in CompaniesInput**: Removed unused `company` parameter from `handleRemoveCompany` function
+
   - **Issue**: Function received two parameters (`company`, `index`) but only used `index` for filtering
   - **Solution**: Removed unused `company` parameter and updated function call to only pass `index`
   - **Benefit**: Cleaner code with no unused parameters, maintains same functionality
   - **Files**: `components/Forms/AddContact/CompaniesInput.tsx`
 
 - **Removed redundant variable and unused parameters in ContactCard**: Eliminated unnecessary `contactId` variable and unused function parameters
+
   - **Issue**: `const contactId = contact.id;` was created but `contact.id` was used directly in most places; `handleEditContact` had unused `contactId` parameter
   - **Solution**: Removed `contactId` variable entirely, removed unused parameters from handler functions, used `contact.id` directly
   - **Benefit**: Cleaner code, better maintainability, removed potential confusion from unused parameters
@@ -117,31 +248,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Summary of Changes
 
+### New Feature Impact
+
+- **Contact linking workflow**: Added seamless way to connect existing contacts to job applications
+- **Improved productivity**: No need to recreate contacts that already exist on the board
+- **Better data integrity**: Prevents duplicate contacts while maintaining relationships
+- **Enhanced user experience**: Intuitive dropdown with search and visual feedback
+
 ### Performance Impact
 
 - **Modal loading speed**: 5x improvement for contacts with multiple jobs
 - **Job assignment speed**: 3x+ improvement for bulk operations
 - **Network efficiency**: Reduced redundant API calls significantly
+- **Contact filtering**: Real-time filtering with optimized Redux state management
 
 ### User Experience Impact
 
+- **Contact linking**: New intuitive dropdown interface for linking existing contacts
+- **Cross-browser reliability**: Consistent functionality across all major browsers (Chrome, Firefox, Edge, Vivaldi)
 - **Social media links**: Now work correctly without broken redirects
 - **Form reliability**: Handles edge cases with trailing slashes in URLs
 - **Faster interactions**: Reduced waiting times for modal operations
+- **Visual feedback**: Immediate UI updates and clear empty states
 
 ### Code Quality Impact
 
+- **Component architecture**: Added reusable LinkContactComboBox component
 - **Reduced complexity**: Removed unused code and simplified logic
 - **Better maintainability**: Modern JavaScript patterns and cleaner async operations
 - **Enhanced reliability**: Improved error handling and type safety
+- **Production ready**: All debugging code cleaned up
 
 ### Files Modified
 
-1. `components/Misc/CreateContactModal.tsx` - Major performance and functionality improvements
-2. `components/Forms/AddContact/CreateContactForm.tsx` - URL handle extraction fixes
-3. `components/Forms/AddContact/SocialMediaLinks.tsx` - Social media link reconstruction
-4. `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx` - Dead code removal
-5. `types/index.d.ts` - Type definition enhancements
+1. `components/Forms/AddContact/LinkContactComboBox.tsx` - **NEW**: Complete dropdown component for linking contacts
+2. `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx` - Contact linking integration and cleanup
+3. `components/Misc/CreateContactModal.tsx` - Major performance and functionality improvements
+4. `components/Forms/AddContact/CreateContactForm.tsx` - URL handle extraction fixes
+5. `components/Forms/AddContact/SocialMediaLinks.tsx` - Social media link reconstruction
+6. `types/index.d.ts` - Type definition enhancements
+7. `components/Forms/AddContact/EdgeTest.tsx` - **DELETED**: Debugging component removed
 
 ---
 
