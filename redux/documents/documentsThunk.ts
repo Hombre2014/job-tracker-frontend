@@ -3,7 +3,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 
 export const getDocument = createAsyncThunk(
   'documents/getDocument',
-  async (values: any, thunkAPI) => {
+  async (values: GetDocumentParams, thunkAPI) => {
     const { accessToken, documentId } = values;
     try {
       const res = await client.get(`/documents/${documentId}`, {
@@ -23,22 +23,8 @@ export const getDocument = createAsyncThunk(
 
 export const uploadDocument = createAsyncThunk(
   'documents/uploadDocument',
-  async (values: any, thunkAPI) => {
-    const {
-      file,
-      title,
-      boardId,
-      category,
-      description,
-      accessToken,
-    }: {
-      file: File;
-      title: string;
-      boardId: string;
-      category: string;
-      accessToken: string;
-      description: string;
-    } = values;
+  async (values: UploadDocumentParams, thunkAPI) => {
+    const { file, title, boardId, category, description, accessToken } = values;
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -65,16 +51,8 @@ export const uploadDocument = createAsyncThunk(
 
 export const attachDocumentToJobApplication = createAsyncThunk(
   'documents/attachDocumentToJobApplication',
-  async (values: any, thunkAPI) => {
-    const {
-      jobId,
-      documentId,
-      accessToken,
-    }: {
-      jobId: string;
-      documentId: string;
-      accessToken: string;
-    } = values;
+  async (values: AttachDocumentParams, thunkAPI) => {
+    const { jobId, documentId, accessToken } = values;
     try {
       const res = await client.post(
         `/documents/${documentId}/job-applications/${jobId}/attach`,
@@ -97,16 +75,8 @@ export const attachDocumentToJobApplication = createAsyncThunk(
 
 export const detachDocumentFromJobApplication = createAsyncThunk(
   'documents/detachDocumentFromJobApplication',
-  async (values: any, thunkAPI) => {
-    const {
-      jobId,
-      documentId,
-      accessToken,
-    }: {
-      jobId: string;
-      documentId: string;
-      accessToken: string;
-    } = values;
+  async (values: DetachDocumentParams, thunkAPI) => {
+    const { jobId, documentId, accessToken } = values;
     try {
       const res = await client.post(
         `/documents/${documentId}/job-applications/${jobId}/detach`,
@@ -129,7 +99,7 @@ export const detachDocumentFromJobApplication = createAsyncThunk(
 
 export const deleteDocument = createAsyncThunk(
   'documents/deleteDocument',
-  async (values: any, thunkAPI) => {
+  async (values: DeleteDocumentParams, thunkAPI) => {
     const { documentId, accessToken } = values;
     try {
       const res = await client.delete(`/documents/${documentId}`, {
