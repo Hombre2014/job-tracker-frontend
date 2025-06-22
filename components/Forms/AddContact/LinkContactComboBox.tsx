@@ -29,7 +29,7 @@ const LinkContactComboBox: React.FC<LinkContactComboBoxProps> = ({
       (contact.companies.length > 0 &&
         contact.companies.some(
           (company: any) =>
-            company.name && company.name.toLowerCase().includes(searchLower)
+            company.name?.toLowerCase().includes(searchLower)
         ))
     );
   });
