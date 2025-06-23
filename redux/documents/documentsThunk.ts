@@ -107,8 +107,8 @@ export const deleteDocument = createAsyncThunk(
           Authorization: `Bearer ${accessToken}`,
         },
       });
-      const data = res.data;
-      return data;
+      // Return the documentId for filtering in the slice
+      return documentId;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(
         err.response?.data || 'Error deleting document'

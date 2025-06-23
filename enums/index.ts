@@ -28,3 +28,16 @@ export enum JobPostMenuItems {
   JobInfo = 'RxInfoCircled',
   Documents = 'IoDocumentsOutline',
 }
+
+export enum DocumentCategory {
+  Other = 'Other',
+  Resume = 'Resume',
+  JobPost = 'Job Post',
+  Portfolio = 'Portfolio',
+  Transcript = 'Transcript',
+  OfferLetter = 'Offer Letter',
+  CoverLetter = 'Cover Letter',
+  Certification = 'Certification',
+  WritingSample = 'Writing Sample',
+  Recommendation = 'Recommendation',
+}

@@ -281,9 +281,9 @@ interface UploadDocumentParams {
   file: File;
   title: string;
   boardId: string;
-  category: string;
   accessToken: string;
   description: string;
+  category: DocumentCategory;
 }
 
 interface AttachDocumentParams {
