@@ -18,6 +18,7 @@ import notesSlice from './notes/notesSlice';
 import boardsSlice from './boards/boardsSlice';
 import contactsSlice from './contacts/contactsSlice';
 import companiesSlice from './companies/companiesSlice';
+import documentsSlice from './documents/documentsSlice';
 
 export function createPersistStorage(): WebStorage {
   const isServer = typeof window === 'undefined';
@@ -44,7 +45,15 @@ const persistConfig = {
   version: 1,
   key: 'root',
   storage: createPersistStorage(),
-  whitelist: ['user', 'boards', 'jobs', 'notes', 'contacts', 'companies'],
+  whitelist: [
+    'user',
+    'boards',
+    'jobs',
+    'notes',
+    'contacts',
+    'companies',
+    'documents',
+  ],
 };
 
 const rootReducer = combineReducers({
@@ -54,6 +63,7 @@ const rootReducer = combineReducers({
   boards: boardsSlice,
   contacts: contactsSlice,
   companies: companiesSlice,
+  documents: documentsSlice,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

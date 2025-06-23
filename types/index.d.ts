@@ -270,3 +270,35 @@ interface ComboJobsBoxProps {
   jobsConnectedToContact: JobApplication[];
   onJobSelect: (jobTitle: string, jobId: string) => void;
 }
+
+// Type interfaces for Documents thunks
+interface GetDocumentParams {
+  documentId: string;
+  accessToken: string;
+}
+
+interface UploadDocumentParams {
+  file: File;
+  title: string;
+  boardId: string;
+  accessToken: string;
+  description: string;
+  category: DocumentCategory;
+}
+
+interface AttachDocumentParams {
+  jobId: string;
+  documentId: string;
+  accessToken: string;
+}
+
+interface DetachDocumentParams {
+  jobId: string;
+  documentId: string;
+  accessToken: string;
+}
+
+interface DeleteDocumentParams {
+  documentId: string;
+  accessToken: string;
+}
