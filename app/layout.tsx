@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 
 import StoreProvider from './StoreProvider';
+import AppClientProviders from './AppClientProvider';
 import { ThemeProvider } from '@/components/Themes/theme-provider';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -22,7 +23,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <StoreProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            {children}
+            <AppClientProviders>{children}</AppClientProviders>
           </ThemeProvider>
         </StoreProvider>
       </body>
