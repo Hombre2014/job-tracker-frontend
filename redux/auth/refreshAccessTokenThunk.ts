@@ -1,6 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
 import client from '@/api/client';
+import { updateUserTokens } from '../user/userSlice';
 
 export const refreshAccessToken = createAsyncThunk(
   'auth/refreshAccessToken',
@@ -16,6 +17,13 @@ export const refreshAccessToken = createAsyncThunk(
       if (response.status === 200) {
         localStorage.setItem('accessToken', data.accessToken);
         localStorage.setItem('refreshToken', data.refreshToken);
+
+        thunkAPI.dispatch(
+          updateUserTokens({
+            accessToken: data.accessToken,
+            refreshToken: data.refreshToken,
+          })
+        );
         return { data };
       } else {
         return thunkAPI.rejectWithValue(data);

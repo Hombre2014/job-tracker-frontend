@@ -36,6 +36,10 @@ export const userSlice = createSlice({
     setStatusToIdle: (state) => {
       state.status = 'idle';
     },
+    updateUserTokens: (state, action) => {
+      state.accessToken = action.payload.accessToken;
+      state.refreshToken = action.payload.refreshToken;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -129,6 +133,6 @@ export const userSlice = createSlice({
   },
 });
 
+export const { setStatusToIdle, updateUserTokens } = userSlice.actions;
 export const selectUser = (state: RootState) => state.user;
-export const { setStatusToIdle } = userSlice.actions;
 export default userSlice.reducer;
