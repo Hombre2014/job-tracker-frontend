@@ -11,10 +11,11 @@ const TokenRefreshProvider: React.FC<{ children: React.ReactNode }> = ({
   const { accessToken, refreshToken } = useAppSelector((state) => state.user);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const exp = accessToken ? getTokenExpiration(accessToken) : undefined;
+
   useEffect(() => {
     if (!accessToken || !refreshToken) return;
 
-    const exp = getTokenExpiration(accessToken);
     if (!exp) return;
 
     // Refresh 1 minute before expiration
@@ -35,7 +36,7 @@ const TokenRefreshProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => {
       timerRef.current && clearTimeout(timerRef.current);
     };
-  }, [accessToken, refreshToken, dispatch]);
+  }, [accessToken, refreshToken, dispatch, exp]);
 
   return children;
 };
