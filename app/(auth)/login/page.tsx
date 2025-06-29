@@ -105,10 +105,10 @@ const Login = () => {
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
-                      disabled={isPending}
-                      type="email"
-                      placeholder="john.doe@domain.com"
                       {...field}
+                      type="email"
+                      disabled={isPending}
+                      placeholder="john.doe@domain.com"
                     />
                   </FormControl>
                   <FormMessage />
@@ -123,10 +123,10 @@ const Login = () => {
                   <FormLabel>Password</FormLabel>
                   <FormControl>
                     <Input
-                      disabled={isPending}
-                      type="password"
-                      placeholder="********"
                       {...field}
+                      type="password"
+                      disabled={isPending}
+                      placeholder="********"
                     />
                   </FormControl>
                   <FormMessage />
@@ -138,8 +138,8 @@ const Login = () => {
           <FormSuccess message={success} />
           {success !== '' && <Loader title="Loading user's data..." />}
           <Button
-            disabled={isPending}
             type="submit"
+            disabled={isPending}
             className="w-full bg-blue-500 transition duration-300 delay-100 hover:bg-blue-600 dark:text-white"
           >
             Log in
