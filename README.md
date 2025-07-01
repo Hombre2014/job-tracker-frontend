@@ -37,9 +37,9 @@
 
 - Clone the backend: `git clone https://github.com/Hombre2014/job-tracker-backend`
 - Change the directory: `cd job-tracker-backend`
-- Start your Docker daemon or Docker Desktop
-- Run the docker DB: `docker compose up postgres_dev`
-- Create `.env` file in the backend's root directory and populate it according the `.env.backend.example` file
+- Start Docker
+- Launch Postgres: `docker compose up -d postgres_dev` # ensure service exists in docker-compose.yml
+- Copy environment template: `cp .env.backend.example .env` and adjust values
 - You will need Appwrite account for the file upload functionality. You can get it from [Appwrite](https://appwrite.io/). Create a new project and copy the PROJECT_ID and BUCKET_ID to your `.env` file.
 - You will need a Resend account with token and notification email address, which is required for sending emails. You can get it from [Resend](https://resend.com/). Create a new account and copy the token to your `.env` file. Also set the notification email address in the `.env` file.
 - Run the migrations: `yarn run typeorm migration:run -d src/data-source.ts`
