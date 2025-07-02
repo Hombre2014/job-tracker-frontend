@@ -43,7 +43,9 @@ const TextEditor = ({
     const newValue = e.target.value;
     setHtml(newValue);
     setShowPlaceholder(false);
-    if (sendData && id === 'edit-note') {
+    
+    // Auto-save for edit-note (Notes editing) and description (JobInfo)
+    if (sendData && (id === 'edit-note' || id === 'description')) {
       sendData(id as keyof JobApplication, newValue);
     }
   };
