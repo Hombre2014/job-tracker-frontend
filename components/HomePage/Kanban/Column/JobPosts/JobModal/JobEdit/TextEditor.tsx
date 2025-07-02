@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { debounce } from 'lodash';
+import { useState, useCallback } from 'react';
 import {
   Editor,
   BtnBold,
@@ -39,14 +40,24 @@ const TextEditor = ({
   const BtnAlignRight = createButton('Align right', '⟞', 'justifyRight');
   const BtnAlignCenter = createButton('Align center', '≡', 'justifyCenter');
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const debouncedSendData = useCallback(
+    debounce((id: keyof JobApplication, value: string) => {
+      if (sendData) {
+        sendData(id, value);
+      }
+    }, 500),
+    [sendData] // provide debounce as a dependency
+  );
+
   const handleDescription = (e: any) => {
     const newValue = e.target.value;
     setHtml(newValue);
     setShowPlaceholder(false);
-    
+
     // Auto-save for edit-note (Notes editing) and description (JobInfo)
     if (sendData && (id === 'edit-note' || id === 'description')) {
-      sendData(id as keyof JobApplication, newValue);
+      debouncedSendData(id as keyof JobApplication, newValue);
     }
   };
 
