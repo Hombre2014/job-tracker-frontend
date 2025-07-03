@@ -28,11 +28,14 @@ const TokenRefreshProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (retryCountRef.current < MAX_RETRIES) {
         // Retry after 5 seconds
-        setTimeout(refreshWithRetry, 5000);
+        const id = setTimeout(refreshWithRetry, 5000);
+        timerRef.current = id as unknown as NodeJS.Timeout;
       } else {
         // Clear tokens and redirect to login
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+        if (typeof Storage !== 'undefined') {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+        }
         router.push('/login');
       }
     }
