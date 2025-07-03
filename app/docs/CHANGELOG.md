@@ -5,7 +5,7 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2025-06-19
+## [Unreleased] - 2025-01-15
 
 ### ✨ New Features
 
@@ -331,6 +331,102 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 6. `types/index.d.ts` - Type definition enhancements
 7. `components/Forms/AddContact/EdgeTest.tsx` - **DELETED**: Debugging component removed
 
+## [Unreleased] - 2025-07-03 - Text Editor Description bug & Token Refresh System
+
+### 🐛 Bug Fixes (03/07/2025)
+
+#### Text Editor Description Field
+
+- **Fixed job description field not updating**: Resolved issue where job description changes weren't being saved
+  - **Issue**: TextEditor component only auto-saved for `edit-note` ID, but job description used `description` ID
+  - **Root cause**: Hardcoded condition in `handleDescription` function only triggered for note editing
+  - **Solution**: Enhanced condition to handle both `edit-note` (Notes) and `description` (JobInfo) while preserving Save button functionality for new notes
+  - **Impact**: Job descriptions now update immediately when typing, matching behavior of other job fields
+  - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobEdit/TextEditor.tsx`
+
+### ✨ New Features (03/07/2025)
+
+#### Automatic Token Refresh System
+
+- **Implemented rolling token refresh mechanism**: Added automatic session extension to keep users logged-in
+  - **Feature**: Automatically refreshes access tokens 1 minute before expiration (every ~59 minutes)
+  - **Rolling refresh**: Each refresh provides new access token (1 hour) + new refresh token (7 days), creating indefinite session
+  - **Duration**: Sessions now continue indefinitely as long as user remains active
+  - **Browser compatibility**: Works across all browsers including Vivaldi (with backup interval check)
+  - **Files**:
+    - `redux/auth/refreshAccessTokenThunk.ts` (new)
+    - `redux/auth/refreshAccessTokenSlice.ts` (new)
+    - `utils/TokenRefreshProvider.ts` (new)
+    - `app/AppClientProvider.tsx` (integration)
+
+#### Robust Error Handling & Recovery
+
+- **Added retry mechanism for token refresh failures**: Implemented 3-attempt retry system with graceful fallback
+  - **Retry logic**: Up to 3 attempts with 5-second delays between retries
+  - **Automatic logout**: Redirects to login page after 3 failed attempts instead of crashing
+  - **Global 401 handling**: Added axios interceptor to catch unauthorized responses app-wide
+  - **SSR safety**: Added proper guards for server-side rendering compatibility
+  - **Memory leak prevention**: Proper timer cleanup and tracking to prevent resource leaks
+  - **Files**:
+    - `utils/TokenRefreshProvider.ts`
+    - `api/client.ts`
+
+### 🔧 Technical Improvements (03/07/2025)
+
+#### Token Management Architecture
+
+- **Centralized token state management**: Added dedicated Redux slice for refresh token operations
+  - **State management**: Separate slice for refresh operations while maintaining user tokens in user slice
+  - **Persistence**: Added refresh token state to Redux persist whitelist
+  - **Type safety**: Proper TypeScript interfaces for all token operations
+  - **Files**:
+    - `redux/auth/refreshAccessTokenSlice.ts`
+    - `redux/store.ts`
+
+#### Code Quality Improvements
+
+- **Enhanced React Hook patterns**: Fixed dependency arrays and added proper cleanup
+  - **useCallback optimization**: Memoized functions to prevent unnecessary re-renders
+  - **Proper dependencies**: Fixed React Hook warnings with correct dependency arrays
+  - **Timer management**: Proper cleanup of setTimeout/setInterval to prevent memory leaks
+  - **Files**: Multiple component files
+
+#### Browser Compatibility
+
+- **Cross-browser timer reliability**: Added fallback mechanisms for browser-specific timer throttling
+  - **Primary timer**: Standard setTimeout for main refresh scheduling
+  - **Backup interval**: setInterval check every 30 seconds for Vivaldi compatibility
+  - **Cache prevention**: Added no-cache headers to prevent browser caching of refresh requests
+  - **Files**: `utils/TokenRefreshProvider.ts`, `redux/auth/refreshAccessTokenThunk.ts`
+
+### 🛡️ Security Improvements
+
+#### Session Management
+
+- **Secure token handling**: Proper token storage and cleanup on logout/failure
+  - **localStorage management**: Automatic cleanup of expired or invalid tokens
+  - **Secure redirects**: Proper navigation to login page on authentication failures
+  - **Token validation**: Proper JWT expiration parsing and handling
+  - **Files**: `utils/TokenRefreshProvider.ts`, `api/client.ts`
+
+#### Error Boundary Protection
+
+- **Global error handling**: Comprehensive error catching and user-friendly fallbacks
+  - **401 interceptor**: Global handling of unauthorized responses
+  - **Network failure recovery**: Graceful handling of network connectivity issues
+  - **User experience**: Smooth redirects instead of application crashes
+  - **Files**: `api/client.ts`
+
+### Files Modified/Added
+
+1. **NEW**: `redux/auth/refreshAccessTokenThunk.ts` - Token refresh API operations
+2. **NEW**: `redux/auth/refreshAccessTokenSlice.ts` - Refresh token state management
+3. **NEW**: `utils/TokenRefreshProvider.ts` - Automatic refresh timer and retry logic
+4. `app/AppClientProvider.tsx` - Integration of token refresh provider
+5. `redux/store.ts` - Added refresh token state to persistence
+6. `api/client.ts` - Global 401 error handling
+7. `components/HomePage/Kanban/Column/JobPosts/JobModal/JobEdit/TextEditor.tsx` - Description field fix
+
 ---
 
-_All changes maintain backward compatibility and do not break existing functionality._
+_All changes maintain backward compatibility and enhance user experience with improved session management and smoother UI interactions._
