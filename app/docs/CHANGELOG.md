@@ -348,7 +348,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Automatic Token Refresh System
 
-- **Implemented rolling token refresh mechanism**: Added automatic session extension to keep users logged in
+- **Implemented rolling token refresh mechanism**: Added automatic session extension to keep users logged-in
   - **Feature**: Automatically refreshes access tokens 1 minute before expiration (every ~59 minutes)
   - **Rolling refresh**: Each refresh provides new access token (1 hour) + new refresh token (7 days), creating indefinite session
   - **Duration**: Sessions now continue indefinitely as long as user remains active

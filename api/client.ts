@@ -12,6 +12,7 @@ client.interceptors.response.use(
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
       }
+      delete client.defaults.headers.common['Authorization']; // purge stale header
       window.location.href = '/login';
     }
     return Promise.reject(error);

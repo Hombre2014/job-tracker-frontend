@@ -1,6 +1,7 @@
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useRef, useCallback } from 'react';
 
+import { logout } from '@/redux/user/userThunk';
 import { getTokenExpiration } from '@/utils/helpers';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { refreshAccessToken as refreshTokenThunk } from '@/redux/auth/refreshAccessTokenThunk';
@@ -14,32 +15,39 @@ const TokenRefreshProvider: React.FC<{ children: React.ReactNode }> = ({
   const dispatch = useAppDispatch();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const { accessToken, refreshToken } = useAppSelector((state) => state.user);
+  const refreshTokenRef = useRef(refreshToken);
+
+  // Keep refreshTokenRef current
+  refreshTokenRef.current = refreshToken;
 
   const exp = accessToken ? getTokenExpiration(accessToken) : undefined;
 
   const refreshWithRetry = useCallback(async () => {
-    if (!refreshToken) return;
+    const currentRefreshToken = refreshTokenRef.current;
+    if (!currentRefreshToken) return;
 
     try {
-      await dispatch(refreshTokenThunk(refreshToken)).unwrap();
+      await dispatch(refreshTokenThunk(currentRefreshToken)).unwrap();
       retryCountRef.current = 0; // Reset on success
     } catch (error) {
       retryCountRef.current++;
 
       if (retryCountRef.current < MAX_RETRIES) {
         // Retry after 5 seconds
-        const id = setTimeout(refreshWithRetry, 5000);
-        timerRef.current = id as unknown as NodeJS.Timeout;
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(refreshWithRetry, 5000) as unknown as NodeJS.Timeout;
       } else {
         // Clear tokens and redirect to login
         if (typeof Storage !== 'undefined') {
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
         }
+
+        dispatch(logout());
         router.push('/login');
       }
     }
-  }, [dispatch, refreshToken, router]);
+  }, [dispatch, router]);
 
   useEffect(() => {
     if (!accessToken || !refreshToken) return;
