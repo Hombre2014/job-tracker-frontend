@@ -5,9 +5,107 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] - 2025-01-15
+## [Unreleased] - (03/07/2025) - Text Editor Description bug & Token Refresh System
 
-### ✨ New Features
+### 🐛 Bug Fixes - (03/07/2025)
+
+#### Text Editor Description Field
+
+- **Fixed job description field not updating**: Resolved issue where job description changes weren't being saved
+  - **Issue**: TextEditor component only auto-saved for `edit-note` ID, but job description used `description` ID
+  - **Root cause**: Hardcoded condition in `handleDescription` function only triggered for note editing
+  - **Solution**: Enhanced condition to handle both `edit-note` (Notes) and `description` (JobInfo) while preserving Save button functionality for new notes
+  - **Impact**: Job descriptions now update immediately when typing, matching behavior of other job fields
+  - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobEdit/TextEditor.tsx`
+
+### ✨ New Features - (03/07/2025)
+
+#### Automatic Token Refresh System
+
+- **Implemented rolling token refresh mechanism**: Added automatic session extension to keep users logged-in
+  - **Feature**: Automatically refreshes access tokens 1 minute before expiration (every ~59 minutes)
+  - **Rolling refresh**: Each refresh provides new access token (1 hour) + new refresh token (7 days), creating indefinite session
+  - **Duration**: Sessions now continue indefinitely as long as user remains active
+  - **Browser compatibility**: Works across all browsers including Vivaldi (with backup interval check)
+  - **Files**:
+    - `redux/auth/refreshAccessTokenThunk.ts` (new)
+    - `redux/auth/refreshAccessTokenSlice.ts` (new)
+    - `utils/TokenRefreshProvider.ts` (new)
+    - `app/AppClientProvider.tsx` (integration)
+
+#### Robust Error Handling & Recovery
+
+- **Added retry mechanism for token refresh failures**: Implemented 3-attempt retry system with graceful fallback
+  - **Retry logic**: Up to 3 attempts with 5-second delays between retries
+  - **Automatic logout**: Redirects to login page after 3 failed attempts instead of crashing
+  - **Global 401 handling**: Added axios interceptor to catch unauthorized responses app-wide
+  - **SSR safety**: Added proper guards for server-side rendering compatibility
+  - **Memory leak prevention**: Proper timer cleanup and tracking to prevent resource leaks
+  - **Files**:
+    - `utils/TokenRefreshProvider.ts`
+    - `api/client.ts`
+
+### 🔧 Technical Improvements - (03/07/2025)
+
+#### Token Management Architecture
+
+- **Centralized token state management**: Added dedicated Redux slice for refresh token operations
+  - **State management**: Separate slice for refresh operations while maintaining user tokens in user slice
+  - **Persistence**: Added refresh token state to Redux persist whitelist
+  - **Type safety**: Proper TypeScript interfaces for all token operations
+  - **Files**:
+    - `redux/auth/refreshAccessTokenSlice.ts`
+    - `redux/store.ts`
+
+#### Code Quality Improvements
+
+- **Enhanced React Hook patterns**: Fixed dependency arrays and added proper cleanup
+  - **useCallback optimization**: Memoized functions to prevent unnecessary re-renders
+  - **Proper dependencies**: Fixed React Hook warnings with correct dependency arrays
+  - **Timer management**: Proper cleanup of setTimeout/setInterval to prevent memory leaks
+  - **Files**: Multiple component files
+
+#### Browser Compatibility
+
+- **Cross-browser timer reliability**: Added fallback mechanisms for browser-specific timer throttling
+  - **Primary timer**: Standard setTimeout for main refresh scheduling
+  - **Backup interval**: setInterval check every 30 seconds for Vivaldi compatibility
+  - **Cache prevention**: Added no-cache headers to prevent browser caching of refresh requests
+  - **Files**: `utils/TokenRefreshProvider.ts`, `redux/auth/refreshAccessTokenThunk.ts`
+
+### 🛡️ Security Improvements - (03/07/2025)
+
+#### Session Management
+
+- **Secure token handling**: Proper token storage and cleanup on logout/failure
+  - **localStorage management**: Automatic cleanup of expired or invalid tokens
+  - **Secure redirects**: Proper navigation to login page on authentication failures
+  - **Token validation**: Proper JWT expiration parsing and handling
+  - **Files**: `utils/TokenRefreshProvider.ts`, `api/client.ts`
+
+#### Error Boundary Protection
+
+- **Global error handling**: Comprehensive error catching and user-friendly fallbacks
+  - **401 interceptor**: Global handling of unauthorized responses
+  - **Network failure recovery**: Graceful handling of network connectivity issues
+  - **User experience**: Smooth redirects instead of application crashes
+  - **Files**: `api/client.ts`
+
+### Files Modified/Added - (03/07/2025)
+
+1. **NEW**: `redux/auth/refreshAccessTokenThunk.ts` - Token refresh API operations
+2. **NEW**: `redux/auth/refreshAccessTokenSlice.ts` - Refresh token state management
+3. **NEW**: `utils/TokenRefreshProvider.ts` - Automatic refresh timer and retry logic
+4. `app/AppClientProvider.tsx` - Integration of token refresh provider
+5. `redux/store.ts` - Added refresh token state to persistence
+6. `api/client.ts` - Global 401 error handling
+7. `components/HomePage/Kanban/Column/JobPosts/JobModal/JobEdit/TextEditor.tsx` - Description field fix
+
+---
+
+## [Unreleased] - (19/06/2025)
+
+### ✨ New Features - (19/06/2025)
 
 #### Link Existing Contacts to Jobs
 
@@ -49,7 +147,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Error Handling**: Comprehensive error management with meaningful error messages
   - **Files**: `redux/documents/documentsThunk.ts`
 
-### 🐛 Bug Fixes
+### 🐛 Bug Fixes - (19/06/2025)
 
 #### Cross-Browser Compatibility
 
@@ -69,8 +167,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Impact**: Dropdown now correctly shows only unlinked contacts
   - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
 
-### 🐛 Recent Bug Fixes
-
 #### Link Contact Dropdown State Management
 
 - **Fixed dropdown not updating after contact linking**: Resolved issue where linked contacts remained visible in dropdown
@@ -87,7 +183,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Result**: Both linking and unlinking operations now work correctly with immediate UI updates
   - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
 
-### 🎨 UX Improvements
+### 🎨 UX Improvements - (19/06/2025)
 
 #### Toast Notification Refinements
 
@@ -104,7 +200,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Cleanup**: Removed duplicate toast containers from individual pages to avoid conflicts
   - **Files**: `app/(loggedin)/layout.tsx`, `app/(loggedin)/home/settings/page.tsx`
 
-### 🧹 Code Quality Improvements
+### 🧹 Code Quality Improvements - (19/06/2025)
 
 #### Component Architecture
 
@@ -150,7 +246,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Result**: Immediate and accurate dropdown updates after contact linking/unlinking operations
   - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
 
-### 🚀 Performance Improvements
+### 🚀 Performance Improvements - (19/06/2025)
 
 #### Contact Modal Job Data Fetching
 
@@ -168,7 +264,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Impact**: 3x+ speed improvement for multiple job assignments, faster modal closure
   - **Files**: `components/Misc/CreateContactModal.tsx`
 
-### 🐛 Additional Bug Fixes
+### 🐛 Additional Bug Fixes - (19/06/2025)
 
 #### Social Media Links
 
@@ -186,7 +282,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Impact**: Prevents empty handles from URLs ending with slashes
   - **Files**: `components/Forms/AddContact/CreateContactForm.tsx`
 
-### 🧹 Additional Code Quality Improvements
+### 🧹 Additional Code Quality Improvements - (19/06/2025)
 
 #### Dead Code Removal
 
@@ -261,7 +357,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Impact**: Consistent code style, improved TypeScript support, easier collaboration
   - **Files**: `.eslintrc.json`, `.prettierrc`
 
-### 📝 Documentation
+### 📝 Documentation - (19/06/2025)
 
 #### Project Metrics
 
@@ -269,7 +365,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Total lines**: ~11,032 lines of code (excluding node_modules, .next, and shadcn/ui components)
   - **File types**: TypeScript (.ts, .tsx) and JavaScript (.js, .jsx) files
 
-### 🔧 Technical Improvements
+### 🔧 Technical Improvements - (19/06/2025)
 
 #### Type Safety
 
@@ -288,23 +384,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## Summary of Changes
+## Summary of Changes - (19/06/2025)
 
-### New Feature Impact
+### New Feature Impact - (19/06/2025)
 
 - **Contact linking workflow**: Added seamless way to connect existing contacts to job applications
 - **Improved productivity**: No need to recreate contacts that already exist on the board
 - **Better data integrity**: Prevents duplicate contacts while maintaining relationships
 - **Enhanced user experience**: Intuitive dropdown with search and visual feedback
 
-### Performance Impact
+### Performance Impact - (19/06/2025)
 
 - **Modal loading speed**: 5x improvement for contacts with multiple jobs
 - **Job assignment speed**: 3x+ improvement for bulk operations
 - **Network efficiency**: Reduced redundant API calls significantly
 - **Contact filtering**: Real-time filtering with optimized Redux state management
 
-### User Experience Impact
+### User Experience Impact - (19/06/2025)
 
 - **Contact linking**: New intuitive dropdown interface for linking existing contacts
 - **Cross-browser reliability**: Consistent functionality across all major browsers (Chrome, Firefox, Edge, Vivaldi)
@@ -313,7 +409,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Faster interactions**: Reduced waiting times for modal operations
 - **Visual feedback**: Immediate UI updates and clear empty states
 
-### Code Quality Impact
+### Code Quality Impact - (19/06/2025)
 
 - **Component architecture**: Added reusable LinkContactComboBox component
 - **Reduced complexity**: Removed unused code and simplified logic
@@ -321,7 +417,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Enhanced reliability**: Improved error handling and type safety
 - **Production ready**: All debugging code cleaned up
 
-### Files Modified
+### Files Modified - (19/06/2025)
 
 1. `components/Forms/AddContact/LinkContactComboBox.tsx` - **NEW**: Complete dropdown component for linking contacts
 2. `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx` - Contact linking integration and cleanup
@@ -330,103 +426,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 5. `components/Forms/AddContact/SocialMediaLinks.tsx` - Social media link reconstruction
 6. `types/index.d.ts` - Type definition enhancements
 7. `components/Forms/AddContact/EdgeTest.tsx` - **DELETED**: Debugging component removed
-
-## [Unreleased] - 2025-07-03 - Text Editor Description bug & Token Refresh System
-
-### 🐛 Bug Fixes (03/07/2025)
-
-#### Text Editor Description Field
-
-- **Fixed job description field not updating**: Resolved issue where job description changes weren't being saved
-  - **Issue**: TextEditor component only auto-saved for `edit-note` ID, but job description used `description` ID
-  - **Root cause**: Hardcoded condition in `handleDescription` function only triggered for note editing
-  - **Solution**: Enhanced condition to handle both `edit-note` (Notes) and `description` (JobInfo) while preserving Save button functionality for new notes
-  - **Impact**: Job descriptions now update immediately when typing, matching behavior of other job fields
-  - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobEdit/TextEditor.tsx`
-
-### ✨ New Features (03/07/2025)
-
-#### Automatic Token Refresh System
-
-- **Implemented rolling token refresh mechanism**: Added automatic session extension to keep users logged-in
-  - **Feature**: Automatically refreshes access tokens 1 minute before expiration (every ~59 minutes)
-  - **Rolling refresh**: Each refresh provides new access token (1 hour) + new refresh token (7 days), creating indefinite session
-  - **Duration**: Sessions now continue indefinitely as long as user remains active
-  - **Browser compatibility**: Works across all browsers including Vivaldi (with backup interval check)
-  - **Files**:
-    - `redux/auth/refreshAccessTokenThunk.ts` (new)
-    - `redux/auth/refreshAccessTokenSlice.ts` (new)
-    - `utils/TokenRefreshProvider.ts` (new)
-    - `app/AppClientProvider.tsx` (integration)
-
-#### Robust Error Handling & Recovery
-
-- **Added retry mechanism for token refresh failures**: Implemented 3-attempt retry system with graceful fallback
-  - **Retry logic**: Up to 3 attempts with 5-second delays between retries
-  - **Automatic logout**: Redirects to login page after 3 failed attempts instead of crashing
-  - **Global 401 handling**: Added axios interceptor to catch unauthorized responses app-wide
-  - **SSR safety**: Added proper guards for server-side rendering compatibility
-  - **Memory leak prevention**: Proper timer cleanup and tracking to prevent resource leaks
-  - **Files**:
-    - `utils/TokenRefreshProvider.ts`
-    - `api/client.ts`
-
-### 🔧 Technical Improvements (03/07/2025)
-
-#### Token Management Architecture
-
-- **Centralized token state management**: Added dedicated Redux slice for refresh token operations
-  - **State management**: Separate slice for refresh operations while maintaining user tokens in user slice
-  - **Persistence**: Added refresh token state to Redux persist whitelist
-  - **Type safety**: Proper TypeScript interfaces for all token operations
-  - **Files**:
-    - `redux/auth/refreshAccessTokenSlice.ts`
-    - `redux/store.ts`
-
-#### Code Quality Improvements
-
-- **Enhanced React Hook patterns**: Fixed dependency arrays and added proper cleanup
-  - **useCallback optimization**: Memoized functions to prevent unnecessary re-renders
-  - **Proper dependencies**: Fixed React Hook warnings with correct dependency arrays
-  - **Timer management**: Proper cleanup of setTimeout/setInterval to prevent memory leaks
-  - **Files**: Multiple component files
-
-#### Browser Compatibility
-
-- **Cross-browser timer reliability**: Added fallback mechanisms for browser-specific timer throttling
-  - **Primary timer**: Standard setTimeout for main refresh scheduling
-  - **Backup interval**: setInterval check every 30 seconds for Vivaldi compatibility
-  - **Cache prevention**: Added no-cache headers to prevent browser caching of refresh requests
-  - **Files**: `utils/TokenRefreshProvider.ts`, `redux/auth/refreshAccessTokenThunk.ts`
-
-### 🛡️ Security Improvements
-
-#### Session Management
-
-- **Secure token handling**: Proper token storage and cleanup on logout/failure
-  - **localStorage management**: Automatic cleanup of expired or invalid tokens
-  - **Secure redirects**: Proper navigation to login page on authentication failures
-  - **Token validation**: Proper JWT expiration parsing and handling
-  - **Files**: `utils/TokenRefreshProvider.ts`, `api/client.ts`
-
-#### Error Boundary Protection
-
-- **Global error handling**: Comprehensive error catching and user-friendly fallbacks
-  - **401 interceptor**: Global handling of unauthorized responses
-  - **Network failure recovery**: Graceful handling of network connectivity issues
-  - **User experience**: Smooth redirects instead of application crashes
-  - **Files**: `api/client.ts`
-
-### Files Modified/Added
-
-1. **NEW**: `redux/auth/refreshAccessTokenThunk.ts` - Token refresh API operations
-2. **NEW**: `redux/auth/refreshAccessTokenSlice.ts` - Refresh token state management
-3. **NEW**: `utils/TokenRefreshProvider.ts` - Automatic refresh timer and retry logic
-4. `app/AppClientProvider.tsx` - Integration of token refresh provider
-5. `redux/store.ts` - Added refresh token state to persistence
-6. `api/client.ts` - Global 401 error handling
-7. `components/HomePage/Kanban/Column/JobPosts/JobModal/JobEdit/TextEditor.tsx` - Description field fix
-
----
 
 _All changes maintain backward compatibility and enhance user experience with improved session management and smoother UI interactions._
