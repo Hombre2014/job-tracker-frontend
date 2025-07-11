@@ -1,8 +1,8 @@
 import { useParams } from 'next/navigation';
 
 import documents from '@/data/documents';
-import UploadDocumentModal from '@/components/Forms/AddDocument/UploadDocumentModal';
 import { LinkDocument } from '@/components/HomePage/HomeNavbar/LinkDocument';
+import UploadDocumentModal from '@/components/Forms/AddDocument/UploadDocumentModal';
 
 const Documents = () => {
   const { job_id } = useParams();

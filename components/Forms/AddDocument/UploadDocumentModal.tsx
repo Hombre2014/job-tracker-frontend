@@ -237,9 +237,9 @@ const UploadDocumentModal = ({
           open={showUploadModal}
           actionFunction={handleUpload}
           isFormValid={isFormValid && !isUploading}
-          contentWidth="!max-w-[910px] !min-h-[840px] !max-h-[840px]"
           dialogTitle={dialogTitle || 'Upload Document'}
           buttonConfirm={isUploading ? 'Uploading...' : 'Create'}
+          contentWidth="!max-w-[910px] !min-h-[840px] !max-h-[840px]"
           onOpenChange={(open) => {
             setShowUploadModal(open);
             if (!open && onClose) {
@@ -259,6 +259,10 @@ const UploadDocumentModal = ({
                   <span className="text-sm text-gray-500">Required</span>
                 </div>
                 <div
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onClick={() => fileInputRef.current?.click()}
                   className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
                     isDragOver
                       ? 'border-blue-500 bg-blue-50'
@@ -266,10 +270,6 @@ const UploadDocumentModal = ({
                       ? 'border-green-500 bg-green-50'
                       : 'border-gray-300 hover:border-gray-400'
                   }`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
                 >
                   <input
                     type="file"
