@@ -114,3 +114,23 @@ body,
   font-family: monospace;
   font-size: 0.875rem;
 }
+
+/* Custom scrollbar styles for document grid */
+
+.document-grid-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.document-grid-scrollbar::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.document-grid-scrollbar::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.document-grid-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}

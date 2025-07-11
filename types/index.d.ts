@@ -102,56 +102,6 @@ interface ContactSideBarProps {
   onJobsChange: (jobs: JobApplication[]) => void;
 }
 
-type JobApplication = {
-  id: string;
-  title: string;
-  color: string;
-  salary: string;
-  notes: Notes[];
-  postUrl: string;
-  boardId?: string;
-  location: string;
-  deadline: string;
-  company: Company;
-  column_id: string;
-  createdAt: string;
-  updatedAt: string;
-  contacts: Contact[];
-  description: string;
-  status: jobPostStatus;
-  statusChangedAt: string;
-};
-
-interface Column {
-  id: string;
-  name: string;
-  order: number;
-  board_id: string;
-  jobApplications: JobApplication[];
-}
-
-interface Board {
-  id: string;
-  name: string;
-  userId: string;
-  columns: Column[];
-  isArchived: boolean;
-}
-
-interface JobPostCardProps {
-  id: string;
-  title: string;
-  color: string;
-  notes: Notes[];
-  postUrl: string;
-  columnId: string;
-  deadline: string;
-  timeStamp: string;
-  companyName: string;
-  status: jobPostStatus;
-  statusChangedTime: string;
-}
-
 interface WorkDocument {
   id: string;
   url: string;
@@ -162,6 +112,17 @@ interface WorkDocument {
   description?: string;
 }
 
+type JobDocument = WorkDocument & {
+  fileSize?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  uploadedBy?: {
+    lastName: string;
+    firstName: string;
+    profilePicUrl?: string;
+  };
+};
+
 interface ComboBoxProps {
   items: Board[];
   searchItem: string;
@@ -170,7 +131,7 @@ interface ComboBoxProps {
 
 interface LinkDocumentProps {
   searchItem: string;
-  docs: WorkDocument[];
+  docs: JobDocument[];
   initialString: string;
 }
 
@@ -301,4 +262,55 @@ interface DetachDocumentParams {
 interface DeleteDocumentParams {
   documentId: string;
   accessToken: string;
+}
+
+type JobApplication = {
+  id: string;
+  title: string;
+  color: string;
+  salary: string;
+  notes: Notes[];
+  postUrl: string;
+  boardId?: string;
+  location: string;
+  deadline: string;
+  company: Company;
+  column_id: string;
+  createdAt: string;
+  updatedAt: string;
+  contacts: Contact[];
+  description: string;
+  status: jobPostStatus;
+  statusChangedAt: string;
+  documents: JobDocument[];
+};
+
+interface Column {
+  id: string;
+  name: string;
+  order: number;
+  board_id: string;
+  jobApplications: JobApplication[];
+}
+
+interface Board {
+  id: string;
+  name: string;
+  userId: string;
+  columns: Column[];
+  isArchived: boolean;
+}
+
+interface JobPostCardProps {
+  id: string;
+  title: string;
+  color: string;
+  notes: Notes[];
+  postUrl: string;
+  columnId: string;
+  deadline: string;
+  timeStamp: string;
+  companyName: string;
+  status: jobPostStatus;
+  statusChangedTime: string;
 }

@@ -84,7 +84,14 @@ export const jobsSlice = createSlice({
       })
       .addCase(getJobPost.fulfilled, (state, action) => {
         state.jobPostsStatus = 'succeeded';
-        state.jobPosts = action.payload;
+        // Update the specific job post in the array instead of replacing the entire array
+        const index = state.jobPosts.findIndex(job => job.id === action.payload.id);
+        if (index !== -1) {
+          state.jobPosts[index] = action.payload;
+        } else {
+          // If job post doesn't exist in array, add it
+          state.jobPosts.push(action.payload);
+        }
         state.error = null;
       })
       .addCase(getJobPost.rejected, (state, action) => {

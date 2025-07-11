@@ -5,6 +5,73 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Critical Bug Fix] - (11/07/2025) - Document System & Redux State Corruption
+
+### 🐛 Critical Bug Fixes - (11/07/2025)
+
+#### Redux State Corruption in jobsSlice
+
+- **Fixed critical Redux state corruption causing app crashes**: Resolved fatal bug in `getJobPost.fulfilled` reducer
+  - **Issue**: `state.jobPosts = action.payload` incorrectly replaced array with single object after document upload
+  - **Symptoms**: `jobPosts.find is not a function` errors, app crashes, React render failures
+  - **Root cause**: `getJobPost` returns single job object but was assigned to array state
+  - **Solution**: Proper array update logic - find and update existing job or add new one
+  - **Impact**: Document upload now works without crashes, Redux state remains consistent
+  - **Files**: `redux/jobs/jobsSlice.ts`
+
+#### Race Condition with Duplicate getJobPost Calls
+
+- **Fixed race condition causing state corruption**: Eliminated duplicate `getJobPost` calls during document upload
+  - **Issue**: UploadDocumentModal and Documents.tsx both calling `getJobPost` simultaneously after upload
+  - **Symptoms**: Intermittent app crashes, `jobPosts.find is not a function` errors, Redux state corruption
+  - **Root cause**: Two components refreshing same job data concurrently created race condition
+  - **Solution**: Single responsibility pattern - only Documents.tsx handles job refresh via `onUploadSuccess`
+  - **Defensive measure**: Added `Array.isArray(jobPosts)` check in layout.tsx to prevent future crashes
+  - **Impact**: Eliminated upload-related crashes, improved state consistency and reliability
+  - **Files**: `components/Forms/AddDocument/UploadDocumentModal.tsx`, `app/(loggedin)/home/boards/[board_id]/job/layout.tsx`
+
+### ✨ New Features - (11/07/2025)
+
+#### Document Upload & Management System
+
+- **Implemented comprehensive document system**: Full-featured document upload with job linking
+  - **Upload modal**: Drag & drop interface with file validation and preview
+  - **Job linking**: Attach documents to multiple job applications simultaneously
+  - **File type detection**: Smart extension-based type recognition with color-coded badges
+  - **File size display**: Enhanced with localStorage fallback for immediate display
+  - **Sequential refresh**: Optimized job data refresh to prevent state conflicts
+  - **Files**:
+    - `components/Forms/AddDocument/UploadDocumentModal.tsx`
+    - `components/Forms/AddDocument/DocumentSideBar.tsx`
+    - `components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/`
+
+#### Document Display & UI
+
+- **Created document card system**: Professional document display with metadata
+  - **File type badges**: Color-coded pills (PDF-red, IMG-green, DOC-blue, etc.)
+  - **File extension preservation**: Critical logic to maintain file extensions during upload
+  - **Responsive grid**: Scrollable card layout with proper overflow handling
+  - **User info display**: Uploader details with profile pictures and timestamps
+  - **Document count**: Tab badges showing number of documents per job
+  - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/DocumentCard.tsx`
+
+### 🔧 Technical Improvements - (11/07/2025)
+
+#### State Management & Performance
+
+- **Optimized Redux operations**: Sequential job refreshes prevent state corruption
+- **Enhanced error handling**: Comprehensive error coverage with user feedback
+- **LocalStorage enhancement**: File size persistence for immediate display
+- **Type safety**: Complete TypeScript coverage with proper error handling
+- **Clean code**: Removed all debug logs, unused imports, and console statements
+
+#### File Processing
+
+- **Extension preservation logic**: Maintains file extensions even when users modify titles
+- **File validation**: 10MB size limits with comprehensive type checking
+- **Parallel processing**: Efficient multi-job document attachment
+- **Graceful fallbacks**: Robust error recovery without disrupting user experience
+
 ## [Unreleased] - (03/07/2025) - Text Editor Description bug & Token Refresh System
 
 ### 🐛 Bug Fixes - (03/07/2025)

@@ -32,6 +32,7 @@ export const uploadDocument = createAsyncThunk(
       formData.append('boardId', boardId);
       formData.append('category', category);
       formData.append('description', description);
+      formData.append('fileSize', file.size.toString()); // Include file size
 
       const res = await client.post(`/documents`, formData, {
         headers: {

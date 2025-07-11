@@ -11,7 +11,7 @@ import {
 
 interface DocumentState {
   error: string | null;
-  documents: WorkDocument[];
+  documents: JobDocument[];
   documentsStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
 }
 

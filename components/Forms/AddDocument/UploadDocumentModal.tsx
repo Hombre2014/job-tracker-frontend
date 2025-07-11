@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import DocumentSideBar from './DocumentSideBar';
 import { Textarea } from '@/components/ui/textarea';
+import { getJobPost } from '@/redux/jobs/jobsThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import {
@@ -43,6 +44,7 @@ interface UploadDocumentModalProps {
   buttonLabel?: string;
   dialogTitle?: string;
   defaultJobId?: string;
+  onUploadSuccess?: () => void;
 }
 
 const UploadDocumentModal = ({
@@ -51,9 +53,10 @@ const UploadDocumentModal = ({
   buttonLabel,
   dialogTitle,
   defaultJobId,
+  onUploadSuccess,
   showButton = true,
 }: UploadDocumentModalProps) => {
-  const { board_id } = useParams();
+  const { board_id, job_id } = useParams();
   const dispatch = useAppDispatch();
   const { accessToken, firstName, lastName, email } = useAppSelector(
     (state) => state.user
@@ -121,10 +124,10 @@ const UploadDocumentModal = ({
     }
 
     setSelectedFile(file);
-    // Auto-populate title with filename (without extension) if title is empty
+    // Auto-populate title with filename (INCLUDING extension) if title is empty
+    // IMPORTANT: Always preserve the original filename with extension
     if (!title.trim()) {
-      const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
-      setTitle(nameWithoutExt);
+      setTitle(file.name); // This includes the extension: "image.png", "document.pdf", etc.
     }
   };
 
@@ -184,36 +187,85 @@ const UploadDocumentModal = ({
     setIsUploading(true);
 
     try {
-      // Step 1: Upload the document
+      // CRITICAL FIX: Always preserve original file extension
+      const originalExtension = selectedFile.name.split('.').pop() || '';
+      const userTitle = title.trim();
+
+      // If user changed the title and it doesn't have an extension, add the original extension
+      let finalTitle = userTitle;
+      if (originalExtension && !userTitle.includes('.')) {
+        finalTitle = `${userTitle}.${originalExtension}`;
+      }
+
+      // Step 1: Upload the document with preserved extension
       const uploadResult = await dispatch(
         uploadDocument({
           category,
           accessToken,
+          title: finalTitle, // Use title with preserved extension
           file: selectedFile,
-          title: title.trim(),
           boardId: board_id as string,
           description: description.trim(),
         })
       ).unwrap();
+
+      // Extract file size from the selected file for local enhancement
+      const fileSize = selectedFile.size;
+
+      // Store file size in localStorage for later use (until backend supports it)
+      if (uploadResult?.id) {
+        localStorage.setItem(
+          `fileSize_${uploadResult.id}`,
+          fileSize.toString()
+        );
+      }
 
       // Step 2: Attach document to all linked jobs (parallel processing)
       if (uploadResult?.id && jobsConnectedToDocument.length > 0) {
         const attachmentPromises = jobsConnectedToDocument.map((job) =>
           dispatch(
             attachDocumentToJobApplication({
+              accessToken,
               jobId: job.id,
               documentId: uploadResult.id,
-              accessToken,
             })
           ).unwrap()
         );
         await Promise.all(attachmentPromises);
       }
 
+      // Step 3: Refresh job data sequentially to avoid state conflicts
+      if (uploadResult?.id) {
+        try {
+          // First, refresh linked jobs if any
+          if (jobsConnectedToDocument.length > 0) {
+            for (const job of jobsConnectedToDocument) {
+              await dispatch(
+                getJobPost({
+                  accessToken,
+                  jobPostId: job.id,
+                })
+              ).unwrap();
+            }
+          }
+
+          // Note: Current job refresh is handled by onUploadSuccess callback
+          // to avoid duplicate refresh calls and race conditions
+        } catch (refreshError) {
+          console.warn('Some job data refresh failed:', refreshError);
+          // Don't throw - upload was successful, just refresh failed
+        }
+      }
+
       // Show success message
       toast.success('Document uploaded successfully!');
 
-      // Close modal on success
+      // Call the success callback to refresh documents list
+      if (onUploadSuccess) {
+        onUploadSuccess();
+      }
+
+      // Close modal immediately (no artificial delay)
       setShowUploadModal(false);
       if (onClose) onClose();
     } catch (error) {
@@ -388,7 +440,7 @@ const UploadDocumentModal = ({
                 <Textarea
                   id="description"
                   value={description}
-                  className="w-full min-h-[240px]"
+                  className="w-full min-h-[200px]"
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Add a description for this document"
                 />
