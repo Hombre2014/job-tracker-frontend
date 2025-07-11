@@ -86,6 +86,14 @@ This document outlines the step-by-step implementation plan for the Documents ta
   - Update upload logic to handle multiple job attachments ✅
   - Reset job selections when modal closes ✅
 
+### **Step 2.4: UI/UX Improvements** ✅ **COMPLETED**
+
+- **Modal Enhancements**: ✅
+  - Add scrollbar to left content area to prevent modal height increase ✅
+  - Move UploadDocumentModal to Forms/AddDocument folder for better organization ✅
+  - Update import paths accordingly ✅
+  - Improve layout proportions (3/4 left, 1/4 right) ✅
+
 ---
 
 ## **Phase 3: Upload & Attachment Logic**

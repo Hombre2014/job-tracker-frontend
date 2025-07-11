@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
-import DocumentSideBar from '@/components/Forms/AddDocument/DocumentSideBar';
+import DocumentSideBar from './DocumentSideBar';
 import {
   uploadDocument,
   attachDocumentToJobApplication,
@@ -237,7 +237,7 @@ const UploadDocumentModal = ({
           open={showUploadModal}
           actionFunction={handleUpload}
           isFormValid={isFormValid && !isUploading}
-          contentWidth="!max-w-[910px] !min-h-[840px]"
+          contentWidth="!max-w-[910px] !min-h-[840px] !max-h-[840px]"
           dialogTitle={dialogTitle || 'Upload Document'}
           buttonConfirm={isUploading ? 'Uploading...' : 'Create'}
           onOpenChange={(open) => {
@@ -247,9 +247,9 @@ const UploadDocumentModal = ({
             }
           }}
         >
-          <div className="flex gap-8">
+          <div className="flex gap-8 h-full">
             {/* Left Column - Form Fields */}
-            <div className="flex-[2] space-y-6 w-3/4">
+            <div className="flex-[2] space-y-6 w-3/4 overflow-y-auto pr-2 max-h-[640px]">
               {/* File Upload Section */}
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
@@ -379,7 +379,7 @@ const UploadDocumentModal = ({
                 <Textarea
                   id="description"
                   value={description}
-                  className="w-full min-h-[200px]"
+                  className="w-full min-h-[240px]"
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Add a description for this document"
                 />
