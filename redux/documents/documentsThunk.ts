@@ -55,7 +55,7 @@ export const attachDocumentToJobApplication = createAsyncThunk(
     const { jobId, documentId, accessToken } = values;
     try {
       const res = await client.post(
-        `/documents/${documentId}/job-applications/${jobId}/attach`,
+        `/documents/${documentId}/job-application/${jobId}/attach`,
         {},
         {
           headers: {
@@ -79,7 +79,7 @@ export const detachDocumentFromJobApplication = createAsyncThunk(
     const { jobId, documentId, accessToken } = values;
     try {
       const res = await client.post(
-        `/documents/${documentId}/job-applications/${jobId}/detach`,
+        `/documents/${documentId}/job-application/${jobId}/detach`,
         {},
         {
           headers: {

@@ -1,8 +1,12 @@
+import { useParams } from 'next/navigation';
+
 import documents from '@/data/documents';
-import { Button } from '@/components/ui/button';
+import UploadDocumentModal from '@/components/Misc/UploadDocumentModal';
 import { LinkDocument } from '@/components/HomePage/HomeNavbar/LinkDocument';
 
 const Documents = () => {
+  const { job_id } = useParams();
+
   return (
     <>
       <div className="w-full mx-auto mt-6">
@@ -16,7 +20,7 @@ const Documents = () => {
               searchItem="Documents"
               initialString="+ Link Document"
             />
-            <Button variant="normal">+ Upload</Button>
+            <UploadDocumentModal defaultJobId={job_id as string} />
           </div>
         </div>
         <p className="text-center text-xl text-slate-400 mt-48">

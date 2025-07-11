@@ -1,0 +1,408 @@
+'use client';
+
+import { useParams } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
+
+import { DocumentCategory } from '@/enums';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { uploadDocument, attachDocumentToJobApplication } from '@/redux/documents/documentsThunk';
+import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
+import {
+  Select,
+  SelectItem,
+  SelectValue,
+  SelectContent,
+  SelectTrigger,
+} from '@/components/ui/select';
+
+interface UploadDocumentModalProps {
+  isVisible?: boolean;
+  onClose?: () => void;
+  showButton?: boolean;
+  buttonLabel?: string;
+  dialogTitle?: string;
+  defaultJobId?: string;
+}
+
+const UploadDocumentModal = ({
+  onClose,
+  isVisible,
+  buttonLabel,
+  dialogTitle,
+  defaultJobId,
+  showButton = true,
+}: UploadDocumentModalProps) => {
+  const dispatch = useAppDispatch();
+  const { board_id } = useParams();
+  const { accessToken } = useAppSelector((state) => state.user);
+
+  // Modal state
+  const [isFormValid, setIsFormValid] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+
+  // Form state
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [category, setCategory] = useState<DocumentCategory | ''>('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // File input ref
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Loading state
+  const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    if (isVisible !== undefined) {
+      setShowUploadModal(isVisible);
+    }
+  }, [isVisible]);
+
+  // Validate form
+  useEffect(() => {
+    const isValid =
+      selectedFile !== null && title.trim() !== '' && category !== '';
+    setIsFormValid(isValid);
+  }, [selectedFile, title, category]);
+
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!showUploadModal) {
+      setSelectedFile(null);
+      setTitle('');
+      setCategory('');
+      setDescription('');
+      setIsDragOver(false);
+      setIsUploading(false);
+    }
+  }, [showUploadModal]);
+
+  const handleFileSelect = (file: File) => {
+    setSelectedFile(file);
+    // Auto-populate title with filename (without extension) if title is empty
+    if (!title.trim()) {
+      const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
+      setTitle(nameWithoutExt);
+    }
+  };
+
+  const handleFileInputChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      handleFileSelect(file);
+    }
+  };
+
+  const handleDragOver = (event: React.DragEvent) => {
+    event.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (event: React.DragEvent) => {
+    event.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (event: React.DragEvent) => {
+    event.preventDefault();
+    setIsDragOver(false);
+
+    const files = event.dataTransfer.files;
+    if (files.length > 0) {
+      handleFileSelect(files[0]);
+    }
+  };
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const handleUpload = async () => {
+    if (
+      !selectedFile ||
+      !title.trim() ||
+      !category ||
+      !board_id ||
+      !accessToken
+    ) {
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // Step 1: Upload the document
+      const uploadResult = await dispatch(
+        uploadDocument({
+          category,
+          accessToken,
+          file: selectedFile,
+          title: title.trim(),
+          boardId: board_id as string,
+          description: description.trim(),
+        })
+      ).unwrap();
+
+      // Step 2: Attach document to current job if defaultJobId is provided
+      if (defaultJobId && uploadResult?.id) {
+        await dispatch(
+          attachDocumentToJobApplication({
+            jobId: defaultJobId,
+            documentId: uploadResult.id,
+            accessToken,
+          })
+        ).unwrap();
+      }
+
+      // Close modal on success
+      setShowUploadModal(false);
+      if (onClose) onClose();
+    } catch (error) {
+      console.error('Error uploading document:', error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const documentCategories = Object.values(DocumentCategory);
+
+  return (
+    <div>
+      {showButton && (
+        <Button
+          variant="normal"
+          onClick={() => {
+            setShowUploadModal(true);
+          }}
+        >
+          {buttonLabel || '+ Upload'}
+        </Button>
+      )}
+      {showUploadModal && (
+        <AlertDialogModal
+          buttonVariant="none"
+          buttonCancel="Discard"
+          open={showUploadModal}
+          actionFunction={handleUpload}
+          isFormValid={isFormValid && !isUploading}
+          contentWidth="!max-w-[910px] !min-h-[840px]"
+          dialogTitle={dialogTitle || 'Upload Document'}
+          buttonConfirm={isUploading ? 'Uploading...' : 'Create'}
+          onOpenChange={(open) => {
+            setShowUploadModal(open);
+            if (!open && onClose) {
+              onClose();
+            }
+          }}
+        >
+          <div className="flex gap-8">
+            {/* Left Column - Form Fields */}
+            <div className="flex-1 space-y-6">
+              {/* File Upload Section */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="file-upload" className="text-left">
+                    Select file
+                  </Label>
+                  <span className="text-sm text-gray-500">Required</span>
+                </div>
+                <div
+                  className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+                    isDragOver
+                      ? 'border-blue-500 bg-blue-50'
+                      : selectedFile
+                      ? 'border-green-500 bg-green-50'
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input
+                    type="file"
+                    accept="*/*"
+                    id="file-upload"
+                    ref={fileInputRef}
+                    className="hidden"
+                    onChange={handleFileInputChange}
+                    aria-label="Select document file"
+                  />
+                  {selectedFile ? (
+                    <div className="space-y-2">
+                      <div className="text-green-600 font-medium">
+                        ✓ File Selected
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        <div className="font-medium">{selectedFile.name}</div>
+                        <div className="text-xs">
+                          {formatFileSize(selectedFile.size)} •{' '}
+                          {selectedFile.type || 'Unknown type'}
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedFile(null);
+                          setTitle('');
+                        }}
+                      >
+                        Remove File
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Button
+                        type="button"
+                        variant="default"
+                        className="mb-2"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          fileInputRef.current?.click();
+                        }}
+                      >
+                        Upload file
+                      </Button>
+                      <div className="text-xs text-gray-400">
+                        or drag and drop a file here
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Title Input */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="title" className="text-left">
+                    Title
+                  </Label>
+                  <span className="text-sm text-gray-500">Required</span>
+                </div>
+                <Input
+                  id="title"
+                  type="text"
+                  value={title}
+                  className="w-full"
+                  placeholder="Enter document title"
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </div>
+
+              {/* Category Selection */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="category" className="text-left">
+                    Document Category
+                  </Label>
+                  <span className="text-sm text-gray-500">Required</span>
+                </div>
+                <Select
+                  value={category}
+                  onValueChange={(value) =>
+                    setCategory(value as DocumentCategory)
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {documentCategories.map((cat) => (
+                      <SelectItem key={cat} value={cat}>
+                        {cat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Description (Optional) */}
+              <div className="space-y-2">
+                <Label htmlFor="description" className="text-left">
+                  Description
+                </Label>
+                <Textarea
+                  id="description"
+                  value={description}
+                  className="w-full min-h-[200px]"
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Add a description for this document"
+                />
+              </div>
+            </div>
+
+            {/* Right Column - Linked to Section */}
+            <div className="w-80 space-y-6">
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Linked to
+                </h3>
+
+                {/* Jobs Section */}
+                <div className="space-y-3">
+                  <div className="text-base font-medium text-gray-700">
+                    Jobs
+                  </div>
+                  <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      className="text-blue-600 hover:text-blue-700"
+                      disabled
+                    >
+                      + Link job
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Boards Section */}
+                <div className="space-y-3 mt-6">
+                  <div className="text-base font-medium text-gray-700">
+                    Boards
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          George Carlin
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Job Search 2024
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        disabled
+                      >
+                        <span className="text-gray-400">⋯</span>
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </AlertDialogModal>
+      )}
+    </div>
+  );
+};
+
+export default UploadDocumentModal;
