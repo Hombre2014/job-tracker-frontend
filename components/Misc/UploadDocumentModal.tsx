@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from 'react-toastify';
 import { useParams } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 
@@ -9,8 +10,11 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { uploadDocument, attachDocumentToJobApplication } from '@/redux/documents/documentsThunk';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
+import {
+  uploadDocument,
+  attachDocumentToJobApplication,
+} from '@/redux/documents/documentsThunk';
 import {
   Select,
   SelectItem,
@@ -83,6 +87,13 @@ const UploadDocumentModal = ({
   }, [showUploadModal]);
 
   const handleFileSelect = (file: File) => {
+    // Validate file size before setting
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error('File size must be less than 10MB');
+      return;
+    }
+
     setSelectedFile(file);
     // Auto-populate title with filename (without extension) if title is empty
     if (!title.trim()) {
@@ -129,6 +140,13 @@ const UploadDocumentModal = ({
   };
 
   const handleUpload = async () => {
+    // Validate file size (e.g., 10MB limit)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    if (selectedFile && selectedFile.size > MAX_FILE_SIZE) {
+      toast.error('File size must be less than 10MB');
+      return;
+    }
+
     if (
       !selectedFile ||
       !title.trim() ||
@@ -165,11 +183,16 @@ const UploadDocumentModal = ({
         ).unwrap();
       }
 
+      // Show success message
+      toast.success('Document uploaded successfully!');
+
       // Close modal on success
       setShowUploadModal(false);
       if (onClose) onClose();
     } catch (error) {
       console.error('Error uploading document:', error);
+      // Show error toast to user
+      toast.error('Failed to upload document. Please try again.');
     } finally {
       setIsUploading(false);
     }
@@ -268,8 +291,8 @@ const UploadDocumentModal = ({
                     <div className="space-y-2">
                       <Button
                         type="button"
-                        variant="default"
                         className="mb-2"
+                        variant="default"
                         onClick={(e) => {
                           e.stopPropagation();
                           fileInputRef.current?.click();
@@ -359,10 +382,10 @@ const UploadDocumentModal = ({
                   </div>
                   <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center">
                     <Button
+                      disabled
                       type="button"
                       variant="ghost"
                       className="text-blue-600 hover:text-blue-700"
-                      disabled
                     >
                       + Link job
                     </Button>
@@ -385,11 +408,11 @@ const UploadDocumentModal = ({
                         </div>
                       </div>
                       <Button
+                        disabled
+                        size="sm"
                         type="button"
                         variant="ghost"
-                        size="sm"
                         className="h-8 w-8 p-0"
-                        disabled
                       >
                         <span className="text-gray-400">⋯</span>
                       </Button>
