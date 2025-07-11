@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
+import DocumentSideBar from '@/components/Forms/AddDocument/DocumentSideBar';
 import {
   uploadDocument,
   attachDocumentToJobApplication,
@@ -42,7 +43,16 @@ const UploadDocumentModal = ({
 }: UploadDocumentModalProps) => {
   const dispatch = useAppDispatch();
   const { board_id } = useParams();
-  const { accessToken } = useAppSelector((state) => state.user);
+  const { accessToken, firstName, lastName, email } = useAppSelector(
+    (state) => state.user
+  );
+
+  // Create user object for DocumentSideBar
+  const user = {
+    firstName,
+    lastName,
+    email,
+  };
 
   // Modal state
   const [isFormValid, setIsFormValid] = useState(false);
@@ -54,6 +64,11 @@ const UploadDocumentModal = ({
   const [isDragOver, setIsDragOver] = useState(false);
   const [category, setCategory] = useState<DocumentCategory | ''>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // Jobs linking state
+  const [jobsConnectedToDocument, setJobsConnectedToDocument] = useState<
+    JobApplication[]
+  >([]);
 
   // File input ref
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -83,6 +98,7 @@ const UploadDocumentModal = ({
       setDescription('');
       setIsDragOver(false);
       setIsUploading(false);
+      setJobsConnectedToDocument([]);
     }
   }, [showUploadModal]);
 
@@ -172,15 +188,17 @@ const UploadDocumentModal = ({
         })
       ).unwrap();
 
-      // Step 2: Attach document to current job if defaultJobId is provided
-      if (defaultJobId && uploadResult?.id) {
-        await dispatch(
-          attachDocumentToJobApplication({
-            jobId: defaultJobId,
-            documentId: uploadResult.id,
-            accessToken,
-          })
-        ).unwrap();
+      // Step 2: Attach document to all linked jobs
+      if (uploadResult?.id && jobsConnectedToDocument.length > 0) {
+        for (const job of jobsConnectedToDocument) {
+          await dispatch(
+            attachDocumentToJobApplication({
+              jobId: job.id,
+              documentId: uploadResult.id,
+              accessToken,
+            })
+          ).unwrap();
+        }
       }
 
       // Show success message
@@ -231,7 +249,7 @@ const UploadDocumentModal = ({
         >
           <div className="flex gap-8">
             {/* Left Column - Form Fields */}
-            <div className="flex-1 space-y-6">
+            <div className="flex-[2] space-y-6 w-3/4">
               {/* File Upload Section */}
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
@@ -368,58 +386,16 @@ const UploadDocumentModal = ({
               </div>
             </div>
 
-            {/* Right Column - Linked to Section */}
-            <div className="w-80 space-y-6">
-              <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">
-                  Linked to
-                </h3>
-
-                {/* Jobs Section */}
-                <div className="space-y-3">
-                  <div className="text-base font-medium text-gray-700">
-                    Jobs
-                  </div>
-                  <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center">
-                    <Button
-                      disabled
-                      type="button"
-                      variant="ghost"
-                      className="text-blue-600 hover:text-blue-700"
-                    >
-                      + Link job
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Boards Section */}
-                <div className="space-y-3 mt-6">
-                  <div className="text-base font-medium text-gray-700">
-                    Boards
-                  </div>
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <div className="font-medium text-gray-900">
-                          George Carlin
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          Job Search 2024
-                        </div>
-                      </div>
-                      <Button
-                        disabled
-                        size="sm"
-                        type="button"
-                        variant="ghost"
-                        className="h-8 w-8 p-0"
-                      >
-                        <span className="text-gray-400">⋯</span>
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            {/* Right Column - DocumentSideBar */}
+            <div className="w-1/4 flex-shrink-0">
+              {user && (
+                <DocumentSideBar
+                  user={user}
+                  job_id={defaultJobId}
+                  onJobsChange={setJobsConnectedToDocument}
+                  jobsConnectedToDocument={jobsConnectedToDocument}
+                />
+              )}
             </div>
           </div>
         </AlertDialogModal>
