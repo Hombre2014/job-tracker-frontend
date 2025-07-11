@@ -55,12 +55,23 @@ export const getFileInfo = (filename: string, size?: number): string => {
 export const getTimeAgo = (dateString: string): string => {
   const now = new Date();
   const uploadDate = new Date(dateString);
+  
+  // Handle invalid dates
+  if (isNaN(uploadDate.getTime()) || !dateString) {
+    return 'unknown';
+  }
+  
   const diffInMs = now.getTime() - uploadDate.getTime();
-
+  
+  // Handle future dates
+  if (diffInMs < 0) {
+    return 'just now';
+  }
+  
   const minutes = Math.floor(diffInMs / (1000 * 60));
   const hours = Math.floor(diffInMs / (1000 * 60 * 60));
   const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-
+  
   if (minutes < 1) {
     return 'just now';
   } else if (minutes < 60) {

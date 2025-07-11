@@ -8,10 +8,10 @@ import { DocumentCategory } from '@/enums';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import DocumentSideBar from './DocumentSideBar';
 import { Textarea } from '@/components/ui/textarea';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
-import DocumentSideBar from './DocumentSideBar';
 import {
   uploadDocument,
   attachDocumentToJobApplication,
@@ -23,6 +23,18 @@ import {
   SelectContent,
   SelectTrigger,
 } from '@/components/ui/select';
+
+// Constants
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+// Helper functions
+const validateFileSize = (file: File): boolean => {
+  if (file.size > MAX_FILE_SIZE) {
+    toast.error('File size must be less than 10MB');
+    return false;
+  }
+  return true;
+};
 
 interface UploadDocumentModalProps {
   isVisible?: boolean;
@@ -41,17 +53,17 @@ const UploadDocumentModal = ({
   defaultJobId,
   showButton = true,
 }: UploadDocumentModalProps) => {
-  const dispatch = useAppDispatch();
   const { board_id } = useParams();
+  const dispatch = useAppDispatch();
   const { accessToken, firstName, lastName, email } = useAppSelector(
     (state) => state.user
   );
 
   // Create user object for DocumentSideBar
   const user = {
-    firstName,
-    lastName,
     email,
+    lastName,
+    firstName,
   };
 
   // Modal state
@@ -92,11 +104,11 @@ const UploadDocumentModal = ({
   // Reset form when modal closes
   useEffect(() => {
     if (!showUploadModal) {
-      setSelectedFile(null);
       setTitle('');
       setCategory('');
       setDescription('');
       setIsDragOver(false);
+      setSelectedFile(null);
       setIsUploading(false);
       setJobsConnectedToDocument([]);
     }
@@ -104,9 +116,7 @@ const UploadDocumentModal = ({
 
   const handleFileSelect = (file: File) => {
     // Validate file size before setting
-    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-    if (file.size > MAX_FILE_SIZE) {
-      toast.error('File size must be less than 10MB');
+    if (!validateFileSize(file)) {
       return;
     }
 
@@ -156,10 +166,8 @@ const UploadDocumentModal = ({
   };
 
   const handleUpload = async () => {
-    // Validate file size (e.g., 10MB limit)
-    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-    if (selectedFile && selectedFile.size > MAX_FILE_SIZE) {
-      toast.error('File size must be less than 10MB');
+    // Validate file size
+    if (selectedFile && !validateFileSize(selectedFile)) {
       return;
     }
 
@@ -188,17 +196,18 @@ const UploadDocumentModal = ({
         })
       ).unwrap();
 
-      // Step 2: Attach document to all linked jobs
+      // Step 2: Attach document to all linked jobs (parallel processing)
       if (uploadResult?.id && jobsConnectedToDocument.length > 0) {
-        for (const job of jobsConnectedToDocument) {
-          await dispatch(
+        const attachmentPromises = jobsConnectedToDocument.map((job) =>
+          dispatch(
             attachDocumentToJobApplication({
               jobId: job.id,
               documentId: uploadResult.id,
               accessToken,
             })
-          ).unwrap();
-        }
+          ).unwrap()
+        );
+        await Promise.all(attachmentPromises);
       }
 
       // Show success message
