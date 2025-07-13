@@ -2,6 +2,13 @@ import axios from 'axios';
 
 const client = axios.create({ baseURL: process.env.NEXT_PUBLIC_API_URL });
 
+// Storage key constants for maintainability
+const STORAGE_KEYS = {
+  USER: 'user',
+  ACCESS_TOKEN: 'accessToken',
+  REFRESH_TOKEN: 'refreshToken',
+} as const;
+
 // Refresh token synchronization to prevent race conditions
 let refreshPromise: Promise<string> | null = null;
 
@@ -10,18 +17,19 @@ client.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
-    if (typeof window !== 'undefined' && 
-        error.response?.status === 401 && 
-        !originalRequest._retry) {
-      
+
+    if (
+      typeof window !== 'undefined' &&
+      error.response?.status === 401 &&
+      !originalRequest._retry
+    ) {
       originalRequest._retry = true;
-      
+
       // If a refresh is already in progress, wait for it
       if (refreshPromise) {
         await refreshPromise;
         // After refresh completes, retry with updated token
-        const newAccessToken = localStorage.getItem('accessToken');
+        const newAccessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
         if (newAccessToken) {
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return client(originalRequest);
@@ -30,29 +38,34 @@ client.interceptors.response.use(
           throw error;
         }
       }
-      
+
       // Start new refresh
-      const refreshToken = localStorage.getItem('refreshToken');
+      const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
       if (refreshToken) {
         refreshPromise = (async () => {
           try {
             const refreshResponse = await axios.get(
               `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
               {
-                headers: { Authorization: `Bearer ${refreshToken}` }
+                headers: { Authorization: `Bearer ${refreshToken}` },
               }
             );
-            
+
             if (refreshResponse.status === 200) {
-              const { accessToken: newAccessToken, refreshToken: newRefreshToken } = refreshResponse.data;
-              
+              const {
+                accessToken: newAccessToken,
+                refreshToken: newRefreshToken,
+              } = refreshResponse.data;
+
               // Update localStorage
-              localStorage.setItem('accessToken', newAccessToken);
-              localStorage.setItem('refreshToken', newRefreshToken);
-              
+              localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, newAccessToken);
+              localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
+
               // Update default headers for future requests
-              client.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
-              
+              client.defaults.headers.common[
+                'Authorization'
+              ] = `Bearer ${newAccessToken}`;
+
               return newAccessToken;
             } else {
               throw new Error('Refresh failed');
@@ -60,18 +73,18 @@ client.interceptors.response.use(
           } catch (refreshError) {
             // Clear tokens and redirect to login
             if (typeof Storage !== 'undefined') {
-              localStorage.removeItem('accessToken');
-              localStorage.removeItem('refreshToken');
-              localStorage.removeItem('user');
+              localStorage.removeItem(STORAGE_KEYS.USER);
+              localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+              localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
             }
-            delete client.defaults.headers.common['Authorization'];
+            client.defaults.headers.common['Authorization'] = undefined;
             window.location.href = '/login';
             throw refreshError;
           } finally {
             refreshPromise = null;
           }
         })();
-        
+
         try {
           const newAccessToken = await refreshPromise;
           // Update the original request with new token
@@ -83,14 +96,14 @@ client.interceptors.response.use(
           return Promise.reject(error);
         }
       }
-      
+
       // No refresh token available, proceed to logout
       if (typeof Storage !== 'undefined') {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
+        localStorage.removeItem(STORAGE_KEYS.USER);
+        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
       }
-      delete client.defaults.headers.common['Authorization'];
+      client.defaults.headers.common['Authorization'] = undefined;
       window.location.href = '/login';
     }
     return Promise.reject(error);
