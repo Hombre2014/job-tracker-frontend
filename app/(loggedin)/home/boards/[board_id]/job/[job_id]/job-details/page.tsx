@@ -42,6 +42,9 @@ const JobDetails = () => {
   const numberOfContactsPerJob = jobs.jobPosts.find((job) => job.id === job_id)
     ?.contacts.length;
 
+  const numberOfDocumentsPerJob = jobs.jobPosts.find((job) => job.id === job_id)
+    ?.documents.length || 0;
+
   return (
     <Tabs defaultValue="Job Info" className="w-full">
       <TabsList className="grid w-full grid-cols-5 !py-4 !h-auto !px-2">
@@ -61,6 +64,15 @@ const JobDetails = () => {
                 <span className="indicator-item badge badge-neutral absolute -top-2 -right-[14px] size-6 text-[12px]">
                   <div className="mx-auto text-center">
                     {numberOfContactsPerJob}
+                  </div>
+                </span>
+              </div>
+            )}
+            {item.title === 'Documents' && numberOfDocumentsPerJob > 0 && (
+              <div className="indicator">
+                <span className="indicator-item badge badge-neutral absolute -top-2 -right-[14px] size-6 text-[12px]">
+                  <div className="mx-auto text-center">
+                    {numberOfDocumentsPerJob}
                   </div>
                 </span>
               </div>

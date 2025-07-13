@@ -53,7 +53,9 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
     push(`/home/boards/${board_id}/board`);
   };
 
-  const currentJobPost = jobPosts.find((jobPost) => jobPost.id === job_id);
+  // Defensive programming: Ensure jobPosts is always an array
+  const safeJobPosts = Array.isArray(jobPosts) ? jobPosts : [];
+  const currentJobPost = safeJobPosts.find((jobPost) => jobPost.id === job_id);
   if (currentJobPost) {
     localStorage.setItem('currentJobPost', JSON.stringify(currentJobPost));
   }

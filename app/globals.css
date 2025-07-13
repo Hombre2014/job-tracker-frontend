@@ -92,12 +92,12 @@ body,
 }
 
 .rsw-ce a {
-  color: #3182ce;
+  color: hsl(var(--primary));
   cursor: pointer;
 }
 
 .rsw-ce a:hover {
-  color: #1569b8;
+  color: hsl(var(--primary) / 0.8);
 }
 
 .rsw-ce h1 {
@@ -113,4 +113,24 @@ body,
 .rsw-ce pre {
   font-family: monospace;
   font-size: 0.875rem;
+}
+
+/* Custom scrollbar styles for document grid */
+
+.document-grid-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.document-grid-scrollbar::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+.document-grid-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 4px;
+}
+
+.document-grid-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
 }

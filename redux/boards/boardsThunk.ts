@@ -13,7 +13,6 @@ export const getBoards = createAsyncThunk(
       const data = res.data;
 
       if (data.length === 0) {
-        console.log('No boards found.');
         return thunkAPI.rejectWithValue('No boards found');
       }
 
@@ -22,7 +21,6 @@ export const getBoards = createAsyncThunk(
         return filteredData;
       }
     } catch (err: any) {
-      console.log('Error fetching boards: ', err.response?.data);
       return thunkAPI.rejectWithValue(
         err.response?.data || 'Error fetching boards'
       );
@@ -42,7 +40,6 @@ export const getBoardsOnly = createAsyncThunk(
       const data = res.data;
 
       if (data.length === 0) {
-        console.log('No boards found.');
         return thunkAPI.rejectWithValue('No boards found');
       }
 
@@ -51,7 +48,6 @@ export const getBoardsOnly = createAsyncThunk(
         return filteredData;
       }
     } catch (err: any) {
-      console.log('Error fetching boards: ', err.response?.data);
       return thunkAPI.rejectWithValue(
         err.response?.data || 'Error fetching boards'
       );
@@ -142,7 +138,6 @@ export const getArchivedBoards = createAsyncThunk(
       const data = res.data;
 
       if (data.length === 0) {
-        console.log('No boards found. Something is wrong!');
         return thunkAPI.rejectWithValue('No boards found');
       }
 
@@ -151,7 +146,6 @@ export const getArchivedBoards = createAsyncThunk(
         return filteredData;
       }
     } catch (err: any) {
-      console.log('Error fetching boards: ', err.response?.data);
       return thunkAPI.rejectWithValue(
         err.response?.data || 'Error fetching boards'
       );

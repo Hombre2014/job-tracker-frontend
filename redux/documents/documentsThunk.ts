@@ -32,6 +32,7 @@ export const uploadDocument = createAsyncThunk(
       formData.append('boardId', boardId);
       formData.append('category', category);
       formData.append('description', description);
+      formData.append('fileSize', file.size.toString()); // Include file size
 
       const res = await client.post(`/documents`, formData, {
         headers: {
@@ -55,7 +56,7 @@ export const attachDocumentToJobApplication = createAsyncThunk(
     const { jobId, documentId, accessToken } = values;
     try {
       const res = await client.post(
-        `/documents/${documentId}/job-applications/${jobId}/attach`,
+        `/documents/${documentId}/job-application/${jobId}/attach`,
         {},
         {
           headers: {
@@ -79,7 +80,7 @@ export const detachDocumentFromJobApplication = createAsyncThunk(
     const { jobId, documentId, accessToken } = values;
     try {
       const res = await client.post(
-        `/documents/${documentId}/job-applications/${jobId}/detach`,
+        `/documents/${documentId}/job-application/${jobId}/detach`,
         {},
         {
           headers: {
