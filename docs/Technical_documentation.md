@@ -1,12 +1,195 @@
 # Technical Documentation
 
-## Document Upload System
+## Production Token Refresh System
 
 ### Overview
 
-A comprehensive document upload and management system for the Job Tracker application, allowing users to upload files, link them to job applications, and manage document metadata with real-time UI updates.
+A robust, production-ready automatic token refresh system that prevents authentication failures in production environments by transparently refreshing JWT tokens before they expire and retrying failed requests.
 
 ### Architecture
+
+#### Core Implementation
+
+The token refresh system is implemented as an enhanced axios response interceptor that handles expired tokens automatically without user intervention.
+
+```typescript
+// File: api/client.ts
+let refreshPromise: Promise<string> | null = null;
+
+client.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    // Automatic token refresh logic
+  }
+);
+```
+
+#### Key Components
+
+1. **Race Condition Prevention**: Single refresh promise queue
+2. **Request Retry Logic**: Automatic retry of failed requests
+3. **Header Synchronization**: Updates both default and request-specific headers
+4. **Graceful Fallback**: Redirects to login only when refresh fails
+
+### Technical Implementation
+
+#### 1. Automatic 401 Error Handling
+
+```typescript
+if (typeof window !== 'undefined' && 
+    error.response?.status === 401 && 
+    !originalRequest._retry) {
+  
+  originalRequest._retry = true;
+  // Begin refresh process
+}
+```
+
+#### 2. Race Condition Prevention
+
+**Problem**: Multiple concurrent API calls with expired tokens could trigger multiple refresh attempts.
+
+**Solution**: Refresh promise queue ensures only one refresh at a time:
+
+```typescript
+// If refresh already in progress, wait for it
+if (refreshPromise) {
+  await refreshPromise;
+  const newAccessToken = localStorage.getItem('accessToken');
+  originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+  return client(originalRequest);
+}
+```
+
+#### 3. Token Refresh Process
+
+```typescript
+refreshPromise = (async () => {
+  try {
+    const refreshResponse = await axios.get('/auth/refresh', {
+      headers: { Authorization: `Bearer ${refreshToken}` }
+    });
+    
+    // Update localStorage
+    localStorage.setItem('accessToken', newAccessToken);
+    localStorage.setItem('refreshToken', newRefreshToken);
+    
+    // Update default headers for future requests
+    client.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
+    
+    return newAccessToken;
+  } finally {
+    refreshPromise = null; // Cleanup
+  }
+})();
+```
+
+#### 4. Request Retry Logic
+
+After successful token refresh, the original failed request is automatically retried:
+
+```typescript
+const newAccessToken = await refreshPromise;
+originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+return client(originalRequest); // Retry original request
+```
+
+### Production Benefits
+
+#### Before Implementation
+
+- **User Experience**: Sudden logouts after 30+ minutes of activity
+- **Production Issue**: 401 Unauthorized errors in Vercel deployment
+- **Business Impact**: Users losing work and having to re-authenticate frequently
+
+#### After Implementation
+
+- **Seamless Experience**: Users can work indefinitely without interruption
+- **Transparent Refresh**: Token renewal happens in background
+- **Production Stable**: Eliminates authentication failures in production
+- **Improved Reliability**: Handles concurrent requests and race conditions
+
+### Error Handling Strategy
+
+#### 1. Refresh Success Path
+
+```text
+API Call → 401 Error → Token Refresh → Original Request Retry → Success
+```
+
+#### 2. Refresh Failure Path
+
+```text
+API Call → 401 Error → Token Refresh Fails → Clean Storage → Redirect to Login
+```
+
+#### 3. Concurrent Request Handling
+
+```text
+Multiple 401s → Single Refresh → All Requests Wait → All Retry with New Token
+```
+
+### Code Quality Measures
+
+#### TypeScript Safety
+
+- **Proper typing**: `Promise<string> | null` for refresh promise
+- **Error handling**: Comprehensive try-catch blocks
+- **Type guards**: Runtime checks for browser environment
+
+#### Memory Management
+
+- **Promise cleanup**: `refreshPromise = null` in finally block
+- **Storage management**: Proper localStorage cleanup on failure
+- **Header management**: Clean default headers on logout
+
+#### Production Optimizations
+
+- **Environment checks**: Browser-only execution
+- **Existing endpoint usage**: Leverages current `/auth/refresh` API
+- **Minimal changes**: Single file modification for maximum stability
+
+### Integration Points
+
+#### 1. Existing Authentication System
+
+- **Compatible**: Works with current JWT implementation
+- **Non-breaking**: Enhances existing login/logout flow
+- **Storage**: Uses existing localStorage token management
+
+#### 2. Redux Integration
+
+- **Independent**: Operates at axios level, doesn't require Redux changes
+- **Compatible**: Works with existing token state management
+- **Flexible**: Can be enhanced with Redux updates if needed
+
+#### 3. Error Boundaries
+
+- **Fallback**: Maintains existing error handling patterns
+- **Graceful**: Always provides fallback to login page
+- **User-friendly**: No exposed technical errors to users
+
+### Monitoring and Debugging
+
+#### Development Logging
+
+- **Token refresh attempts**: Logged for debugging
+- **Race condition detection**: Visible in dev tools
+- **Error tracking**: Comprehensive error information
+
+#### Production Monitoring
+
+- **Silent operation**: No console noise in production
+- **Error reporting**: Maintains error tracking capabilities
+- **Performance**: Minimal overhead for token operations
+
+## Document Upload System Implementation
+
+### System Overview
+
+A comprehensive document upload and management system for the Job Tracker application, allowing users to upload files, link them to job applications, and manage document metadata with real-time UI updates.
+
+### Document System Architecture
 
 #### Components Structure
 
