@@ -5,6 +5,52 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 🔐 Production Token Refresh Implementation - (13/07/2025)
+
+### Automatic Token Refresh System
+
+- **Implemented production-ready automatic token refresh**: Fixed 401 Unauthorized errors in production environment
+  - **Issue**: Users experiencing sudden logouts due to expired JWT tokens in production (Vercel)
+  - **Root cause**: No automatic token refresh mechanism when access tokens expired
+  - **Solution**: Enhanced axios interceptor with automatic token refresh and retry logic
+  - **Impact**: Seamless user experience with transparent token renewal, eliminates production 401 errors
+  - **Files**: `api/client.ts`
+
+#### Key Features
+
+- **Automatic 401 handling**: Intercepts expired token errors and refreshes automatically
+- **Seamless retry**: Original failed requests are retried with fresh tokens
+- **Race condition prevention**: Single refresh promise queue prevents concurrent refresh attempts
+- **Default header updates**: All future requests automatically use refreshed tokens
+- **Graceful fallback**: Redirects to login only when refresh fails
+- **Production optimized**: Uses existing `/auth/refresh` endpoint with proper error handling
+
+#### Technical Implementation
+
+- **Enhanced axios response interceptor**: Added comprehensive token refresh logic
+  - **Race condition protection**: `refreshPromise` ensures only one refresh at a time
+  - **Queue management**: Multiple 401s wait for single refresh completion
+  - **Header synchronization**: Updates both default headers and request-specific headers
+  - **TypeScript safety**: Proper typing for refresh promise and error handling
+  - **Storage management**: Maintains localStorage sync with fresh tokens
+
+#### User Experience Flow
+
+**Before:**
+
+- User working for 30+ minutes → Token expires → Next action gets 401 → Immediate logout
+
+**After:**
+
+- User working for 30+ minutes → Token expires → Next action gets 401 → Auto refresh in background → Action succeeds → User continues working
+
+#### Production Quality Enhancements
+
+- **CodeRabbit integration**: Implemented feedback for production-grade token management
+- **Concurrent request handling**: Multiple simultaneous API calls share single refresh process
+- **Memory leak prevention**: Proper promise cleanup and null assignment
+- **Error boundary protection**: Comprehensive error handling with fallback strategies
+
 ## 🐛 Critical Bug Fix - (11/07/2025) - Document System & Redux State Corruption
 
 ### Redux State Corruption in jobsSlice
@@ -85,7 +131,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ✨ New Features - (03/07/2025)
 
-#### Automatic Token Refresh System
+#### Automatic JWT Token Refresh System
 
 - **Implemented rolling token refresh mechanism**: Added automatic session extension to keep users logged-in
   - **Feature**: Automatically refreshes access tokens 1 minute before expiration (every ~59 minutes)
