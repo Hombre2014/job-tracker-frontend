@@ -136,15 +136,17 @@ const currentJobPost = safeJobPosts.find((jobPost) => jobPost.id === job_id);
 #### Extension Mapping
 
 ```typescript
+// Design system integrated file type colors
 const fileTypeColors = {
-  pdf: '#DC2626',    // Red
-  doc: '#2563EB',    // Blue
-  docx: '#2563EB',   // Blue
-  jpg: '#059669',    // Green
-  jpeg: '#059669',   // Green
-  png: '#059669',    // Green
-  // ... more types
-};
+  pdf: 'hsl(0 84.2% 60.2%)',        // Alert red for PDFs
+  doc: 'hsl(221.2 83.2% 53.3%)',    // Professional blue for documents  
+  docx: 'hsl(221.2 83.2% 53.3%)',   // Professional blue for documents
+  jpg: 'hsl(270.7 91% 65.1%)',      // Creative purple for images
+  jpeg: 'hsl(270.7 91% 65.1%)',     // Creative purple for images
+  png: 'hsl(270.7 91% 65.1%)',      // Creative purple for images
+  xls: 'hsl(142.1 76.2% 36.3%)',    // Success green for spreadsheets
+  // Uses HSL values that integrate with design system and ensure accessibility
+} as const;
 ```
 
 #### Smart Detection Logic

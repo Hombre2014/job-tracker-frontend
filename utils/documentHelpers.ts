@@ -1,16 +1,18 @@
 import { DocumentCategory } from '@/enums';
 
+// Design system integrated document category colors  
+// Using HSL values that align with our theme and ensure accessibility
 export const documentCategoryColors = {
-  [DocumentCategory.Other]: '#6B7280', // Gray
-  [DocumentCategory.Resume]: '#3B82F6', // Blue
-  [DocumentCategory.JobPost]: '#84CC16', // Lime
-  [DocumentCategory.Portfolio]: '#8B5CF6', // Purple
-  [DocumentCategory.Transcript]: '#EF4444', // Red
-  [DocumentCategory.OfferLetter]: '#06B6D4', // Cyan
-  [DocumentCategory.CoverLetter]: '#10B981', // Green
-  [DocumentCategory.Certification]: '#F59E0B', // Amber
-  [DocumentCategory.WritingSample]: '#F97316', // Orange
-  [DocumentCategory.Recommendation]: '#EC4899', // Pink
+  [DocumentCategory.Other]: 'hsl(215.4 16.3% 46.9%)',        // Muted - neutral gray
+  [DocumentCategory.Resume]: 'hsl(221.2 83.2% 53.3%)',       // Primary blue - important documents
+  [DocumentCategory.JobPost]: 'hsl(84.2 80.5% 45.1%)',       // Success green - opportunities  
+  [DocumentCategory.Portfolio]: 'hsl(270.7 91% 65.1%)',      // Creative purple - showcase work
+  [DocumentCategory.Transcript]: 'hsl(0 84.2% 60.2%)',       // Alert red - official records
+  [DocumentCategory.OfferLetter]: 'hsl(173.4 80.4% 40%)',    // Celebratory cyan - good news
+  [DocumentCategory.CoverLetter]: 'hsl(142.1 76.2% 36.3%)',  // Professional green - applications
+  [DocumentCategory.Certification]: 'hsl(32.6 94.6% 43.7%)', // Achievement amber - credentials
+  [DocumentCategory.WritingSample]: 'hsl(24.6 95% 53.1%)',   // Creative orange - samples
+  [DocumentCategory.Recommendation]: 'hsl(316.7 75.8% 55.9%)', // Trust pink - endorsements
 };
 
 // Helper function to get document type from file extension

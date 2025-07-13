@@ -92,12 +92,12 @@ body,
 }
 
 .rsw-ce a {
-  color: #3182ce;
+  color: hsl(var(--primary));
   cursor: pointer;
 }
 
 .rsw-ce a:hover {
-  color: #1569b8;
+  color: hsl(var(--primary) / 0.8);
 }
 
 .rsw-ce h1 {
@@ -122,15 +122,15 @@ body,
 }
 
 .document-grid-scrollbar::-webkit-scrollbar-track {
-  background: #f3f4f6;
+  background: hsl(var(--muted));
   border-radius: 4px;
 }
 
 .document-grid-scrollbar::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: hsl(var(--border));
   border-radius: 4px;
 }
 
 .document-grid-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: hsl(var(--muted-foreground));
 }
