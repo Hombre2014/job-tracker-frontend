@@ -55,7 +55,7 @@ export const getFileInfo = (filename: string, size?: number): string => {
 
 // Helper function to calculate time ago
 export const getTimeAgo = (dateString: string): string => {
-  const now = new Date();
+  const now = Date.now(); // Use timestamp for better performance
   const uploadDate = new Date(dateString);
   
   // Handle invalid dates
@@ -63,7 +63,7 @@ export const getTimeAgo = (dateString: string): string => {
     return 'unknown';
   }
   
-  const diffInMs = now.getTime() - uploadDate.getTime();
+  const diffInMs = now - uploadDate.getTime();
   
   // Handle future dates
   if (diffInMs < 0) {

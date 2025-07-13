@@ -207,6 +207,18 @@ for (const job of jobsConnectedToDocument) {
 - Conditional rendering based on upload state
 - Efficient file handling with `useRef`
 
+#### Function-level Optimizations
+
+- **Timestamp optimization**: `Date.now()` instead of `new Date().getTime()` for better performance
+- **Minimal object creation**: Reduced unnecessary Date object instantiation in frequently called functions
+- **Efficient time calculations**: Optimized `getTimeAgo` function for document grid rendering
+
+```typescript
+// Optimized time calculation (called for every document card)
+const now = Date.now(); // Direct timestamp - no object creation
+const diffInMs = now - uploadDate.getTime();
+```
+
 #### Defensive Programming
 
 To prevent crashes from state corruption:
