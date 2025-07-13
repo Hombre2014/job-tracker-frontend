@@ -4,10 +4,7 @@ import Image from 'next/image';
 import { BsThreeDots } from 'react-icons/bs';
 
 import { fileTypeColors } from '@/data/constants';
-import {
-  getTimeAgo,
-  documentCategoryColors,
-} from '@/utils/documentHelpers';
+import { getTimeAgo, documentCategoryColors } from '@/utils/documentHelpers';
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -38,16 +35,16 @@ const DocumentCard = ({
   const getFileExtensionInfo = () => {
     // Use title as the filename (it should contain the full filename with extension)
     const filename = document.title || '';
-    
+
     // Extract extension from filename - case insensitive
     const extensionMatch = filename.match(/\.([^.]+)$/i);
-    
+
     if (extensionMatch) {
       const ext = extensionMatch[1].toLowerCase();
-      
+
       // Map extensions to display types consistently
       let displayType = ext.toUpperCase();
-      
+
       switch (ext) {
         case 'jpg':
         case 'jpeg':
@@ -84,18 +81,18 @@ const DocumentCard = ({
         default:
           displayType = ext.toUpperCase();
       }
-      
+
       return {
         extension: ext,
         extensionUpper: displayType,
-        isLegacy: false
+        isLegacy: false,
       };
     }
-    
+
     // No extension found - use category as fallback
     let defaultExt = 'file';
     let defaultDisplay = 'FILE';
-    
+
     switch (document.category) {
       case 'Resume':
       case 'Portfolio':
@@ -112,16 +109,17 @@ const DocumentCard = ({
         defaultExt = 'file';
         defaultDisplay = 'FILE';
     }
-    
+
     return {
       extension: defaultExt,
       extensionUpper: defaultDisplay,
-      isLegacy: true
+      isLegacy: true,
     };
   };
 
-  const { extension: fileExtension, extensionUpper: fileExtensionUpper } = getFileExtensionInfo();
-  
+  const { extension: fileExtension, extensionUpper: fileExtensionUpper } =
+    getFileExtensionInfo();
+
   const fileColor =
     fileTypeColors[fileExtension as keyof typeof fileTypeColors] ||
     fileTypeColors.default;
@@ -130,19 +128,19 @@ const DocumentCard = ({
   const getFileSizeDisplay = () => {
     // First try to get from document object
     let fileSize = document.fileSize;
-    
+
     // If not available, try localStorage (for newly uploaded documents)
     if (!fileSize || fileSize <= 0) {
       const storedFileSize = localStorage.getItem(`fileSize_${document.id}`);
       fileSize = storedFileSize ? parseInt(storedFileSize) : undefined;
     }
-    
+
     // Format: "PDF - 1.2 KB" or just "PDF"
     if (fileSize && fileSize > 0) {
       const sizeInKB = (fileSize / 1024).toFixed(1);
       return `${fileExtensionUpper} - ${sizeInKB} KB`;
     }
-    
+
     return fileExtensionUpper;
   };
 
@@ -228,8 +226,8 @@ const DocumentCard = ({
           <DropdownMenuTrigger asChild>
             <button
               type="button"
+              aria-label={`Options for ${document.title}`}
               className="border border-gray-300 rounded-md p-1.5 hover:bg-gray-50 transition-colors"
-              aria-label="Document options"
             >
               <BsThreeDots className="w-4 h-4 text-gray-600" />
             </button>

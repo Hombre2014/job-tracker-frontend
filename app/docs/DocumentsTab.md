@@ -51,9 +51,9 @@ This document outlines the step-by-step implementation plan for the Documents ta
 
 ---
 
-## **Phase 2: Jobs Linking Functionality** ✅ **COMPLETED**
+## **Phase 2: Jobs Linking Functionality**
 
-### **Step 2.1: Create Jobs Sidebar Component** ✅ **COMPLETED**
+### **Step 2.1: Create Jobs Sidebar Component**
 
 - **Location**: `components/Forms/AddDocument/DocumentSideBar.tsx` ✅
 - **Features**: ✅
@@ -66,7 +66,7 @@ This document outlines the step-by-step implementation plan for the Documents ta
   - Jobs subsection with add/remove functionality ✅
   - Created by section (user info) ✅
 
-### **Step 2.2: Job Management** ✅ **COMPLETED**
+### **Step 2.2: Job Management**
 
 - **Features**: ✅
   - Allow adding/removing jobs from selection ✅
@@ -78,7 +78,7 @@ This document outlines the step-by-step implementation plan for the Documents ta
   - Filter out already selected jobs from dropdown ✅
   - Default to current job when opened from job modal ✅
 
-### **Step 2.3: Modal Integration** ✅ **COMPLETED**
+### **Step 2.3: Modal Integration**
 
 - **Integration**: ✅
   - Replace dummy job linking section with DocumentSideBar ✅
@@ -86,7 +86,7 @@ This document outlines the step-by-step implementation plan for the Documents ta
   - Update upload logic to handle multiple job attachments ✅
   - Reset job selections when modal closes ✅
 
-### **Step 2.4: UI/UX Improvements** ✅ **COMPLETED**
+### **Step 2.4: UI/UX Improvements**
 
 - **Modal Enhancements**: ✅
   - Add scrollbar to left content area to prevent modal height increase ✅
@@ -429,23 +429,23 @@ Start with PDF and images for preview, show download button for unsupported form
 
 ```tsx
 // utils/fileTypeSupport.ts
-export const PREVIEW_SUPPORTED_TYPES = [
-  'image/jpeg',
+export const PREVIEW_SUPPORTED_TYPES = Object.freeze([
+  'text/csv',
+  'text/css',
   'image/png',
   'image/gif',
+  'text/html',
+  'image/jpeg',
   'image/webp',
-  'image/svg+xml',
-  'application/pdf',
   'text/plain',
   'text/markdown',
-  'application/json',
-  'text/csv',
-  'text/html',
-  'text/css',
-  'application/javascript',
+  'image/svg+xml',
+  'application/pdf',
   'text/javascript',
+  'application/json',
+  'application/javascript',
   'application/typescript',
-];
+]) as const;
 
 export const isPreviewSupported = (mimeType: string): boolean => {
   return PREVIEW_SUPPORTED_TYPES.includes(mimeType);
@@ -463,7 +463,7 @@ export const getFileTypeCategory = (
 - **Document cards show appropriate icons/actions**
 - **Preview button only appears for supported types**
 - **Download button always available**
-- **Clear visual distinction between preview/download-only files**
+- **Clear visual distinction between preview and download-only files**
 
 This approach ensures users always know what to expect from their uploaded files while maintaining a clean, informative interface.
 

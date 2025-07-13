@@ -5,11 +5,9 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Critical Bug Fix] - (11/07/2025) - Document System & Redux State Corruption
+## 🐛 Critical Bug Fix - (11/07/2025) - Document System & Redux State Corruption
 
-### 🐛 Critical Bug Fixes - (11/07/2025)
-
-#### Redux State Corruption in jobsSlice
+### Redux State Corruption in jobsSlice
 
 - **Fixed critical Redux state corruption causing app crashes**: Resolved fatal bug in `getJobPost.fulfilled` reducer
   - **Issue**: `state.jobPosts = action.payload` incorrectly replaced array with single object after document upload
@@ -19,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Impact**: Document upload now works without crashes, Redux state remains consistent
   - **Files**: `redux/jobs/jobsSlice.ts`
 
-#### Race Condition with Duplicate getJobPost Calls
+### Race Condition with Duplicate getJobPost Calls
 
 - **Fixed race condition causing state corruption**: Eliminated duplicate `getJobPost` calls during document upload
   - **Issue**: UploadDocumentModal and Documents.tsx both calling `getJobPost` simultaneously after upload
