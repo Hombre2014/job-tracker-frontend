@@ -59,7 +59,7 @@ const CreateContactModal = ({
         try {
           // Determine effective board ID
           let effectiveBoardId = board_id;
-          if (!effectiveBoardId && contactToEdit.boardId) {
+          if (!effectiveBoardId && contactToEdit?.boardId) {
             effectiveBoardId = contactToEdit.boardId;
           }
 
@@ -128,7 +128,7 @@ const CreateContactModal = ({
     let effectiveBoardId = board_id;
 
     // If we're editing an existing contact, prioritize using its boardId
-    if (contactToEdit && contactToEdit.boardId) {
+    if (contactToEdit?.boardId) {
       effectiveBoardId = contactToEdit.boardId;
     }
     // Otherwise, if we're on the main contacts page and need to create/update a contact, get a default board

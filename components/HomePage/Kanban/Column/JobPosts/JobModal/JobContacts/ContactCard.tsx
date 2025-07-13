@@ -100,7 +100,7 @@ const ContactCard = ({
         // Option 2: Try to get company names from job applications
         if (contact.jobApplications && contact.jobApplications.length > 0) {
           const companiesFromJobs = contact.jobApplications
-            .filter((job) => job.company && job.company.name)
+            .filter((job) => job.company?.name)
             .map((job) => job.company.name);
 
           if (companiesFromJobs.length > 0) {
@@ -190,10 +190,10 @@ const ContactCard = ({
   }) => (
     <Link
       target="_blank"
-      href={url && url.trim() !== '' ? url : '#'}
       rel="noopener noreferrer"
+      href={url?.trim() ? url : '#'}
       className={
-        url && url.trim() !== ''
+        url?.trim()
           ? 'text-blue-500 hover:cursor-pointer'
           : 'text-gray-400 cursor-not-allowed'
       }

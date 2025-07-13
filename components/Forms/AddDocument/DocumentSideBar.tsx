@@ -79,8 +79,7 @@ const DocumentSideBar = ({
       (job: JobApplication) => job.title === jobTitle && job.id === jobId
     );
     if (
-      jobToAdd &&
-      jobToAdd.id && // Ensure job has valid ID
+      jobToAdd?.id && // Ensure job has valid ID
       !jobsConnectedToDocument.some(
         (job: JobApplication) => job.id === jobToAdd.id
       )
