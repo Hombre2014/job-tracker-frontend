@@ -6,6 +6,7 @@ import {
   uploadDocument,
   deleteDocument,
   getDocumentsPerUser,
+  getDocumentsPerBoard,
   attachDocumentToJobApplication,
   detachDocumentFromJobApplication,
 } from './documentsThunk';
@@ -14,16 +15,20 @@ interface DocumentState {
   error: string | null;
   documents: JobDocument[];
   userDocuments: JobDocument[];
+  boardDocuments: JobDocument[];
   documentsStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
   userDocumentsStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
+  boardDocumentsStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
 }
 
 const initialState: DocumentState = {
   error: null,
   documents: [],
   userDocuments: [],
+  boardDocuments: [],
   documentsStatus: 'idle',
   userDocumentsStatus: 'idle',
+  boardDocumentsStatus: 'idle',
 };
 
 const documentsSlice = createSlice({
@@ -122,6 +127,19 @@ const documentsSlice = createSlice({
       .addCase(getDocumentsPerUser.rejected, (state, action) => {
         state.userDocumentsStatus = 'failed';
         state.error = action.error.message || 'Failed to fetch user documents';
+      })
+      // Board documents cases
+      .addCase(getDocumentsPerBoard.pending, (state) => {
+        state.boardDocumentsStatus = 'loading';
+      })
+      .addCase(getDocumentsPerBoard.fulfilled, (state, action) => {
+        state.boardDocumentsStatus = 'succeeded';
+        state.boardDocuments = action.payload;
+        state.error = null;
+      })
+      .addCase(getDocumentsPerBoard.rejected, (state, action) => {
+        state.boardDocumentsStatus = 'failed';
+        state.error = action.error.message || 'Failed to fetch board documents';
       });
   },
 });
@@ -133,3 +151,6 @@ export const selectDocumentsStatus = (state: RootState) =>
 export const selectUserDocuments = (state: RootState) => state.documents.userDocuments;
 export const selectUserDocumentsStatus = (state: RootState) =>
   state.documents.userDocumentsStatus;
+export const selectBoardDocuments = (state: RootState) => state.documents.boardDocuments;
+export const selectBoardDocumentsStatus = (state: RootState) =>
+  state.documents.boardDocumentsStatus;

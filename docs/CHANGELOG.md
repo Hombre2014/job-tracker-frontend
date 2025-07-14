@@ -5,6 +5,89 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 🚀 Document Management System Enhancement - (14/07/2025)
+
+### Critical Bug Fix: Smart Document Deletion
+
+- **CRITICAL FIX**: Fixed document deletion bug causing data loss across multiple job applications
+  - **Issue**: Documents attached to multiple jobs were completely deleted when removed from any single job
+  - **Impact**: Users lost documents from other job applications unintentionally
+  - **Solution**: Implemented smart deletion logic that checks attachment count before deletion
+  - **Result**: Documents now only detach from current job unless it's the last attachment
+
+### New Features
+
+#### Document Pages Implementation
+
+- **Board Documents Page**: `/home/boards/[board_id]/documents`
+  - Full CRUD operations for board-specific documents
+  - Responsive unlimited grid layout (auto-fit design)
+  - Upload functionality with automatic board detection
+  - Link existing documents from other boards
+
+- **Global User Documents Page**: `/home/documents`
+  - Cross-board document overview showing all user documents
+  - Read-only design with guided upload experience
+  - Same responsive grid system as board pages
+  - Smart deletion with job application protection
+
+#### Enhanced Link Document Functionality
+
+- **Reused existing LinkDocument component** instead of creating redundant components
+- **Visual enhancements**: 20-character title truncation, color-coded categories
+- **Smart filtering**: Excludes already attached documents from selection
+- **Callback integration**: Proper document attachment workflow
+
+#### Redux State Enhancements
+
+- **New thunks**: `getDocumentsPerUser`, `getDocumentsPerBoard`
+- **Extended state**: Separate document contexts (job, user, board)
+- **Enhanced types**: Added `jobApplications` array to document interface
+- **Optimized selectors**: Efficient state access for different document contexts
+
+### UI/UX Improvements
+
+#### Responsive Design Revolution
+
+- **Unlimited grid columns**: Removed 5-column limit for wide screens
+- **Auto-fit layout**: `repeat(auto-fit, minmax(200px, 1fr))` for optimal space usage
+- **Single scrollbar**: Eliminated double scrollbar issues
+- **Full-screen utilization**: Proper height management with flex layouts
+
+#### User Feedback Enhancement
+
+- **Context-aware messages**: Different toasts based on deletion context
+  - "Document detached from this job application!" (multiple attachments)
+  - "Document detached and deleted successfully!" (single attachment)
+- **Loading states**: Proper loading indicators for all document operations
+- **Error protection**: Clear warnings when documents are still attached elsewhere
+
+### Technical Improvements
+
+#### API Integration
+
+- **Enhanced document endpoints**: Proper integration with backend document APIs
+- **Smart caching**: Redux state management for efficient document access
+- **Error handling**: Comprehensive error catching with user-friendly messages
+
+#### Component Architecture - (14/07/2025)
+
+- **Reusability**: Shared DocumentCard component across all contexts
+- **Consistency**: Uniform document management patterns
+- **Performance**: Optimized rendering for large document collections
+
+### Files Modified
+
+- `redux/documents/documentsThunk.ts` - Added new document fetch thunks
+- `redux/documents/documentsSlice.ts` - Enhanced state management
+- `components/HomePage/HomeNavbar/LinkDocument.tsx` - Enhanced with callbacks and UI improvements
+- `components/.../Documents.tsx` - Implemented smart deletion logic
+- `app/(loggedin)/home/boards/[board_id]/documents/page.tsx` - New board documents page
+- `app/(loggedin)/home/documents/page.tsx` - New global documents page
+- `types/index.d.ts` - Extended document type definitions
+
+---
+
 ## 🔐 Production Token Refresh Implementation - (13/07/2025)
 
 ### Automatic Token Refresh System

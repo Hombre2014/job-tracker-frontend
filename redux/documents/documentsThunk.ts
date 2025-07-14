@@ -136,3 +136,23 @@ export const getDocumentsPerUser = createAsyncThunk(
     }
   }
 );
+
+export const getDocumentsPerBoard = createAsyncThunk(
+  'documents/getDocumentsPerBoard',
+  async (values: { boardId: string; accessToken: string }, thunkAPI) => {
+    const { boardId, accessToken } = values;
+    try {
+      const res = await client.get(`/documents/board/${boardId}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error getting board documents'
+      );
+    }
+  }
+);

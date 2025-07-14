@@ -36,10 +36,11 @@ client.interceptors.response.use(
 #### 1. Automatic 401 Error Handling
 
 ```typescript
-if (typeof window !== 'undefined' && 
-    error.response?.status === 401 && 
-    !originalRequest._retry) {
-  
+if (
+  typeof window !== 'undefined' &&
+  error.response?.status === 401 &&
+  !originalRequest._retry
+) {
   originalRequest._retry = true;
   // Begin refresh process
 }
@@ -67,16 +68,18 @@ if (refreshPromise) {
 refreshPromise = (async () => {
   try {
     const refreshResponse = await axios.get('/auth/refresh', {
-      headers: { Authorization: `Bearer ${refreshToken}` }
+      headers: { Authorization: `Bearer ${refreshToken}` },
     });
-    
+
     // Update localStorage
     localStorage.setItem('accessToken', newAccessToken);
     localStorage.setItem('refreshToken', newRefreshToken);
-    
+
     // Update default headers for future requests
-    client.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
-    
+    client.defaults.headers.common[
+      'Authorization'
+    ] = `Bearer ${newAccessToken}`;
+
     return newAccessToken;
   } finally {
     refreshPromise = null; // Cleanup
@@ -321,13 +324,13 @@ const currentJobPost = safeJobPosts.find((jobPost) => jobPost.id === job_id);
 ```typescript
 // Design system integrated file type colors
 const fileTypeColors = {
-  pdf: 'hsl(0 84.2% 60.2%)',        // Alert red for PDFs
-  doc: 'hsl(221.2 83.2% 53.3%)',    // Professional blue for documents  
-  docx: 'hsl(221.2 83.2% 53.3%)',   // Professional blue for documents
-  jpg: 'hsl(270.7 91% 65.1%)',      // Creative purple for images
-  jpeg: 'hsl(270.7 91% 65.1%)',     // Creative purple for images
-  png: 'hsl(270.7 91% 65.1%)',      // Creative purple for images
-  xls: 'hsl(142.1 76.2% 36.3%)',    // Success green for spreadsheets
+  pdf: 'hsl(0 84.2% 60.2%)', // Alert red for PDFs
+  doc: 'hsl(221.2 83.2% 53.3%)', // Professional blue for documents
+  docx: 'hsl(221.2 83.2% 53.3%)', // Professional blue for documents
+  jpg: 'hsl(270.7 91% 65.1%)', // Creative purple for images
+  jpeg: 'hsl(270.7 91% 65.1%)', // Creative purple for images
+  png: 'hsl(270.7 91% 65.1%)', // Creative purple for images
+  xls: 'hsl(142.1 76.2% 36.3%)', // Success green for spreadsheets
   // Uses HSL values that integrate with design system and ensure accessibility
 } as const;
 ```
@@ -488,7 +491,7 @@ GET /job-applications/{jobId}
 #### Race Condition Test Scenarios
 
 - **Rapid sequential uploads**: Multiple documents uploaded quickly
-- **Multi-job linking**: Document attached to multiple jobs simultaneously  
+- **Multi-job linking**: Document attached to multiple jobs simultaneously
 - **Concurrent user actions**: Upload while other users modify same job
 - **Network delays**: Slow API responses during state updates
 
@@ -520,5 +523,5 @@ GET /job-applications/{jobId}
 
 ---
 
-*Last Updated: July 11, 2025*  
-*Critical Bug Fixes: Redux State Corruption & Race Condition Resolution*
+_Last Updated: July 11, 2025_  
+_Critical Bug Fixes: Redux State Corruption & Race Condition Resolution_
