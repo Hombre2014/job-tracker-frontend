@@ -10,16 +10,22 @@ import { LinkDocument } from '@/components/HomePage/HomeNavbar/LinkDocument';
 import UploadDocumentModal from '@/components/Forms/AddDocument/UploadDocumentModal';
 import DocumentCard from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/DocumentCard';
 import {
+  selectUserDocuments,
+  selectBoardDocuments,
+  selectBoardDocumentsStatus,
+} from '@/redux/documents/documentsSlice';
+import {
   getDocument,
   deleteDocument,
   getDocumentsPerUser,
   getDocumentsPerBoard,
 } from '@/redux/documents/documentsThunk';
-import {
-  selectUserDocuments,
-  selectBoardDocuments,
-  selectBoardDocumentsStatus,
-} from '@/redux/documents/documentsSlice';
+
+// Constants for document display
+const TITLE_MAX_LENGTH = 20;
+const RESPONSIVE_GRID_STYLES = {
+  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+} as const;
 
 const BoardDocuments = () => {
   const { board_id } = useParams();
@@ -99,10 +105,9 @@ const BoardDocuments = () => {
     documentTitle: string,
     documentId: string
   ) => {
-    // This functionality might be implemented later for linking documents between different contexts
-    toast.info(
-      'Link document functionality will be implemented for board context'
-    );
+    // TODO: Implement document linking for board context
+    // This should allow users to link existing documents from other boards to this board
+    toast.warning('Document linking feature is coming soon!');
   };
 
   // Filter out documents that are already in this board
@@ -113,11 +118,16 @@ const BoardDocuments = () => {
 
   // Enhance documents with uploader information and truncated titles for board view
   const enhancedDocuments = boardDocuments.map((doc) => {
-    const storedFileSize = localStorage.getItem(`fileSize_${doc.id}`);
-    const fileSize = storedFileSize ? parseInt(storedFileSize) : doc.fileSize;
+    let fileSize = doc.fileSize;
+    try {
+      const storedFileSize = localStorage.getItem(`fileSize_${doc.id}`);
+      fileSize = storedFileSize ? parseInt(storedFileSize) : doc.fileSize;
+    } catch (error) {
+      console.warn('Failed to access localStorage for file size:', error);
+    }
 
     // Truncate title to ~20 characters for better board layout
-    const truncateTitle = (title: string, maxLength: number = 20) => {
+    const truncateTitle = (title: string, maxLength: number = TITLE_MAX_LENGTH) => {
       if (title.length <= maxLength) return title;
       return title.substring(0, maxLength - 3) + '...';
     };
@@ -131,7 +141,9 @@ const BoardDocuments = () => {
   });
 
   const handleEditDocument = (document: JobDocument) => {
-    // TODO: Implement edit functionality
+    // TODO: Implement edit functionality - Allow users to edit document metadata (title, category, description)
+    // This should open a modal similar to UploadDocumentModal but for editing existing documents
+    toast.info('Document editing functionality will be implemented soon');
   };
 
   const handleDeleteDocument = async (documentId: string) => {
@@ -183,17 +195,33 @@ const BoardDocuments = () => {
         return;
       }
 
+      // Try to open in new tab, with fallback for popup blockers
       const newTab = window.open(
         jobDocument.url,
         '_blank',
         'noopener,noreferrer'
       );
 
-      setTimeout(() => {
-        if (!newTab || newTab.closed) {
-          toast.success('Document has been downloaded');
-        }
-      }, 500);
+      // Handle popup blocker case
+      if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+        // Fallback: Create a download link
+        const link = document.createElement('a');
+        link.href = jobDocument.url;
+        link.download = jobDocument.title || 'document';
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success('Document download initiated');
+      } else {
+        setTimeout(() => {
+          if (!newTab.closed) {
+            toast.success('Document opened in new tab');
+          } else {
+            toast.success('Document has been downloaded');
+          }
+        }, 500);
+      }
     } catch (error) {
       console.error('Error opening document:', error);
       toast.error('Failed to open document. Please try again.');
@@ -233,7 +261,7 @@ const BoardDocuments = () => {
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto p-6">
-          <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+          <div className="grid gap-4" style={RESPONSIVE_GRID_STYLES}>
             {enhancedDocuments.map((document) => (
               <DocumentCard
                 key={document.id}

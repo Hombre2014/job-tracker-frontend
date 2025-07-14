@@ -130,8 +130,13 @@ const Documents = () => {
   // Enhance documents with uploader information and file size from localStorage if available
   const enhancedDocuments = jobDocuments.map((doc) => {
     // Try to get file size from localStorage (stored during upload)
-    const storedFileSize = localStorage.getItem(`fileSize_${doc.id}`);
-    const fileSize = storedFileSize ? parseInt(storedFileSize) : doc.fileSize;
+    let fileSize = doc.fileSize;
+    try {
+      const storedFileSize = localStorage.getItem(`fileSize_${doc.id}`);
+      fileSize = storedFileSize ? parseInt(storedFileSize) : doc.fileSize;
+    } catch (error) {
+      console.warn('Failed to access localStorage for file size:', error);
+    }
 
     return {
       ...doc,
@@ -141,7 +146,9 @@ const Documents = () => {
   });
 
   const handleEditDocument = (document: JobDocument) => {
-    // TODO: Implement edit functionality
+    // TODO: Implement edit functionality - Allow users to edit document metadata (title, category, description)
+    // This should open a modal similar to UploadDocumentModal but for editing existing documents
+    toast.info('Document editing functionality will be implemented soon');
   };
 
   const handleDeleteDocument = async (documentId: string) => {
@@ -202,21 +209,35 @@ const Documents = () => {
         return;
       }
 
-      // Track if a new tab was opened and stayed open
+      // Try to open in new tab, with fallback for popup blockers
       const newTab = window.open(
         jobDocument.url,
         '_blank',
         'noopener,noreferrer'
       );
 
-      // Check after a short delay if the tab was closed (indicating a download)
-      setTimeout(() => {
-        if (!newTab || newTab.closed) {
-          // Tab was closed or couldn't be opened, likely a download occurred
-          toast.success('Document has been downloaded');
-        }
-        // If tab is still open, no toast needed as user can see the document
-      }, 500);
+      // Handle popup blocker case
+      if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+        // Fallback: Create a download link
+        const link = document.createElement('a');
+        link.href = jobDocument.url;
+        link.download = jobDocument.title || 'document';
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success('Document download initiated');
+      } else {
+        // Check after a short delay if the tab was closed (indicating a download)
+        setTimeout(() => {
+          if (!newTab.closed) {
+            toast.success('Document opened in new tab');
+          } else {
+            // Tab was closed or couldn't be opened, likely a download occurred
+            toast.success('Document has been downloaded');
+          }
+        }, 500);
+      }
     } catch (error) {
       console.error('Error opening document:', error);
       toast.error('Failed to open document. Please try again.');

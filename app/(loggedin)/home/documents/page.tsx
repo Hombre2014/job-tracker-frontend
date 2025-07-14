@@ -16,6 +16,12 @@ import {
   selectUserDocumentsStatus,
 } from '@/redux/documents/documentsSlice';
 
+// Constants for document display
+const TITLE_MAX_LENGTH = 20;
+const RESPONSIVE_GRID_STYLES = {
+  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+} as const;
+
 const UserDocuments = () => {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.user);
@@ -78,11 +84,18 @@ const UserDocuments = () => {
 
   // Enhance documents with uploader information and truncated titles for user view
   const enhancedDocuments = userDocuments.map((doc) => {
-    const storedFileSize = localStorage.getItem(`fileSize_${doc.id}`);
-    const fileSize = storedFileSize ? parseInt(storedFileSize) : doc.fileSize;
+    let fileSize = doc.fileSize;
+    try {
+      const storedFileSize = localStorage.getItem(`fileSize_${doc.id}`);
+      if (storedFileSize) {
+        fileSize = parseInt(storedFileSize);
+      }
+    } catch (error) {
+      console.warn('Failed to retrieve file size from localStorage:', error);
+    }
 
     // Truncate title to ~20 characters for better layout
-    const truncateTitle = (title: string, maxLength: number = 20) => {
+    const truncateTitle = (title: string, maxLength: number = TITLE_MAX_LENGTH) => {
       if (title.length <= maxLength) return title;
       return title.substring(0, maxLength - 3) + '...';
     };
@@ -96,7 +109,9 @@ const UserDocuments = () => {
   });
 
   const handleEditDocument = (document: JobDocument) => {
-    // TODO: Implement edit functionality
+    // TODO: Implement edit functionality - Allow users to edit document metadata (title, category, description)
+    // This should open a modal similar to UploadDocumentModal but for editing existing documents
+    toast.info('Document editing functionality will be implemented soon');
   };
 
   const handleDeleteDocument = async (documentId: string) => {
@@ -153,8 +168,23 @@ const UserDocuments = () => {
         'noopener,noreferrer'
       );
 
+      if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+        // Fallback: Create a download link for popup blocker case
+        const link = document.createElement('a');
+        link.href = jobDocument.url;
+        link.download = jobDocument.title || 'document';
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success('Document download initiated');
+        return;
+      }
+
       setTimeout(() => {
-        if (!newTab || newTab.closed) {
+        if (!newTab.closed) {
+          toast.success('Document opened in new tab');
+        } else {
           toast.success('Document has been downloaded');
         }
       }, 500);
@@ -197,7 +227,7 @@ const UserDocuments = () => {
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto p-6">
-          <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+          <div className="grid gap-4" style={RESPONSIVE_GRID_STYLES}>
             {enhancedDocuments.map((document) => (
               <DocumentCard
                 key={document.id}

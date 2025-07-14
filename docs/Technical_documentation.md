@@ -71,6 +71,10 @@ refreshPromise = (async () => {
       headers: { Authorization: `Bearer ${refreshToken}` },
     });
 
+    // Extract the new tokens from the payload
+    const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+      refreshResponse.data;
+
     // Update localStorage
     localStorage.setItem('accessToken', newAccessToken);
     localStorage.setItem('refreshToken', newRefreshToken);
@@ -500,10 +504,9 @@ GET /job-applications/{jobId}
 #### Planned Improvements
 
 1. **Edit Functionality**: In-place document editing
-2. **Delete Operations**: Secure document removal
-3. **Advanced Preview**: PDF/image preview in modal
-4. **Bulk Operations**: Multi-document upload
-5. **Search/Filter**: Document search within jobs
+2. **Advanced Preview**: PDF/image preview in modal
+3. **Bulk Operations**: Multi-document upload
+4. **Search/Filter**: Document search within jobs
 
 ### Maintenance Notes
 
@@ -523,5 +526,5 @@ GET /job-applications/{jobId}
 
 ---
 
-_Last Updated: July 11, 2025_  
+_Last Updated: July 11, 2025,_  
 _Critical Bug Fixes: Redux State Corruption & Race Condition Resolution_
