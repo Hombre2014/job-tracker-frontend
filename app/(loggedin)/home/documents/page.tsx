@@ -25,7 +25,14 @@ const RESPONSIVE_GRID_STYLES = {
 const UserDocuments = () => {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.user);
-  const accessToken = localStorage.getItem('accessToken');
+  const accessToken = (() => {
+    try {
+      return localStorage.getItem('accessToken');
+    } catch (error) {
+      console.warn('Failed to access localStorage:', error);
+      return null;
+    }
+  })();
   const userDocuments = useAppSelector(selectUserDocuments);
   const userDocumentsStatus = useAppSelector(selectUserDocumentsStatus);
   const [uploaderInfo, setUploaderInfo] = useState<{
@@ -95,7 +102,10 @@ const UserDocuments = () => {
     }
 
     // Truncate title to ~20 characters for better layout
-    const truncateTitle = (title: string, maxLength: number = TITLE_MAX_LENGTH) => {
+    const truncateTitle = (
+      title: string,
+      maxLength: number = TITLE_MAX_LENGTH
+    ) => {
       if (title.length <= maxLength) return title;
       return title.substring(0, maxLength - 3) + '...';
     };
@@ -129,7 +139,8 @@ const UserDocuments = () => {
         })
       ).unwrap();
 
-      const jobApplicationsCount = documentDetailsResult.jobApplications?.length || 0;
+      const jobApplicationsCount =
+        documentDetailsResult.jobApplications?.length || 0;
 
       // If attached to job applications, warn user
       if (jobApplicationsCount > 0) {
@@ -168,7 +179,12 @@ const UserDocuments = () => {
         'noopener,noreferrer'
       );
 
-      if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+      if (
+        !newTab ||
+        newTab.closed ||
+        typeof newTab.closed === 'undefined' ||
+        !newTab.location
+      ) {
         // Fallback: Create a download link for popup blocker case
         const link = document.createElement('a');
         link.href = jobDocument.url;
@@ -181,13 +197,20 @@ const UserDocuments = () => {
         return;
       }
 
-      setTimeout(() => {
-        if (!newTab.closed) {
-          toast.success('Document opened in new tab');
-        } else {
-          toast.success('Document has been downloaded');
+      // Use a more robust approach with proper error handling and longer timeout
+      const checkTabStatus = setTimeout(() => {
+        try {
+          if (newTab && !newTab.closed) {
+            toast.success('Document opened in new tab');
+          } else {
+            toast.success('Document has been downloaded');
+          }
+        } catch (error) {
+          // Tab may be closed, cross-origin, or inaccessible
+          console.warn('Could not check tab status:', error);
+          toast.success('Document has been processed');
         }
-      }, 500);
+      }, 1000);
     } catch (error) {
       console.error('Error opening document:', error);
       toast.error('Failed to open document. Please try again.');

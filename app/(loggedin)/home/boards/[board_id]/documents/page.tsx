@@ -31,7 +31,14 @@ const BoardDocuments = () => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.user);
-  const accessToken = localStorage.getItem('accessToken');
+  const accessToken = (() => {
+    try {
+      return localStorage.getItem('accessToken');
+    } catch (error) {
+      console.warn('Failed to access localStorage:', error);
+      return null;
+    }
+  })();
   const userDocuments = useAppSelector(selectUserDocuments);
   const boardDocuments = useAppSelector(selectBoardDocuments);
   const boardDocumentsStatus = useAppSelector(selectBoardDocumentsStatus);
@@ -41,14 +48,17 @@ const BoardDocuments = () => {
     profilePicUrl?: string;
   } | null>(null);
 
+  // Type-safe board ID extraction
+  const boardId = Array.isArray(board_id) ? board_id[0] : board_id;
+
   // Function to refresh board documents
   const handleDocumentsRefresh = async () => {
-    if (board_id && accessToken) {
+    if (boardId && accessToken) {
       try {
         await dispatch(
           getDocumentsPerBoard({
-            boardId: board_id as string,
             accessToken,
+            boardId: boardId,
           })
         ).unwrap();
       } catch (error) {
@@ -89,16 +99,25 @@ const BoardDocuments = () => {
 
   // Fetch board documents and user documents on mount
   useEffect(() => {
-    if (accessToken && board_id) {
+    if (accessToken && boardId) {
       dispatch(
         getDocumentsPerBoard({
-          boardId: board_id as string,
           accessToken,
+          boardId: boardId,
         })
       );
       dispatch(getDocumentsPerUser(accessToken));
     }
-  }, [dispatch, accessToken, board_id]);
+  }, [dispatch, accessToken, boardId]);
+
+  // Early return after all hooks are called
+  if (!boardId) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <p className="text-center text-xl text-red-500">Invalid board ID</p>
+      </div>
+    );
+  }
 
   // Handle document selection from LinkDocument (this would be used for linking existing documents)
   const handleDocumentSelect = async (
@@ -127,7 +146,10 @@ const BoardDocuments = () => {
     }
 
     // Truncate title to ~20 characters for better board layout
-    const truncateTitle = (title: string, maxLength: number = TITLE_MAX_LENGTH) => {
+    const truncateTitle = (
+      title: string,
+      maxLength: number = TITLE_MAX_LENGTH
+    ) => {
       if (title.length <= maxLength) return title;
       return title.substring(0, maxLength - 3) + '...';
     };
@@ -214,13 +236,20 @@ const BoardDocuments = () => {
         document.body.removeChild(link);
         toast.success('Document download initiated');
       } else {
-        setTimeout(() => {
-          if (!newTab.closed) {
-            toast.success('Document opened in new tab');
-          } else {
-            toast.success('Document has been downloaded');
+        // Use a more robust approach with proper error handling and longer timeout
+        const checkTabStatus = setTimeout(() => {
+          try {
+            if (newTab && !newTab.closed) {
+              toast.success('Document opened in new tab');
+            } else {
+              toast.success('Document has been downloaded');
+            }
+          } catch (error) {
+            // Tab may be closed, cross-origin, or inaccessible
+            console.warn('Could not check tab status:', error);
+            toast.success('Document has been processed');
           }
-        }, 500);
+        }, 1000);
       }
     } catch (error) {
       console.error('Error opening document:', error);
