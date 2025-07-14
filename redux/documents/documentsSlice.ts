@@ -5,6 +5,7 @@ import {
   getDocument,
   uploadDocument,
   deleteDocument,
+  getDocumentsPerUser,
   attachDocumentToJobApplication,
   detachDocumentFromJobApplication,
 } from './documentsThunk';
@@ -12,13 +13,17 @@ import {
 interface DocumentState {
   error: string | null;
   documents: JobDocument[];
+  userDocuments: JobDocument[];
   documentsStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
+  userDocumentsStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
 }
 
 const initialState: DocumentState = {
   error: null,
   documents: [],
+  userDocuments: [],
   documentsStatus: 'idle',
+  userDocumentsStatus: 'idle',
 };
 
 const documentsSlice = createSlice({
@@ -105,6 +110,18 @@ const documentsSlice = createSlice({
         state.error =
           action.error.message ||
           'Failed to detach document from job application';
+      })
+      .addCase(getDocumentsPerUser.pending, (state) => {
+        state.userDocumentsStatus = 'loading';
+      })
+      .addCase(getDocumentsPerUser.fulfilled, (state, action) => {
+        state.userDocumentsStatus = 'succeeded';
+        state.userDocuments = action.payload;
+        state.error = null;
+      })
+      .addCase(getDocumentsPerUser.rejected, (state, action) => {
+        state.userDocumentsStatus = 'failed';
+        state.error = action.error.message || 'Failed to fetch user documents';
       });
   },
 });
@@ -113,3 +130,6 @@ export default documentsSlice.reducer;
 export const selectDocuments = (state: RootState) => state.documents.documents;
 export const selectDocumentsStatus = (state: RootState) =>
   state.documents.documentsStatus;
+export const selectUserDocuments = (state: RootState) => state.documents.userDocuments;
+export const selectUserDocumentsStatus = (state: RootState) =>
+  state.documents.userDocumentsStatus;

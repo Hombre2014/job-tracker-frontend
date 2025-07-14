@@ -117,3 +117,22 @@ export const deleteDocument = createAsyncThunk(
     }
   }
 );
+
+export const getDocumentsPerUser = createAsyncThunk(
+  'documents/getDocumentsPerUser',
+  async (accessToken: string, thunkAPI) => {
+    try {
+      const res = await client.get('/documents/user', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error getting user documents'
+      );
+    }
+  }
+);

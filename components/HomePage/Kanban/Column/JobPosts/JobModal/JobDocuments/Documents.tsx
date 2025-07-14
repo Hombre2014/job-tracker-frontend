@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from 'react-toastify';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
@@ -9,6 +10,10 @@ import { getJobPost } from '@/redux/jobs/jobsThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { LinkDocument } from '@/components/HomePage/HomeNavbar/LinkDocument';
 import UploadDocumentModal from '@/components/Forms/AddDocument/UploadDocumentModal';
+import {
+  deleteDocument,
+  detachDocumentFromJobApplication,
+} from '@/redux/documents/documentsThunk';
 
 const Documents = () => {
   const { job_id } = useParams();
@@ -92,13 +97,65 @@ const Documents = () => {
     // TODO: Implement edit functionality
   };
 
-  const handleDeleteDocument = (documentId: string) => {
-    // TODO: Implement delete functionality
+  const handleDeleteDocument = async (documentId: string) => {
+    try {
+      if (!accessToken) {
+        toast.error('Authentication required');
+        return;
+      }
+
+      // First, detach the document from the current job application
+      if (job_id) {
+        await dispatch(
+          detachDocumentFromJobApplication({
+            documentId,
+            jobId: job_id as string,
+            accessToken: accessToken as string,
+          })
+        ).unwrap();
+      }
+
+      // Then delete the document
+      await dispatch(
+        deleteDocument({
+          documentId,
+          accessToken: accessToken as string,
+        })
+      ).unwrap();
+
+      toast.success('Document deleted successfully!');
+
+      // Refresh the documents list
+      handleDocumentsRefresh();
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      toast.error('Failed to delete document. Please try again.');
+    }
   };
 
-  const handleDownloadDocument = (document: JobDocument) => {
-    // TODO: Implement download functionality
-    window.open(document.url, '_blank');
+  const handleDownloadDocument = async (jobDocument: JobDocument) => {
+    try {
+      if (!jobDocument.url) {
+        toast.error('Document URL not available');
+        return;
+      }
+
+      // Track if a new tab was opened and stayed open
+      const newTab = window.open(jobDocument.url, '_blank', 'noopener,noreferrer');
+      
+      // Check after a short delay if the tab was closed (indicating a download)
+      setTimeout(() => {
+        if (!newTab || newTab.closed) {
+          // Tab was closed or couldn't be opened, likely a download occurred
+          toast.success('Document has been downloaded');
+        }
+        // If tab is still open, no toast needed as user can see the document
+      }, 500);
+
+    } catch (error) {
+      console.error('Error opening document:', error);
+      toast.error('Failed to open document. Please try again.');
+    }
   };
 
   return (
