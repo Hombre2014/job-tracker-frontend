@@ -78,6 +78,9 @@ const ContactsList = ({
     const loadContacts = async () => {
       if (!accessToken) return;
 
+      // If parent is managing contacts (refetchContacts exists), don't fetch here
+      if (refetchContacts) return;
+
       setIsLoading(true);
       setError(null);
 
@@ -107,14 +110,13 @@ const ContactsList = ({
     isContactsPage,
     fetchAllContacts,
     fetchContactsForBoard,
+    refetchContacts,
   ]);
 
   // Handle data refresh separately to avoid creating loops
   useEffect(() => {
-    if (refetchContacts) {
-      refetchContacts();
-    }
-  }, [refetchContacts]);
+    setContactsWithBoardIds(initialContacts || []);
+  }, [initialContacts]);
 
   const handleContactDeleted = (deletedContactId: string) => {
     setContactsWithBoardIds((prevContacts) =>
