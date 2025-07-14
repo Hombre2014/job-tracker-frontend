@@ -7,14 +7,14 @@ import { getUser } from '@/redux/user/userThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import DocumentCard from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/DocumentCard';
 import {
+  selectUserDocuments,
+  selectUserDocumentsStatus,
+} from '@/redux/documents/documentsSlice';
+import {
   getDocument,
   deleteDocument,
   getDocumentsPerUser,
 } from '@/redux/documents/documentsThunk';
-import {
-  selectUserDocuments,
-  selectUserDocumentsStatus,
-} from '@/redux/documents/documentsSlice';
 
 // Constants for document display
 const TITLE_MAX_LENGTH = 20;

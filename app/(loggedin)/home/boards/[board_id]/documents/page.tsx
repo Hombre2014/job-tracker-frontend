@@ -23,8 +23,11 @@ import {
 
 // Constants for document display
 const TITLE_MAX_LENGTH = 20;
-const RESPONSIVE_GRID_STYLES = {
-  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+const FIXED_GRID_STYLES = {
+  gap: '16px',
+  display: 'grid',
+  justifyContent: 'start',
+  gridTemplateColumns: 'repeat(auto-fill, 200px)',
 } as const;
 
 const BoardDocuments = () => {
@@ -175,26 +178,8 @@ const BoardDocuments = () => {
         return;
       }
 
-      // For board documents, we need to check if document is attached to job applications
-      const documentDetailsResult = await dispatch(
-        getDocument({
-          documentId,
-          accessToken: accessToken as string,
-        })
-      ).unwrap();
-
-      const jobApplicationsCount =
-        documentDetailsResult.jobApplications?.length || 0;
-
-      // If attached to job applications, only delete from database if no attachments
-      if (jobApplicationsCount > 0) {
-        toast.info(
-          'This document is attached to job applications. Delete it from those jobs first.'
-        );
-        return;
-      }
-
-      // Delete the document entirely since it's not attached to any job applications
+      // For board documents, we always delete the document entirely from the database
+      // This will automatically detach it from all job applications and remove it completely
       await dispatch(
         deleteDocument({
           documentId,
@@ -290,7 +275,7 @@ const BoardDocuments = () => {
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto p-6">
-          <div className="grid gap-4" style={RESPONSIVE_GRID_STYLES}>
+          <div style={FIXED_GRID_STYLES}>
             {enhancedDocuments.map((document) => (
               <DocumentCard
                 key={document.id}
