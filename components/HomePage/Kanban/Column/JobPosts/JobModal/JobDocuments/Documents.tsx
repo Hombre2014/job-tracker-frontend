@@ -8,10 +8,14 @@ import DocumentCard from './DocumentCard';
 import { getUser } from '@/redux/user/userThunk';
 import { getJobPost } from '@/redux/jobs/jobsThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { selectUserDocuments } from '@/redux/documents/documentsSlice';
 import { LinkDocument } from '@/components/HomePage/HomeNavbar/LinkDocument';
 import UploadDocumentModal from '@/components/Forms/AddDocument/UploadDocumentModal';
 import {
+  getDocument,
   deleteDocument,
+  getDocumentsPerUser,
+  attachDocumentToJobApplication,
   detachDocumentFromJobApplication,
 } from '@/redux/documents/documentsThunk';
 
@@ -21,6 +25,7 @@ const Documents = () => {
   const jobs = useAppSelector((state) => state.jobs);
   const user = useAppSelector((state) => state.user);
   const accessToken = localStorage.getItem('accessToken');
+  const userDocuments = useAppSelector(selectUserDocuments);
   const [uploaderInfo, setUploaderInfo] = useState<{
     lastName: string;
     firstName: string;
@@ -80,6 +85,48 @@ const Documents = () => {
     user.profilePicUrl,
   ]);
 
+  // Fetch user documents for link document functionality
+  useEffect(() => {
+    if (accessToken) {
+      dispatch(getDocumentsPerUser(accessToken));
+    }
+  }, [dispatch, accessToken]);
+
+  // Handle document selection from LinkDocument
+  const handleDocumentSelect = async (
+    documentTitle: string,
+    documentId: string
+  ) => {
+    if (!accessToken || !job_id) {
+      toast.error('Unable to attach document. Please try again.');
+      return;
+    }
+
+    try {
+      await dispatch(
+        attachDocumentToJobApplication({
+          documentId,
+          accessToken,
+          jobId: job_id as string,
+        })
+      ).unwrap();
+
+      toast.success('Document attached successfully!');
+
+      // Refresh job data to show the newly attached document
+      await handleDocumentsRefresh();
+    } catch (error) {
+      console.error('Error attaching document:', error);
+      toast.error('Failed to attach document. Please try again.');
+    }
+  };
+
+  // Filter out documents that are already attached to current job
+  const availableDocuments = userDocuments.filter(
+    (document) =>
+      !jobDocuments.some((attachedDoc) => attachedDoc.id === document.id)
+  );
+
   // Enhance documents with uploader information and file size from localStorage if available
   const enhancedDocuments = jobDocuments.map((doc) => {
     // Try to get file size from localStorage (stored during upload)
@@ -104,7 +151,18 @@ const Documents = () => {
         return;
       }
 
-      // First, detach the document from the current job application
+      // First, get the document details to check how many job applications it's attached to
+      const documentDetailsResult = await dispatch(
+        getDocument({
+          documentId,
+          accessToken: accessToken as string,
+        })
+      ).unwrap();
+
+      const jobApplicationsCount =
+        documentDetailsResult.jobApplications?.length || 0;
+
+      // Always detach the document from the current job application first
       if (job_id) {
         await dispatch(
           detachDocumentFromJobApplication({
@@ -115,21 +173,25 @@ const Documents = () => {
         ).unwrap();
       }
 
-      // Then delete the document
-      await dispatch(
-        deleteDocument({
-          documentId,
-          accessToken: accessToken as string,
-        })
-      ).unwrap();
-
-      toast.success('Document deleted successfully!');
+      // Only delete the document if it was attached to 1 or fewer job applications
+      // (meaning after detaching, it's not attached to any other job applications)
+      if (jobApplicationsCount <= 1) {
+        await dispatch(
+          deleteDocument({
+            documentId,
+            accessToken: accessToken as string,
+          })
+        ).unwrap();
+        toast.success('Document detached and deleted successfully!');
+      } else {
+        toast.success('Document detached from this job application!');
+      }
 
       // Refresh the documents list
       handleDocumentsRefresh();
     } catch (error) {
-      console.error('Error deleting document:', error);
-      toast.error('Failed to delete document. Please try again.');
+      console.error('Error handling document deletion:', error);
+      toast.error('Failed to remove document. Please try again.');
     }
   };
 
@@ -141,8 +203,12 @@ const Documents = () => {
       }
 
       // Track if a new tab was opened and stayed open
-      const newTab = window.open(jobDocument.url, '_blank', 'noopener,noreferrer');
-      
+      const newTab = window.open(
+        jobDocument.url,
+        '_blank',
+        'noopener,noreferrer'
+      );
+
       // Check after a short delay if the tab was closed (indicating a download)
       setTimeout(() => {
         if (!newTab || newTab.closed) {
@@ -151,7 +217,6 @@ const Documents = () => {
         }
         // If tab is still open, no toast needed as user can see the document
       }, 500);
-
     } catch (error) {
       console.error('Error opening document:', error);
       toast.error('Failed to open document. Please try again.');
@@ -168,8 +233,9 @@ const Documents = () => {
           <div className="flex gap-4">
             <LinkDocument
               searchItem="Documents"
-              docs={enhancedDocuments}
+              docs={availableDocuments}
               initialString="+ Link Document"
+              onDocumentSelect={handleDocumentSelect}
             />
             <UploadDocumentModal
               defaultJobId={job_id as string}
