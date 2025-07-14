@@ -121,6 +121,7 @@ type JobDocument = WorkDocument & {
     firstName: string;
     profilePicUrl?: string;
   };
+  jobApplications?: JobApplication[];
 };
 
 interface ComboBoxProps {
@@ -133,6 +134,7 @@ interface LinkDocumentProps {
   searchItem: string;
   docs: JobDocument[];
   initialString: string;
+  onDocumentSelect?: (documentTitle: string, documentId: string) => void;
 }
 
 interface ComboBoardListBoxProps {

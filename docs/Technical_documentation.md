@@ -36,10 +36,11 @@ client.interceptors.response.use(
 #### 1. Automatic 401 Error Handling
 
 ```typescript
-if (typeof window !== 'undefined' && 
-    error.response?.status === 401 && 
-    !originalRequest._retry) {
-  
+if (
+  typeof window !== 'undefined' &&
+  error.response?.status === 401 &&
+  !originalRequest._retry
+) {
   originalRequest._retry = true;
   // Begin refresh process
 }
@@ -67,16 +68,22 @@ if (refreshPromise) {
 refreshPromise = (async () => {
   try {
     const refreshResponse = await axios.get('/auth/refresh', {
-      headers: { Authorization: `Bearer ${refreshToken}` }
+      headers: { Authorization: `Bearer ${refreshToken}` },
     });
-    
+
+    // Extract the new tokens from the payload
+    const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+      refreshResponse.data;
+
     // Update localStorage
     localStorage.setItem('accessToken', newAccessToken);
     localStorage.setItem('refreshToken', newRefreshToken);
-    
+
     // Update default headers for future requests
-    client.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
-    
+    client.defaults.headers.common[
+      'Authorization'
+    ] = `Bearer ${newAccessToken}`;
+
     return newAccessToken;
   } finally {
     refreshPromise = null; // Cleanup
@@ -321,13 +328,13 @@ const currentJobPost = safeJobPosts.find((jobPost) => jobPost.id === job_id);
 ```typescript
 // Design system integrated file type colors
 const fileTypeColors = {
-  pdf: 'hsl(0 84.2% 60.2%)',        // Alert red for PDFs
-  doc: 'hsl(221.2 83.2% 53.3%)',    // Professional blue for documents  
-  docx: 'hsl(221.2 83.2% 53.3%)',   // Professional blue for documents
-  jpg: 'hsl(270.7 91% 65.1%)',      // Creative purple for images
-  jpeg: 'hsl(270.7 91% 65.1%)',     // Creative purple for images
-  png: 'hsl(270.7 91% 65.1%)',      // Creative purple for images
-  xls: 'hsl(142.1 76.2% 36.3%)',    // Success green for spreadsheets
+  pdf: 'hsl(0 84.2% 60.2%)', // Alert red for PDFs
+  doc: 'hsl(221.2 83.2% 53.3%)', // Professional blue for documents
+  docx: 'hsl(221.2 83.2% 53.3%)', // Professional blue for documents
+  jpg: 'hsl(270.7 91% 65.1%)', // Creative purple for images
+  jpeg: 'hsl(270.7 91% 65.1%)', // Creative purple for images
+  png: 'hsl(270.7 91% 65.1%)', // Creative purple for images
+  xls: 'hsl(142.1 76.2% 36.3%)', // Success green for spreadsheets
   // Uses HSL values that integrate with design system and ensure accessibility
 } as const;
 ```
@@ -488,7 +495,7 @@ GET /job-applications/{jobId}
 #### Race Condition Test Scenarios
 
 - **Rapid sequential uploads**: Multiple documents uploaded quickly
-- **Multi-job linking**: Document attached to multiple jobs simultaneously  
+- **Multi-job linking**: Document attached to multiple jobs simultaneously
 - **Concurrent user actions**: Upload while other users modify same job
 - **Network delays**: Slow API responses during state updates
 
@@ -497,10 +504,9 @@ GET /job-applications/{jobId}
 #### Planned Improvements
 
 1. **Edit Functionality**: In-place document editing
-2. **Delete Operations**: Secure document removal
-3. **Advanced Preview**: PDF/image preview in modal
-4. **Bulk Operations**: Multi-document upload
-5. **Search/Filter**: Document search within jobs
+2. **Advanced Preview**: PDF/image preview in modal
+3. **Bulk Operations**: Multi-document upload
+4. **Search/Filter**: Document search within jobs
 
 ### Maintenance Notes
 
@@ -518,7 +524,168 @@ GET /job-applications/{jobId}
 - React Hook Form for form validation
 - React Toastify for user feedback
 
+## Document Management System Enhancements
+
+### Technical Overview
+
+Comprehensive improvements to the document management system addressing security concerns, popup blocker compatibility, type safety, and SSR compatibility across both user and board-specific document pages.
+
+### Security & SSR Improvements
+
+#### localStorage Access Safety
+
+**Problem**: Direct localStorage access can crash applications during server-side rendering or when storage is disabled.
+
+**Solution**: Secure localStorage access wrapper implemented across all document components:
+
+```typescript
+const accessToken = (() => {
+  try {
+    return localStorage.getItem('accessToken');
+  } catch (error) {
+    console.warn('Failed to access localStorage:', error);
+    return null;
+  }
+})();
+```
+
+**Benefits**:
+
+- SSR compatibility (Next.js safe)
+- Graceful handling of disabled storage
+- Debugging visibility via console warnings
+- Consistent null fallback behavior
+
+### Popup Blocker & Download Reliability
+
+#### Enhanced Download Handling
+
+**Problem**: Browser popup blockers and cross-origin restrictions caused unreliable document downloads.
+
+**Solution**: Multi-layered fallback system with robust error handling:
+
+```typescript
+// Primary: New tab approach
+const newTab = window.open(url, '_blank', 'noopener,noreferrer');
+
+// Fallback: Direct download link for popup blockers
+if (!newTab || newTab.closed) {
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = title || 'document';
+  link.target = '_blank';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// Enhanced status detection with error handling
+const checkTabStatus = setTimeout(() => {
+  try {
+    if (newTab && !newTab.closed) {
+      toast.success('Document opened in new tab');
+    } else {
+      toast.success('Document has been downloaded');
+    }
+  } catch (error) {
+    console.warn('Could not check tab status:', error);
+    toast.success('Document has been processed');
+  }
+}, 1000);
+```
+
+**Improvements**:
+
+- Increased timeout from 500ms to 1000ms for better reliability
+- Cross-origin access protection via try-catch
+- Consistent user feedback across all scenarios
+- Graceful degradation for restrictive environments
+
+### Type Safety & Route Parameters
+
+#### Dynamic Route Parameter Validation
+
+**Problem**: `useParams()` returns potentially undefined or array values for dynamic routes.
+
+**Solution**: Type-safe parameter extraction with validation:
+
+```typescript
+// Extract board ID safely
+const { board_id } = useParams();
+const boardId = Array.isArray(board_id) ? board_id[0] : board_id;
+
+// Validate after all hooks (React compliance)
+if (!boardId) {
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <p className="text-center text-xl text-red-500">Invalid board ID</p>
+    </div>
+  );
+}
+```
+
+**Benefits**:
+
+- Prevents runtime errors from undefined parameters
+- Handles array values from catch-all routes
+- React Hooks compliance (validation after hooks)
+- User-friendly error messaging
+
+### Code Quality Improvements
+
+#### Constants Extraction
+
+Removed magic numbers and inline styles with meaningful constants:
+
+```typescript
+// Document display constants
+const TITLE_MAX_LENGTH = 20;
+const RESPONSIVE_GRID_STYLES = {
+  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+} as const;
+```
+
+#### Enhanced Error Handling
+
+Consistent error handling patterns across all localStorage access:
+
+```typescript
+// File size retrieval with fallback
+try {
+  const storedFileSize = localStorage.getItem(`fileSize_${doc.id}`);
+  fileSize = storedFileSize ? parseInt(storedFileSize) : doc.fileSize;
+} catch (error) {
+  console.warn('Failed to access localStorage for file size:', error);
+}
+```
+
+### Implementation Scope
+
+#### Files Enhanced
+
+1. **User Documents Page** (`app/(loggedin)/home/documents/page.tsx`)
+   - Global document management across all boards
+   - Enhanced security and popup handling
+   - Improved type safety
+
+2. **Board Documents Page** (`app/(loggedin)/home/boards/[board_id]/documents/page.tsx`)
+   - Board-specific document management
+   - Dynamic route parameter validation
+   - Consistent security improvements
+
+3. **Job Documents Component** (`components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/Documents.tsx`)
+   - Job-specific document handling
+   - Enhanced deletion logic and error handling
+
+#### Consistency Benefits
+
+- Unified error handling patterns
+- Consistent user feedback across all document contexts
+- Standardized security practices
+- Improved maintainability and debugging
+
 ---
 
-*Last Updated: July 11, 2025*  
-*Critical Bug Fixes: Redux State Corruption & Race Condition Resolution*
+_Last Updated: July 14, 2025_  
+_Recent Enhancements: Document System Security & Reliability Improvements (July 14, 2025)_  
+_Previous Critical Fixes: Redux State Corruption & Race Condition Resolution (July 11, 2025)_

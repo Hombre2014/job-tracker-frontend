@@ -1,30 +1,47 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 
 import DocumentCard from './DocumentCard';
 import { getUser } from '@/redux/user/userThunk';
 import { getJobPost } from '@/redux/jobs/jobsThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { selectUserDocuments } from '@/redux/documents/documentsSlice';
 import { LinkDocument } from '@/components/HomePage/HomeNavbar/LinkDocument';
 import UploadDocumentModal from '@/components/Forms/AddDocument/UploadDocumentModal';
+import {
+  getDocument,
+  deleteDocument,
+  getDocumentsPerUser,
+  attachDocumentToJobApplication,
+  detachDocumentFromJobApplication,
+} from '@/redux/documents/documentsThunk';
 
 const Documents = () => {
   const { job_id } = useParams();
   const dispatch = useAppDispatch();
   const jobs = useAppSelector((state) => state.jobs);
   const user = useAppSelector((state) => state.user);
-  const accessToken = localStorage.getItem('accessToken');
+  const accessToken = (() => {
+    try {
+      return localStorage.getItem('accessToken');
+    } catch (error) {
+      console.warn('Failed to access localStorage:', error);
+      return null;
+    }
+  })();
+  const userDocuments = useAppSelector(selectUserDocuments);
   const [uploaderInfo, setUploaderInfo] = useState<{
     lastName: string;
     firstName: string;
     profilePicUrl?: string;
   } | null>(null);
 
-  // Find the current job and its documents
+  // Find the current job and its documents (memoized to prevent unnecessary re-renders)
   const currentJob = jobs.jobPosts.find((job) => job.id === job_id);
-  const jobDocuments = currentJob?.documents || [];
+  const jobDocuments = useMemo(() => currentJob?.documents || [], [currentJob]);
 
   // Function to refresh documents (called after successful upload)
   const handleDocumentsRefresh = async () => {
@@ -75,11 +92,63 @@ const Documents = () => {
     user.profilePicUrl,
   ]);
 
+  // Fetch user documents for link document functionality
+  useEffect(() => {
+    if (accessToken) {
+      dispatch(getDocumentsPerUser(accessToken));
+    }
+  }, [dispatch, accessToken]);
+
+  // Handle document selection from LinkDocument
+  const handleDocumentSelect = async (
+    documentTitle: string,
+    documentId: string
+  ) => {
+    if (!accessToken || !job_id) {
+      toast.error('Unable to attach document. Please try again.');
+      return;
+    }
+
+    try {
+      await dispatch(
+        attachDocumentToJobApplication({
+          documentId,
+          accessToken,
+          jobId: job_id as string,
+        })
+      ).unwrap();
+
+      toast.success('Document attached successfully!');
+
+      // Refresh job data to show the newly attached document
+      await handleDocumentsRefresh();
+    } catch (error) {
+      console.error('Error attaching document:', error);
+      toast.error('Failed to attach document. Please try again.');
+    }
+  };
+
+  // Filter out documents that are already attached to current job (memoized for performance)
+  const availableDocuments = useMemo(() =>
+    userDocuments.filter(
+      (document) =>
+        !jobDocuments.some((attachedDoc) => attachedDoc.id === document.id)
+    ),
+    [userDocuments, jobDocuments]
+  );
+
   // Enhance documents with uploader information and file size from localStorage if available
   const enhancedDocuments = jobDocuments.map((doc) => {
     // Try to get file size from localStorage (stored during upload)
-    const storedFileSize = localStorage.getItem(`fileSize_${doc.id}`);
-    const fileSize = storedFileSize ? parseInt(storedFileSize) : doc.fileSize;
+    let fileSize = doc.fileSize;
+    try {
+      const storedFileSize = localStorage.getItem(`fileSize_${doc.id}`);
+      if (storedFileSize) {
+        fileSize = parseInt(storedFileSize);
+      }
+    } catch (error) {
+      console.warn('Failed to access localStorage for file size:', error);
+    }
 
     return {
       ...doc,
@@ -89,16 +158,107 @@ const Documents = () => {
   });
 
   const handleEditDocument = (document: JobDocument) => {
-    // TODO: Implement edit functionality
+    // TODO: Implement edit functionality - Allow users to edit document metadata (title, category, description)
+    // This should open a modal similar to UploadDocumentModal but for editing existing documents
+    toast.info('Document editing functionality will be implemented soon');
   };
 
-  const handleDeleteDocument = (documentId: string) => {
-    // TODO: Implement delete functionality
+  const handleDeleteDocument = async (documentId: string) => {
+    try {
+      if (!accessToken) {
+        toast.error('Authentication required');
+        return;
+      }
+
+      // First, get the document details to check how many job applications it's attached to
+      const documentDetailsResult = await dispatch(
+        getDocument({
+          documentId,
+          accessToken: accessToken as string,
+        })
+      ).unwrap();
+
+      const jobApplicationsCount =
+        documentDetailsResult.jobApplications?.length || 0;
+
+      // Always detach the document from the current job application first
+      if (job_id) {
+        await dispatch(
+          detachDocumentFromJobApplication({
+            documentId,
+            jobId: job_id as string,
+            accessToken: accessToken as string,
+          })
+        ).unwrap();
+      }
+
+      // Only delete the document if it was attached to 1 or fewer job applications
+      // (meaning after detaching, it's not attached to any other job applications)
+      if (jobApplicationsCount <= 1) {
+        await dispatch(
+          deleteDocument({
+            documentId,
+            accessToken: accessToken as string,
+          })
+        ).unwrap();
+        toast.success('Document detached and deleted successfully!');
+      } else {
+        toast.success('Document detached from this job application!');
+      }
+
+      // Refresh the documents list
+      handleDocumentsRefresh();
+    } catch (error) {
+      console.error('Error handling document deletion:', error);
+      toast.error('Failed to remove document. Please try again.');
+    }
   };
 
-  const handleDownloadDocument = (document: JobDocument) => {
-    // TODO: Implement download functionality
-    window.open(document.url, '_blank');
+  const handleDownloadDocument = async (jobDocument: JobDocument) => {
+    try {
+      if (!jobDocument.url) {
+        toast.error('Document URL not available');
+        return;
+      }
+
+      // Try to open in new tab, with fallback for popup blockers
+      const newTab = window.open(
+        jobDocument.url,
+        '_blank',
+        'noopener,noreferrer'
+      );
+
+      // Handle popup blocker case
+      if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+        // Fallback: Create a download link
+        const link = document.createElement('a');
+        link.href = jobDocument.url;
+        link.download = jobDocument.title || 'document';
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        toast.success('Document download initiated');
+      } else {
+        // Use a more robust approach with proper error handling and longer timeout
+        const checkTabStatus = setTimeout(() => {
+          try {
+            if (newTab && !newTab.closed) {
+              toast.success('Document opened in new tab');
+            } else {
+              toast.success('Document has been downloaded');
+            }
+          } catch (error) {
+            // Tab may be closed, cross-origin, or inaccessible
+            console.warn('Could not check tab status:', error);
+            toast.success('Document has been processed');
+          }
+        }, 1000);
+      }
+    } catch (error) {
+      console.error('Error opening document:', error);
+      toast.error('Failed to open document. Please try again.');
+    }
   };
 
   return (
@@ -111,8 +271,9 @@ const Documents = () => {
           <div className="flex gap-4">
             <LinkDocument
               searchItem="Documents"
-              docs={enhancedDocuments}
+              docs={availableDocuments}
               initialString="+ Link Document"
+              onDocumentSelect={handleDocumentSelect}
             />
             <UploadDocumentModal
               defaultJobId={job_id as string}

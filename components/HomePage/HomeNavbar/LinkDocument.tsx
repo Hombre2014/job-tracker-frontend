@@ -5,6 +5,7 @@ import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { documentCategoryColors } from '@/utils/documentHelpers';
 import {
   Popover,
   PopoverContent,
@@ -23,9 +24,16 @@ export function LinkDocument({
   docs,
   searchItem,
   initialString,
+  onDocumentSelect,
 }: LinkDocumentProps) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState('');
+
+  // Truncate filename if too long - simple truncation with ellipsis at the end
+  const truncateFilename = (filename: string, maxLength: number = 20) => {
+    if (filename.length <= maxLength) return filename;
+    return filename.substring(0, maxLength - 3) + '...';
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -51,30 +59,48 @@ export function LinkDocument({
           <CommandList>
             <CommandEmpty>Nothing found.</CommandEmpty>
             <CommandGroup>
-              {docs.map((doc) => (
-                <CommandItem
-                  key={doc.id}
-                  value={doc.title}
-                  onSelect={() => {
-                    setValue(doc.title);
-                    setOpen(false);
-                  }}
-                >
-                  <CheckIcon
+              {docs.map((doc) => {
+                const categoryColor =
+                  documentCategoryColors[
+                    doc.category as keyof typeof documentCategoryColors
+                  ] || documentCategoryColors.Other;
+
+                return (
+                  <CommandItem
                     key={doc.id}
-                    className={cn(
-                      'mr-2 h-4 w-4',
-                      value === doc.title ? 'opacity-100' : 'opacity-0'
-                    )}
-                  />
-                  {/* TODO: Implement file upload */}
-                  <div>
-                    <span>{doc.title}&nbsp;</span>
-                    <span className="opacity-40">{doc.category}</span>
-                  </div>
-                  {/* </Link> */}
-                </CommandItem>
-              ))}
+                    value={doc.title}
+                    onSelect={() => {
+                      setValue(doc.title);
+                      setOpen(false);
+                      // Call the callback if provided
+                      if (onDocumentSelect) {
+                        onDocumentSelect(doc.title, doc.id);
+                      }
+                    }}
+                  >
+                    <CheckIcon
+                      key={doc.id}
+                      className={cn(
+                        'mr-2 h-4 w-4',
+                        value === doc.title ? 'opacity-100' : 'opacity-0'
+                      )}
+                    />
+                    {/* TODO: Implement file upload */}
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-sm font-medium text-gray-900">
+                        {truncateFilename(doc.title)}
+                      </span>
+                      <span
+                        className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-white ml-2"
+                        style={{ backgroundColor: categoryColor }}
+                      >
+                        {doc.category}
+                      </span>
+                    </div>
+                    {/* </Link> */}
+                  </CommandItem>
+                );
+              })}
             </CommandGroup>
           </CommandList>
         </Command>

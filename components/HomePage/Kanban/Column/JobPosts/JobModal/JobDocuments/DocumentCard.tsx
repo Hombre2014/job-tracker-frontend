@@ -1,10 +1,12 @@
 'use client';
 
 import Image from 'next/image';
+import { useState } from 'react';
 import { BsThreeDots } from 'react-icons/bs';
 
 import { fileTypeColors } from '@/data/constants';
 import { getTimeAgo, documentCategoryColors } from '@/utils/documentHelpers';
+import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -25,11 +27,20 @@ const DocumentCard = ({
   onDelete,
   onDownload,
 }: DocumentCardProps) => {
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+
   const timeAgo = getTimeAgo(document.createdAt || document.updatedAt || '');
   const categoryColor =
     documentCategoryColors[
       document.category as keyof typeof documentCategoryColors
     ] || documentCategoryColors.Other;
+
+  const handleDeleteClick = () => {
+    setShowDeleteConfirmation(false);
+    if (onDelete) {
+      onDelete(document.id);
+    }
+  };
 
   // Simple and reliable file extension detection
   const getFileExtensionInfo = () => {
@@ -84,8 +95,8 @@ const DocumentCard = ({
 
       return {
         extension: ext,
-        extensionUpper: displayType,
         isLegacy: false,
+        extensionUpper: displayType,
       };
     }
 
@@ -111,9 +122,9 @@ const DocumentCard = ({
     }
 
     return {
+      isLegacy: true,
       extension: defaultExt,
       extensionUpper: defaultDisplay,
-      isLegacy: true,
     };
   };
 
@@ -233,23 +244,32 @@ const DocumentCard = ({
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {onDownload && (
-              <DropdownMenuItem onClick={() => onDownload(document)}>
-                Download
-              </DropdownMenuItem>
-            )}
             {onEdit && (
               <DropdownMenuItem onClick={() => onEdit(document)}>
                 Edit
               </DropdownMenuItem>
             )}
-            {onDelete && (
-              <DropdownMenuItem
-                onClick={() => onDelete(document.id)}
-                className="text-red-600 hover:text-red-700"
-              >
-                Delete
+            {onDownload && (
+              <DropdownMenuItem onClick={() => onDownload(document)}>
+                Open/Download Document
               </DropdownMenuItem>
+            )}
+            {onDelete && (
+              <div onClick={(e) => e.stopPropagation()}>
+                <AlertDialogModal
+                  buttonCancel="Cancel"
+                  buttonVariant="ghost"
+                  buttonConfirm="Delete"
+                  destructiveVariant={true}
+                  dialogTitle="Delete Document"
+                  buttonLabel="Delete Document"
+                  open={showDeleteConfirmation}
+                  actionFunction={handleDeleteClick}
+                  onOpenChange={setShowDeleteConfirmation}
+                  dialogText={`Are you sure you want to delete "${document.title}"? This action cannot be undone.`}
+                  stylings="ml-0 pl-2 font-normal inline-flex justify-start w-full text-left text-red-600 hover:text-red-700"
+                />
+              </div>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
