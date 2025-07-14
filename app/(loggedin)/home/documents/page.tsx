@@ -73,10 +73,10 @@ const UserDocuments = () => {
         });
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     dispatch,
     accessToken,
-    uploaderInfo,
     user.lastName,
     user.firstName,
     user.profilePicUrl,
@@ -131,26 +131,8 @@ const UserDocuments = () => {
         return;
       }
 
-      // For user documents, check if document is attached to job applications
-      const documentDetailsResult = await dispatch(
-        getDocument({
-          documentId,
-          accessToken: accessToken as string,
-        })
-      ).unwrap();
-
-      const jobApplicationsCount =
-        documentDetailsResult.jobApplications?.length || 0;
-
-      // If attached to job applications, warn user
-      if (jobApplicationsCount > 0) {
-        toast.info(
-          'This document is attached to job applications. Delete it from those jobs first.'
-        );
-        return;
-      }
-
-      // Delete the document entirely since it's not attached to any job applications
+      // For user documents, always delete the document entirely from the database
+      // This will automatically detach it from all job applications and remove it completely
       await dispatch(
         deleteDocument({
           documentId,
@@ -182,8 +164,7 @@ const UserDocuments = () => {
       if (
         !newTab ||
         newTab.closed ||
-        typeof newTab.closed === 'undefined' ||
-        !newTab.location
+        typeof newTab.closed === 'undefined'
       ) {
         // Fallback: Create a download link for popup blocker case
         const link = document.createElement('a');

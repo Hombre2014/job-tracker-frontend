@@ -195,6 +195,37 @@ const BoardDocuments = () => {
     }
   };
 
+  const openDocumentInNewTab = (url: string) => {
+    return window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const handlePopupBlocker = (url: string, title: string) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = title || 'document';
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('Document download initiated');
+  };
+
+  const checkTabStatusWithTimeout = (newTab: Window) => {
+    const timeoutId = setTimeout(() => {
+      try {
+        if (newTab && !newTab.closed) {
+          toast.success('Document opened in new tab');
+        } else {
+          toast.success('Document has been downloaded');
+        }
+      } catch (error) {
+        console.warn('Could not check tab status:', error);
+        toast.success('Document has been processed');
+      }
+    }, 1000);
+    return timeoutId;
+  };
+
   const handleDownloadDocument = async (jobDocument: JobDocument) => {
     try {
       if (!jobDocument.url) {
@@ -202,39 +233,12 @@ const BoardDocuments = () => {
         return;
       }
 
-      // Try to open in new tab, with fallback for popup blockers
-      const newTab = window.open(
-        jobDocument.url,
-        '_blank',
-        'noopener,noreferrer'
-      );
+      const newTab = openDocumentInNewTab(jobDocument.url);
 
-      // Handle popup blocker case
       if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-        // Fallback: Create a download link
-        const link = document.createElement('a');
-        link.href = jobDocument.url;
-        link.download = jobDocument.title || 'document';
-        link.target = '_blank';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        toast.success('Document download initiated');
+        handlePopupBlocker(jobDocument.url, jobDocument.title);
       } else {
-        // Use a more robust approach with proper error handling and longer timeout
-        const checkTabStatus = setTimeout(() => {
-          try {
-            if (newTab && !newTab.closed) {
-              toast.success('Document opened in new tab');
-            } else {
-              toast.success('Document has been downloaded');
-            }
-          } catch (error) {
-            // Tab may be closed, cross-origin, or inaccessible
-            console.warn('Could not check tab status:', error);
-            toast.success('Document has been processed');
-          }
-        }, 1000);
+        checkTabStatusWithTimeout(newTab);
       }
     } catch (error) {
       console.error('Error opening document:', error);
