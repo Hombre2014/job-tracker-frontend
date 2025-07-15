@@ -14,13 +14,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-interface DocumentCardProps {
-  document: JobDocument;
-  onDelete?: (documentId: string) => void;
-  onEdit?: (document: JobDocument) => void;
-  onDownload?: (document: JobDocument) => void;
-}
-
 const DocumentCard = ({
   document,
   onEdit,
@@ -137,14 +130,7 @@ const DocumentCard = ({
 
   // Get file size display in format: "PDF - 1.2 KB" or just "PDF"
   const getFileSizeDisplay = () => {
-    // First try to get from document object
-    let fileSize = document.fileSize;
-
-    // If not available, try localStorage (for newly uploaded documents)
-    if (!fileSize || fileSize <= 0) {
-      const storedFileSize = localStorage.getItem(`fileSize_${document.id}`);
-      fileSize = storedFileSize ? parseInt(storedFileSize) : undefined;
-    }
+    const fileSize = document.fileSize;
 
     // Format: "PDF - 1.2 KB" or just "PDF"
     if (fileSize && fileSize > 0) {

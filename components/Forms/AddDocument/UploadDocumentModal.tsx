@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import DocumentSideBar from './DocumentSideBar';
+import { MAX_FILE_SIZE } from '@/data/constants';
 import { Textarea } from '@/components/ui/textarea';
 import { getJobPost } from '@/redux/jobs/jobsThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
@@ -24,9 +25,6 @@ import {
   SelectContent,
   SelectTrigger,
 } from '@/components/ui/select';
-
-// Constants
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 // Helper functions
 const validateFileSize = (file: File): boolean => {
@@ -208,17 +206,6 @@ const UploadDocumentModal = ({
           description: description.trim(),
         })
       ).unwrap();
-
-      // Extract file size from the selected file for local enhancement
-      const fileSize = selectedFile.size;
-
-      // Store file size in localStorage for later use (until backend supports it)
-      if (uploadResult?.id) {
-        localStorage.setItem(
-          `fileSize_${uploadResult.id}`,
-          fileSize.toString()
-        );
-      }
 
       // Step 2: Attach document to all linked jobs (parallel processing)
       if (uploadResult?.id && jobsConnectedToDocument.length > 0) {

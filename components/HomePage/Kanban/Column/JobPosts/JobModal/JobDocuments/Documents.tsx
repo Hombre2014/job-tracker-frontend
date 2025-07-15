@@ -137,22 +137,10 @@ const Documents = () => {
     [userDocuments, jobDocuments]
   );
 
-  // Enhance documents with uploader information and file size from localStorage if available
+  // Enhance documents with uploader information
   const enhancedDocuments = jobDocuments.map((doc) => {
-    // Try to get file size from localStorage (stored during upload)
-    let fileSize = doc.fileSize;
-    try {
-      const storedFileSize = localStorage.getItem(`fileSize_${doc.id}`);
-      if (storedFileSize) {
-        fileSize = parseInt(storedFileSize);
-      }
-    } catch (error) {
-      console.warn('Failed to access localStorage for file size:', error);
-    }
-
     return {
       ...doc,
-      fileSize: fileSize,
       uploadedBy: uploaderInfo || undefined,
     };
   });

@@ -5,22 +5,16 @@ import { useEffect, useState } from 'react';
 
 import { getUser } from '@/redux/user/userThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { TITLE_MAX_LENGTH, FIXED_GRID_STYLES } from '@/data/constants';
 import DocumentCard from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/DocumentCard';
+import {
+  deleteDocument,
+  getDocumentsPerUser,
+} from '@/redux/documents/documentsThunk';
 import {
   selectUserDocuments,
   selectUserDocumentsStatus,
 } from '@/redux/documents/documentsSlice';
-import {
-  getDocument,
-  deleteDocument,
-  getDocumentsPerUser,
-} from '@/redux/documents/documentsThunk';
-
-// Constants for document display
-const TITLE_MAX_LENGTH = 20;
-const RESPONSIVE_GRID_STYLES = {
-  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-} as const;
 
 const UserDocuments = () => {
   const dispatch = useAppDispatch();
@@ -91,16 +85,6 @@ const UserDocuments = () => {
 
   // Enhance documents with uploader information and truncated titles for user view
   const enhancedDocuments = userDocuments.map((doc) => {
-    let fileSize = doc.fileSize;
-    try {
-      const storedFileSize = localStorage.getItem(`fileSize_${doc.id}`);
-      if (storedFileSize) {
-        fileSize = parseInt(storedFileSize);
-      }
-    } catch (error) {
-      console.warn('Failed to retrieve file size from localStorage:', error);
-    }
-
     // Truncate title to ~20 characters for better layout
     const truncateTitle = (
       title: string,
@@ -113,7 +97,6 @@ const UserDocuments = () => {
     return {
       ...doc,
       title: truncateTitle(doc.title), // Use truncated title for consistent layout
-      fileSize: fileSize,
       uploadedBy: uploaderInfo || undefined,
     };
   });
@@ -161,11 +144,7 @@ const UserDocuments = () => {
         'noopener,noreferrer'
       );
 
-      if (
-        !newTab ||
-        newTab.closed ||
-        typeof newTab.closed === 'undefined'
-      ) {
+      if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
         // Fallback: Create a download link for popup blocker case
         const link = document.createElement('a');
         link.href = jobDocument.url;
@@ -231,7 +210,7 @@ const UserDocuments = () => {
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto p-6">
-          <div className="grid gap-4" style={RESPONSIVE_GRID_STYLES}>
+          <div style={FIXED_GRID_STYLES}>
             {enhancedDocuments.map((document) => (
               <DocumentCard
                 key={document.id}

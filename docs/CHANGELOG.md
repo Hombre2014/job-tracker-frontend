@@ -5,7 +5,71 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## � Security & Reliability Enhancements - (14/07/2025)
+## 🔧 Document System Overhaul - (15/07/2025)
+
+### Architecture Improvements
+
+#### localStorage File Size Cleanup
+
+- **ARCHITECTURE FIX**: Complete removal of localStorage file size dependencies
+  - **Issue**: File size data stored in localStorage caused data loss when sessions cleared
+  - **Solution**: Migrated to database-backed file size storage with backend API enhancement
+  - **Components Updated**:
+    - `Documents.tsx` (Job documents modal)
+    - `page.tsx` (User documents page)
+    - `page.tsx` (Board documents page)
+    - `UploadDocumentModal.tsx` (Upload component)
+    - `DocumentCard.tsx` (Display component)
+  - **Benefits**:
+    - Reliable file size data across browser sessions
+    - Consistent data across devices
+    - Simplified, more maintainable code architecture
+    - No data loss when localStorage is cleared
+
+#### Document Card Layout Consistency
+
+- **UI/UX FIX**: Fixed document card width expansion issue
+  - **Issue**: Document cards in User Documents page expanded to fill available space, becoming too wide
+  - **Solution**: Applied consistent 200px fixed-width grid layout across all document pages
+  - **Changes**: Replaced `RESPONSIVE_GRID_STYLES` with `FIXED_GRID_STYLES` for consistency
+  - **Benefits**:
+    - Uniform appearance across User and Board document pages
+    - Better visual layout on wide screens
+    - Consistent user experience
+
+### Backend Integration
+
+#### File Size Database Field
+
+- **DATABASE**: Added fileSize field to documents table
+  - **Migration**: Backend now stores file size during upload
+  - **API Enhancement**: Document responses include fileSize from database
+  - **Reliability**: Eliminates client-side file size storage workarounds
+
+### Code Quality
+
+#### Simplified Document Enhancement Logic
+
+- **CLEANUP**: Streamlined document processing across all components
+  - **Removed**: Complex localStorage fallback mechanisms
+  - **Simplified**: Document mapping now uses database fields directly
+  - **Improved**: Consistent code patterns across all document components
+
+```typescript
+// Old approach (removed)
+let fileSize = doc.fileSize;
+try {
+  const storedFileSize = localStorage.getItem(`fileSize_${doc.id}`);
+  fileSize = storedFileSize ? parseInt(storedFileSize) : doc.fileSize;
+} catch (error) {
+  console.warn('Failed to access localStorage for file size:', error);
+}
+
+// New approach (current)
+const fileSize = document.fileSize; // Direct from database
+```
+
+## 🔒 Security & Reliability Enhancements - (14/07/2025)
 
 ### Security Improvements
 

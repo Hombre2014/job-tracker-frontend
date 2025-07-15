@@ -6,29 +6,20 @@ import { useParams } from 'next/navigation';
 
 import { getUser } from '@/redux/user/userThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { TITLE_MAX_LENGTH, FIXED_GRID_STYLES } from '@/data/constants';
 import { LinkDocument } from '@/components/HomePage/HomeNavbar/LinkDocument';
 import UploadDocumentModal from '@/components/Forms/AddDocument/UploadDocumentModal';
 import DocumentCard from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/DocumentCard';
+import {
+  deleteDocument,
+  getDocumentsPerUser,
+  getDocumentsPerBoard,
+} from '@/redux/documents/documentsThunk';
 import {
   selectUserDocuments,
   selectBoardDocuments,
   selectBoardDocumentsStatus,
 } from '@/redux/documents/documentsSlice';
-import {
-  getDocument,
-  deleteDocument,
-  getDocumentsPerUser,
-  getDocumentsPerBoard,
-} from '@/redux/documents/documentsThunk';
-
-// Constants for document display
-const TITLE_MAX_LENGTH = 20;
-const FIXED_GRID_STYLES = {
-  gap: '16px',
-  display: 'grid',
-  justifyContent: 'start',
-  gridTemplateColumns: 'repeat(auto-fill, 200px)',
-} as const;
 
 const BoardDocuments = () => {
   const { board_id } = useParams();
@@ -140,14 +131,6 @@ const BoardDocuments = () => {
 
   // Enhance documents with uploader information and truncated titles for board view
   const enhancedDocuments = boardDocuments.map((doc) => {
-    let fileSize = doc.fileSize;
-    try {
-      const storedFileSize = localStorage.getItem(`fileSize_${doc.id}`);
-      fileSize = storedFileSize ? parseInt(storedFileSize) : doc.fileSize;
-    } catch (error) {
-      console.warn('Failed to access localStorage for file size:', error);
-    }
-
     // Truncate title to ~20 characters for better board layout
     const truncateTitle = (
       title: string,
@@ -159,7 +142,6 @@ const BoardDocuments = () => {
 
     return {
       ...doc,
-      fileSize: fileSize,
       title: truncateTitle(doc.title), // Use truncated title for board view
       uploadedBy: uploaderInfo || undefined,
     };

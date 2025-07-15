@@ -349,20 +349,36 @@ const fileTypeColors = {
 
 #### Document State Flow
 
-1. **Upload** → `uploadDocument` thunk
+1. **Upload** → `uploadDocument` thunk (includes fileSize in request)
 2. **Attach** → `attachDocumentToJobApplication` thunk (parallel)
 3. **Refresh** → `getJobPost` thunk (sequential to avoid conflicts)
-4. **Display** → Enhanced with localStorage file size data
+4. **Display** → File size retrieved from database via API response
 
-#### LocalStorage Enhancement
+#### Database-Backed File Size Storage (July 15, 2025)
+
+##### Migration from localStorage to Database
+
+The document system has been upgraded to use database-backed file size storage for improved reliability:
 
 ```typescript
-// Store file size during upload (backend fallback)
-localStorage.setItem(`fileSize_${uploadResult.id}`, fileSize.toString());
+// OLD APPROACH (Removed): localStorage fallback
+// localStorage.setItem(`fileSize_${uploadResult.id}`, fileSize.toString());
+// const storedFileSize = localStorage.getItem(`fileSize_${document.id}`);
 
-// Retrieve during display
-const storedFileSize = localStorage.getItem(`fileSize_${document.id}`);
+// NEW APPROACH: Database integration
+// Upload includes file size in request payload
+formData.append('fileSize', file.size.toString());
+
+// Display uses database value directly
+const fileSize = document.fileSize; // From API response
 ```
+
+**Benefits of Database Storage:**
+
+- ✅ Persistent across browser sessions and devices
+- ✅ No data loss when localStorage is cleared
+- ✅ Consistent data reliability
+- ✅ Simplified code architecture
 
 ### Performance Optimizations
 
@@ -650,13 +666,17 @@ const RESPONSIVE_GRID_STYLES = {
 Consistent error handling patterns across all localStorage access:
 
 ```typescript
-// File size retrieval with fallback
-try {
-  const storedFileSize = localStorage.getItem(`fileSize_${doc.id}`);
-  fileSize = storedFileSize ? parseInt(storedFileSize) : doc.fileSize;
-} catch (error) {
-  console.warn('Failed to access localStorage for file size:', error);
-}
+// Updated approach: Database-backed file size (July 15, 2025)
+// OLD: localStorage fallback (removed)
+// try {
+//   const storedFileSize = localStorage.getItem(`fileSize_${doc.id}`);
+//   fileSize = storedFileSize ? parseInt(storedFileSize) : doc.fileSize;
+// } catch (error) {
+//   console.warn('Failed to access localStorage for file size:', error);
+// }
+
+// NEW: Direct database value
+const fileSize = document.fileSize; // Reliable from API response
 ```
 
 ### Implementation Scope
@@ -684,8 +704,44 @@ try {
 - Standardized security practices
 - Improved maintainability and debugging
 
----
+### UI/UX Improvements
 
-_Last Updated: July 14, 2025_  
-_Recent Enhancements: Document System Security & Reliability Improvements (July 14, 2025)_  
-_Previous Critical Fixes: Redux State Corruption & Race Condition Resolution (July 11, 2025)_
+#### Document Card Layout Consistency (July 15, 2025)
+
+**Problem**: Document cards in different pages had inconsistent sizing behavior:
+
+- **User Documents Page**: Cards expanded to fill available space using `repeat(auto-fit, minmax(200px, 1fr))`
+- **Board Documents Page**: Cards maintained fixed 200px width using `repeat(auto-fill, 200px)`
+- **Issue**: Wide screens caused cards to become excessively wide and difficult to scan
+
+**Solution**: Standardized all document pages to use fixed-width grid layout:
+
+```typescript
+// BEFORE: User Documents (Responsive - problematic)
+const RESPONSIVE_GRID_STYLES = {
+  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+} as const;
+
+// AFTER: All Document Pages (Fixed - consistent)
+const FIXED_GRID_STYLES = {
+  gap: '16px',
+  display: 'grid',
+  justifyContent: 'start',
+  gridTemplateColumns: 'repeat(auto-fill, 200px)',
+} as const;
+```
+
+**Benefits**:
+
+- ✅ Consistent visual appearance across all document pages
+- ✅ Optimal card width for readability (200px)
+- ✅ Better user experience on wide screens
+- ✅ Uniform behavior between User and Board document management
+
+#### Components Updated
+
+- `app/(loggedin)/home/documents/page.tsx` - User Documents Page
+- Grid layout now matches Board Documents behavior
+- Maintains responsive scrolling with fixed card dimensions
+
+### Document Security Considerations

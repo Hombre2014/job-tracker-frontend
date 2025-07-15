@@ -316,3 +316,10 @@ interface JobPostCardProps {
   status: jobPostStatus;
   statusChangedTime: string;
 }
+
+interface DocumentCardProps {
+  document: JobDocument;
+  onDelete?: (documentId: string) => void;
+  onEdit?: (document: JobDocument) => void;
+  onDownload?: (document: JobDocument) => void;
+}
