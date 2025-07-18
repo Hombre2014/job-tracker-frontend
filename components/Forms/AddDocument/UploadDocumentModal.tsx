@@ -35,16 +35,6 @@ const validateFileSize = (file: File): boolean => {
   return true;
 };
 
-interface UploadDocumentModalProps {
-  isVisible?: boolean;
-  onClose?: () => void;
-  showButton?: boolean;
-  buttonLabel?: string;
-  dialogTitle?: string;
-  defaultJobId?: string;
-  onUploadSuccess?: () => void;
-}
-
 const UploadDocumentModal = ({
   onClose,
   isVisible,

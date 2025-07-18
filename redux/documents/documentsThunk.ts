@@ -156,3 +156,40 @@ export const getDocumentsPerBoard = createAsyncThunk(
     }
   }
 );
+
+export const updateDocument = createAsyncThunk(
+  'documents/updateDocument',
+  async (
+    values: {
+      title: string;
+      category: string;
+      documentId: string;
+      accessToken: string;
+      description?: string;
+    },
+    thunkAPI
+  ) => {
+    const { documentId, title, category, description, accessToken } = values;
+    try {
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('category', category);
+      if (description) {
+        formData.append('description', description);
+      }
+
+      const res = await client.patch(`/documents/${documentId}`, formData, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      const data = res.data;
+      return data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error updating document'
+      );
+    }
+  }
+);

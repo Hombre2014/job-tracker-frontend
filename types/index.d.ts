@@ -323,3 +323,13 @@ interface DocumentCardProps {
   onEdit?: (document: JobDocument) => void;
   onDownload?: (document: JobDocument) => void;
 }
+
+interface UploadDocumentModalProps {
+  isVisible?: boolean;
+  onClose?: () => void;
+  showButton?: boolean;
+  buttonLabel?: string;
+  dialogTitle?: string;
+  defaultJobId?: string;
+  onUploadSuccess?: () => void;
+}

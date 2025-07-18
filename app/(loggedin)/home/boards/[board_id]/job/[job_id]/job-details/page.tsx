@@ -37,13 +37,14 @@ const JobDetails = () => {
     dispatch(getAllJobApplicationNotes(updatePayload));
   }, [accessToken, dispatch, job_id]);
 
+  // TODO: Maybe make it the same way as Documents and Contacts
   const numberOfNotes = notes.length;
 
   const numberOfContactsPerJob = jobs.jobPosts.find((job) => job.id === job_id)
     ?.contacts.length;
 
-  const numberOfDocumentsPerJob = jobs.jobPosts.find((job) => job.id === job_id)
-    ?.documents.length || 0;
+  const numberOfDocumentsPerJob =
+    jobs.jobPosts.find((job) => job.id === job_id)?.documents.length || 0;
 
   return (
     <Tabs defaultValue="Job Info" className="w-full">
