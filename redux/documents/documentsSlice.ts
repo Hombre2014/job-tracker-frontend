@@ -4,6 +4,7 @@ import { RootState } from '../store';
 import {
   getDocument,
   uploadDocument,
+  updateDocument,
   deleteDocument,
   getDocumentsPerUser,
   getDocumentsPerBoard,
@@ -140,6 +141,23 @@ const documentsSlice = createSlice({
       .addCase(getDocumentsPerBoard.rejected, (state, action) => {
         state.boardDocumentsStatus = 'failed';
         state.error = action.error.message || 'Failed to fetch board documents';
+      })
+      .addCase(updateDocument.pending, (state) => {
+        state.documentsStatus = 'loading';
+      })
+      .addCase(updateDocument.fulfilled, (state, action) => {
+        state.documentsStatus = 'succeeded';
+        const index = state.documents.findIndex(
+          (doc) => doc.id === action.payload.id
+        );
+        if (index >= 0) {
+          state.documents[index] = action.payload;
+        }
+        state.error = null;
+      })
+      .addCase(updateDocument.rejected, (state, action) => {
+        state.documentsStatus = 'failed';
+        state.error = action.error.message || 'Failed to update document';
       });
   },
 });
@@ -148,9 +166,11 @@ export default documentsSlice.reducer;
 export const selectDocuments = (state: RootState) => state.documents.documents;
 export const selectDocumentsStatus = (state: RootState) =>
   state.documents.documentsStatus;
-export const selectUserDocuments = (state: RootState) => state.documents.userDocuments;
+export const selectUserDocuments = (state: RootState) =>
+  state.documents.userDocuments;
 export const selectUserDocumentsStatus = (state: RootState) =>
   state.documents.userDocumentsStatus;
-export const selectBoardDocuments = (state: RootState) => state.documents.boardDocuments;
+export const selectBoardDocuments = (state: RootState) =>
+  state.documents.boardDocuments;
 export const selectBoardDocumentsStatus = (state: RootState) =>
   state.documents.boardDocumentsStatus;

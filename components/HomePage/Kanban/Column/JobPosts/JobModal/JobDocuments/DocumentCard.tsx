@@ -14,12 +14,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
+type ExtendedJobDocument = JobDocument & {
+  extension?: string;
+};
+
 const DocumentCard = ({
-  document,
   onEdit,
+  document,
   onDelete,
   onDownload,
-}: DocumentCardProps) => {
+}: DocumentCardProps & { document: ExtendedJobDocument }) => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
   const timeAgo = getTimeAgo(document.createdAt || document.updatedAt || '');
@@ -35,20 +39,14 @@ const DocumentCard = ({
     }
   };
 
-  // Simple and reliable file extension detection
+  // File extension/type is determined from the original file name (title at upload)
   const getFileExtensionInfo = () => {
-    // Use title as the filename (it should contain the full filename with extension)
+    // Always parse extension from the original file name (title at upload)
     const filename = document.title || '';
-
-    // Extract extension from filename - case insensitive
     const extensionMatch = filename.match(/\.([^.]+)$/i);
-
     if (extensionMatch) {
       const ext = extensionMatch[1].toLowerCase();
-
-      // Map extensions to display types consistently
       let displayType = ext.toUpperCase();
-
       switch (ext) {
         case 'jpg':
         case 'jpeg':
@@ -85,39 +83,15 @@ const DocumentCard = ({
         default:
           displayType = ext.toUpperCase();
       }
-
       return {
         extension: ext,
-        isLegacy: false,
         extensionUpper: displayType,
       };
     }
-
-    // No extension found - use category as fallback
-    let defaultExt = 'file';
-    let defaultDisplay = 'FILE';
-
-    switch (document.category) {
-      case 'Resume':
-      case 'Portfolio':
-      case 'Transcript':
-      case 'Certification':
-        defaultExt = 'pdf';
-        defaultDisplay = 'PDF';
-        break;
-      case 'Cover Letter':
-        defaultExt = 'doc';
-        defaultDisplay = 'DOC';
-        break;
-      default:
-        defaultExt = 'file';
-        defaultDisplay = 'FILE';
-    }
-
+    // If all else fails, use FILE
     return {
-      isLegacy: true,
-      extension: defaultExt,
-      extensionUpper: defaultDisplay,
+      extension: 'file',
+      extensionUpper: 'FILE',
     };
   };
 
@@ -232,7 +206,7 @@ const DocumentCard = ({
           <DropdownMenuContent align="end">
             {onEdit && (
               <DropdownMenuItem onClick={() => onEdit(document)}>
-                Edit
+                Edit Document
               </DropdownMenuItem>
             )}
             {onDownload && (

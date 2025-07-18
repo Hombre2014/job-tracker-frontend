@@ -100,3 +100,9 @@ export const EditCompanySchema = z.object({
     .or(z.literal(''))
     .optional(),
 });
+
+export const EditDocumentSchema = z.object({
+  title: z.string().min(1, 'Document title is required'),
+  category: z.string().min(1, 'Document category is required'),
+  description: z.string().or(z.literal('')).optional(),
+});

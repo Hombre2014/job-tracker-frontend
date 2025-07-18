@@ -1,8 +1,8 @@
 'use client';
 
 import { toast } from 'react-toastify';
-import { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'next/navigation';
+import { useEffect, useState, useMemo } from 'react';
 
 import DocumentCard from './DocumentCard';
 import { getUser } from '@/redux/user/userThunk';
@@ -18,12 +18,18 @@ import {
   attachDocumentToJobApplication,
   detachDocumentFromJobApplication,
 } from '@/redux/documents/documentsThunk';
+import { set } from 'lodash';
+import EditDocumentModal from '@/components/Forms/AddDocument/EditDocumentModal';
 
 const Documents = () => {
   const { job_id } = useParams();
   const dispatch = useAppDispatch();
   const jobs = useAppSelector((state) => state.jobs);
   const user = useAppSelector((state) => state.user);
+  const userDocuments = useAppSelector(selectUserDocuments);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [documentToEdit, setDocumentToEdit] = useState<JobDocument | null>(null);
   const accessToken = (() => {
     try {
       return localStorage.getItem('accessToken');
@@ -32,7 +38,6 @@ const Documents = () => {
       return null;
     }
   })();
-  const userDocuments = useAppSelector(selectUserDocuments);
   const [uploaderInfo, setUploaderInfo] = useState<{
     lastName: string;
     firstName: string;
@@ -129,11 +134,12 @@ const Documents = () => {
   };
 
   // Filter out documents that are already attached to current job (memoized for performance)
-  const availableDocuments = useMemo(() =>
-    userDocuments.filter(
-      (document) =>
-        !jobDocuments.some((attachedDoc) => attachedDoc.id === document.id)
-    ),
+  const availableDocuments = useMemo(
+    () =>
+      userDocuments.filter(
+        (document) =>
+          !jobDocuments.some((attachedDoc) => attachedDoc.id === document.id)
+      ),
     [userDocuments, jobDocuments]
   );
 
@@ -146,9 +152,8 @@ const Documents = () => {
   });
 
   const handleEditDocument = (document: JobDocument) => {
-    // TODO: Implement edit functionality - Allow users to edit document metadata (title, category, description)
-    // This should open a modal similar to UploadDocumentModal but for editing existing documents
-    toast.info('Document editing functionality will be implemented soon');
+    setDocumentToEdit(document);
+    setIsEditModalOpen(true);
   };
 
   const handleDeleteDocument = async (documentId: string) => {
@@ -292,6 +297,23 @@ const Documents = () => {
           </div>
         )}
       </div>
+
+      {/* Edit Document Modal */}
+      {isEditModalOpen && documentToEdit && (
+        <EditDocumentModal
+          isOpen={isEditModalOpen}
+          documentToEdit={documentToEdit}
+          onEditSuccess={async () => {
+            await handleDocumentsRefresh();
+            setIsEditModalOpen(false);
+            setDocumentToEdit(null);
+          }}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setDocumentToEdit(null);
+          }}
+        />
+      )}
     </>
   );
 };
