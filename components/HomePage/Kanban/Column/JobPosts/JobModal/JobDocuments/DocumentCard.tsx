@@ -42,7 +42,7 @@ const DocumentCard = ({
   // File extension/type is determined from the original file name (title at upload)
   const getFileExtensionInfo = () => {
     // Always parse extension from the original file name (title at upload)
-    const filename = document.originalFileName || document.title || '';
+    const filename = document.title || '';
     const extensionMatch = filename.match(/\.([^.]+)$/i);
     if (extensionMatch) {
       const ext = extensionMatch[1].toLowerCase();
