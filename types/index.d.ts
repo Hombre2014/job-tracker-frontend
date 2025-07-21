@@ -116,6 +116,7 @@ type JobDocument = WorkDocument & {
   fileSize?: number;
   createdAt?: string;
   updatedAt?: string;
+  fileExtension?: string;
   uploadedBy?: {
     lastName: string;
     firstName: string;

@@ -26,13 +26,18 @@ export const uploadDocument = createAsyncThunk(
   async (values: UploadDocumentParams, thunkAPI) => {
     const { file, title, boardId, category, description, accessToken } = values;
     try {
+
       const formData = new FormData();
       formData.append('file', file);
       formData.append('title', title);
       formData.append('boardId', boardId);
       formData.append('category', category);
       formData.append('description', description);
-      formData.append('fileSize', file.size.toString()); // Include file size
+      formData.append('fileSize', file.size.toString());
+
+      // Extract file extension from file name and add to formData
+      const extension = file.name.split('.').pop()?.toLowerCase() || '';
+      formData.append('fileExtension', extension);
 
       const res = await client.post(`/documents`, formData, {
         headers: {
