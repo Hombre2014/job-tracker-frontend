@@ -1,7 +1,8 @@
 import React from 'react';
 import { toast } from 'react-toastify';
-import { useState } from 'react';
+
 import { DocumentCategory } from '@/enums';
+import { Label } from '@/components/ui/label';
 import { useAppDispatch } from '@/redux/hooks';
 import { updateDocument } from '@/redux/documents/documentsThunk';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
@@ -12,14 +13,6 @@ import {
   SelectContent,
   SelectTrigger,
 } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-
-interface EditDocumentsProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onEditSuccess: () => void;
-  documentToEdit: JobDocument;
-}
 
 const EditDocumentModal = ({
   isOpen,
@@ -28,22 +21,19 @@ const EditDocumentModal = ({
   documentToEdit,
 }: EditDocumentsProps) => {
   const dispatch = useAppDispatch();
+  const [isSaving, setIsSaving] = React.useState(false);
   const accessToken = localStorage.getItem('accessToken');
-
-  // Local state for fields
-
-  const [title, setTitle] = useState(documentToEdit.title || '');
-  const [category, setCategory] = useState<DocumentCategory | ''>(
+  const [title, setTitle] = React.useState(documentToEdit.title || '');
+  const [description, setDescription] = React.useState(
+    documentToEdit.description || ''
+  );
+  const [category, setCategory] = React.useState<DocumentCategory | ''>(
     (Object.values(DocumentCategory).includes(
       documentToEdit.category as DocumentCategory
     )
       ? documentToEdit.category
       : '') as DocumentCategory | ''
   );
-  const [description, setDescription] = useState(
-    documentToEdit.description || ''
-  );
-  const [isSaving, setIsSaving] = useState(false);
 
   const handleEdit = async () => {
     if (!accessToken) {
@@ -58,11 +48,11 @@ const EditDocumentModal = ({
     try {
       await dispatch(
         updateDocument({
+          category,
+          description,
           accessToken,
           title: title.trim(),
-          category,
           documentId: documentToEdit.id,
-          description,
         })
       ).unwrap();
       toast.success('Document updated successfully!');
@@ -85,25 +75,25 @@ const EditDocumentModal = ({
       dialogTitle="Edit Document"
       actionFunction={handleEdit}
       buttonConfirm={isSaving ? 'Saving...' : 'Save Changes'}
-      contentWidth="!max-w-[910px] !min-h-[840px] !max-h-[840px]"
       isFormValid={!!title.trim() && !!category && !isSaving}
+      contentWidth="!max-w-[910px] !min-h-[840px] !max-h-[840px]"
     >
       <div className="px-2 pt-2 pb-0">
         {/* Title Field */}
-        <div className="mb-4 w-1/2">
+        <div className="mb-4 w-full">
           <div className="flex justify-between items-center mb-2">
             <label className="block text-sm font-medium text-left">Title</label>
             <span className="text-xs text-gray-500">Required</span>
           </div>
           <input
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
             placeholder="Document Title"
             className="w-full p-2 border rounded"
+            onChange={(e) => setTitle(e.target.value)}
           />
         </div>
         {/* Category Field */}
-        <div className="mb-4 w-1/2">
+        <div className="mb-4 w-full">
           <div className="flex justify-between items-center mb-2">
             <Label
               htmlFor="category"
@@ -139,10 +129,9 @@ const EditDocumentModal = ({
           <textarea
             rows={12}
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
             placeholder="Document Description"
-            className="w-full p-2 border rounded"
-            style={{ resize: 'vertical', overflow: 'auto' }}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full p-2 border rounded resize-y overflow-auto"
           />
         </div>
       </div>

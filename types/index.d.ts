@@ -334,3 +334,10 @@ interface UploadDocumentModalProps {
   defaultJobId?: string;
   onUploadSuccess?: () => void;
 }
+
+interface EditDocumentsProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onEditSuccess: () => void;
+  documentToEdit: JobDocument;
+}
