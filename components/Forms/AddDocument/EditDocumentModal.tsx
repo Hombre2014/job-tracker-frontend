@@ -1,14 +1,10 @@
 import React from 'react';
 import { toast } from 'react-toastify';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-
+import { useState } from 'react';
 import { DocumentCategory } from '@/enums';
-import Modal from '@/components/Misc/Modal';
-import { EditDocumentSchema } from '@/schemas';
 import { useAppDispatch } from '@/redux/hooks';
-import { Button } from '@/components/ui/button';
 import { updateDocument } from '@/redux/documents/documentsThunk';
+import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import {
   Select,
   SelectItem,
@@ -34,118 +30,123 @@ const EditDocumentModal = ({
   const dispatch = useAppDispatch();
   const accessToken = localStorage.getItem('accessToken');
 
-  const form = useForm({
-    resolver: zodResolver(EditDocumentSchema),
-    defaultValues: {
-      title: documentToEdit.title || '',
-      category: documentToEdit.category || '',
-      description: documentToEdit.description || '',
-    },
-  });
+  // Local state for fields
 
-  const handleSubmit = async (data: any) => {
+  const [title, setTitle] = useState(documentToEdit.title || '');
+  const [category, setCategory] = useState<DocumentCategory | ''>(
+    (Object.values(DocumentCategory).includes(
+      documentToEdit.category as DocumentCategory
+    )
+      ? documentToEdit.category
+      : '') as DocumentCategory | ''
+  );
+  const [description, setDescription] = useState(
+    documentToEdit.description || ''
+  );
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleEdit = async () => {
+    if (!accessToken) {
+      toast.error('Authentication required');
+      return;
+    }
+    if (!title.trim() || !category) {
+      toast.error('Title and category are required.');
+      return;
+    }
+    setIsSaving(true);
     try {
-      if (!accessToken) {
-        toast.error('Authentication required');
-        return;
-      }
-
-      // Use the title exactly as entered by the user
-      const newTitle = data.title;
-
       await dispatch(
         updateDocument({
           accessToken,
-          title: newTitle,
-          category: data.category,
+          title: title.trim(),
+          category,
           documentId: documentToEdit.id,
-          description: data.description,
+          description,
         })
       ).unwrap();
-
       toast.success('Document updated successfully!');
       onEditSuccess();
     } catch (error) {
       console.error('Error updating document:', error);
       toast.error('Failed to update document. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <Modal stylings="sm:w-11/12 md:w-3/4 lg:w-2/3 xl:min-w-[912px] min-h-[840px] bg-white rounded-sm !p-[-40px]">
-      <div className="max-h-[840px]">
-        <div className="flex justify-between items-center p-4 border-b w-full mb-8">
-          <h1 className="text-xl font-semibold mb-4">Edit Document</h1>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => window.open(documentToEdit.url, '_blank')}
-            >
-              Download
-            </Button>
-            <Button variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
+    <AlertDialogModal
+      open={isOpen}
+      buttonCancel="Cancel"
+      onOpenChange={onClose}
+      dialogTitle="Edit Document"
+      actionFunction={handleEdit}
+      buttonConfirm={isSaving ? 'Saving...' : 'Save Changes'}
+      contentWidth="!max-w-[910px] !min-h-[840px] !max-h-[840px]"
+      isFormValid={!!title.trim() && !!category && !isSaving}
+    >
+      <div className="px-2 pt-2 pb-0">
+        {/* Title Field */}
+        <div className="mb-4 w-1/2">
+          <div className="flex justify-between items-center mb-2">
+            <label className="block text-sm font-medium text-left">Title</label>
+            <span className="text-xs text-gray-500">Required</span>
           </div>
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Document Title"
+            className="w-full p-2 border rounded"
+          />
         </div>
-        <div className="px-4">
-          <form onSubmit={form.handleSubmit(handleSubmit)}>
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">Title</label>
-              <input
-                {...form.register('title')}
-                placeholder="Document Title"
-                className="w-full p-2 border rounded"
-              />
-            </div>
-            <div className="mb-4">
-              <Label
-                htmlFor="category"
-                className="block text-sm font-medium mb-2"
-              >
-                Category
-              </Label>
-              <Select
-                value={form.watch('category')}
-                onValueChange={(value: string) =>
-                  form.setValue('category', value as DocumentCategory)
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.values(DocumentCategory).map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">
-                Description
-              </label>
-              <textarea
-                rows={13}
-                {...form.register('description')}
-                placeholder="Document Description"
-                className="w-full p-2 border rounded"
-              />
-            </div>
-            <div className="flex justify-end gap-2 mt-6">
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
-              </Button>
-              <Button type="submit">Save Changes</Button>
-            </div>
-          </form>
+        {/* Category Field */}
+        <div className="mb-4 w-1/2">
+          <div className="flex justify-between items-center mb-2">
+            <Label
+              htmlFor="category"
+              className="block text-sm font-medium text-left"
+            >
+              Category
+            </Label>
+            <span className="text-xs text-gray-500">Required</span>
+          </div>
+          <Select
+            value={category}
+            onValueChange={(value: string) =>
+              setCategory(value as DocumentCategory)
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select category" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.values(DocumentCategory).map((cat) => (
+                <SelectItem key={cat} value={cat}>
+                  {cat}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {/* Description Field */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-left mb-2">
+            Description
+          </label>
+          <textarea
+            rows={12}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Document Description"
+            className="w-full p-2 border rounded"
+            style={{ resize: 'vertical', overflow: 'auto' }}
+          />
         </div>
       </div>
-    </Modal>
+    </AlertDialogModal>
   );
 };
 

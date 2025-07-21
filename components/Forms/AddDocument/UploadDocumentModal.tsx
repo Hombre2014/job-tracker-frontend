@@ -392,7 +392,7 @@ const UploadDocumentModal = ({
                 </div>
                 <Select
                   value={category}
-                  onValueChange={(value) =>
+                  onValueChange={(value: string) =>
                     setCategory(value as DocumentCategory)
                   }
                 >
