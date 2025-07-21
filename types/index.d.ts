@@ -116,6 +116,7 @@ type JobDocument = WorkDocument & {
   fileSize?: number;
   createdAt?: string;
   updatedAt?: string;
+  fileExtension?: string;
   uploadedBy?: {
     lastName: string;
     firstName: string;
@@ -332,4 +333,11 @@ interface UploadDocumentModalProps {
   dialogTitle?: string;
   defaultJobId?: string;
   onUploadSuccess?: () => void;
+}
+
+interface EditDocumentsProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onEditSuccess: () => void;
+  documentToEdit: JobDocument;
 }

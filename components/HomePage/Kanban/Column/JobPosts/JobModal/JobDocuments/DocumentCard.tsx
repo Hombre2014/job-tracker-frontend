@@ -39,64 +39,47 @@ const DocumentCard = ({
     }
   };
 
-  // File extension/type is determined from the original file name (title at upload)
-  const getFileExtensionInfo = () => {
-    // Always parse extension from the original file name (title at upload)
-    const filename = document.title || '';
-    const extensionMatch = filename.match(/\.([^.]+)$/i);
-    if (extensionMatch) {
-      const ext = extensionMatch[1].toLowerCase();
-      let displayType = ext.toUpperCase();
-      switch (ext) {
-        case 'jpg':
-        case 'jpeg':
-        case 'png':
-        case 'gif':
-        case 'bmp':
-        case 'svg':
-        case 'webp':
-          displayType = 'IMG';
-          break;
-        case 'doc':
-        case 'docx':
-          displayType = 'DOC';
-          break;
-        case 'xls':
-        case 'xlsx':
-          displayType = 'XLS';
-          break;
-        case 'ppt':
-        case 'pptx':
-          displayType = 'PPT';
-          break;
-        case 'pdf':
-          displayType = 'PDF';
-          break;
-        case 'txt':
-          displayType = 'TXT';
-          break;
-        case 'zip':
-        case 'rar':
-        case '7z':
-          displayType = 'ZIP';
-          break;
-        default:
-          displayType = ext.toUpperCase();
-      }
-      return {
-        extension: ext,
-        extensionUpper: displayType,
-      };
-    }
-    // If all else fails, use FILE
-    return {
-      extension: 'file',
-      extensionUpper: 'FILE',
-    };
-  };
 
-  const { extension: fileExtension, extensionUpper: fileExtensionUpper } =
-    getFileExtensionInfo();
+  // Use fileExtension from backend, fallback to 'file' if missing
+  const ext = document.fileExtension ? document.fileExtension.toLowerCase() : 'file';
+  let fileExtensionUpper = ext.toUpperCase();
+  switch (ext) {
+    case 'jpg':
+    case 'jpeg':
+    case 'png':
+    case 'gif':
+    case 'bmp':
+    case 'svg':
+    case 'webp':
+      fileExtensionUpper = 'IMG';
+      break;
+    case 'doc':
+    case 'docx':
+      fileExtensionUpper = 'DOC';
+      break;
+    case 'xls':
+    case 'xlsx':
+      fileExtensionUpper = 'XLS';
+      break;
+    case 'ppt':
+    case 'pptx':
+      fileExtensionUpper = 'PPT';
+      break;
+    case 'pdf':
+      fileExtensionUpper = 'PDF';
+      break;
+    case 'txt':
+      fileExtensionUpper = 'TXT';
+      break;
+    case 'zip':
+    case 'rar':
+    case '7z':
+      fileExtensionUpper = 'ZIP';
+      break;
+    default:
+      fileExtensionUpper = ext.toUpperCase();
+  }
+  const fileExtension = ext;
 
   const fileColor =
     fileTypeColors[fileExtension as keyof typeof fileTypeColors] ||
@@ -105,13 +88,10 @@ const DocumentCard = ({
   // Get file size display in format: "PDF - 1.2 KB" or just "PDF"
   const getFileSizeDisplay = () => {
     const fileSize = document.fileSize;
-
-    // Format: "PDF - 1.2 KB" or just "PDF"
     if (fileSize && fileSize > 0) {
       const sizeInKB = (fileSize / 1024).toFixed(1);
       return `${fileExtensionUpper} - ${sizeInKB} KB`;
     }
-
     return fileExtensionUpper;
   };
 

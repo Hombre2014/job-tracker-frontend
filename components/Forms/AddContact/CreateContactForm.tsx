@@ -77,7 +77,8 @@ const CreateContactForm = ({
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [emails, setEmails] = useState<
     { id: string; value: string; type: string }[]
-  >([]);  const [phones, setPhones] = useState<
+  >([]);
+  const [phones, setPhones] = useState<
     { id: string; value: string; type: string }[]
   >([]);
   const selectedCompanyName = selectedJob?.company.name;
@@ -125,24 +126,21 @@ const CreateContactForm = ({
     // Set form values for required fields
     if (fieldName === 'firstName' || fieldName === 'lastName') {
       form.setValue(fieldName, value);
-    }  };
+    }
+  };
 
   // Load contact data or reset form
   useEffect(() => {
     if (contactToEdit) {
       // Extract data from contactToEdit with trailing slash handling
-      const githubHandle = contactToEdit.githubUrl?.replace(/\/+$/, '')
-        .split('/')
-        .pop() ?? '';
-      const twitterHandle = contactToEdit.twitterUrl?.replace(/\/+$/, '')
-        .split('/')
-        .pop() ?? '';
-      const facebookHandle = contactToEdit.facebookUrl?.replace(/\/+$/, '')
-        .split('/')
-        .pop() ?? '';
-      const linkedinHandle = contactToEdit.linkedinUrl?.replace(/\/+$/, '')
-        .split('/')
-        .pop() ?? '';
+      const githubHandle =
+        contactToEdit.githubUrl?.replace(/\/+$/, '').split('/').pop() ?? '';
+      const twitterHandle =
+        contactToEdit.twitterUrl?.replace(/\/+$/, '').split('/').pop() ?? '';
+      const facebookHandle =
+        contactToEdit.facebookUrl?.replace(/\/+$/, '').split('/').pop() ?? '';
+      const linkedinHandle =
+        contactToEdit.linkedinUrl?.replace(/\/+$/, '').split('/').pop() ?? '';
 
       // Update formData state with all contact info
       setFormData({
@@ -456,7 +454,8 @@ const CreateContactForm = ({
       (email) => email.id === id
     );
 
-    if (wasExisting) {      dispatch(
+    if (wasExisting) {
+      dispatch(
         updateContactEmail({
           id,
           type,
@@ -482,7 +481,8 @@ const CreateContactForm = ({
       (phone) => phone.id === id
     );
 
-    if (wasExisting) {      dispatch(
+    if (wasExisting) {
+      dispatch(
         updateContactPhone({
           id,
           type,
