@@ -76,7 +76,7 @@ const EditDocumentModal = ({
       actionFunction={handleEdit}
       buttonConfirm={isSaving ? 'Saving...' : 'Save Changes'}
       isFormValid={!!title.trim() && !!category && !isSaving}
-      contentWidth="!max-w-[910px] !min-h-[840px] !max-h-[840px]"
+      contentWidth="!max-w-[910px] !min-h-[880px] !max-h-[880px]"
     >
       <div className="px-2 pt-2 pb-0">
         {/* Title Field */}
