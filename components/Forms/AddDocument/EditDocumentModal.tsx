@@ -3,11 +3,20 @@ import { toast } from 'react-toastify';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
+import { DocumentCategory } from '@/enums';
 import Modal from '@/components/Misc/Modal';
 import { EditDocumentSchema } from '@/schemas';
 import { useAppDispatch } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
 import { updateDocument } from '@/redux/documents/documentsThunk';
+import {
+  Select,
+  SelectItem,
+  SelectValue,
+  SelectContent,
+  SelectTrigger,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 interface EditDocumentsProps {
   isOpen: boolean;
@@ -65,8 +74,8 @@ const EditDocumentModal = ({
   if (!isOpen) return null;
 
   return (
-    <Modal stylings="sm:w-11/12 md:w-3/4 lg:w-2/3 xl:w-[960px] bg-white">
-      <div className="min-h-[840px]">
+    <Modal stylings="sm:w-11/12 md:w-3/4 lg:w-2/3 xl:min-w-[912px] min-h-[840px] bg-white rounded-sm !p-[-40px]">
+      <div className="max-h-[840px]">
         <div className="flex justify-between items-center p-4 border-b w-full mb-8">
           <h1 className="text-xl font-semibold mb-4">Edit Document</h1>
           <div className="flex gap-2">
@@ -92,22 +101,39 @@ const EditDocumentModal = ({
               />
             </div>
             <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">Category</label>
-              <input
-                {...form.register('category')}
-                placeholder="Document Category"
-                className="w-full p-2 border rounded"
-              />
+              <Label
+                htmlFor="category"
+                className="block text-sm font-medium mb-2"
+              >
+                Category
+              </Label>
+              <Select
+                value={form.watch('category')}
+                onValueChange={(value: string) =>
+                  form.setValue('category', value as DocumentCategory)
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.values(DocumentCategory).map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="mb-4">
               <label className="block text-sm font-medium mb-2">
                 Description
               </label>
               <textarea
+                rows={13}
                 {...form.register('description')}
                 placeholder="Document Description"
                 className="w-full p-2 border rounded"
-                rows={3}
               />
             </div>
             <div className="flex justify-end gap-2 mt-6">
