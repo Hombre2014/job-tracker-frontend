@@ -1,0 +1,39 @@
+import { useState } from 'react';
+
+import { cn } from '@/lib/utils';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+
+const InputElement = ({
+  id,
+  value,
+  stylings,
+  sendData,
+  labelName,
+  defaultValue,
+  placeholderName,
+}: InputElementProps) => {
+  const [inputValue, setInputValue] = useState(value!);
+
+  const handleBlur = () => {
+    if (sendData) {
+      sendData(id as keyof JobApplication, inputValue);
+    }
+  };
+
+  return (
+    <div className={cn(stylings)}>
+      <Label htmlFor={id}>{labelName}</Label>
+      <Input
+        id={id}
+        value={inputValue}
+        onBlur={handleBlur}
+        defaultValue={defaultValue}
+        placeholder={placeholderName}
+        onChange={(e) => setInputValue(e.target.value)}
+      />
+    </div>
+  );
+};
+
+export default InputElement;

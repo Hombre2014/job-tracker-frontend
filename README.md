@@ -4,35 +4,67 @@
 
 ## Built With
 
-- Major languages: TypeScript
+- Libraries: React
 - Framework: Next.js
-- Libraries: Auth.js, React
+- Major languages: TypeScript
 
 ## Backend repository
 
-- [Job Tracker Backend](https://github.com/akucintavalent/job-tracker)
+- [Job Tracker Backend](https://github.com/Hombre2014/job-tracker-backend)
 
 ## Screenshots
 
-Not yet deployed.
+- The Dashboard
 
-### Deployment
+  ![Dashboard](/public/images/Dashboard.png)
 
-Not yet deployed.
+- The job application
+
+  ![Job Application](/public/images/Job_Application.png)
+
+## Deployment
+
+- Deployed on Vercel: [Job Tracker](https://online-job-trackr.vercel.app/)
+
+## Usage
+
+### Requirements
+
+- Node.js (v21 or later)
+- Docker
+
+### Start the backend
+
+- Clone the backend: `git clone https://github.com/Hombre2014/job-tracker-backend`
+- Change the directory: `cd job-tracker-backend`
+- Start Docker
+- Launch Postgres: `docker compose up -d postgres_dev` # ensure service exists in docker-compose.yml
+- Copy environment template: `cp .env.backend.example .env` and adjust values
+- You will need Appwrite account for the file upload functionality. You can get it from [Appwrite](https://appwrite.io/). Create a new project and copy the PROJECT_ID and BUCKET_ID to your `.env` file.
+- You will need a Resend account with token and notification email address, which is required for sending emails. You can get it from [Resend](https://resend.com/). Create a new account and copy the token to your `.env` file. Also set the notification email address in the `.env` file.
+- Run the migrations: `yarn run typeorm migration:run -d src/data-source.ts`
+- Run the backend: `yarn run start`
+
+### Start the frontend
+
+- Clone the repository: `git clone https://github.com/Hombre2014/job-tracker-frontend`
+- Change the directory: `cd job-tracker-frontend`
+- Install the dependencies: `npm install`
+- Run the app: `npm run dev`
+- Open browser: `http://localhost:3000`
 
 ## Authors
-
-👤 **Kingsley Ibe**
-
-- GitHub: [@KingsleyIbe](https://github.com/KingsleyIbe)
-- Twitter: [@ibekingsley2](https://twitter.com/ibekingsley2)
-- LinkedIn: [Kingsley Ibe](https://linkedin.com/in/kingsley-ibe-5669a5134)
 
 👤 **Yuriy Chamkoriyski**
 
 - GitHub: [@Hombre2014](https://github.com/Hombre2014)
 - Twitter: [@Chamkoriyski](https://twitter.com/Chamkoriyski)
 - LinkedIn: [axebit](https://linkedin.com/in/axebit)
+
+👤 **Bohdan Shcherbak**
+
+- GitHub: [@akucintavalent](https://github.com/akucintavalent)
+- LinkedIn: [Bohdan Shcherbak](https://www.linkedin.com/in/bohdan-shcherbak/)
 
 ## 🤝 Contributing
 
