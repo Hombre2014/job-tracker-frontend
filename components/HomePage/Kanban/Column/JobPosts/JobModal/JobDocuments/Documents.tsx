@@ -53,10 +53,12 @@ const Documents = () => {
     // Simple refresh without disruptive re-renders - just re-fetch job data
     if (job_id && accessToken) {
       try {
+        // Add cache-busting param to jobPostId (if backend supports it)
+        const cacheBuster = `?t=${Date.now()}`;
         await dispatch(
           getJobPost({
             accessToken,
-            jobPostId: job_id as string,
+            jobPostId: job_id + cacheBuster,
           })
         ).unwrap();
       } catch (error) {
