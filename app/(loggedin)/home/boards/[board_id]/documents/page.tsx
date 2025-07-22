@@ -8,6 +8,7 @@ import { getUser } from '@/redux/user/userThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { TITLE_MAX_LENGTH, FIXED_GRID_STYLES } from '@/data/constants';
 import { LinkDocument } from '@/components/HomePage/HomeNavbar/LinkDocument';
+import EditDocumentModal from '@/components/Forms/AddDocument/EditDocumentModal';
 import UploadDocumentModal from '@/components/Forms/AddDocument/UploadDocumentModal';
 import DocumentCard from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/DocumentCard';
 import {
@@ -33,6 +34,7 @@ const BoardDocuments = () => {
       return null;
     }
   })();
+
   const userDocuments = useAppSelector(selectUserDocuments);
   const boardDocuments = useAppSelector(selectBoardDocuments);
   const boardDocumentsStatus = useAppSelector(selectBoardDocumentsStatus);
@@ -41,6 +43,10 @@ const BoardDocuments = () => {
     firstName: string;
     profilePicUrl?: string;
   } | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [documentToEdit, setDocumentToEdit] = useState<JobDocument | null>(
+    null
+  );
 
   // Type-safe board ID extraction
   const boardId = Array.isArray(board_id) ? board_id[0] : board_id;
@@ -148,9 +154,8 @@ const BoardDocuments = () => {
   });
 
   const handleEditDocument = (document: JobDocument) => {
-    // TODO: Implement edit functionality - Allow users to edit document metadata (title, category, description)
-    // This should open a modal similar to UploadDocumentModal but for editing existing documents
-    toast.info('Document editing functionality will be implemented soon');
+    setDocumentToEdit(document);
+    setIsEditModalOpen(true);
   };
 
   const handleDeleteDocument = async (documentId: string) => {
@@ -273,6 +278,22 @@ const BoardDocuments = () => {
             ))}
           </div>
         </div>
+      )}
+      {/* Edit Document Modal */}
+      {isEditModalOpen && documentToEdit && (
+        <EditDocumentModal
+          isOpen={isEditModalOpen}
+          documentToEdit={documentToEdit}
+          onEditSuccess={async () => {
+            await handleDocumentsRefresh();
+            setIsEditModalOpen(false);
+            setDocumentToEdit(null);
+          }}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setDocumentToEdit(null);
+          }}
+        />
       )}
     </div>
   );
