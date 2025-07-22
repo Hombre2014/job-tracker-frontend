@@ -110,6 +110,17 @@ const BoardDocuments = () => {
     }
   }, [dispatch, accessToken, boardId]);
 
+  // Use the shared document actions hook - MUST be called before any conditional returns
+  const {
+    isEditModalOpen,
+    documentToEdit,
+    handleEditDocument,
+    handleDeleteDocument,
+    handleDownloadDocument,
+    setIsEditModalOpen,
+    setDocumentToEdit
+  } = useDocumentActions(boardDocuments, accessToken, handleDocumentsRefresh);
+
   // Early return after all hooks are called
   if (!boardId) {
     return (
@@ -180,17 +191,6 @@ const BoardDocuments = () => {
         (doc) => (doc.category || 'Uncategorized') === selectedCategory
       )
     : enhancedDocuments;
-
-  // Use the shared document actions hook
-  const {
-    isEditModalOpen,
-    documentToEdit,
-    handleEditDocument,
-    handleDeleteDocument,
-    handleDownloadDocument,
-    setIsEditModalOpen,
-    setDocumentToEdit
-  } = useDocumentActions(boardDocuments, accessToken, handleDocumentsRefresh);
 
   // handleDeleteDocument is now provided by the useDocumentActions hook
 
