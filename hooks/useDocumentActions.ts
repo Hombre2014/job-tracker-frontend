@@ -10,11 +10,13 @@ export const useDocumentActions = (
 ) => {
   const dispatch = useAppDispatch();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [documentToEdit, setDocumentToEdit] = useState<JobDocument | null>(null);
+  const [documentToEdit, setDocumentToEdit] = useState<JobDocument | null>(
+    null
+  );
 
   const handleEditDocument = (document: JobDocument) => {
     // Find the original document with the full title
-    const originalDocument = documents.find(doc => doc.id === document.id);
+    const originalDocument = documents.find((doc) => doc.id === document.id);
     setDocumentToEdit(originalDocument || document);
     setIsEditModalOpen(true);
   };
@@ -48,24 +50,24 @@ export const useDocumentActions = (
         return;
       }
 
-      const newTab = window.open(
-        jobDocument.url,
-        '_blank',
-        'noopener,noreferrer'
-      );
+      // Try to open in new tab first
+      const newTab = window.open('', '_blank', 'noopener,noreferrer');
 
-      if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-        // Fallback: Create a download link for popup blocker case
+      if (!newTab) {
+        // Popup blocked - use download link as fallback
         const link = document.createElement('a');
         link.href = jobDocument.url;
         link.download = jobDocument.title || 'document';
-        link.target = '_blank';
+        link.style.display = 'none';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         toast.success('Document download initiated');
         return;
       }
+
+      // Set the URL after successful popup creation
+      newTab.location.href = jobDocument.url;
 
       // Check tab status
       setTimeout(() => {
@@ -87,13 +89,13 @@ export const useDocumentActions = (
   };
 
   return {
-    isEditModalOpen,
     documentToEdit,
+    isEditModalOpen,
+    setDocumentToEdit,
     handleEditDocument,
+    setIsEditModalOpen,
     handleDeleteDocument,
     handleDownloadDocument,
-    setIsEditModalOpen,
-    setDocumentToEdit,
   };
 };
 

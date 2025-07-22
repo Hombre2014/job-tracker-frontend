@@ -1,19 +1,15 @@
 'use client';
 
-import { toast } from 'react-toastify';
 import { useEffect, useState } from 'react';
 
 import { getUser } from '@/redux/user/userThunk';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { TITLE_MAX_LENGTH } from '@/data/constants';
 import useDocumentActions from '@/hooks/useDocumentActions';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import DocumentGrid from '@/components/Documents/DocumentGrid';
+import { getDocumentsPerUser } from '@/redux/documents/documentsThunk';
+import DocumentFilterBar from '@/components/Documents/DocumentFilterBar';
 import EditDocumentModal from '@/components/Forms/AddDocument/EditDocumentModal';
-import DocumentFilterBar, { CategoryCount } from '@/components/Documents/DocumentFilterBar';
-import {
-  deleteDocument,
-  getDocumentsPerUser,
-} from '@/redux/documents/documentsThunk';
 import {
   selectUserDocuments,
   selectUserDocumentsStatus,
@@ -51,16 +47,16 @@ const UserDocuments = () => {
       }
     }
   };
-  
+
   // Use the shared document actions hook
   const {
-    isEditModalOpen,
     documentToEdit,
+    isEditModalOpen,
+    setDocumentToEdit,
+    setIsEditModalOpen,
     handleEditDocument,
     handleDeleteDocument,
     handleDownloadDocument,
-    setIsEditModalOpen,
-    setDocumentToEdit
   } = useDocumentActions(userDocuments, accessToken, handleDocumentsRefresh);
 
   // Fetch user info for uploader details
@@ -99,12 +95,6 @@ const UserDocuments = () => {
       dispatch(getDocumentsPerUser(accessToken));
     }
   }, [dispatch, accessToken]);
-
-  // Extract unique document categories and their counts from userDocuments
-  type CategoryCount = {
-    category: string;
-    count: number;
-  };
 
   // Count documents per category
   const categoryCounts: CategoryCount[] = [];
@@ -146,12 +136,6 @@ const UserDocuments = () => {
       )
     : enhancedDocuments;
 
-  // Document action handlers are now provided by the useDocumentActions hook
-
-  // handleDeleteDocument is now provided by the useDocumentActions hook
-
-  // handleDownloadDocument is now provided by the useDocumentActions hook
-
   if (userDocumentsStatus === 'loading') {
     return (
       <div className="w-full h-full flex items-center justify-center">
@@ -184,8 +168,8 @@ const UserDocuments = () => {
         </div>
       ) : (
         <DocumentGrid
-          documents={filteredDocuments}
           onEdit={handleEditDocument}
+          documents={filteredDocuments}
           onDelete={handleDeleteDocument}
           onDownload={handleDownloadDocument}
           emptyMessage="No documents found for this category"
@@ -201,7 +185,7 @@ const UserDocuments = () => {
             // Close the modal first
             setIsEditModalOpen(false);
             setDocumentToEdit(null);
-            
+
             // Then refresh the documents
             await handleDocumentsRefresh();
           }}

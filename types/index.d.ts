@@ -3,6 +3,11 @@ type MenuItemProps = {
   icon: JSX.Element;
 };
 
+type CategoryCount = {
+  count: number;
+  category: string;
+};
+
 type Company = {
   id: string;
   url: string;
@@ -340,4 +345,12 @@ interface EditDocumentsProps {
   onClose: () => void;
   onEditSuccess: () => void;
   documentToEdit: JobDocument;
+}
+
+interface DocumentGridProps {
+  emptyMessage?: string;
+  documents: JobDocument[];
+  onDelete: (documentId: string) => void;
+  onEdit: (document: JobDocument) => void;
+  onDownload: (document: JobDocument) => void;
 }

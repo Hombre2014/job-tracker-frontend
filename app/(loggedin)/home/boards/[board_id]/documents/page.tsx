@@ -5,16 +5,15 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
 import { getUser } from '@/redux/user/userThunk';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { TITLE_MAX_LENGTH } from '@/data/constants';
 import useDocumentActions from '@/hooks/useDocumentActions';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import DocumentGrid from '@/components/Documents/DocumentGrid';
+import DocumentFilterBar from '@/components/Documents/DocumentFilterBar';
 import { LinkDocument } from '@/components/HomePage/HomeNavbar/LinkDocument';
 import EditDocumentModal from '@/components/Forms/AddDocument/EditDocumentModal';
 import UploadDocumentModal from '@/components/Forms/AddDocument/UploadDocumentModal';
-import DocumentFilterBar, { CategoryCount } from '@/components/Documents/DocumentFilterBar';
 import {
-  deleteDocument,
   getDocumentsPerUser,
   getDocumentsPerBoard,
 } from '@/redux/documents/documentsThunk';
@@ -39,6 +38,7 @@ const BoardDocuments = () => {
 
   const userDocuments = useAppSelector(selectUserDocuments);
   const boardDocuments = useAppSelector(selectBoardDocuments);
+  const boardId = Array.isArray(board_id) ? board_id[0] : board_id;
   const boardDocumentsStatus = useAppSelector(selectBoardDocumentsStatus);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // null = All
   const [uploaderInfo, setUploaderInfo] = useState<{
@@ -47,9 +47,6 @@ const BoardDocuments = () => {
     profilePicUrl?: string;
   } | null>(null);
   // We'll use the document action states from the hook instead of defining them here
-
-  // Type-safe board ID extraction
-  const boardId = Array.isArray(board_id) ? board_id[0] : board_id;
 
   // Function to refresh board documents
   const handleDocumentsRefresh = async () => {
@@ -112,13 +109,13 @@ const BoardDocuments = () => {
 
   // Use the shared document actions hook - MUST be called before any conditional returns
   const {
-    isEditModalOpen,
     documentToEdit,
+    isEditModalOpen,
+    setDocumentToEdit,
+    setIsEditModalOpen,
     handleEditDocument,
     handleDeleteDocument,
     handleDownloadDocument,
-    setIsEditModalOpen,
-    setDocumentToEdit
   } = useDocumentActions(boardDocuments, accessToken, handleDocumentsRefresh);
 
   // Early return after all hooks are called
@@ -192,10 +189,6 @@ const BoardDocuments = () => {
       )
     : enhancedDocuments;
 
-  // handleDeleteDocument is now provided by the useDocumentActions hook
-
-  // handleDownloadDocument and related functions are now provided by the useDocumentActions hook
-
   if (boardDocumentsStatus === 'loading') {
     return (
       <div className="w-full h-full flex items-center justify-center">
@@ -215,7 +208,7 @@ const BoardDocuments = () => {
             initialString="+ Link Document"
             onDocumentSelect={handleDocumentSelect}
           />
-          <UploadDocumentModal 
+          <UploadDocumentModal
             onUploadSuccess={handleDocumentsRefresh}
             defaultJobId={boardId} // Pass the board ID to fix upload issues
           />
@@ -224,15 +217,15 @@ const BoardDocuments = () => {
 
       {/* Filter Bar using the shared component */}
       <DocumentFilterBar
-        allCount={boardDocuments.length}
         categoryCounts={categoryCounts}
+        allCount={boardDocuments.length}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
       />
 
       <DocumentGrid
-        documents={filteredDocuments}
         onEdit={handleEditDocument}
+        documents={filteredDocuments}
         onDelete={handleDeleteDocument}
         onDownload={handleDownloadDocument}
         emptyMessage="No documents found for this category"
@@ -246,7 +239,7 @@ const BoardDocuments = () => {
             // Close the modal first
             setIsEditModalOpen(false);
             setDocumentToEdit(null);
-            
+
             // Then refresh the documents
             await handleDocumentsRefresh();
           }}
