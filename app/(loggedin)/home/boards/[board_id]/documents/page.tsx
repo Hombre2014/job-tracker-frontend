@@ -5,13 +5,15 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
 import { getUser } from '@/redux/user/userThunk';
+import { TITLE_MAX_LENGTH } from '@/data/constants';
+import useDocumentActions from '@/hooks/useDocumentActions';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { TITLE_MAX_LENGTH, FIXED_GRID_STYLES } from '@/data/constants';
+import DocumentGrid from '@/components/Documents/DocumentGrid';
+import DocumentFilterBar from '@/components/Documents/DocumentFilterBar';
 import { LinkDocument } from '@/components/HomePage/HomeNavbar/LinkDocument';
+import EditDocumentModal from '@/components/Forms/AddDocument/EditDocumentModal';
 import UploadDocumentModal from '@/components/Forms/AddDocument/UploadDocumentModal';
-import DocumentCard from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/DocumentCard';
 import {
-  deleteDocument,
   getDocumentsPerUser,
   getDocumentsPerBoard,
 } from '@/redux/documents/documentsThunk';
@@ -33,17 +35,18 @@ const BoardDocuments = () => {
       return null;
     }
   })();
+
   const userDocuments = useAppSelector(selectUserDocuments);
   const boardDocuments = useAppSelector(selectBoardDocuments);
+  const boardId = Array.isArray(board_id) ? board_id[0] : board_id;
   const boardDocumentsStatus = useAppSelector(selectBoardDocumentsStatus);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // null = All
   const [uploaderInfo, setUploaderInfo] = useState<{
     lastName: string;
     firstName: string;
     profilePicUrl?: string;
   } | null>(null);
-
-  // Type-safe board ID extraction
-  const boardId = Array.isArray(board_id) ? board_id[0] : board_id;
+  // We'll use the document action states from the hook instead of defining them here
 
   // Function to refresh board documents
   const handleDocumentsRefresh = async () => {
@@ -104,6 +107,17 @@ const BoardDocuments = () => {
     }
   }, [dispatch, accessToken, boardId]);
 
+  // Use the shared document actions hook - MUST be called before any conditional returns
+  const {
+    documentToEdit,
+    isEditModalOpen,
+    setDocumentToEdit,
+    setIsEditModalOpen,
+    handleEditDocument,
+    handleDeleteDocument,
+    handleDownloadDocument,
+  } = useDocumentActions(boardDocuments, accessToken, handleDocumentsRefresh);
+
   // Early return after all hooks are called
   if (!boardId) {
     return (
@@ -129,6 +143,27 @@ const BoardDocuments = () => {
       !boardDocuments.some((boardDoc) => boardDoc.id === document.id)
   );
 
+  // Extract unique document categories and their counts from boardDocuments
+  type CategoryCount = {
+    category: string;
+    count: number;
+  };
+
+  // Count documents per category
+  const categoryCounts: CategoryCount[] = [];
+  const categoryMap: Record<string, number> = {};
+  boardDocuments.forEach((doc) => {
+    const cat = doc.category || 'Uncategorized';
+    if (categoryMap[cat]) {
+      categoryMap[cat] += 1;
+    } else {
+      categoryMap[cat] = 1;
+    }
+  });
+  for (const [category, count] of Object.entries(categoryMap)) {
+    categoryCounts.push({ category, count });
+  }
+
   // Enhance documents with uploader information and truncated titles for board view
   const enhancedDocuments = boardDocuments.map((doc) => {
     // Truncate title to ~20 characters for better board layout
@@ -147,86 +182,12 @@ const BoardDocuments = () => {
     };
   });
 
-  const handleEditDocument = (document: JobDocument) => {
-    // TODO: Implement edit functionality - Allow users to edit document metadata (title, category, description)
-    // This should open a modal similar to UploadDocumentModal but for editing existing documents
-    toast.info('Document editing functionality will be implemented soon');
-  };
-
-  const handleDeleteDocument = async (documentId: string) => {
-    try {
-      if (!accessToken) {
-        toast.error('Authentication required');
-        return;
-      }
-
-      // For board documents, we always delete the document entirely from the database
-      // This will automatically detach it from all job applications and remove it completely
-      await dispatch(
-        deleteDocument({
-          documentId,
-          accessToken: accessToken as string,
-        })
-      ).unwrap();
-
-      toast.success('Document deleted successfully!');
-      await handleDocumentsRefresh();
-    } catch (error) {
-      console.error('Error deleting document:', error);
-      toast.error('Failed to delete document. Please try again.');
-    }
-  };
-
-  const openDocumentInNewTab = (url: string) => {
-    return window.open(url, '_blank', 'noopener,noreferrer');
-  };
-
-  const handlePopupBlocker = (url: string, title: string) => {
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = title || 'document';
-    link.target = '_blank';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success('Document download initiated');
-  };
-
-  const checkTabStatusWithTimeout = (newTab: Window) => {
-    const timeoutId = setTimeout(() => {
-      try {
-        if (newTab && !newTab.closed) {
-          toast.success('Document opened in new tab');
-        } else {
-          toast.success('Document has been downloaded');
-        }
-      } catch (error) {
-        console.warn('Could not check tab status:', error);
-        toast.success('Document has been processed');
-      }
-    }, 1000);
-    return timeoutId;
-  };
-
-  const handleDownloadDocument = async (jobDocument: JobDocument) => {
-    try {
-      if (!jobDocument.url) {
-        toast.error('Document URL not available');
-        return;
-      }
-
-      const newTab = openDocumentInNewTab(jobDocument.url);
-
-      if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-        handlePopupBlocker(jobDocument.url, jobDocument.title);
-      } else {
-        checkTabStatusWithTimeout(newTab);
-      }
-    } catch (error) {
-      console.error('Error opening document:', error);
-      toast.error('Failed to open document. Please try again.');
-    }
-  };
+  // Filtered documents based on selected category
+  const filteredDocuments = selectedCategory
+    ? enhancedDocuments.filter(
+        (doc) => (doc.category || 'Uncategorized') === selectedCategory
+      )
+    : enhancedDocuments;
 
   if (boardDocumentsStatus === 'loading') {
     return (
@@ -238,10 +199,8 @@ const BoardDocuments = () => {
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
-      <div className="w-full flex justify-between items-center p-6 border-b flex-shrink-0 bg-white">
-        <div className="text-blue-500 font-medium bg-blue-200/40 rounded-md px-2">
-          All ({boardDocuments.length})
-        </div>
+      {/* Header with actions */}
+      <div className="w-full flex justify-end items-center p-6 border-b flex-shrink-0 bg-white">
         <div className="flex gap-4">
           <LinkDocument
             searchItem="Documents"
@@ -249,30 +208,46 @@ const BoardDocuments = () => {
             initialString="+ Link Document"
             onDocumentSelect={handleDocumentSelect}
           />
-          <UploadDocumentModal onUploadSuccess={handleDocumentsRefresh} />
+          <UploadDocumentModal
+            onUploadSuccess={handleDocumentsRefresh}
+            defaultJobId={boardId} // Pass the board ID to fix upload issues
+          />
         </div>
       </div>
 
-      {boardDocuments.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-center text-xl text-slate-400">
-            You have not created any documents yet
-          </p>
-        </div>
-      ) : (
-        <div className="flex-1 overflow-y-auto p-6">
-          <div style={FIXED_GRID_STYLES}>
-            {enhancedDocuments.map((document) => (
-              <DocumentCard
-                key={document.id}
-                document={document}
-                onEdit={handleEditDocument}
-                onDelete={handleDeleteDocument}
-                onDownload={handleDownloadDocument}
-              />
-            ))}
-          </div>
-        </div>
+      {/* Filter Bar using the shared component */}
+      <DocumentFilterBar
+        categoryCounts={categoryCounts}
+        allCount={boardDocuments.length}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+      />
+
+      <DocumentGrid
+        onEdit={handleEditDocument}
+        documents={filteredDocuments}
+        onDelete={handleDeleteDocument}
+        onDownload={handleDownloadDocument}
+        emptyMessage="No documents found for this category"
+      />
+      {/* Edit Document Modal */}
+      {isEditModalOpen && documentToEdit && (
+        <EditDocumentModal
+          isOpen={isEditModalOpen}
+          documentToEdit={documentToEdit}
+          onEditSuccess={async () => {
+            // Close the modal first
+            setIsEditModalOpen(false);
+            setDocumentToEdit(null);
+
+            // Then refresh the documents
+            await handleDocumentsRefresh();
+          }}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setDocumentToEdit(null);
+          }}
+        />
       )}
     </div>
   );

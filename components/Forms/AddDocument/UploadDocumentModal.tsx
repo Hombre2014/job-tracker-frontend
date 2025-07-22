@@ -169,6 +169,21 @@ const UploadDocumentModal = ({
       !board_id ||
       !accessToken
     ) {
+      // Add debugging to identify which validation is failing
+      console.log('Upload validation failed:', { 
+        hasFile: !!selectedFile, 
+        hasTitle: !!title.trim(), 
+        hasCategory: !!category, 
+        hasBoardId: !!board_id, 
+        hasAccessToken: !!accessToken 
+      });
+      
+      if (!selectedFile) toast.error('No file selected');
+      if (!title.trim()) toast.error('Title is required');
+      if (!category) toast.error('Category is required');
+      if (!board_id) toast.error('Board ID is missing');
+      if (!accessToken) toast.error('Authentication required');
+      
       return;
     }
 
