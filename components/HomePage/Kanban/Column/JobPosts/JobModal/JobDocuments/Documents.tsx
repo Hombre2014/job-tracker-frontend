@@ -18,7 +18,7 @@ import {
   attachDocumentToJobApplication,
   detachDocumentFromJobApplication,
 } from '@/redux/documents/documentsThunk';
-import { set } from 'lodash';
+// Removed unused import
 import EditDocumentModal from '@/components/Forms/AddDocument/EditDocumentModal';
 
 const Documents = () => {
@@ -27,7 +27,7 @@ const Documents = () => {
   const jobs = useAppSelector((state) => state.jobs);
   const user = useAppSelector((state) => state.user);
   const userDocuments = useAppSelector(selectUserDocuments);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  // We don't need isUploadModalOpen state as the UploadDocumentModal handles its own visibility
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [documentToEdit, setDocumentToEdit] = useState<JobDocument | null>(null);
   const accessToken = (() => {
