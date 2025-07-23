@@ -6,8 +6,8 @@ import { useEffect, useState } from 'react';
 import { getUser } from '@/redux/user/userThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { TITLE_MAX_LENGTH, FIXED_GRID_STYLES } from '@/data/constants';
-import DocumentCard from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/DocumentCard';
 import EditDocumentModal from '@/components/Forms/AddDocument/EditDocumentModal';
+import DocumentCard from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/DocumentCard';
 import {
   deleteDocument,
   getDocumentsPerUser,
@@ -20,6 +20,19 @@ import {
 const UserDocuments = () => {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.user);
+
+  const userDocuments = useAppSelector(selectUserDocuments);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const userDocumentsStatus = useAppSelector(selectUserDocumentsStatus);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // null = All
+  const [documentToEdit, setDocumentToEdit] = useState<JobDocument | null>(
+    null
+  );
+  const [uploaderInfo, setUploaderInfo] = useState<{
+    lastName: string;
+    firstName: string;
+    profilePicUrl?: string;
+  } | null>(null);
   const accessToken = (() => {
     try {
       return localStorage.getItem('accessToken');
@@ -28,18 +41,6 @@ const UserDocuments = () => {
       return null;
     }
   })();
-  const userDocuments = useAppSelector(selectUserDocuments);
-  const userDocumentsStatus = useAppSelector(selectUserDocumentsStatus);
-  const [uploaderInfo, setUploaderInfo] = useState<{
-    lastName: string;
-    firstName: string;
-    profilePicUrl?: string;
-  } | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // null = All
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [documentToEdit, setDocumentToEdit] = useState<JobDocument | null>(
-    null
-  );
 
   // Function to refresh user documents
   const handleDocumentsRefresh = async () => {
@@ -90,12 +91,6 @@ const UserDocuments = () => {
     }
   }, [dispatch, accessToken]);
 
-  // Extract unique document categories and their counts from userDocuments
-  type CategoryCount = {
-    category: string;
-    count: number;
-  };
-
   // Count documents per category
   const categoryCounts: CategoryCount[] = [];
   const categoryMap: Record<string, number> = {};
@@ -138,7 +133,9 @@ const UserDocuments = () => {
 
   const handleEditDocument = (document: JobDocument) => {
     // Find the original document with the full title from userDocuments
-    const originalDocument = userDocuments.find(doc => doc.id === document.id);
+    const originalDocument = userDocuments.find(
+      (doc) => doc.id === document.id
+    );
     // Use the original document if found, otherwise use the provided document
     setDocumentToEdit(originalDocument || document);
     setIsEditModalOpen(true);
@@ -347,7 +344,7 @@ const UserDocuments = () => {
             // Close the modal first
             setIsEditModalOpen(false);
             setDocumentToEdit(null);
-            
+
             // Then refresh the documents
             if (accessToken) {
               try {

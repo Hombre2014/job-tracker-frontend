@@ -3,6 +3,11 @@ type MenuItemProps = {
   icon: JSX.Element;
 };
 
+type CategoryCount = {
+  count: number;
+  category: string;
+};
+
 type Company = {
   id: string;
   url: string;
