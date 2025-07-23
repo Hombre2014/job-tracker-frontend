@@ -346,3 +346,11 @@ interface EditDocumentsProps {
   onEditSuccess: () => void;
   documentToEdit: JobDocument;
 }
+
+interface DocumentGridProps {
+  emptyMessage?: string;
+  documents: JobDocument[];
+  onDelete: (documentId: string) => void;
+  onEdit: (document: JobDocument) => void;
+  onDownload: (document: JobDocument) => void;
+}

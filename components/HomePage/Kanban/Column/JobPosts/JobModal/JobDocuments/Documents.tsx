@@ -18,7 +18,6 @@ import {
   attachDocumentToJobApplication,
   detachDocumentFromJobApplication,
 } from '@/redux/documents/documentsThunk';
-import { set } from 'lodash';
 import EditDocumentModal from '@/components/Forms/AddDocument/EditDocumentModal';
 
 const Documents = () => {
@@ -27,9 +26,10 @@ const Documents = () => {
   const jobs = useAppSelector((state) => state.jobs);
   const user = useAppSelector((state) => state.user);
   const userDocuments = useAppSelector(selectUserDocuments);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [documentToEdit, setDocumentToEdit] = useState<JobDocument | null>(null);
+  const [documentToEdit, setDocumentToEdit] = useState<JobDocument | null>(
+    null
+  );
   const accessToken = (() => {
     try {
       return localStorage.getItem('accessToken');
