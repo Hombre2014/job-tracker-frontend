@@ -1,12 +1,17 @@
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import { useAppDispatch } from '@/redux/hooks';
-import { deleteDocument } from '@/redux/documents/documentsThunk';
+import {
+  deleteDocument,
+  updateDocument,
+} from '@/redux/documents/documentsThunk';
+import { updateDocumentInState } from '@/redux/documents/documentsSlice';
 
 export const useDocumentActions = (
   documents: JobDocument[],
   accessToken: string | null,
-  refreshDocuments: () => Promise<void>
+  refreshDocuments: () => Promise<void>,
+  optimisticUpdates: boolean = true // New parameter for controlling behavior
 ) => {
   const dispatch = useAppDispatch();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -15,10 +20,47 @@ export const useDocumentActions = (
   );
 
   const handleEditDocument = (document: JobDocument) => {
-    // Find the original document with the full title
     const originalDocument = documents.find((doc) => doc.id === document.id);
     setDocumentToEdit(originalDocument || document);
     setIsEditModalOpen(true);
+  };
+
+  const handleDocumentUpdate = async (updatedDocument: JobDocument) => {
+    try {
+      if (!accessToken) {
+        toast.error('Authentication required');
+        return;
+      }
+
+      if (optimisticUpdates) {
+        // Optimistic update: immediately update Redux state
+        dispatch(updateDocumentInState(updatedDocument));
+      }
+
+      // Always make the API call to persist changes
+      await dispatch(
+        updateDocument({
+          documentId: updatedDocument.id,
+          title: updatedDocument.title,
+          category: updatedDocument.category,
+          description: updatedDocument.description,
+          accessToken,
+        })
+      ).unwrap();
+
+      if (!optimisticUpdates) {
+        await refreshDocuments();
+      }
+
+      toast.success('Document updated successfully!');
+    } catch (error) {
+      if (optimisticUpdates) {
+        // Revert optimistic update on failure
+        await refreshDocuments();
+      }
+      console.error('Error updating document:', error);
+      toast.error('Failed to update document. Please try again.');
+    }
   };
 
   const handleDeleteDocument = async (documentId: string) => {
@@ -92,10 +134,11 @@ export const useDocumentActions = (
     documentToEdit,
     isEditModalOpen,
     setDocumentToEdit,
-    handleEditDocument,
     setIsEditModalOpen,
+    handleEditDocument,
     handleDeleteDocument,
     handleDownloadDocument,
+    handleDocumentUpdate,
   };
 };
 
