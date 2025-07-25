@@ -36,8 +36,16 @@ const documentsSlice = createSlice({
   name: 'documents',
   initialState,
   reducers: {
-    updateDocumentInState: (state, action) => {
+    updateDocumentInState: (state, action: { payload: JobDocument }) => {
       const updatedDoc = action.payload;
+
+      // Update in documents
+      const docIndex = state.documents.findIndex(
+        (doc) => doc.id === updatedDoc.id
+      );
+      if (docIndex !== -1) {
+        state.documents[docIndex] = updatedDoc;
+      }
 
       // Update in userDocuments
       const userIndex = state.userDocuments.findIndex(

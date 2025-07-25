@@ -26,13 +26,40 @@ export const useDocumentActions = (
   };
 
   const handleDocumentUpdate = async (updatedDocument: JobDocument) => {
-    if (optimisticUpdates) {
-      // Optimistic update: immediately update Redux state
-      dispatch(updateDocumentInState(updatedDocument));
+    try {
+      if (!accessToken) {
+        toast.error('Authentication required');
+        return;
+      }
+
+      if (optimisticUpdates) {
+        // Optimistic update: immediately update Redux state
+        dispatch(updateDocumentInState(updatedDocument));
+      }
+
+      // Always make the API call to persist changes
+      await dispatch(
+        updateDocument({
+          documentId: updatedDocument.id,
+          title: updatedDocument.title,
+          category: updatedDocument.category,
+          description: updatedDocument.description,
+          accessToken,
+        })
+      ).unwrap();
+
+      if (!optimisticUpdates) {
+        await refreshDocuments();
+      }
+
       toast.success('Document updated successfully!');
-    } else {
-      // Traditional approach: full refresh
-      await refreshDocuments();
+    } catch (error) {
+      if (optimisticUpdates) {
+        // Revert optimistic update on failure
+        await refreshDocuments();
+      }
+      console.error('Error updating document:', error);
+      toast.error('Failed to update document. Please try again.');
     }
   };
 
