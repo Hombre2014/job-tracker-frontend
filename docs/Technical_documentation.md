@@ -43,7 +43,12 @@ const handleDocumentUpdate = async (updatedDocument: JobDocument) => {
       dispatch(updateDocumentInState(updatedDocument));
     }
 
-    // Step 2: Persist changes and capture server-normalised document
+    // Step 2: Safety guard for authentication
+    if (!accessToken) {
+      throw new Error('No access token – user might be unauthenticated');
+    }
+
+    // Step 3: Persist changes and capture server-normalised document
     const persistedDoc = await dispatch(
       updateDocument({
         documentId: updatedDocument.id,
@@ -54,12 +59,12 @@ const handleDocumentUpdate = async (updatedDocument: JobDocument) => {
       })
     ).unwrap();
 
-    // Step 3: Reconcile optimistic state with server response
+    // Step 4: Reconcile optimistic state with server response
     if (optimisticUpdates) {
       dispatch(updateDocumentInState(persistedDoc));
     }
 
-    // Step 4: Handle non-optimistic mode
+    // Step 5: Handle non-optimistic mode
     if (!optimisticUpdates) {
       await refreshDocuments();
     }
@@ -67,7 +72,7 @@ const handleDocumentUpdate = async (updatedDocument: JobDocument) => {
     toast.success('Document updated successfully!');
   } catch (error) {
     if (optimisticUpdates) {
-      // Step 5: Revert optimistic update on failure
+      // Step 6: Revert optimistic update on failure
       await refreshDocuments();
     }
     toast.error('Failed to update document. Please try again.');

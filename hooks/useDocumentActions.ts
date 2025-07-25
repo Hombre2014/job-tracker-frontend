@@ -38,6 +38,11 @@ export const useDocumentActions = (
         dispatch(updateDocumentInState(updatedDocument));
       }
 
+      // Safety guard for authentication
+      if (!accessToken) {
+        throw new Error('No access token – user might be unauthenticated');
+      }
+
       // Persist changes and capture server-normalised document
       const persistedDoc = await dispatch(
         updateDocument({
