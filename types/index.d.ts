@@ -117,12 +117,12 @@ type JobDocument = WorkDocument & {
   createdAt?: string;
   updatedAt?: string;
   fileExtension?: string;
+  jobApplications?: JobApplication[];
   uploadedBy?: {
     lastName: string;
     firstName: string;
     profilePicUrl?: string;
   };
-  jobApplications?: JobApplication[];
 };
 
 interface ComboBoxProps {

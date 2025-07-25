@@ -5,7 +5,7 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.179.8] – 2025-07-25 – Optimistic Updates & Document Management
+## [0.179.8] – Optimistic Updates & Document Management - 2025-07-25
 
 ### New Features
 
@@ -43,10 +43,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Redux State Management Enhancement
 
 - **Added optimistic update reducer**: New `updateDocumentInState` action for immediate UI updates
-  - **Implementation**: Updates document across all Redux state arrays (documents, userDocuments, boardDocuments)
-  - **Consistency**: Ensures UI consistency across different document contexts
-  - **Performance**: Eliminates waiting for server response for better UX
-  - **Files**: `redux/documents/documentsSlice.ts`
+- **Implementation**: Updates document across all Redux state arrays (documents, userDocuments, boardDocuments)
+- **Consistency**: Ensures UI consistency across different document contexts
+- **Performance**: Eliminates waiting for server response for better UX
+- **Files**: `redux/documents/documentsSlice.ts`
 
 #### Document Update API Integration
 
