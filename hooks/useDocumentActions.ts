@@ -38,8 +38,8 @@ export const useDocumentActions = (
         dispatch(updateDocumentInState(updatedDocument));
       }
 
-      // Always make the API call to persist changes
-      await dispatch(
+      // Persist changes and capture server-normalised document
+      const persistedDoc = await dispatch(
         updateDocument({
           title: updatedDocument.title,
           documentId: updatedDocument.id,
@@ -48,6 +48,11 @@ export const useDocumentActions = (
           accessToken,
         })
       ).unwrap();
+
+      // Reconcile optimistic state with server response
+      if (optimisticUpdates) {
+        dispatch(updateDocumentInState(persistedDoc));
+      }
 
       if (!optimisticUpdates) {
         await refreshDocuments();

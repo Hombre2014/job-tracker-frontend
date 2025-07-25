@@ -43,8 +43,8 @@ const handleDocumentUpdate = async (updatedDocument: JobDocument) => {
       dispatch(updateDocumentInState(updatedDocument));
     }
 
-    // Step 2: Make API call to persist changes
-    await dispatch(
+    // Step 2: Persist changes and capture server-normalised document
+    const persistedDoc = await dispatch(
       updateDocument({
         documentId: updatedDocument.id,
         title: updatedDocument.title,
@@ -54,7 +54,12 @@ const handleDocumentUpdate = async (updatedDocument: JobDocument) => {
       })
     ).unwrap();
 
-    // Step 3: Handle non-optimistic mode
+    // Step 3: Reconcile optimistic state with server response
+    if (optimisticUpdates) {
+      dispatch(updateDocumentInState(persistedDoc));
+    }
+
+    // Step 4: Handle non-optimistic mode
     if (!optimisticUpdates) {
       await refreshDocuments();
     }
@@ -62,7 +67,7 @@ const handleDocumentUpdate = async (updatedDocument: JobDocument) => {
     toast.success('Document updated successfully!');
   } catch (error) {
     if (optimisticUpdates) {
-      // Step 4: Revert optimistic update on failure
+      // Step 5: Revert optimistic update on failure
       await refreshDocuments();
     }
     toast.error('Failed to update document. Please try again.');
@@ -251,10 +256,10 @@ const {
 
 ### Error Handling Strategy
 
-#### 1. Optimistic Success Path
+#### 1. Optimistic Success Path (Enhanced with Server Reconciliation)
 
 ```text
-User Edit → UI Updates Instantly → API Call → Success → Changes Persist
+User Edit → UI Updates Instantly → API Call → Success → UI Reconciles with Server Response → Final State
 ```
 
 #### 2. Optimistic Failure Path
@@ -268,6 +273,53 @@ User Edit → UI Updates Instantly → API Call → Failure → UI Reverts → E
 ```text
 User Edit → API Call → Success → UI Updates → Changes Persist
 ```
+
+### Server State Reconciliation (25/07/2025)
+
+#### Problem Addressed
+
+The initial optimistic updates implementation had a subtle but important issue: after making optimistic UI changes, the server's authoritative response was discarded. This could lead to state drift where the local UI showed user input but the server had processed, sanitized, or transformed the data differently.
+
+#### Solution: Dual-Update Pattern
+
+```typescript
+// Enhanced optimistic update flow with server reconciliation
+if (optimisticUpdates) {
+  // 1. Immediate optimistic update for instant feedback
+  dispatch(updateDocumentInState(updatedDocument));
+}
+
+// 2. Persist to server and capture canonical response
+const persistedDoc = await dispatch(updateDocument({...})).unwrap();
+
+// 3. Reconcile local state with server's authoritative version
+if (optimisticUpdates) {
+  dispatch(updateDocumentInState(persistedDoc));
+}
+```
+
+#### Benefits of Server Reconciliation
+
+1. **Data Consistency**: Local state exactly matches server state
+2. **Server Authority**: Server can sanitize, validate, or transform data
+3. **Accurate Timestamps**: Fields like `updatedAt` reflect server processing time
+4. **Business Rules**: Any server-side transformations are immediately visible
+5. **No State Drift**: Eliminates discrepancies between local and server data
+
+#### Technical Implementation Details
+
+- **Performance**: No additional API calls required
+- **User Experience**: Still provides instant visual feedback
+- **Data Integrity**: Ensures eventual consistency with server
+- **Backward Compatibility**: Works seamlessly with existing code
+
+#### Example Scenarios Where This Matters
+
+1. **Title Sanitization**: Server trims whitespace or fixes encoding
+2. **Timestamp Updates**: Server sets accurate `updatedAt` timestamps
+3. **Category Validation**: Server might normalize category names
+4. **Description Processing**: Server might apply formatting or length limits
+5. **Computed Fields**: Server might calculate additional metadata
 
 ### Performance Optimizations
 
@@ -698,7 +750,7 @@ const fileTypeColors = {
 3. **Refresh** → `getJobPost` thunk (sequential to avoid conflicts)
 4. **Display** → File size retrieved from database via API response
 
-#### Database-Backed File Size Storage (15/072025)
+#### Database-Backed File Size Storage (15/07/2025)
 
 ##### Migration from localStorage to Database
 

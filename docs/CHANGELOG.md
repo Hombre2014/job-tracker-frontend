@@ -52,7 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Enhanced document update thunk**: Improved API integration for document metadata updates
   - **Features**: Update title, category, and description via PATCH endpoint
-  - **Format**: Multipart form data for consistent API interface
+  - **Format**: Multipart form data for consistent API
   - **Error Handling**: Comprehensive error management with meaningful messages
   - **Files**: `redux/documents/documentsThunk.ts`
 
