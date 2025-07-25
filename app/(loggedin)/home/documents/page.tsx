@@ -9,7 +9,6 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import DocumentGrid from '@/components/Documents/DocumentGrid';
 import { getDocumentsPerUser } from '@/redux/documents/documentsThunk';
 import DocumentFilterBar from '@/components/Documents/DocumentFilterBar';
-import type { CategoryCount } from '@/components/Documents/DocumentFilterBar';
 import EditDocumentModal from '@/components/Forms/AddDocument/EditDocumentModal';
 import {
   selectUserDocuments,
@@ -134,8 +133,8 @@ const UserDocuments = () => {
     setIsEditModalOpen,
     handleEditDocument,
     handleDeleteDocument,
-    handleDownloadDocument,
     handleDocumentUpdate,
+    handleDownloadDocument,
   } = useDocumentActions(
     userDocuments,
     accessToken,
@@ -194,7 +193,7 @@ const UserDocuments = () => {
         <EditDocumentModal
           isOpen={isEditModalOpen}
           documentToEdit={documentToEdit}
-          onEditSuccess={async (updatedDocument) => {
+          onEditSuccess={async (updatedDocument?: JobDocument) => {
             setIsEditModalOpen(false);
             setDocumentToEdit(null);
             if (updatedDocument) {

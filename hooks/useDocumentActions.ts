@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { toast } from 'react-toastify';
+
 import { useAppDispatch } from '@/redux/hooks';
+import { updateDocumentInState } from '@/redux/documents/documentsSlice';
 import {
   deleteDocument,
   updateDocument,
 } from '@/redux/documents/documentsThunk';
-import { updateDocumentInState } from '@/redux/documents/documentsSlice';
 
 export const useDocumentActions = (
   documents: JobDocument[],
@@ -37,16 +38,26 @@ export const useDocumentActions = (
         dispatch(updateDocumentInState(updatedDocument));
       }
 
-      // Always make the API call to persist changes
-      await dispatch(
+      // Safety guard for authentication
+      if (!accessToken) {
+        throw new Error('No access token – user might be unauthenticated');
+      }
+
+      // Persist changes and capture server-normalised document
+      const persistedDoc = await dispatch(
         updateDocument({
-          documentId: updatedDocument.id,
           title: updatedDocument.title,
+          documentId: updatedDocument.id,
           category: updatedDocument.category,
           description: updatedDocument.description,
           accessToken,
         })
       ).unwrap();
+
+      // Reconcile optimistic state with server response
+      if (optimisticUpdates) {
+        dispatch(updateDocumentInState(persistedDoc));
+      }
 
       if (!optimisticUpdates) {
         await refreshDocuments();
@@ -137,8 +148,8 @@ export const useDocumentActions = (
     setIsEditModalOpen,
     handleEditDocument,
     handleDeleteDocument,
-    handleDownloadDocument,
     handleDocumentUpdate,
+    handleDownloadDocument,
   };
 };
 

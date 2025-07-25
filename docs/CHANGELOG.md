@@ -5,7 +5,103 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 🔧 Document System Overhaul - (15/07/2025)
+## [0.179.8] – Optimistic Updates & Document Management - 2025-07-25
+
+### New Features
+
+#### Optimistic Updates System for Document Management
+
+- **Implemented optimistic UI updates**: Added instant feedback for document editing operations
+  - **Feature**: Document changes appear immediately in the UI before server confirmation
+  - **Implementation**: New `useDocumentActions` hook with configurable optimistic updates
+  - **Fallback**: Automatic reversion if server update fails
+  - **Benefits**: Improved user experience with instant visual feedback
+  - **Files**:
+    - `hooks/useDocumentActions.ts` (new)
+    - `redux/documents/documentsSlice.ts` (enhanced)
+
+#### Document Edit Modal System
+
+- **Created comprehensive document editing interface**: Full-featured modal for editing document metadata
+  - **Features**: Edit title, category, and description with real-time validation
+  - **UI Design**: Professional modal layout with form validation
+  - **Integration**: Seamless integration with optimistic updates system
+  - **Validation**: Required field validation with user feedback
+  - **Files**: `components/Forms/AddDocument/EditDocumentModal.tsx` (new)
+
+#### Enhanced Document Actions Hook
+
+- **Centralized document operations**: Reusable hook for all document actions across the application
+  - **Actions**: Edit, delete, download, and update operations
+  - **Optimistic Updates**: Configurable optimistic behavior per component
+  - **Error Handling**: Comprehensive error recovery with user feedback
+  - **Consistency**: Unified behavior across User Documents, Board Documents, and Job Documents
+  - **Files**: `hooks/useDocumentActions.ts` (new)
+
+### Technical Improvements
+
+#### Redux State Management Enhancement
+
+- **Added optimistic update reducer**: New `updateDocumentInState` action for immediate UI updates
+- **Implementation**: Updates document across all Redux state arrays (documents, userDocuments, boardDocuments)
+- **Consistency**: Ensures UI consistency across different document contexts
+- **Performance**: Eliminates waiting for server response for better UX
+- **Files**: `redux/documents/documentsSlice.ts`
+
+#### Document Update API Integration
+
+- **Enhanced document update thunk**: Improved API integration for document metadata updates
+  - **Features**: Update title, category, and description via PATCH endpoint
+  - **Format**: Multipart form data for consistent API
+  - **Error Handling**: Comprehensive error management with meaningful messages
+  - **Files**: `redux/documents/documentsThunk.ts`
+
+### User Experience Improvements
+
+#### Instant Visual Feedback
+
+- **Optimistic Updates Flow**:
+  1. User edits document → UI updates immediately
+  2. API call processes in background
+  3. Success: Changes persist
+  4. Failure: UI reverts to original state with error message
+
+#### Consistent Document Management
+
+- **Unified Experience**: Same editing interface across all document contexts
+  - **User Documents Page**: Global document management with optimistic updates
+  - **Board Documents Page**: Board-specific management with instant feedback
+  - **Job Documents Tab**: Job-specific editing with seamless updates
+
+#### Enhanced Error Recovery
+
+- **Smart Fallback System**: Automatic reversion on API failures
+  - **Optimistic Mode**: Instant UI update with background API call
+  - **Conservative Mode**: Wait for API confirmation before UI update
+  - **Error Handling**: Clear user feedback with retry suggestions
+
+### Implementation Details - 2025-07-25
+
+#### Files Modified/Added - 2025-07-25
+
+1. **NEW**: `hooks/useDocumentActions.ts` - Centralized document actions with optimistic updates
+2. **NEW**: `components/Forms/AddDocument/EditDocumentModal.tsx` - Document editing modal
+3. `redux/documents/documentsSlice.ts` - Added `updateDocumentInState` reducer
+4. `redux/documents/documentsThunk.ts` - Enhanced `updateDocument` thunk
+5. `app/(loggedin)/home/documents/page.tsx` - Integrated optimistic updates
+6. `app/(loggedin)/home/boards/[board_id]/documents/page.tsx` - Integrated optimistic updates
+7. `components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/Documents.tsx` - Enhanced with edit modal
+
+#### Technical Benefits 2025-07-25
+
+- **Performance**: Instant UI feedback eliminates perceived latency
+- **Reliability**: Automatic error recovery maintains data consistency
+- **Maintainability**: Centralized logic reduces code duplication
+- **Scalability**: Configurable optimistic behavior for different use cases
+
+---
+
+## 🔧 [0.179.7] - Document System Overhaul - 2025-07-15
 
 ### Architecture Improvements
 
@@ -69,7 +165,7 @@ try {
 const fileSize = document.fileSize; // Direct from database
 ```
 
-## 🔒 Security & Reliability Enhancements - (14/07/2025)
+## 🔒 [0.179.6] - Security & Reliability Enhancements - 2025-07-14
 
 ### Security Improvements
 
@@ -136,9 +232,9 @@ if (!boardId) {
   - **Solution**: Improved state management between parent and child components
   - **Result**: Contacts now properly refresh after creation on board pages
 
-### Implementation Details
+### Implementation Details - 2025-07-14
 
-#### Document Pages Enhanced
+#### Document Pages Enhanced - 2025-07-14
 
 1. **User Documents Page** (`app/(loggedin)/home/documents/page.tsx`)
 
@@ -162,7 +258,7 @@ if (!boardId) {
    - Bug Fix: Proper state management for parent-child data flow
    - Improved useEffect dependency management
 
-### Technical Benefits
+### Technical Benefits - 2025-07-14
 
 - **SSR Compatibility**: All components now work safely with Next.js server-side rendering
 - **Browser Compatibility**: Robust fallbacks for popup blockers and storage restrictions
@@ -170,7 +266,7 @@ if (!boardId) {
 - **Type Safety**: Dynamic route parameters properly validated
 - **Maintenance**: Consistent patterns and extracted constants improve maintainability
 
-## �🚀 Document Management System Enhancement - (14/07/2025)
+## 🚀 Document Management System Enhancement - 2025-07-14
 
 ### Critical Bug Fix: Smart Document Deletion
 
@@ -180,9 +276,9 @@ if (!boardId) {
   - **Solution**: Implemented smart deletion logic that checks attachment count before deletion
   - **Result**: Documents now only detach from current job unless it's the last attachment
 
-### New Features
+### New Features - 2025-07-14
 
-#### Document Pages Implementation
+#### Document Pages Implementation - 2025-07-14
 
 - **Board Documents Page**: `/home/boards/[board_id]/documents`
 
@@ -228,15 +324,15 @@ if (!boardId) {
 - **Loading states**: Proper loading indicators for all document operations
 - **Error protection**: Clear warnings when documents are still attached elsewhere
 
-### Technical Improvements
+### Technical Improvements - 2025-07-14
 
-#### API Integration
+#### API Integration - 2025-07-14
 
 - **Enhanced document endpoints**: Proper integration with backend document APIs
 - **Smart caching**: Redux state management for efficient document access
 - **Error handling**: Comprehensive error catching with user-friendly messages
 
-#### Component Architecture - (14/07/2025)
+#### Component Architecture - 2025-07-14
 
 - **Reusability**: Shared DocumentCard component across all contexts
 - **Consistency**: Uniform document management patterns
@@ -254,7 +350,7 @@ if (!boardId) {
 
 ---
 
-## 🔐 Production Token Refresh Implementation - (13/07/2025)
+## 🔐 [0.179.5] - Production Token Refresh Implementation - 2025-07-13
 
 ### Automatic Token Refresh System
 
@@ -300,7 +396,7 @@ if (!boardId) {
 - **Memory leak prevention**: Proper promise cleanup and null assignment
 - **Error boundary protection**: Comprehensive error handling with fallback strategies
 
-## 🐛 Critical Bug Fix - (11/07/2025) - Document System & Redux State Corruption
+## 🐛 [0.179.4] - Critical Bug Fix - 2025-07-11 - Document System & Redux State Corruption
 
 ### Redux State Corruption in jobsSlice
 
@@ -323,9 +419,9 @@ if (!boardId) {
   - **Impact**: Eliminated upload-related crashes, improved state consistency and reliability
   - **Files**: `components/Forms/AddDocument/UploadDocumentModal.tsx`, `app/(loggedin)/home/boards/[board_id]/job/layout.tsx`
 
-### ✨ New Features - (11/07/2025)
+### ✨ New Features - 2025-07-11
 
-#### Document Upload & Management System
+#### Document Upload & Management System - 2025-07-11
 
 - **Implemented comprehensive document system**: Full-featured document upload with job linking
   - **Upload modal**: Drag & drop interface with file validation and preview
@@ -348,9 +444,9 @@ if (!boardId) {
   - **Document count**: Tab badges showing number of documents per job
   - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/DocumentCard.tsx`
 
-### 🔧 Technical Improvements - (11/07/2025)
+### 🔧 Technical Improvements - 2025-07-11
 
-#### State Management & Performance
+#### State Management & Performance - 2025-07-11
 
 - **Optimized Redux operations**: Sequential job refreshes prevent state corruption
 - **Enhanced error handling**: Comprehensive error coverage with user feedback
@@ -365,9 +461,9 @@ if (!boardId) {
 - **Parallel processing**: Efficient multi-job document attachment
 - **Graceful fallbacks**: Robust error recovery without disrupting user experience
 
-## [Unreleased] - (03/07/2025) - Text Editor Description bug & Token Refresh System
+## [0.179.3] - 2025-07-11 - Text Editor Description bug & Token Refresh System
 
-### 🐛 Bug Fixes - (03/07/2025)
+### 🐛 Bug Fixes - 2025-07-11
 
 #### Text Editor Description Field
 
@@ -378,9 +474,7 @@ if (!boardId) {
   - **Impact**: Job descriptions now update immediately when typing, matching behavior of other job fields
   - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobEdit/TextEditor.tsx`
 
-### ✨ New Features - (03/07/2025)
-
-#### Automatic JWT Token Refresh System
+#### Automatic JWT Token Refresh System - 2025-07-11
 
 - **Implemented rolling token refresh mechanism**: Added automatic session extension to keep users logged-in
   - **Feature**: Automatically refreshes access tokens 1 minute before expiration (every ~59 minutes)
@@ -405,9 +499,11 @@ if (!boardId) {
     - `utils/TokenRefreshProvider.ts`
     - `api/client.ts`
 
-### 🔧 Technical Improvements - (03/07/2025)
+## [0.179.2] - 2025-07-03 - Token Refresh & Error Handling
 
-#### Token Management Architecture
+### 🔧 Technical Improvements - 2025-07-03
+
+#### Token Management Architecture - 2025-07-03
 
 - **Centralized token state management**: Added dedicated Redux slice for refresh token operations
   - **State management**: Separate slice for refresh operations while maintaining user tokens in user slice
@@ -433,9 +529,9 @@ if (!boardId) {
   - **Cache prevention**: Added no-cache headers to prevent browser caching of refresh requests
   - **Files**: `utils/TokenRefreshProvider.ts`, `redux/auth/refreshAccessTokenThunk.ts`
 
-### 🛡️ Security Improvements - (03/07/2025)
+### 🛡️ Security Improvements - 2025-07-03
 
-#### Session Management
+#### Session Management - 2025-07-03
 
 - **Secure token handling**: Proper token storage and cleanup on logout/failure
   - **localStorage management**: Automatic cleanup of expired or invalid tokens
@@ -451,7 +547,7 @@ if (!boardId) {
   - **User experience**: Smooth redirects instead of application crashes
   - **Files**: `api/client.ts`
 
-### Files Modified/Added - (03/07/2025)
+### Files Modified/Added - 2025-07-03
 
 1. **NEW**: `redux/auth/refreshAccessTokenThunk.ts` - Token refresh API operations
 2. **NEW**: `redux/auth/refreshAccessTokenSlice.ts` - Refresh token state management
@@ -463,11 +559,11 @@ if (!boardId) {
 
 ---
 
-## [Unreleased] - (19/06/2025)
+## [0.179.1] - 2025-06-19
 
-### ✨ New Features - (19/06/2025)
+### ✨ New Features - 2025-06-19
 
-#### Link Existing Contacts to Jobs
+#### Link Existing Contacts to Jobs - 2025-06-19
 
 - **Implemented "+ Link Contact" dropdown feature**: Added ability to link existing board contacts to job applications
   - **Feature**: Interactive dropdown showing available contacts that aren't already linked to the current job
@@ -507,9 +603,9 @@ if (!boardId) {
   - **Error Handling**: Comprehensive error management with meaningful error messages
   - **Files**: `redux/documents/documentsThunk.ts`
 
-### 🐛 Bug Fixes - (19/06/2025)
+### 🐛 Bug Fixes - 2025-06-19
 
-#### Cross-Browser Compatibility
+#### Cross-Browser Compatibility - 2025-06-19
 
 - **Resolved Edge browser caching issues**: Fixed JavaScript event handler problems in Microsoft Edge
   - **Issue**: "+ Link Contact" button clicks were not working in Edge browser (no response, no console logs)
@@ -543,9 +639,9 @@ if (!boardId) {
   - **Result**: Both linking and unlinking operations now work correctly with immediate UI updates
   - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
 
-### 🎨 UX Improvements - (19/06/2025)
+### 🎨 UX Improvements - 2025-06-19
 
-#### Toast Notification Refinements
+#### Toast Notification Refinements - 2025-06-19
 
 - **Streamlined toast notifications for contact linking**: Simplified notification strategy based on user feedback
 
@@ -560,9 +656,9 @@ if (!boardId) {
   - **Cleanup**: Removed duplicate toast containers from individual pages to avoid conflicts
   - **Files**: `app/(loggedin)/layout.tsx`, `app/(loggedin)/home/settings/page.tsx`
 
-### 🧹 Code Quality Improvements - (19/06/2025)
+### 🧹 Code Quality Improvements - 2025-06-19
 
-#### Component Architecture
+#### Component Architecture - 2025-06-19
 
 - **Created reusable LinkContactComboBox component**: Designed clean, modular dropdown component
   - **Features**: Self-contained state management, click-outside-to-close, search functionality
@@ -606,9 +702,9 @@ if (!boardId) {
   - **Result**: Immediate and accurate dropdown updates after contact linking/unlinking operations
   - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
 
-### 🚀 Performance Improvements - (19/06/2025)
+### 🚀 Performance Improvements - 2025-06-19
 
-#### Contact Modal Job Data Fetching
+#### Contact Modal Job Data Fetching - 2025-06-19
 
 - **Optimized job data fetching in CreateContactModal**: Reduced multiple identical network calls to a single fetch operation
   - **Before**: N API calls for N job applications (e.g., 5 jobs = 5 API calls = ~1500ms)
@@ -624,9 +720,9 @@ if (!boardId) {
   - **Impact**: 3x+ speed improvement for multiple job assignments, faster modal closure
   - **Files**: `components/Misc/CreateContactModal.tsx`
 
-### 🐛 Additional Bug Fixes - (19/06/2025)
+### 🐛 Additional Bug Fixes - 2025-06-19
 
-#### Social Media Links
+#### Social Media Links - 2025-06-19
 
 - **Fixed social media link URLs**: Resolved issue where clicking social media links generated incorrect URLs
   - **Issue**: Links like "Joko" redirected to `http://localhost:3001/.../Joko` instead of proper social media URLs
@@ -642,9 +738,9 @@ if (!boardId) {
   - **Impact**: Prevents empty handles from URLs ending with slashes
   - **Files**: `components/Forms/AddContact/CreateContactForm.tsx`
 
-### 🧹 Additional Code Quality Improvements - (19/06/2025)
+### 🧹 Additional Code Quality Improvements - 2025-06-19
 
-#### Dead Code Removal
+#### Dead Code Removal - 2025-06-19
 
 - **Removed unused state variable**: Cleaned up `contacts` state that was not being used for rendering
 
@@ -717,7 +813,7 @@ if (!boardId) {
   - **Impact**: Consistent code style, improved TypeScript support, easier collaboration
   - **Files**: `.eslintrc.json`, `.prettierrc`
 
-### 📝 Documentation - (19/06/2025)
+### 📝 Documentation - 2025-06-19
 
 #### Project Metrics
 
@@ -725,9 +821,9 @@ if (!boardId) {
   - **Total lines**: ~11,032 lines of code (excluding node_modules, .next, and shadcn/ui components)
   - **File types**: TypeScript (.ts, .tsx) and JavaScript (.js, .jsx) files
 
-### 🔧 Technical Improvements - (19/06/2025)
+### 🔧 Technical Improvements - 2025-06-19
 
-#### Type Safety
+#### Type Safety - 2025-06-19
 
 - **Enhanced type definitions**: Added optional properties for job assignment state management
   - **Files**: `types/index.d.ts`
@@ -744,23 +840,23 @@ if (!boardId) {
 
 ---
 
-## Summary of Changes - (19/06/2025)
+## Summary of Changes - 2025-06-19
 
-### New Feature Impact - (19/06/2025)
+### New Feature Impact - 2025-06-19
 
 - **Contact linking workflow**: Added seamless way to connect existing contacts to job applications
 - **Improved productivity**: No need to recreate contacts that already exist on the board
 - **Better data integrity**: Prevents duplicate contacts while maintaining relationships
 - **Enhanced user experience**: Intuitive dropdown with search and visual feedback
 
-### Performance Impact - (19/06/2025)
+### Performance Impact - 2025-06-19
 
 - **Modal loading speed**: 5x improvement for contacts with multiple jobs
 - **Job assignment speed**: 3x+ improvement for bulk operations
 - **Network efficiency**: Reduced redundant API calls significantly
 - **Contact filtering**: Real-time filtering with optimized Redux state management
 
-### User Experience Impact - (19/06/2025)
+### User Experience Impact - 2025-06-19
 
 - **Contact linking**: New intuitive dropdown interface for linking existing contacts
 - **Cross-browser reliability**: Consistent functionality across all major browsers (Chrome, Firefox, Edge, Vivaldi)
@@ -769,7 +865,7 @@ if (!boardId) {
 - **Faster interactions**: Reduced waiting times for modal operations
 - **Visual feedback**: Immediate UI updates and clear empty states
 
-### Code Quality Impact - (19/06/2025)
+### Code Quality Impact - 2025-06-19
 
 - **Component architecture**: Added reusable LinkContactComboBox component
 - **Reduced complexity**: Removed unused code and simplified logic
@@ -777,7 +873,7 @@ if (!boardId) {
 - **Enhanced reliability**: Improved error handling and type safety
 - **Production ready**: All debugging code cleaned up
 
-### Files Modified - (19/06/2025)
+### Files Modified - 2025-06-19
 
 1. `components/Forms/AddContact/LinkContactComboBox.tsx` - **NEW**: Complete dropdown component for linking contacts
 2. `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx` - Contact linking integration and cleanup

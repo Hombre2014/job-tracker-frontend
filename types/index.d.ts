@@ -3,11 +3,6 @@ type MenuItemProps = {
   icon: JSX.Element;
 };
 
-type CategoryCount = {
-  count: number;
-  category: string;
-};
-
 type Company = {
   id: string;
   url: string;
@@ -122,12 +117,12 @@ type JobDocument = WorkDocument & {
   createdAt?: string;
   updatedAt?: string;
   fileExtension?: string;
+  jobApplications?: JobApplication[];
   uploadedBy?: {
     lastName: string;
     firstName: string;
     profilePicUrl?: string;
   };
-  jobApplications?: JobApplication[];
 };
 
 interface ComboBoxProps {
@@ -343,8 +338,8 @@ interface UploadDocumentModalProps {
 interface EditDocumentsProps {
   isOpen: boolean;
   onClose: () => void;
-  onEditSuccess: () => void;
   documentToEdit: JobDocument;
+  onEditSuccess: (updatedDocument?: JobDocument) => void;
 }
 
 interface DocumentGridProps {
@@ -353,4 +348,16 @@ interface DocumentGridProps {
   onDelete: (documentId: string) => void;
   onEdit: (document: JobDocument) => void;
   onDownload: (document: JobDocument) => void;
+}
+
+type CategoryCount = {
+  count: number;
+  category: string;
+};
+
+interface DocumentFilterBarProps {
+  allCount: number;
+  categoryCounts: CategoryCount[];
+  selectedCategory: string | null;
+  setSelectedCategory: (category: string | null) => void;
 }

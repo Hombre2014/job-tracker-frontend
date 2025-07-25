@@ -4,11 +4,11 @@ import { DocumentCategory } from '@/enums';
 // Using HSL values that align with our theme and ensure accessibility
 export const documentCategoryColors = {
   [DocumentCategory.Other]: 'hsl(239 84% 67%)', // Indigo-500 - medium indigo
+  [DocumentCategory.OfferLetter]: 'hsl(26 100% 37%)', // Amber-700 - good news
   [DocumentCategory.Resume]: 'hsl(221.2 83.2% 53.3%)', // Primary blue - important documents
+  [DocumentCategory.Transcript]: 'hsl(0 84.2% 60.2%)', // Alert red - official records
   [DocumentCategory.JobPost]: 'hsl(84.2 80.5% 45.1%)', // Success green - opportunities
   [DocumentCategory.Portfolio]: 'hsl(270.7 91% 65.1%)', // Creative purple - showcase work
-  [DocumentCategory.Transcript]: 'hsl(0 84.2% 60.2%)', // Alert red - official records
-  [DocumentCategory.OfferLetter]: 'hsl(26 100% 37%)', // Amber-700 - good news
   [DocumentCategory.WritingSample]: 'hsl(24.6 95% 53.1%)', // Creative orange - samples
   [DocumentCategory.CoverLetter]: 'hsl(142.1 76.2% 36.3%)', // Professional green - applications
   [DocumentCategory.Certification]: 'hsl(166.2 76.5% 41.4%)', // Teal-500 - credentials

@@ -14,13 +14,6 @@ import {
   SelectTrigger,
 } from '@/components/ui/select';
 
-interface EditDocumentsProps {
-  isOpen: boolean;
-  onClose: () => void;
-  documentToEdit: JobDocument;
-  onEditSuccess: (updatedDocument?: JobDocument) => void | Promise<void>;
-}
-
 const EditDocumentModal = ({
   isOpen,
   onClose,

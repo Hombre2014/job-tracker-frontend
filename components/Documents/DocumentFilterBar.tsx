@@ -1,16 +1,7 @@
-import { documentColorMap, selectedDocumentColorMap } from '@/utils/documentColorMaps';
-
-export type CategoryCount = {
-  category: string;
-  count: number;
-};
-
-interface DocumentFilterBarProps {
-  allCount: number;
-  categoryCounts: CategoryCount[];
-  selectedCategory: string | null;
-  setSelectedCategory: (category: string | null) => void;
-}
+import {
+  documentColorMap,
+  selectedDocumentColorMap,
+} from '@/utils/documentColorMaps';
 
 export const DocumentFilterBar = ({
   allCount,
@@ -23,23 +14,22 @@ export const DocumentFilterBar = ({
       <div className="flex items-center gap-2">
         {/* All filter */}
         <div
-          className={`flex items-center gap-1 px-3 py-1 rounded-lg cursor-pointer font-medium text-sm transition ${
-            selectedCategory === null
-              ? 'bg-violet-100 text-violet-700 ring-2 ring-violet-300'
-              : 'bg-violet-50 text-violet-700 hover:bg-violet-100'
-          }`}
-          style={{ minWidth: 48 }}
-          onClick={() => setSelectedCategory(null)}
           tabIndex={0}
           role="button"
-          aria-pressed={selectedCategory === null}
+          onClick={() => setSelectedCategory(null)}
+          aria-pressed={selectedCategory === null ? 'true' : 'false'}
+          className={`min-w-12 flex items-center gap-1 px-3 py-1 rounded-lg cursor-pointer font-medium text-sm transition-all duration-200 ${
+            selectedCategory === null
+              ? 'bg-violet-200 text-violet-800'
+              : 'bg-violet-100 text-violet-700 hover:bg-violet-200'
+          }`}
         >
           <span>All</span>
           <span className="ml-1 px-2 py-0.5 rounded bg-gray-200 text-gray-700 font-semibold text-xs">
             {allCount}
           </span>
         </div>
-        
+
         {/* Category filters */}
         {categoryCounts.map(({ category, count }) => {
           const colorClass =
@@ -48,16 +38,15 @@ export const DocumentFilterBar = ({
                 'bg-gray-100 text-gray-700 ring-2 ring-gray-300'
               : documentColorMap[category] ||
                 'bg-gray-100 text-gray-700 hover:bg-gray-200';
-          
+
           return (
             <div
               tabIndex={0}
               role="button"
               key={category}
-              style={{ minWidth: 48 }}
-              aria-pressed={selectedCategory === category}
               onClick={() => setSelectedCategory(category)}
-              className={`flex items-center gap-1 px-3 py-1 rounded-lg cursor-pointer font-medium text-sm transition ${colorClass}`}
+              aria-pressed={selectedCategory === category ? 'true' : 'false'}
+              className={`min-w-12 flex items-center gap-1 px-3 py-1 rounded-lg cursor-pointer font-medium text-sm transition-all duration-200 ${colorClass}`}
             >
               <span className="px-2 py-0.5 rounded bg-gray-200 text-gray-700 font-semibold text-xs">
                 {count}
