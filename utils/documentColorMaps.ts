@@ -13,17 +13,17 @@ export const documentColorMap: Record<string, string> = {
   Uncategorized: 'bg-gray-100 text-gray-700 hover:bg-gray-200',
 };
 
-// Selected state color mappings for filter buttons
+// Selected state color mappings for filter buttons (darker shades like hover state)
 export const selectedDocumentColorMap: Record<string, string> = {
-  Resume: 'bg-blue-100 text-blue-700 ring-2 ring-blue-300',
-  'Cover Letter': 'bg-green-100 text-green-700 ring-2 ring-green-300',
-  'Writing Sample': 'bg-orange-100 text-orange-700 ring-2 ring-orange-300',
-  Portfolio: 'bg-purple-100 text-purple-700 ring-2 ring-purple-300',
-  Recommendation: 'bg-pink-100 text-pink-700 ring-2 ring-pink-300',
-  'Job Post': 'bg-lime-100 text-lime-700 ring-2 ring-lime-300',
-  'Offer Letter': 'bg-amber-300 text-amber-800 ring-2 ring-amber-500',
-  Certification: 'bg-teal-100 text-teal-700 ring-2 ring-teal-300',
-  Other: 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-300',
-  Transcript: 'bg-red-100 text-red-700 ring-2 ring-red-300',
-  Uncategorized: 'bg-gray-100 text-gray-700 ring-2 ring-gray-300',
+  Resume: 'bg-blue-200 text-blue-800',
+  'Cover Letter': 'bg-green-200 text-green-800',
+  'Writing Sample': 'bg-orange-200 text-orange-800',
+  Portfolio: 'bg-purple-200 text-purple-800',
+  Recommendation: 'bg-pink-200 text-pink-800',
+  'Job Post': 'bg-lime-200 text-lime-800',
+  'Offer Letter': 'bg-amber-400 text-amber-900',
+  Certification: 'bg-teal-200 text-teal-800',
+  Other: 'bg-indigo-200 text-indigo-800',
+  Transcript: 'bg-red-200 text-red-800',
+  Uncategorized: 'bg-gray-200 text-gray-800',
 };

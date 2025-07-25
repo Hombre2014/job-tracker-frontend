@@ -1,14 +1,358 @@
 # Technical Documentation
 
-## Production Token Refresh System
+## Optimistic Updates System for Document Management (25/07/2025)
 
-### Overview
+### Overview (25/07/2025)
 
-A robust, production-ready automatic token refresh system that prevents authentication failures in production environments by transparently refreshing JWT tokens before they expire and retrying failed requests.
+A sophisticated optimistic UI update system that provides instant visual feedback for document editing operations while maintaining data consistency through automatic error recovery. This system eliminates perceived latency by updating the UI immediately before server confirmation.
 
 ### Architecture
 
 #### Core Implementation
+
+The optimistic updates system is built around a centralized `useDocumentActions` hook that manages document operations with configurable optimistic behavior.
+
+```typescript
+// File: hooks/useDocumentActions.ts
+export const useDocumentActions = (
+  documents: JobDocument[],
+  accessToken: string | null,
+  refreshDocuments: () => Promise<void>,
+  optimisticUpdates: boolean = true // Configurable behavior
+) => {
+  // Centralized document operations with optimistic updates
+};
+```
+
+#### Key Components
+
+1. **Optimistic State Updates**: Immediate Redux state modification
+2. **Background API Calls**: Server synchronization without blocking UI
+3. **Error Recovery**: Automatic reversion on API failures
+4. **Configurable Behavior**: Enable/disable optimistic updates per component
+
+### Technical Implementation
+
+#### 1. Optimistic Update Flow
+
+```typescript
+const handleDocumentUpdate = async (updatedDocument: JobDocument) => {
+  try {
+    if (optimisticUpdates) {
+      // Step 1: Immediately update Redux state (optimistic)
+      dispatch(updateDocumentInState(updatedDocument));
+    }
+
+    // Step 2: Make API call to persist changes
+    await dispatch(
+      updateDocument({
+        documentId: updatedDocument.id,
+        title: updatedDocument.title,
+        category: updatedDocument.category,
+        description: updatedDocument.description,
+        accessToken,
+      })
+    ).unwrap();
+
+    // Step 3: Handle non-optimistic mode
+    if (!optimisticUpdates) {
+      await refreshDocuments();
+    }
+
+    toast.success('Document updated successfully!');
+  } catch (error) {
+    if (optimisticUpdates) {
+      // Step 4: Revert optimistic update on failure
+      await refreshDocuments();
+    }
+    toast.error('Failed to update document. Please try again.');
+  }
+};
+```
+
+#### 2. Redux State Management
+
+**Problem**: Document updates needed to be reflected across multiple state arrays (documents, userDocuments, boardDocuments).
+
+**Solution**: Centralized state update reducer that maintains consistency:
+
+```typescript
+// File: redux/documents/documentsSlice.ts
+const documentsSlice = createSlice({
+  name: 'documents',
+  initialState,
+  reducers: {
+    updateDocumentInState: (state, action: { payload: JobDocument }) => {
+      const updatedDoc = action.payload;
+
+      // Update in documents array
+      const docIndex = state.documents.findIndex(
+        (doc) => doc.id === updatedDoc.id
+      );
+      if (docIndex !== -1) {
+        state.documents[docIndex] = updatedDoc;
+      }
+
+      // Update in userDocuments array
+      const userIndex = state.userDocuments.findIndex(
+        (doc) => doc.id === updatedDoc.id
+      );
+      if (userIndex !== -1) {
+        state.userDocuments[userIndex] = updatedDoc;
+      }
+
+      // Update in boardDocuments array
+      const boardIndex = state.boardDocuments.findIndex(
+        (doc) => doc.id === updatedDoc.id
+      );
+      if (boardIndex !== -1) {
+        state.boardDocuments[boardIndex] = updatedDoc;
+      }
+    },
+  },
+  // ... extraReducers
+});
+```
+
+#### 3. Document Edit Modal Integration
+
+The optimistic updates system integrates seamlessly with the new EditDocumentModal:
+
+```typescript
+// File: components/Forms/AddDocument/EditDocumentModal.tsx
+const handleEdit = async () => {
+  try {
+    const result = await dispatch(
+      updateDocument({
+        category,
+        description,
+        accessToken,
+        title: title.trim(),
+        documentId: documentToEdit.id,
+      })
+    ).unwrap();
+
+    // Pass updated document to success callback for optimistic handling
+    onEditSuccess(result);
+  } catch (error) {
+    toast.error('Failed to update document. Please try again.');
+  }
+};
+```
+
+#### 4. API Integration
+
+Enhanced document update API with proper error handling:
+
+```typescript
+// File: redux/documents/documentsThunk.ts
+export const updateDocument = createAsyncThunk(
+  'documents/updateDocument',
+  async (
+    values: {
+      title: string;
+      category: string;
+      documentId: string;
+      accessToken: string;
+      description?: string;
+    },
+    thunkAPI
+  ) => {
+    const { documentId, title, category, description, accessToken } = values;
+    try {
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('category', category);
+      if (description) {
+        formData.append('description', description);
+      }
+
+      const res = await client.patch(`/documents/${documentId}`, formData, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return res.data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error updating document'
+      );
+    }
+  }
+);
+```
+
+### User Experience Benefits
+
+#### Before Implementation
+
+- **User Experience**: Click edit → Wait for modal → Edit → Save → Wait for API → See changes
+- **Perceived Latency**: 2-3 seconds delay for simple edits
+- **Feedback**: No immediate confirmation of changes
+
+#### After Implementation
+
+- **User Experience**: Click edit → Edit → Save → See changes instantly → Background sync
+- **Perceived Latency**: Instant visual feedback (0ms perceived delay)
+- **Feedback**: Immediate UI updates with error recovery
+
+### Implementation Across Components
+
+#### 1. User Documents Page
+
+```typescript
+// File: app/(loggedin)/home/documents/page.tsx
+const {
+  handleDocumentUpdate,
+  // ... other actions
+} = useDocumentActions(
+  userDocuments,
+  accessToken,
+  handleDocumentsRefresh,
+  true // Enable optimistic updates
+);
+```
+
+#### 2. Board Documents Page
+
+```typescript
+// File: app/(loggedin)/home/boards/[board_id]/documents/page.tsx
+const {
+  handleDocumentUpdate,
+  // ... other actions
+} = useDocumentActions(
+  boardDocuments,
+  accessToken,
+  handleDocumentsRefresh,
+  true // Enable optimistic updates
+);
+```
+
+#### 3. Job Documents Tab
+
+```typescript
+// File: components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/Documents.tsx
+// Uses EditDocumentModal with callback integration
+<EditDocumentModal
+  isOpen={isEditModalOpen}
+  documentToEdit={documentToEdit}
+  onEditSuccess={async () => {
+    await handleDocumentsRefresh();
+    setIsEditModalOpen(false);
+    setDocumentToEdit(null);
+  }}
+  onClose={() => {
+    setIsEditModalOpen(false);
+    setDocumentToEdit(null);
+  }}
+/>
+```
+
+### Error Handling Strategy
+
+#### 1. Optimistic Success Path
+
+```text
+User Edit → UI Updates Instantly → API Call → Success → Changes Persist
+```
+
+#### 2. Optimistic Failure Path
+
+```text
+User Edit → UI Updates Instantly → API Call → Failure → UI Reverts → Error Message
+```
+
+#### 3. Conservative Mode Path
+
+```text
+User Edit → API Call → Success → UI Updates → Changes Persist
+```
+
+### Performance Optimizations
+
+#### Immediate UI Feedback
+
+- **Zero Perceived Latency**: UI updates happen synchronously
+- **Background Processing**: API calls don't block user interaction
+- **Smooth Transitions**: No loading states for optimistic operations
+
+#### Efficient State Management
+
+- **Targeted Updates**: Only affected documents are updated in state
+- **Minimal Re-renders**: Precise state updates prevent unnecessary renders
+- **Memory Efficiency**: No duplicate state or temporary storage needed
+
+#### Network Optimization
+
+- **Reduced Waiting**: Users can continue working while API calls process
+- **Error Recovery**: Failed operations don't disrupt user workflow
+- **Retry Capability**: Users can easily retry failed operations
+
+### Code Quality Measures
+
+#### TypeScript Safety
+
+- **Proper Typing**: All optimistic operations are fully typed
+- **Error Handling**: Comprehensive try-catch blocks with typed errors
+- **State Consistency**: Type-safe state updates across all arrays
+
+#### Reusability
+
+- **Centralized Logic**: Single hook handles all document operations
+- **Configurable Behavior**: Optimistic updates can be enabled/disabled
+- **Consistent Interface**: Same API across all document contexts
+
+#### Testing Considerations
+
+- **Optimistic Flow Testing**: Verify immediate UI updates
+- **Error Recovery Testing**: Ensure proper reversion on failures
+- **State Consistency Testing**: Validate updates across all state arrays
+- **Network Failure Simulation**: Test behavior with API failures
+
+### Integration Points
+
+#### 1. Existing Document System
+
+- **Compatible**: Works with current document management architecture
+- **Non-breaking**: Enhances existing functionality without breaking changes
+- **Backward Compatible**: Can be disabled for conservative behavior
+
+#### 2. Redux Integration
+
+- **State Management**: Seamlessly integrates with existing Redux patterns
+- **Action Creators**: Uses existing thunks with new optimistic reducers
+- **Middleware**: Compatible with existing Redux middleware
+
+#### 3. UI Components
+
+- **Modal Integration**: Works with EditDocumentModal and other UI components
+- **Toast Notifications**: Provides appropriate user feedback
+- **Error Boundaries**: Maintains existing error handling patterns
+
+### Monitoring and Debugging
+
+#### Development Features
+
+- **Console Logging**: Detailed logs for optimistic operations in development
+- **State Inspection**: Redux DevTools show optimistic state changes
+- **Error Tracking**: Comprehensive error information for debugging
+
+#### Production Monitoring
+
+- **Silent Operation**: No console noise in production
+- **Error Reporting**: Maintains error tracking capabilities
+- **Performance Metrics**: Minimal overhead for optimistic operations
+
+## Production Token Refresh System (13/07/2025)
+
+### Overview (13/07/2025)
+
+A robust, production-ready automatic token refresh system that prevents authentication failures in production environments by transparently refreshing JWT tokens before they expire and retrying failed requests.
+
+### Architecture (13/07/2025)
+
+#### Core Implementation (13/07/2025)
 
 The token refresh system is implemented as an enhanced axios response interceptor that handles expired tokens automatically without user intervention.
 
@@ -24,16 +368,16 @@ client.interceptors.response.use(
 );
 ```
 
-#### Key Components
+#### Key Components (13/07/2025)
 
 1. **Race Condition Prevention**: Single refresh promise queue
 2. **Request Retry Logic**: Automatic retry of failed requests
 3. **Header Synchronization**: Updates both default and request-specific headers
 4. **Graceful Fallback**: Redirects to login only when refresh fails
 
-### Technical Implementation
+### Technical Implementation (13/07/2025)
 
-#### 1. Automatic 401 Error Handling
+#### 1. Automatic 401 Error Handling (13/07/2025)
 
 ```typescript
 if (
@@ -46,7 +390,7 @@ if (
 }
 ```
 
-#### 2. Race Condition Prevention
+#### 2. Race Condition Prevention (13/07/2025)
 
 **Problem**: Multiple concurrent API calls with expired tokens could trigger multiple refresh attempts.
 
@@ -62,7 +406,7 @@ if (refreshPromise) {
 }
 ```
 
-#### 3. Token Refresh Process
+#### 3. Token Refresh Process (13/07/2025)
 
 ```typescript
 refreshPromise = (async () => {
@@ -91,7 +435,7 @@ refreshPromise = (async () => {
 })();
 ```
 
-#### 4. Request Retry Logic
+#### 4. Request Retry Logic (13/07/2025)
 
 After successful token refresh, the original failed request is automatically retried:
 
@@ -101,22 +445,22 @@ originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 return client(originalRequest); // Retry original request
 ```
 
-### Production Benefits
+### Production Benefits (13/07/2025)
 
-#### Before Implementation
+#### Before Implementation (13/07/2025)
 
 - **User Experience**: Sudden logouts after 30+ minutes of activity
 - **Production Issue**: 401 Unauthorized errors in Vercel deployment
 - **Business Impact**: Users losing work and having to re-authenticate frequently
 
-#### After Implementation
+#### After Implementation (13/07/2025)
 
 - **Seamless Experience**: Users can work indefinitely without interruption
 - **Transparent Refresh**: Token renewal happens in background
 - **Production Stable**: Eliminates authentication failures in production
 - **Improved Reliability**: Handles concurrent requests and race conditions
 
-### Error Handling Strategy
+### Error Handling Strategy (13/07/2025)
 
 #### 1. Refresh Success Path
 
@@ -136,27 +480,27 @@ API Call → 401 Error → Token Refresh Fails → Clean Storage → Redirect to
 Multiple 401s → Single Refresh → All Requests Wait → All Retry with New Token
 ```
 
-### Code Quality Measures
+### Code Quality Measures (13/07/2025)
 
-#### TypeScript Safety
+#### TypeScript Safety (13/07/2025)
 
 - **Proper typing**: `Promise<string> | null` for refresh promise
 - **Error handling**: Comprehensive try-catch blocks
 - **Type guards**: Runtime checks for browser environment
 
-#### Memory Management
+#### Memory Management (13/07/2025)
 
 - **Promise cleanup**: `refreshPromise = null` in finally block
 - **Storage management**: Proper localStorage cleanup on failure
 - **Header management**: Clean default headers on logout
 
-#### Production Optimizations
+#### Production Optimizations (13/07/2025)
 
 - **Environment checks**: Browser-only execution
 - **Existing endpoint usage**: Leverages current `/auth/refresh` API
 - **Minimal changes**: Single file modification for maximum stability
 
-### Integration Points
+### Integration Points (13/07/2025)
 
 #### 1. Existing Authentication System
 
@@ -164,7 +508,7 @@ Multiple 401s → Single Refresh → All Requests Wait → All Retry with New To
 - **Non-breaking**: Enhances existing login/logout flow
 - **Storage**: Uses existing localStorage token management
 
-#### 2. Redux Integration
+#### 2. Redux Integration (13/07/2025)
 
 - **Independent**: Operates at axios level, doesn't require Redux changes
 - **Compatible**: Works with existing token state management
@@ -176,29 +520,29 @@ Multiple 401s → Single Refresh → All Requests Wait → All Retry with New To
 - **Graceful**: Always provides fallback to login page
 - **User-friendly**: No exposed technical errors to users
 
-### Monitoring and Debugging
+### Monitoring and Debugging (13/07/2025)
 
-#### Development Logging
+#### Development Logging (13/07/2025)
 
 - **Token refresh attempts**: Logged for debugging
 - **Race condition detection**: Visible in dev tools
 - **Error tracking**: Comprehensive error information
 
-#### Production Monitoring
+#### Production Monitoring (13/07/2025)
 
 - **Silent operation**: No console noise in production
 - **Error reporting**: Maintains error tracking capabilities
 - **Performance**: Minimal overhead for token operations
 
-## Document Upload System Implementation
+## Document Upload System Implementation (11/07/2025)
 
-### System Overview
+### System Overview (11/07/2025)
 
 A comprehensive document upload and management system for the Job Tracker application, allowing users to upload files, link them to job applications, and manage document metadata with real-time UI updates.
 
-### Document System Architecture
+### Document System Architecture (11/07/2025)
 
-#### Components Structure
+#### Components Structure (11/07/2025)
 
 ```text
 components/Forms/AddDocument/
@@ -211,13 +555,13 @@ components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/
 └── DocumentCard.tsx              # Document card display
 ```
 
-#### Redux Integration
+#### Redux Integration (11/07/2025)
 
 - **Store**: `redux/documents/` - Document state management
 - **Store**: `redux/jobs/` - Job application state with documents array
 - **Thunks**: `uploadDocument`, `attachDocumentToJobApplication`, `getJobPost`
 
-### Key Features
+### Key Features (11/07/2025)
 
 #### 1. File Upload System
 
@@ -354,7 +698,7 @@ const fileTypeColors = {
 3. **Refresh** → `getJobPost` thunk (sequential to avoid conflicts)
 4. **Display** → File size retrieved from database via API response
 
-#### Database-Backed File Size Storage (July 15, 2025)
+#### Database-Backed File Size Storage (15/072025)
 
 ##### Migration from localStorage to Database
 
@@ -380,7 +724,7 @@ const fileSize = document.fileSize; // From API response
 - ✅ Consistent data reliability
 - ✅ Simplified code architecture
 
-### Performance Optimizations
+### Performance Optimizations (15/072025)
 
 #### Preventing Race Conditions
 
@@ -495,7 +839,7 @@ POST /job-applications/{jobId}/documents/{documentId}
 GET /job-applications/{jobId}
 ```
 
-### Testing Considerations
+### Testing Considerations (15/072025)
 
 #### Critical Test Cases
 
@@ -540,13 +884,13 @@ GET /job-applications/{jobId}
 - React Hook Form for form validation
 - React Toastify for user feedback
 
-## Document Management System Enhancements
+## Document Management System Enhancements (14/07/2025)
 
-### Technical Overview
+### Technical Overview (14/07/2025)
 
 Comprehensive improvements to the document management system addressing security concerns, popup blocker compatibility, type safety, and SSR compatibility across both user and board-specific document pages.
 
-### Security & SSR Improvements
+### Security & SSR Improvements (14/07/2025)
 
 #### localStorage Access Safety
 
@@ -684,11 +1028,13 @@ const fileSize = document.fileSize; // Reliable from API response
 #### Files Enhanced
 
 1. **User Documents Page** (`app/(loggedin)/home/documents/page.tsx`)
+
    - Global document management across all boards
    - Enhanced security and popup handling
    - Improved type safety
 
 2. **Board Documents Page** (`app/(loggedin)/home/boards/[board_id]/documents/page.tsx`)
+
    - Board-specific document management
    - Dynamic route parameter validation
    - Consistent security improvements

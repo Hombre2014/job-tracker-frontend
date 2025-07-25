@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { toast } from 'react-toastify';
+
 import { useAppDispatch } from '@/redux/hooks';
+import { updateDocumentInState } from '@/redux/documents/documentsSlice';
 import {
   deleteDocument,
   updateDocument,
 } from '@/redux/documents/documentsThunk';
-import { updateDocumentInState } from '@/redux/documents/documentsSlice';
 
 export const useDocumentActions = (
   documents: JobDocument[],
