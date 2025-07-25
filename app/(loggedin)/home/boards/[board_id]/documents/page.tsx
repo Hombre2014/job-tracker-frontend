@@ -116,7 +116,13 @@ const BoardDocuments = () => {
     handleEditDocument,
     handleDeleteDocument,
     handleDownloadDocument,
-  } = useDocumentActions(boardDocuments, accessToken, handleDocumentsRefresh);
+    handleDocumentUpdate,
+  } = useDocumentActions(
+    boardDocuments,
+    accessToken,
+    handleDocumentsRefresh,
+    true
+  ); // Enable optimistic updates
 
   // Early return after all hooks are called
   if (!boardId) {
@@ -235,13 +241,12 @@ const BoardDocuments = () => {
         <EditDocumentModal
           isOpen={isEditModalOpen}
           documentToEdit={documentToEdit}
-          onEditSuccess={async () => {
-            // Close the modal first
+          onEditSuccess={async (updatedDocument) => {
             setIsEditModalOpen(false);
             setDocumentToEdit(null);
-
-            // Then refresh the documents
-            await handleDocumentsRefresh();
+            if (updatedDocument) {
+              await handleDocumentUpdate(updatedDocument);
+            }
           }}
           onClose={() => {
             setIsEditModalOpen(false);

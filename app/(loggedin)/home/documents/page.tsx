@@ -135,7 +135,13 @@ const UserDocuments = () => {
     handleEditDocument,
     handleDeleteDocument,
     handleDownloadDocument,
-  } = useDocumentActions(userDocuments, accessToken, handleDocumentsRefresh);
+    handleDocumentUpdate,
+  } = useDocumentActions(
+    userDocuments,
+    accessToken,
+    handleDocumentsRefresh,
+    true
+  ); // Enable optimistic updates
 
   if (userDocumentsStatus === 'loading') {
     return (
@@ -188,19 +194,11 @@ const UserDocuments = () => {
         <EditDocumentModal
           isOpen={isEditModalOpen}
           documentToEdit={documentToEdit}
-          onEditSuccess={async () => {
-            // Close the modal first
+          onEditSuccess={async (updatedDocument) => {
             setIsEditModalOpen(false);
             setDocumentToEdit(null);
-
-            // Then refresh the documents
-            if (accessToken) {
-              try {
-                // Directly dispatch the action to ensure it updates the Redux store
-                await dispatch(getDocumentsPerUser(accessToken));
-              } catch (error) {
-                console.error('Failed to refresh documents after edit:', error);
-              }
+            if (updatedDocument) {
+              await handleDocumentUpdate(updatedDocument);
             }
           }}
           onClose={() => {

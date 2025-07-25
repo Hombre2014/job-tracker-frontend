@@ -14,6 +14,13 @@ import {
   SelectTrigger,
 } from '@/components/ui/select';
 
+interface EditDocumentsProps {
+  isOpen: boolean;
+  onClose: () => void;
+  documentToEdit: JobDocument;
+  onEditSuccess: (updatedDocument?: JobDocument) => void | Promise<void>;
+}
+
 const EditDocumentModal = ({
   isOpen,
   onClose,
@@ -46,7 +53,7 @@ const EditDocumentModal = ({
     }
     setIsSaving(true);
     try {
-      await dispatch(
+      const result = await dispatch(
         updateDocument({
           category,
           description,
@@ -55,8 +62,9 @@ const EditDocumentModal = ({
           documentId: documentToEdit.id,
         })
       ).unwrap();
-      toast.success('Document updated successfully!');
-      onEditSuccess();
+
+      // Pass the updated document to the success callback
+      onEditSuccess(result);
     } catch (error) {
       console.error('Error updating document:', error);
       toast.error('Failed to update document. Please try again.');
