@@ -41,8 +41,8 @@ export const useDocumentActions = (
       // Always make the API call to persist changes
       await dispatch(
         updateDocument({
-          documentId: updatedDocument.id,
           title: updatedDocument.title,
+          documentId: updatedDocument.id,
           category: updatedDocument.category,
           description: updatedDocument.description,
           accessToken,
@@ -138,8 +138,8 @@ export const useDocumentActions = (
     setIsEditModalOpen,
     handleEditDocument,
     handleDeleteDocument,
-    handleDownloadDocument,
     handleDocumentUpdate,
+    handleDownloadDocument,
   };
 };
 

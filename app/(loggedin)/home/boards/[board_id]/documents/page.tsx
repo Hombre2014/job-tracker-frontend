@@ -115,8 +115,8 @@ const BoardDocuments = () => {
     setIsEditModalOpen,
     handleEditDocument,
     handleDeleteDocument,
-    handleDownloadDocument,
     handleDocumentUpdate,
+    handleDownloadDocument,
   } = useDocumentActions(
     boardDocuments,
     accessToken,

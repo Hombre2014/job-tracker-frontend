@@ -3,18 +3,6 @@ import {
   selectedDocumentColorMap,
 } from '@/utils/documentColorMaps';
 
-export type CategoryCount = {
-  category: string;
-  count: number;
-};
-
-interface DocumentFilterBarProps {
-  allCount: number;
-  categoryCounts: CategoryCount[];
-  selectedCategory: string | null;
-  setSelectedCategory: (category: string | null) => void;
-}
-
 export const DocumentFilterBar = ({
   allCount,
   categoryCounts,
@@ -26,16 +14,15 @@ export const DocumentFilterBar = ({
       <div className="flex items-center gap-2">
         {/* All filter */}
         <div
-          className={`flex items-center gap-1 px-3 py-1 rounded-lg cursor-pointer font-medium text-sm transition-all duration-200 ${
+          tabIndex={0}
+          role="button"
+          onClick={() => setSelectedCategory(null)}
+          aria-pressed={selectedCategory === null ? 'true' : 'false'}
+          className={`min-w-12 flex items-center gap-1 px-3 py-1 rounded-lg cursor-pointer font-medium text-sm transition-all duration-200 ${
             selectedCategory === null
               ? 'bg-violet-200 text-violet-800'
               : 'bg-violet-100 text-violet-700 hover:bg-violet-200'
           }`}
-          style={{ minWidth: 48 }}
-          onClick={() => setSelectedCategory(null)}
-          tabIndex={0}
-          role="button"
-          aria-pressed={selectedCategory === null ? 'true' : 'false'}
         >
           <span>All</span>
           <span className="ml-1 px-2 py-0.5 rounded bg-gray-200 text-gray-700 font-semibold text-xs">
@@ -45,12 +32,6 @@ export const DocumentFilterBar = ({
 
         {/* Category filters */}
         {categoryCounts.map(({ category, count }) => {
-          const isSelected = selectedCategory === category;
-
-          // const colorClass = isSelected
-          //   ? selectedDocumentColorMap[category]
-          //   : documentColorMap[category];
-
           const colorClass =
             selectedCategory === category
               ? selectedDocumentColorMap[category] ||
