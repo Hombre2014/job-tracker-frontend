@@ -149,12 +149,6 @@ const BoardDocuments = () => {
       !boardDocuments.some((boardDoc) => boardDoc.id === document.id)
   );
 
-  // Extract unique document categories and their counts from boardDocuments
-  type CategoryCount = {
-    category: string;
-    count: number;
-  };
-
   // Count documents per category
   const categoryCounts: CategoryCount[] = [];
   const categoryMap: Record<string, number> = {};
@@ -208,12 +202,12 @@ const BoardDocuments = () => {
       {/* Header with actions */}
       <div className="w-full flex justify-end items-center p-6 border-b flex-shrink-0 bg-white">
         <div className="flex gap-4">
-          <LinkDocument
+          {/* <LinkDocument
             searchItem="Documents"
             docs={availableDocuments}
             initialString="+ Link Document"
             onDocumentSelect={handleDocumentSelect}
-          />
+          /> */}
           <UploadDocumentModal
             onUploadSuccess={handleDocumentsRefresh}
             defaultJobId={boardId} // Pass the board ID to fix upload issues
