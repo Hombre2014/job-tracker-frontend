@@ -26,7 +26,6 @@ export const uploadDocument = createAsyncThunk(
   async (values: UploadDocumentParams, thunkAPI) => {
     const { file, title, boardId, category, description, accessToken } = values;
     try {
-
       const formData = new FormData();
       formData.append('file', file);
       formData.append('title', title);

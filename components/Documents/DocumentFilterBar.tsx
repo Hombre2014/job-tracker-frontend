@@ -32,12 +32,10 @@ export const DocumentFilterBar = ({
 
         {/* Category filters */}
         {categoryCounts.map(({ category, count }) => {
-          const colorClass =
-            selectedCategory === category
-              ? selectedDocumentColorMap[category] ||
-                'bg-gray-100 text-gray-700 ring-2 ring-gray-300'
-              : documentColorMap[category] ||
-                'bg-gray-100 text-gray-700 hover:bg-gray-200';
+          const isSelected = selectedCategory === category;
+          const colorClass = isSelected
+            ? selectedDocumentColorMap[category]
+            : documentColorMap[category];
 
           return (
             <div
