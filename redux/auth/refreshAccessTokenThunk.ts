@@ -7,7 +7,7 @@ export const refreshAccessToken = createAsyncThunk(
   'auth/refreshAccessToken',
   async (refreshToken: string, thunkAPI) => {
     try {
-      const response = await client.get('/auth/refresh', {
+      const response = await client.post('/auth/refresh', null, {
         headers: {
           Authorization: `Bearer ${refreshToken}`,
         },
