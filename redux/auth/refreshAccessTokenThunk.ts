@@ -7,14 +7,14 @@ export const refreshAccessToken = createAsyncThunk(
   'auth/refreshAccessToken',
   async (refreshToken: string, thunkAPI) => {
     try {
-      const response = await client.get('/auth/refresh', {
+      const response = await client.post('/auth/refresh', null, {
         headers: {
           Authorization: `Bearer ${refreshToken}`,
         },
       });
       const data = response.data;
 
-      if (response.status === 200) {
+      if (response.status === 200 || response.status === 201) {
         localStorage.setItem('accessToken', data.accessToken);
         localStorage.setItem('refreshToken', data.refreshToken);
 

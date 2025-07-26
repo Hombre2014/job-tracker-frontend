@@ -45,14 +45,15 @@ client.interceptors.response.use(
       if (refreshToken) {
         refreshPromise = (async () => {
           try {
-            const refreshResponse = await axios.get(
+            const refreshResponse = await axios.post(
               `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+              null,
               {
                 headers: { Authorization: `Bearer ${refreshToken}` },
               }
             );
 
-            if (refreshResponse.status === 200) {
+            if (refreshResponse.status === 200 || refreshResponse.status === 201) {
               const {
                 accessToken: newAccessToken,
                 refreshToken: newRefreshToken,
