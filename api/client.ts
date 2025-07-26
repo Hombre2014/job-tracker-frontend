@@ -53,7 +53,7 @@ client.interceptors.response.use(
               }
             );
 
-            if (refreshResponse.status === 200) {
+            if (refreshResponse.status === 200 || refreshResponse.status === 201) {
               const {
                 accessToken: newAccessToken,
                 refreshToken: newRefreshToken,

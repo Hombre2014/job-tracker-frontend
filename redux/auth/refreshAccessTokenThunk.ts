@@ -14,7 +14,7 @@ export const refreshAccessToken = createAsyncThunk(
       });
       const data = response.data;
 
-      if (response.status === 200) {
+      if (response.status === 200 || response.status === 201) {
         localStorage.setItem('accessToken', data.accessToken);
         localStorage.setItem('refreshToken', data.refreshToken);
 
