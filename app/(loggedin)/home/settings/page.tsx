@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { toast } from 'react-toastify';
 import { useEffect, useState } from 'react';
 import { IoMdContact } from 'react-icons/io';
+import { useRouter } from 'next/navigation';
 
 import { cn } from '@/lib/utils';
 import Modal from '@/components/Misc/Modal';
@@ -11,30 +12,22 @@ import { Input } from '@/components/ui/input';
 import { useAppSelector } from '@/redux/hooks';
 import { useAppDispatch } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
-import { updateUser } from '@/redux/user/userThunk';
+import { updateUser } from '@/redux/user/userSlice';
 
 const Settings = () => {
+  const router = useRouter();
   const dispatch = useAppDispatch();
-  const [open, setOpen] = useState(true);
+  // Removed local open state - using router navigation instead
   const accessToken = localStorage.getItem('accessToken');
   const { lastName } = useAppSelector((state) => state.user);
   const [newLastName, setNewLastName] = useState(lastName);
   const { firstName } = useAppSelector((state) => state.user);
   const [newFirstName, setNewFirstName] = useState(firstName);
   const { email, profilePicUrl } = useAppSelector((state) => state.user);
+  const [newEmail, setNewEmail] = useState(email);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
-  useEffect(() => {
-    dispatch(
-      updateUser({
-        email,
-        accessToken,
-        role: 'user',
-        lastName: newLastName,
-        firstName: newFirstName,
-      })
-    );
-  }, [newFirstName, newLastName, dispatch, accessToken, email]);
+  // Removed automatic updateUser call - should only update when user explicitly saves
 
   const handleWeeklyDigest = () => {
     // TODO: Implement weekly digest functionality
@@ -42,6 +35,42 @@ const Settings = () => {
 
   const handleDailyDigest = () => {
     // TODO: Implement daily digest functionality
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      await dispatch(
+        updateUser({
+          email: newEmail,
+          role: 'user',
+          lastName: newLastName,
+          firstName: newFirstName,
+          accessToken: accessToken as string,
+        })
+      ).unwrap();
+
+      toast.success('Profile updated successfully!', {
+        position: 'top-right',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+
+      // Close the modal by navigating back to the previous page
+      router.back();
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error('Failed to update profile. Please try again.', {
+        position: 'top-right',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+    }
   };
 
   const handleFileInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,7 +82,7 @@ const Settings = () => {
       try {
         await dispatch(
           updateUser({
-            email,
+            email: newEmail,
             role: 'user',
             lastName: newLastName,
             firstName: newFirstName,
@@ -123,8 +152,7 @@ const Settings = () => {
                 aria-label="My Account"
                 className={cn(
                   'tab focus:!bg-blue-500 !rounded-md ml-2 focus:!text-white',
-                  open ? 'bg-blue-500 text-white' : 'bg-white text-black',
-                  open ? 'text-white' : 'text-black'
+                  'bg-blue-500 text-white' // Always active since we're on the settings page
                 )}
               />
               <div
@@ -187,6 +215,22 @@ const Settings = () => {
                           value={newLastName}
                           onChange={(e) => setNewLastName(e.target.value)}
                         />
+                        <label>Email Address</label>
+                        <Input
+                          type="email"
+                          placeholder="john.doe@example.com"
+                          value={newEmail}
+                          onChange={(e) => setNewEmail(e.target.value)}
+                        />
+                      </div>
+                      <div className="flex justify-end mt-4">
+                        <Button
+                          type="button"
+                          onClick={handleSaveProfile}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md"
+                        >
+                          Save Changes
+                        </Button>
                       </div>
                     </form>
                   </div>
@@ -198,7 +242,7 @@ const Settings = () => {
                 type="radio"
                 name="my_tabs_2"
                 id="tab-notifications"
-                onClick={() => setOpen(false)}
+                onClick={() => router.back()}
                 aria-label="Notes & Notifications"
                 className="tab focus:bg-blue-500 !rounded-md ml-2 absolute top-[400px] focus:text-white"
               />

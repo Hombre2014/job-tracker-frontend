@@ -4,13 +4,13 @@ import { toast } from 'react-toastify';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 
-import { getUser } from '@/redux/user/userThunk';
+import { getUser } from '@/redux/user/userSlice';
 import { TITLE_MAX_LENGTH } from '@/data/constants';
 import useDocumentActions from '@/hooks/useDocumentActions';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import DocumentGrid from '@/components/Documents/DocumentGrid';
 import DocumentFilterBar from '@/components/Documents/DocumentFilterBar';
-import { LinkDocument } from '@/components/HomePage/HomeNavbar/LinkDocument';
+// import { LinkDocument } from '@/components/HomePage/HomeNavbar/LinkDocument';
 import EditDocumentModal from '@/components/Forms/AddDocument/EditDocumentModal';
 import UploadDocumentModal from '@/components/Forms/AddDocument/UploadDocumentModal';
 import {
@@ -74,7 +74,7 @@ const BoardDocuments = () => {
           profilePicUrl: user.profilePicUrl,
         });
       } else {
-        dispatch(getUser(accessToken)).then((result) => {
+        dispatch(getUser()).then((result) => {
           if (result.payload) {
             setUploaderInfo({
               lastName: result.payload.lastName,

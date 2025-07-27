@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState, useMemo } from 'react';
 
 import DocumentCard from './DocumentCard';
-import { getUser } from '@/redux/user/userThunk';
+import { getUser } from '@/redux/user/userSlice';
 import { getJobPost } from '@/redux/jobs/jobsThunk';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { selectUserDocuments } from '@/redux/documents/documentsSlice';
@@ -79,7 +79,7 @@ const Documents = () => {
         });
       } else {
         // Fetch user info if not available
-        dispatch(getUser(accessToken)).then((result) => {
+        dispatch(getUser()).then((result) => {
           if (result.payload) {
             setUploaderInfo({
               lastName: result.payload.lastName,

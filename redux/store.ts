@@ -19,7 +19,6 @@ import boardsSlice from './boards/boardsSlice';
 import contactsSlice from './contacts/contactsSlice';
 import companiesSlice from './companies/companiesSlice';
 import documentsSlice from './documents/documentsSlice';
-import refreshAccessTokenReducer from './auth/refreshAccessTokenSlice';
 
 export function createPersistStorage(): WebStorage {
   const isServer = typeof window === 'undefined';
@@ -54,7 +53,6 @@ const persistConfig = {
     'contacts',
     'companies',
     'documents',
-    'refreshAccessToken',
   ],
 };
 
@@ -66,7 +64,6 @@ const rootReducer = combineReducers({
   contacts: contactsSlice,
   companies: companiesSlice,
   documents: documentsSlice,
-  refreshAccessToken: refreshAccessTokenReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

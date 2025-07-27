@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-import { getUser } from '@/redux/user/userThunk';
+import { getUser } from '@/redux/user/userSlice';
 import { TITLE_MAX_LENGTH } from '@/data/constants';
 import useDocumentActions from '@/hooks/useDocumentActions';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';

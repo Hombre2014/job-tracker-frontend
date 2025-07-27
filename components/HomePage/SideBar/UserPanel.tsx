@@ -2,7 +2,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { RiAccountPinBoxLine, RiSettings2Line } from 'react-icons/ri';
 
-import { logout } from '@/redux/user/userThunk';
+import { logout } from '@/redux/user/userSlice';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
   DropdownMenu,
