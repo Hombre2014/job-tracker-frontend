@@ -139,54 +139,54 @@ const DevTools: React.FC = () => {
 
         <div className="space-y-1">
           <Button
-            onClick={() => setShowMonitoring(true)}
             size="sm"
             variant="outline"
             className="w-full text-xs h-6"
+            onClick={() => setShowMonitoring(true)}
           >
             📊 Monitoring
           </Button>
 
           <Button
-            onClick={logUserState}
             size="sm"
             variant="outline"
+            onClick={logUserState}
             className="w-full text-xs h-6"
           >
             👤 Log User State
           </Button>
 
           <Button
-            onClick={testApiCall}
             size="sm"
             variant="outline"
+            onClick={testApiCall}
             className="w-full text-xs h-6"
           >
             🌐 Test API
           </Button>
 
           <Button
-            onClick={clearLocalStorage}
             size="sm"
             variant="destructive"
+            onClick={clearLocalStorage}
             className="w-full text-xs h-6"
           >
             🗑️ Clear Storage
           </Button>
 
           <Button
-            onClick={simulateError}
             size="sm"
             variant="destructive"
+            onClick={simulateError}
             className="w-full text-xs h-6"
           >
             💥 Simulate Error
           </Button>
 
           <Button
-            onClick={toggleLogging}
             size="sm"
             variant="outline"
+            onClick={toggleLogging}
             className="w-full text-xs h-6"
           >
             {loggingEnabled ? '🔇 Disable Logs' : '🔊 Enable Logs'}
@@ -202,9 +202,9 @@ const DevTools: React.FC = () => {
           </div>
 
           <Button
-            onClick={() => setIsVisible(false)}
             size="sm"
             variant="ghost"
+            onClick={() => setIsVisible(false)}
             className="w-full text-xs h-6 text-gray-400 hover:text-white"
           >
             ✕ Hide

@@ -23,7 +23,7 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
       router.push('/login');
     } else {
       dispatch(getBoards(accessToken));
-      dispatch(getUser(accessToken as string));
+      dispatch(getUser());
     }
   }, [accessToken, router, dispatch]);
   return (

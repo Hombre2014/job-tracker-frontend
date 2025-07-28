@@ -58,7 +58,7 @@ const UserDocuments = () => {
           profilePicUrl: user.profilePicUrl,
         });
       } else {
-        dispatch(getUser(accessToken)).then((result) => {
+        dispatch(getUser()).then((result) => {
           if (result.payload) {
             setUploaderInfo({
               lastName: result.payload.lastName,

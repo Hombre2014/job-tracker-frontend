@@ -1,6 +1,6 @@
 import axios from 'axios';
-import TokenManager from '@/utils/TokenManager';
-import RequestQueue from '@/utils/RequestQueue';
+import { TokenManager } from '@/utils/TokenManager';
+import { RequestQueue } from '@/utils/RequestQueue';
 // import AuthErrorHandler from '@/utils/AuthErrorHandler'; // Temporarily disabled to fix circular dependency
 
 const client = axios.create({

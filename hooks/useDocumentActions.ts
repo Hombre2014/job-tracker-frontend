@@ -43,7 +43,7 @@ export const useDocumentActions = (
         throw new Error('No access token – user might be unauthenticated');
       }
 
-      // Persist changes and capture server-normalised document
+      // Persist changes and capture server-normalized document
       const persistedDoc = await dispatch(
         updateDocument({
           title: updatedDocument.title,

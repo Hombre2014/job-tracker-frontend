@@ -242,7 +242,7 @@ const CreateContactForm = ({
 
   useEffect(() => {
     if (accessToken) {
-      dispatch(getUser(accessToken));
+      dispatch(getUser());
     }
   }, [dispatch, accessToken]);
 

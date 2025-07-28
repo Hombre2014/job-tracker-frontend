@@ -4,49 +4,56 @@
  */
 
 interface SecurityConfig {
-  enableTokenValidation: boolean;
-  enableRateLimiting: boolean;
-  enableSuspiciousActivityDetection: boolean;
-  maxLoginAttempts: number;
-  rateLimitWindow: number; // in milliseconds
-  maxRequestsPerWindow: number;
   debugMode: boolean;
+  rateLimitWindow: number; // in milliseconds
+  maxLoginAttempts: number;
+  enableRateLimiting: boolean;
+  maxRequestsPerWindow: number;
+  enableTokenValidation: boolean;
+  enableSuspiciousActivityDetection: boolean;
 }
 
 interface RateLimitEntry {
   count: number;
-  firstRequest: number;
   lastRequest: number;
+  firstRequest: number;
 }
 
 interface SecurityEvent {
-  type: 'rate_limit' | 'suspicious_activity' | 'token_validation' | 'login_attempt';
-  severity: 'low' | 'medium' | 'high' | 'critical';
   message: string;
   timestamp: number;
   metadata?: Record<string, any>;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  type:
+    | 'rate_limit'
+    | 'login_attempt'
+    | 'token_validation'
+    | 'suspicious_activity';
 }
 
 const DEFAULT_CONFIG: SecurityConfig = {
-  enableTokenValidation: true,
-  enableRateLimiting: true,
-  enableSuspiciousActivityDetection: true,
   maxLoginAttempts: 5,
-  rateLimitWindow: 15 * 60 * 1000, // 15 minutes
+  enableRateLimiting: true,
   maxRequestsPerWindow: 100,
+  enableTokenValidation: true,
+  rateLimitWindow: 15 * 60 * 1000, // 15 minutes
+  enableSuspiciousActivityDetection: true,
   debugMode: process.env.NODE_ENV === 'development',
 };
 
 class SecurityValidatorClass {
   private config: SecurityConfig;
   private rateLimitMap = new Map<string, RateLimitEntry>();
-  private loginAttempts = new Map<string, { count: number; lastAttempt: number }>();
+  private loginAttempts = new Map<
+    string,
+    { count: number; lastAttempt: number }
+  >();
   private securityEvents: SecurityEvent[] = [];
   private suspiciousIPs = new Set<string>();
 
   constructor(config: Partial<SecurityConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
-    
+
     // Cleanup old entries periodically
     setInterval(() => {
       this.cleanup();
@@ -57,9 +64,9 @@ class SecurityValidatorClass {
    * Validate JWT token structure and content
    */
   validateToken(token: string): {
-    isValid: boolean;
-    reason?: string;
     payload?: any;
+    reason?: string;
+    isValid: boolean;
   } {
     if (!this.config.enableTokenValidation) {
       return { isValid: true };
@@ -69,16 +76,24 @@ class SecurityValidatorClass {
       // Basic JWT structure validation
       const parts = token.split('.');
       if (parts.length !== 3) {
-        this.logSecurityEvent('token_validation', 'medium', 'Invalid JWT structure');
+        this.logSecurityEvent(
+          'token_validation',
+          'medium',
+          'Invalid JWT structure'
+        );
         return { isValid: false, reason: 'Invalid token structure' };
       }
 
       // Decode payload (without verification for structure check)
       const payload = JSON.parse(atob(parts[1]));
-      
+
       // Check required fields
       if (!payload.sub || !payload.exp || !payload.iat) {
-        this.logSecurityEvent('token_validation', 'medium', 'Missing required JWT fields');
+        this.logSecurityEvent(
+          'token_validation',
+          'medium',
+          'Missing required JWT fields'
+        );
         return { isValid: false, reason: 'Missing required fields' };
       }
 
@@ -91,13 +106,26 @@ class SecurityValidatorClass {
 
       // Check if token is issued in the future (clock skew tolerance: 5 minutes)
       if (payload.iat > now + 300) {
-        this.logSecurityEvent('token_validation', 'high', 'Token issued in future');
+        this.logSecurityEvent(
+          'token_validation',
+          'high',
+          'Token issued in future'
+        );
         return { isValid: false, reason: 'Token issued in future' };
       }
 
       return { isValid: true, payload };
     } catch (error) {
-      this.logSecurityEvent('token_validation', 'medium', 'Token parsing error', { error: error.message });
+      const errorMessage =
+        error && typeof error === 'object' && 'message' in error
+          ? (error as { message: string }).message
+          : String(error);
+      this.logSecurityEvent(
+        'token_validation',
+        'medium',
+        'Token parsing error',
+        { error: errorMessage }
+      );
       return { isValid: false, reason: 'Token parsing error' };
     }
   }
@@ -124,8 +152,8 @@ class SecurityValidatorClass {
         firstRequest: now,
         lastRequest: now,
       });
-      return { 
-        allowed: true, 
+      return {
+        allowed: true,
         remainingRequests: this.config.maxRequestsPerWindow - 1,
         resetTime: now + this.config.rateLimitWindow,
       };
@@ -139,8 +167,8 @@ class SecurityValidatorClass {
         firstRequest: now,
         lastRequest: now,
       });
-      return { 
-        allowed: true, 
+      return {
+        allowed: true,
         remainingRequests: this.config.maxRequestsPerWindow - 1,
         resetTime: now + this.config.rateLimitWindow,
       };
@@ -148,9 +176,11 @@ class SecurityValidatorClass {
 
     // Check if limit exceeded
     if (entry.count >= this.config.maxRequestsPerWindow) {
-      this.logSecurityEvent('rate_limit', 'medium', 'Rate limit exceeded', { identifier });
-      return { 
-        allowed: false, 
+      this.logSecurityEvent('rate_limit', 'medium', 'Rate limit exceeded', {
+        identifier,
+      });
+      return {
+        allowed: false,
         remainingRequests: 0,
         resetTime: entry.firstRequest + this.config.rateLimitWindow,
       };
@@ -160,8 +190,8 @@ class SecurityValidatorClass {
     entry.count++;
     entry.lastRequest = now;
 
-    return { 
-      allowed: true, 
+    return {
+      allowed: true,
       remainingRequests: this.config.maxRequestsPerWindow - entry.count,
       resetTime: entry.firstRequest + this.config.rateLimitWindow,
     };
@@ -170,7 +200,10 @@ class SecurityValidatorClass {
   /**
    * Track login attempts and detect brute force
    */
-  trackLoginAttempt(identifier: string, success: boolean): {
+  trackLoginAttempt(
+    identifier: string,
+    success: boolean
+  ): {
     allowed: boolean;
     attemptsRemaining?: number;
     lockoutTime?: number;
@@ -187,8 +220,8 @@ class SecurityValidatorClass {
     if (!attempts) {
       // First failed attempt
       this.loginAttempts.set(identifier, { count: 1, lastAttempt: now });
-      return { 
-        allowed: true, 
+      return {
+        allowed: true,
         attemptsRemaining: this.config.maxLoginAttempts - 1,
       };
     }
@@ -197,8 +230,8 @@ class SecurityValidatorClass {
     if (now - attempts.lastAttempt > 60 * 60 * 1000) {
       // Reset attempts after 1 hour
       this.loginAttempts.set(identifier, { count: 1, lastAttempt: now });
-      return { 
-        allowed: true, 
+      return {
+        allowed: true,
         attemptsRemaining: this.config.maxLoginAttempts - 1,
       };
     }
@@ -208,17 +241,22 @@ class SecurityValidatorClass {
     attempts.lastAttempt = now;
 
     if (attempts.count >= this.config.maxLoginAttempts) {
-      this.logSecurityEvent('login_attempt', 'high', 'Max login attempts exceeded', { identifier });
+      this.logSecurityEvent(
+        'login_attempt',
+        'high',
+        'Max login attempts exceeded',
+        { identifier }
+      );
       this.suspiciousIPs.add(identifier);
-      return { 
-        allowed: false, 
+      return {
+        allowed: false,
         attemptsRemaining: 0,
         lockoutTime: now + 60 * 60 * 1000, // 1 hour lockout
       };
     }
 
-    return { 
-      allowed: true, 
+    return {
+      allowed: true,
       attemptsRemaining: this.config.maxLoginAttempts - attempts.count,
     };
   }
@@ -229,7 +267,11 @@ class SecurityValidatorClass {
   detectSuspiciousActivity(
     identifier: string,
     activity: {
-      type: 'rapid_requests' | 'unusual_timing' | 'multiple_failures' | 'token_manipulation';
+      type:
+        | 'rapid_requests'
+        | 'unusual_timing'
+        | 'multiple_failures'
+        | 'token_manipulation';
       metadata?: Record<string, any>;
     }
   ): {
@@ -287,10 +329,15 @@ class SecurityValidatorClass {
     }
 
     if (isSuspicious) {
-      this.logSecurityEvent('suspicious_activity', riskLevel, `Suspicious activity detected: ${activity.type}`, {
-        identifier,
-        activity,
-      });
+      this.logSecurityEvent(
+        'suspicious_activity',
+        riskLevel,
+        `Suspicious activity detected: ${activity.type}`,
+        {
+          identifier,
+          activity,
+        }
+      );
     }
 
     return { isSuspicious, riskLevel, actions };
@@ -321,7 +368,10 @@ class SecurityValidatorClass {
     }
 
     if (this.config.debugMode || severity === 'critical') {
-      console.warn(`SecurityValidator: [${severity.toUpperCase()}] ${message}`, metadata);
+      console.warn(
+        `SecurityValidator: [${severity.toUpperCase()}] ${message}`,
+        metadata
+      );
     }
   }
 
@@ -341,7 +391,7 @@ class SecurityValidatorClass {
     }, {} as Record<string, number>);
 
     const recentEvents = this.securityEvents
-      .filter(event => Date.now() - event.timestamp < 60 * 60 * 1000) // Last hour
+      .filter((event) => Date.now() - event.timestamp < 60 * 60 * 1000) // Last hour
       .slice(-10);
 
     return {
@@ -368,14 +418,15 @@ class SecurityValidatorClass {
 
     // Cleanup old login attempts
     for (const [key, attempts] of this.loginAttempts.entries()) {
-      if (now - attempts.lastAttempt > 60 * 60 * 1000) { // 1 hour
+      if (now - attempts.lastAttempt > 60 * 60 * 1000) {
+        // 1 hour
         this.loginAttempts.delete(key);
       }
     }
 
     // Cleanup old security events (keep last 24 hours)
     this.securityEvents = this.securityEvents.filter(
-      event => now - event.timestamp < 24 * 60 * 60 * 1000
+      (event) => now - event.timestamp < 24 * 60 * 60 * 1000
     );
   }
 

@@ -111,6 +111,10 @@ const Settings = () => {
     };
   }, [previewImageUrl]);
 
+  const [activeTab, setActiveTab] = useState<'account' | 'notifications'>(
+    'account'
+  );
+
   return (
     <Modal stylings="sm:w-5/6 md:w-2/3 lg:w-1/2 xl:w-5/12">
       <div className="flex mx-auto bg-white w-full h-auto rounded-md">
@@ -242,7 +246,7 @@ const Settings = () => {
                 type="radio"
                 name="my_tabs_2"
                 id="tab-notifications"
-                onClick={() => router.back()}
+                onClick={() => setActiveTab('notifications')}
                 aria-label="Notes & Notifications"
                 className="tab focus:bg-blue-500 !rounded-md ml-2 absolute top-[400px] focus:text-white"
               />

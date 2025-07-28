@@ -1,40 +1,41 @@
 'use client';
 
 import React, {
-  useEffect,
   useRef,
-  createContext,
-  useContext,
   useState,
+  useEffect,
+  useContext,
   useCallback,
+  createContext,
 } from 'react';
 import { useRouter } from 'next/navigation';
+
+import DevTools from '@/components/dev/DevTools';
+import { TokenManager } from '@/utils/TokenManager';
+import { SmartTokenRefresh } from '@/utils/SmartTokenRefresh';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
-  logout as logoutThunk,
-  updateUserTokens,
   updateUserData,
+  updateUserTokens,
+  logout as logoutThunk,
 } from '@/redux/user/userSlice';
-import TokenManager from '@/utils/TokenManager';
-import SmartTokenRefresh from '@/utils/SmartTokenRefresh';
-import DevTools from '@/components/dev/DevTools';
 // import AuthErrorHandler from '@/utils/AuthErrorHandler'; // Temporarily disabled to fix circular dependency
 
 export interface AuthUser {
   id: string;
   email: string;
-  firstName: string;
   lastName: string;
+  firstName: string;
   profilePicUrl?: string;
 }
 
 export interface AuthState {
-  isAuthenticated: boolean;
-  isRefreshing: boolean;
   isLoading: boolean;
-  user: AuthUser | null;
-  timeUntilExpiration: number | null;
   error: string | null;
+  user: AuthUser | null;
+  isRefreshing: boolean;
+  isAuthenticated: boolean;
+  timeUntilExpiration: number | null;
 }
 
 interface AuthContextType {
@@ -242,7 +243,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Ignore parsing errors
         }
       }
-    }, 2000); // Check every 2 seconds
+    }, 10000); // Check every 10 seconds
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);

@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
-import PerformanceMonitor from '@/utils/PerformanceMonitor';
-import SecurityValidator from '@/utils/SecurityValidator';
-import RequestDeduplicator from '@/utils/RequestDeduplicator';
+import { SecurityValidator } from '@/utils/SecurityValidator';
+import { PerformanceMonitor } from '@/utils/PerformanceMonitor';
+import { RequestDeduplicator } from '@/utils/RequestDeduplicator';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface MonitoringDashboardProps {
   isVisible?: boolean;
@@ -19,7 +20,9 @@ const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({
   const [stats, setStats] = useState<any>(null);
   const [securityStats, setSecurityStats] = useState<any>(null);
   const [deduplicatorStats, setDeduplicatorStats] = useState<any>(null);
-  const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(null);
+  const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(
+    null
+  );
 
   const refreshStats = () => {
     setStats(PerformanceMonitor.getStats());
@@ -30,11 +33,11 @@ const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({
   useEffect(() => {
     if (isVisible) {
       refreshStats();
-      
+
       // Auto-refresh every 5 seconds
       const interval = setInterval(refreshStats, 5000);
       setRefreshInterval(interval);
-      
+
       return () => {
         if (interval) clearInterval(interval);
       };
@@ -59,8 +62,10 @@ const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({
       security: SecurityValidator.getSecurityStats(),
       timestamp: new Date().toISOString(),
     };
-    
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: 'application/json',
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -112,14 +117,21 @@ const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({
                     </div>
                     <div className="flex justify-between">
                       <span>API Requests:</span>
-                      <span className="font-mono">{stats.apiMetrics.total}</span>
+                      <span className="font-mono">
+                        {stats.apiMetrics.total}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Success Rate:</span>
                       <span className="font-mono">
                         {stats.apiMetrics.total > 0
-                          ? Math.round((stats.apiMetrics.successful / stats.apiMetrics.total) * 100)
-                          : 0}%
+                          ? Math.round(
+                              (stats.apiMetrics.successful /
+                                stats.apiMetrics.total) *
+                                100
+                            )
+                          : 0}
+                        %
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -131,13 +143,19 @@ const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({
                     <div className="flex justify-between">
                       <span>Memory Usage:</span>
                       <span className="font-mono">
-                        {Math.round(stats.memoryMetrics.currentUsage / 1024 / 1024)}MB
+                        {Math.round(
+                          stats.memoryMetrics.currentUsage / 1024 / 1024
+                        )}
+                        MB
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Peak Memory:</span>
                       <span className="font-mono">
-                        {Math.round(stats.memoryMetrics.peakUsage / 1024 / 1024)}MB
+                        {Math.round(
+                          stats.memoryMetrics.peakUsage / 1024 / 1024
+                        )}
+                        MB
                       </span>
                     </div>
                   </div>
@@ -157,7 +175,9 @@ const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span>Total Events:</span>
-                      <span className="font-mono">{securityStats.totalEvents}</span>
+                      <span className="font-mono">
+                        {securityStats.totalEvents}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Critical Events:</span>
@@ -179,11 +199,15 @@ const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({
                     </div>
                     <div className="flex justify-between">
                       <span>Suspicious IPs:</span>
-                      <span className="font-mono">{securityStats.suspiciousIPs}</span>
+                      <span className="font-mono">
+                        {securityStats.suspiciousIPs}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Active Rate Limits:</span>
-                      <span className="font-mono">{securityStats.activeRateLimits}</span>
+                      <span className="font-mono">
+                        {securityStats.activeRateLimits}
+                      </span>
                     </div>
                   </div>
                 ) : (
@@ -202,11 +226,15 @@ const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span>Cache Size:</span>
-                      <span className="font-mono">{deduplicatorStats.cacheSize}</span>
+                      <span className="font-mono">
+                        {deduplicatorStats.cacheSize}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Pending Requests:</span>
-                      <span className="font-mono">{deduplicatorStats.pendingRequests}</span>
+                      <span className="font-mono">
+                        {deduplicatorStats.pendingRequests}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Cache Hit Rate:</span>
@@ -229,35 +257,39 @@ const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({
               <CardContent>
                 {securityStats?.recentEvents?.length > 0 ? (
                   <div className="space-y-2 max-h-60 overflow-auto">
-                    {securityStats.recentEvents.map((event: any, index: number) => (
-                      <div
-                        key={index}
-                        className={`p-2 rounded text-sm ${
-                          event.severity === 'critical'
-                            ? 'bg-red-100 text-red-800'
-                            : event.severity === 'high'
-                            ? 'bg-orange-100 text-orange-800'
-                            : event.severity === 'medium'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <span className="font-semibold">{event.type}</span>
-                            <span className="ml-2">{event.message}</span>
+                    {securityStats.recentEvents.map(
+                      (event: any, index: number) => (
+                        <div
+                          key={index}
+                          className={`p-2 rounded text-sm ${
+                            event.severity === 'critical'
+                              ? 'bg-red-100 text-red-800'
+                              : event.severity === 'high'
+                              ? 'bg-orange-100 text-orange-800'
+                              : event.severity === 'medium'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <span className="font-semibold">
+                                {event.type}
+                              </span>
+                              <span className="ml-2">{event.message}</span>
+                            </div>
+                            <span className="text-xs">
+                              {new Date(event.timestamp).toLocaleTimeString()}
+                            </span>
                           </div>
-                          <span className="text-xs">
-                            {new Date(event.timestamp).toLocaleTimeString()}
-                          </span>
+                          {event.metadata && (
+                            <div className="mt-1 text-xs opacity-75">
+                              {JSON.stringify(event.metadata)}
+                            </div>
+                          )}
                         </div>
-                        {event.metadata && (
-                          <div className="mt-1 text-xs opacity-75">
-                            {JSON.stringify(event.metadata)}
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                      )
+                    )}
                   </div>
                 ) : (
                   <div className="text-gray-500">No recent security events</div>
@@ -276,19 +308,27 @@ const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
                         <span className="font-semibold">Method:</span>
-                        <div className="font-mono">{stats.apiMetrics.slowestRequest.method}</div>
+                        <div className="font-mono">
+                          {stats.apiMetrics.slowestRequest.method}
+                        </div>
                       </div>
                       <div>
                         <span className="font-semibold">URL:</span>
-                        <div className="font-mono truncate">{stats.apiMetrics.slowestRequest.url}</div>
+                        <div className="font-mono truncate">
+                          {stats.apiMetrics.slowestRequest.url}
+                        </div>
                       </div>
                       <div>
                         <span className="font-semibold">Duration:</span>
-                        <div className="font-mono">{stats.apiMetrics.slowestRequest.duration}ms</div>
+                        <div className="font-mono">
+                          {stats.apiMetrics.slowestRequest.duration}ms
+                        </div>
                       </div>
                       <div>
                         <span className="font-semibold">Status:</span>
-                        <div className="font-mono">{stats.apiMetrics.slowestRequest.statusCode}</div>
+                        <div className="font-mono">
+                          {stats.apiMetrics.slowestRequest.statusCode}
+                        </div>
                       </div>
                     </div>
                   </div>
