@@ -19,7 +19,6 @@ import {
   updateUserTokens,
   logout as logoutThunk,
 } from '@/redux/user/userSlice';
-// import AuthErrorHandler from '@/utils/AuthErrorHandler'; // Temporarily disabled to fix circular dependency
 
 export interface AuthUser {
   id: string;
@@ -49,8 +48,8 @@ interface AuthContextType {
 
   // Utilities
   getAuthStatus: () => {
-    isAuthenticated: boolean;
     isRefreshing: boolean;
+    isAuthenticated: boolean;
     timeUntilExpiration: number | null;
   };
   debugAuth: () => void;
@@ -73,25 +72,59 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const reduxUser = useAppSelector((state) => state.user);
   const initializationRef = useRef(false);
+  const reduxUser = useAppSelector((state) => state.user);
+
+  // Reusable function to sync user data from localStorage to Redux
+  const syncUserDataToRedux = useCallback(
+    (logContext?: string) => {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          if (logContext) {
+            console.log(`AuthProvider: ${logContext}:`, userData);
+          }
+
+          dispatch(
+            updateUserData({
+              email: userData.email || '',
+              role: userData.role || 'user',
+              userId: userData.userId || '',
+              lastName: userData.lastName || '',
+              firstName: userData.firstName || '',
+              profilePicUrl: userData.profilePicUrl || '',
+            })
+          );
+          return userData;
+        } catch (error) {
+          console.error(
+            `AuthProvider: Error parsing user data (${logContext}):`,
+            error
+          );
+        }
+      }
+      return null;
+    },
+    [dispatch]
+  );
 
   // Local auth state
   const [authState, setAuthState] = useState<AuthState>(() => {
-    const hasValidTokens = TokenManager.hasValidTokens();
     const refreshStatus = SmartTokenRefresh.getStatus();
+    const hasValidTokens = TokenManager.hasValidTokens();
 
     return {
+      isLoading: false,
       isAuthenticated: hasValidTokens,
       isRefreshing: refreshStatus.isRefreshing,
-      isLoading: false,
       user:
         hasValidTokens && reduxUser.email
           ? {
-              id: reduxUser.userId || '',
               email: reduxUser.email,
-              firstName: reduxUser.firstName || '',
+              id: reduxUser.userId || '',
               lastName: reduxUser.lastName || '',
+              firstName: reduxUser.firstName || '',
               profilePicUrl: reduxUser.profilePicUrl,
             }
           : null,
@@ -112,10 +145,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       user:
         hasValidTokens && reduxUser.email
           ? {
-              id: reduxUser.userId || '',
               email: reduxUser.email,
-              firstName: reduxUser.firstName || '',
+              id: reduxUser.userId || '',
               lastName: reduxUser.lastName || '',
+              firstName: reduxUser.firstName || '',
               profilePicUrl: reduxUser.profilePicUrl,
             }
           : null,
@@ -147,33 +180,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (initializationRef.current) return;
     initializationRef.current = true;
 
-    console.log('AuthProvider: Initializing authentication system');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('AuthProvider: Initializing authentication system');
+    }
 
     // Sync tokens from localStorage to Redux on app startup
-    TokenManager.syncTokensToRedux();
+    const tokens = TokenManager.getTokensForReduxSync();
+    if (tokens) {
+      dispatch(updateUserTokens(tokens));
+    }
 
     // Load user data from localStorage if available
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        const userData = JSON.parse(storedUser);
-        console.log('AuthProvider: Loading stored user data:', userData);
-
-        // Update Redux with stored user data
-        dispatch(
-          updateUserData({
-            userId: userData.userId || '',
-            email: userData.email || '',
-            firstName: userData.firstName || '',
-            lastName: userData.lastName || '',
-            profilePicUrl: userData.profilePicUrl || '',
-            role: userData.role || 'user',
-          })
-        );
-      } catch (error) {
-        console.error('AuthProvider: Error parsing stored user data:', error);
-      }
-    }
+    syncUserDataToRedux('Loading stored user data');
 
     // Start smart token refresh if user has valid tokens
     if (TokenManager.hasValidTokens()) {
@@ -192,40 +210,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Watch for localStorage user data changes (e.g., profile picture updates)
   useEffect(() => {
     const handleStorageChange = () => {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        try {
-          const userData = JSON.parse(storedUser);
-          console.log(
-            'AuthProvider: localStorage user data changed, syncing to Redux:',
-            userData
-          );
-
-          // Update Redux with latest user data
-          dispatch(
-            updateUserData({
-              userId: userData.userId || '',
-              email: userData.email || '',
-              firstName: userData.firstName || '',
-              lastName: userData.lastName || '',
-              profilePicUrl: userData.profilePicUrl || '',
-              role: userData.role || 'user',
-            })
-          );
-        } catch (error) {
-          console.error(
-            'AuthProvider: Error parsing updated user data:',
-            error
-          );
-        }
-      }
+      syncUserDataToRedux('localStorage user data changed, syncing to Redux');
     };
 
     // Listen for storage events (when localStorage changes in other tabs/windows)
     window.addEventListener('storage', handleStorageChange);
 
-    // Also check for changes periodically (for same-tab updates)
-    const interval = setInterval(() => {
+    // Trigger sync when specific user data might change
+    const triggerUserDataSync = () => {
       const storedUser = localStorage.getItem('user');
       const currentProfilePic = reduxUser.profilePicUrl;
 
@@ -243,13 +235,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Ignore parsing errors
         }
       }
-    }, 10000); // Check every 10 seconds
+    };
+
+    // Listen for custom token update events (from SmartTokenRefresh and api/client)
+    const handleTokensUpdated = (event: CustomEvent) => {
+      const { accessToken, refreshToken } = event.detail;
+      dispatch(updateUserTokens({ accessToken, refreshToken }));
+      console.log('AuthProvider: Tokens updated via custom event');
+    };
+    window.addEventListener(
+      'tokensUpdated',
+      handleTokensUpdated as EventListener
+    );
+
+    // Listen for custom events that indicate user data changes
+    window.addEventListener('userDataUpdated', triggerUserDataSync);
+
+    // Reduced frequency polling as fallback (60 seconds instead of 10)
+    const interval = setInterval(triggerUserDataSync, 60000);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener(
+        'tokensUpdated',
+        handleTokensUpdated as EventListener
+      );
+      window.removeEventListener('userDataUpdated', triggerUserDataSync);
       clearInterval(interval);
     };
-  }, [dispatch, reduxUser.profilePicUrl]);
+  }, [dispatch, reduxUser.profilePicUrl, syncUserDataToRedux]);
 
   // Watch for token changes and restart SmartTokenRefresh
   useEffect(() => {
@@ -261,59 +275,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Sync user data from localStorage to Redux if missing
       if (!reduxUser.firstName || !reduxUser.email) {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          try {
-            const userData = JSON.parse(storedUser);
-            console.log('AuthProvider: Syncing user data to Redux:', userData);
+        const userData = syncUserDataToRedux('Syncing user data to Redux');
+        if (userData) {
+          // Update Redux with tokens if available
+          dispatch(
+            updateUserTokens({
+              accessToken: userData.accessToken || reduxUser.accessToken,
+              refreshToken: userData.refreshToken || reduxUser.refreshToken,
+            })
+          );
 
-            // Update Redux with the stored user data
-            dispatch(
-              updateUserTokens({
-                accessToken: userData.accessToken || reduxUser.accessToken,
-                refreshToken: userData.refreshToken || reduxUser.refreshToken,
-              })
-            );
-
-            // Update Redux with user info
-            dispatch(
-              updateUserData({
-                userId: userData.userId || '',
-                email: userData.email || '',
-                firstName: userData.firstName || '',
-                lastName: userData.lastName || '',
-                profilePicUrl: userData.profilePicUrl || '',
-                role: userData.role || 'user',
-              })
-            );
-
-            // Update auth state
-            setAuthState((prev) => ({
-              ...prev,
-              user: {
-                id: userData.userId || '',
-                email: userData.email || '',
-                firstName: userData.firstName || '',
-                lastName: userData.lastName || '',
-                profilePicUrl: userData.profilePicUrl || '',
-              },
-              isAuthenticated: true,
-            }));
-          } catch (error) {
-            console.error(
-              'AuthProvider: Error parsing stored user data:',
-              error
-            );
-          }
+          // Update auth state
+          setAuthState((prev) => ({
+            ...prev,
+            user: {
+              id: userData.userId || '',
+              email: userData.email || '',
+              lastName: userData.lastName || '',
+              firstName: userData.firstName || '',
+              profilePicUrl: userData.profilePicUrl || '',
+            },
+            isAuthenticated: true,
+          }));
         }
       }
     }
   }, [
+    dispatch,
+    reduxUser.email,
+    reduxUser.firstName,
+    syncUserDataToRedux,
     reduxUser.accessToken,
     reduxUser.refreshToken,
-    reduxUser.firstName,
-    reduxUser.email,
-    dispatch,
   ]);
 
   // Auth actions
@@ -329,12 +322,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Update local state
       setAuthState({
-        isAuthenticated: false,
-        isRefreshing: false,
-        isLoading: false,
         user: null,
-        timeUntilExpiration: null,
         error: null,
+        isLoading: false,
+        isRefreshing: false,
+        isAuthenticated: false,
+        timeUntilExpiration: null,
       });
 
       // Redirect to login
@@ -401,12 +394,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, [authState]);
 
   const authContextValue: AuthContextType = {
-    authState,
-    refreshToken,
     logout,
-    clearError,
-    getAuthStatus,
+    authState,
     debugAuth,
+    clearError,
+    refreshToken,
+    getAuthStatus,
   };
 
   return (

@@ -4,12 +4,32 @@ import jwt from 'jsonwebtoken';
 import PerformanceMonitor from '@/utils/PerformanceMonitor';
 import SecurityValidator from '@/utils/SecurityValidator';
 
+// Get user thunk - moved here to avoid circular dependency
+export const getUser = createAsyncThunk('user/getUser', async (_, thunkAPI) => {
+  try {
+    const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+      },
+    });
+
+    if (res.status === 200) {
+      return res.data;
+    } else {
+      return thunkAPI.rejectWithValue('User not found');
+    }
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(err.response?.data || 'User not found');
+  }
+});
+
 // Simple login thunk to avoid circular dependency
 export const login = createAsyncThunk(
   'user/login',
   async (values: { email: string; password: string }) => {
     const startTime = Date.now();
-    const clientIP = 'client'; // In production, get real IP
+    // TODO: Extract real client IP from request headers in production
+    const clientIP = 'client'; // Placeholder - needs proper implementation
 
     // Check login attempt limits
     const loginCheck = SecurityValidator.trackLoginAttempt(clientIP, false);
@@ -38,9 +58,12 @@ export const login = createAsyncThunk(
 
       if (response.status === 200) {
         const { accessToken, refreshToken } = response.data;
-        const decoded = jwt.decode(accessToken);
+        // Verify token signature if public key is available
+        const decoded = jwt.decode(accessToken); // TODO: Add signature verification
 
-        console.log('Login: JWT decoded payload:', decoded);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Login: JWT decoded payload:', decoded);
+        }
 
         // Store tokens in localStorage
         localStorage.setItem('accessToken', accessToken);
@@ -182,16 +205,16 @@ export const logout = createAsyncThunk('user/logout', async () => {
   return true;
 });
 
-// Placeholder thunks to avoid import errors (simplified versions)
-export const getUser = createAsyncThunk('user/getUser', async () => {
-  // Placeholder - returns current user from localStorage
-  const user = localStorage.getItem('user');
-  return user ? JSON.parse(user) : null;
-});
-
 export const updateUser = createAsyncThunk(
   'user/updateUser',
-  async (userData: any) => {
+  async (userData: {
+    role: string;
+    email: string;
+    lastName: string;
+    firstName: string;
+    profilePic?: File;
+    accessToken: string;
+  }) => {
     const { accessToken, firstName, lastName, email, profilePic, role } =
       userData;
 
@@ -377,24 +400,7 @@ export const userSlice = createSlice({
         state.status = 'failed';
         state.error = action.error.message || 'Logout failed';
       })
-      .addCase(getUser.pending, (state) => {
-        state.status = 'loading';
-      })
-      .addCase(getUser.fulfilled, (state, action) => {
-        state.status = 'succeeded';
-        if (action.payload) {
-          state.email = action.payload.email || '';
-          state.firstName = action.payload.firstName || '';
-          state.lastName = action.payload.lastName || '';
-          state.userId = action.payload.userId || '';
-          state.profilePicUrl = action.payload.profilePicUrl || '';
-        }
-        state.error = null;
-      })
-      .addCase(getUser.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.error.message || 'Failed to get user';
-      })
+
       .addCase(updateUser.pending, (state) => {
         state.status = 'loading';
       })
@@ -412,6 +418,25 @@ export const userSlice = createSlice({
       .addCase(updateUser.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message || 'Failed to update user';
+      })
+      .addCase(getUser.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(getUser.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        if (action.payload) {
+          state.email = action.payload.email || '';
+          state.firstName = action.payload.firstName || '';
+          state.lastName = action.payload.lastName || '';
+          state.userId = action.payload.id || action.payload.userId || '';
+          state.profilePicUrl = action.payload.profilePicUrl || '';
+          state.role = action.payload.role || 'user';
+        }
+        state.error = null;
+      })
+      .addCase(getUser.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message || 'Failed to get user';
       });
   },
 });

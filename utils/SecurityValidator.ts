@@ -19,7 +19,7 @@ interface RateLimitEntry {
   firstRequest: number;
 }
 
-interface SecurityEvent {
+export interface SecurityEvent {
   message: string;
   timestamp: number;
   metadata?: Record<string, any>;
@@ -84,8 +84,12 @@ class SecurityValidatorClass {
         return { isValid: false, reason: 'Invalid token structure' };
       }
 
+      // TODO: Add signature verification with public key
+      // This currently only validates structure, not authenticity
       // Decode payload (without verification for structure check)
-      const payload = JSON.parse(atob(parts[1]));
+      // Handle URL-safe base64 and provide better error handling
+      const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      const payload = JSON.parse(Buffer.from(base64, 'base64').toString());
 
       // Check required fields
       if (!payload.sub || !payload.exp || !payload.iat) {
@@ -305,11 +309,13 @@ class SecurityValidatorClass {
         break;
 
       case 'unusual_timing':
-        // Requests at unusual hours (2 AM - 5 AM)
-        const hour = new Date().getHours();
-        if (hour >= 2 && hour <= 5) {
-          riskLevel = 'medium';
-          actions.push('monitor');
+        {
+          // Requests at unusual hours (2 AM - 5 AM)
+          const hour = new Date().getHours();
+          if (hour >= 2 && hour <= 5) {
+            riskLevel = 'medium';
+            actions.push('monitor');
+          }
         }
         break;
 

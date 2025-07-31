@@ -1,5 +1,60 @@
 # 🛠️ DevTools and Monitoring System Guide
 
+## 🆕 Recent Improvements (31/01/2025)
+
+### Critical Bug Fixes and Enhancements
+
+#### 🔧 **DevTools API Testing Improvements**
+
+- **Enhanced Error Handling**: Added comprehensive validation for API calls
+- **Environment Validation**: Checks for `NEXT_PUBLIC_API_URL` configuration before making requests
+- **Token Validation**: Validates access token availability before API calls
+- **Better Error Messages**: Provides specific error messages for different failure scenarios
+
+```typescript
+// Enhanced API testing with proper validation
+const testApiCall = async () => {
+  try {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    if (!apiUrl) {
+      console.error('API URL not configured');
+      return;
+    }
+
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) {
+      console.error('No access token available');
+      return;
+    }
+
+    const response = await fetch(`${apiUrl}/users`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    console.log('Test API Response:', response.status, await response.json());
+  } catch (error) {
+    console.error('Test API Error:', error);
+  }
+};
+```
+
+#### 🛡️ **Memory Leak Prevention**
+
+- **Fixed Event Listener Cleanup**: Proper cleanup of event listeners to prevent memory leaks
+- **Timer Management**: Added proper cleanup for all interval timers
+- **Resource Management**: Enhanced cleanup methods for all monitoring components
+
+#### 📊 **Type Safety Improvements**
+
+- **SecurityEvent Interface**: Proper TypeScript typing for security events in monitoring dashboard
+- **Performance Memory Interface**: Added proper typing for browser memory API
+- **Error Boundary Enhancement**: Better error handling with proper type safety
+
+#### 🔄 **Retry Logic Enhancements**
+
+- **Request Queue Improvements**: Fixed race conditions in retry processing
+- **Exponential Backoff**: Implemented proper delay calculation with maximum caps
+- **Better Error Recovery**: Enhanced retry mechanisms for failed requests
+
 ## Table of Contents
 
 1. [Overview](#overview)
@@ -432,7 +487,7 @@ const result = SecurityValidator.detectSuspiciousActivity('client', {
 
 #### **Event Types**
 
-- `rate_limit` - Rate limiting violations
+- `rate_limit` - Rate-limiting violations
 - `suspicious_activity` - Detected suspicious behavior
 - `token_validation` - Token validation failures
 - `login_attempt` - Login attempt tracking
@@ -458,6 +513,115 @@ const result = SecurityValidator.detectSuspiciousActivity('client', {
     lockoutTime: 1753626491000
   }
 }
+```
+
+---
+
+## 🧹 Memory Management and Cleanup (31/01/2025)
+
+### Resource Cleanup Methods
+
+The monitoring system now includes comprehensive cleanup methods to prevent memory leaks in long-running applications.
+
+#### **RequestDeduplicator Cleanup**
+
+```typescript
+// Proper cleanup for request deduplicator
+import { RequestDeduplicator } from '@/utils/RequestDeduplicator';
+
+// Clean up when component unmounts or app shuts down
+useEffect(() => {
+  return () => {
+    RequestDeduplicator.destroy(); // Cleans up intervals and clears cache
+  };
+}, []);
+```
+
+#### **RequestQueue Timer Management**
+
+```typescript
+// Manage cleanup timers
+import { RequestQueue } from '@/utils/RequestQueue';
+
+// Start cleanup timer
+RequestQueue.startCleanupTimer();
+
+// Stop cleanup timer (e.g., during testing or shutdown)
+RequestQueue.stopCleanupTimer();
+```
+
+#### **SmartTokenRefresh Event Cleanup**
+
+```typescript
+// Automatic cleanup on component unmount
+import { SmartTokenRefresh } from '@/utils/SmartTokenRefresh';
+
+useEffect(() => {
+  return () => {
+    SmartTokenRefresh.cleanup(); // Removes all event listeners and timers
+  };
+}, []);
+```
+
+#### **PerformanceMonitor Memory Tracking**
+
+```typescript
+// Memory tracking with proper cleanup
+import { PerformanceMonitor } from '@/utils/PerformanceMonitor';
+
+// The memory tracking interval is now properly managed
+// and cleaned up automatically when the monitor is destroyed
+```
+
+### Best Practices for Memory Management
+
+#### **Component Cleanup**
+
+```typescript
+// Example: Proper cleanup in React components
+const MyComponent = () => {
+  useEffect(() => {
+    // Setup monitoring
+    const cleanup = () => {
+      RequestDeduplicator.destroy();
+      RequestQueue.stopCleanupTimer();
+      SmartTokenRefresh.cleanup();
+    };
+
+    // Cleanup on unmount
+    return cleanup;
+  }, []);
+
+  return <div>Component content</div>;
+};
+```
+
+#### **Testing Environment Cleanup**
+
+```typescript
+// Example: Cleanup between tests
+beforeEach(() => {
+  RequestQueue.startCleanupTimer();
+});
+
+afterEach(() => {
+  RequestDeduplicator.destroy();
+  RequestQueue.stopCleanupTimer();
+  SmartTokenRefresh.cleanup();
+});
+```
+
+#### **Application Shutdown**
+
+```typescript
+// Example: Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('Shutting down gracefully...');
+  RequestDeduplicator.destroy();
+  RequestQueue.stopCleanupTimer();
+  SmartTokenRefresh.cleanup();
+  process.exit(0);
+});
 ```
 
 ---

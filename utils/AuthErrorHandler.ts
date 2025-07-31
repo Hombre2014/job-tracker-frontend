@@ -58,30 +58,41 @@ class AuthErrorHandlerClass {
     }
 
     // Axios/Fetch errors
-    if (error.code === 'NETWORK_ERROR' || error.message?.includes('Network Error')) {
+    if (
+      error.code === 'NETWORK_ERROR' ||
+      error.message?.includes('Network Error')
+    ) {
       return AuthErrorType.NETWORK_ERROR;
     }
 
     // Timeout errors
-    if (error.code === 'ECONNABORTED' || error.name === 'AbortError' || error.message?.includes('timeout')) {
+    if (
+      error.code === 'ECONNABORTED' ||
+      error.name === 'AbortError' ||
+      error.message?.includes('timeout')
+    ) {
       return AuthErrorType.TIMEOUT;
     }
 
     // HTTP status codes
     if (error.response?.status) {
       const status = error.response.status;
-      
+
       if (status === 401) {
         return AuthErrorType.UNAUTHORIZED;
       }
-      
+
       if (status >= 500) {
         return AuthErrorType.SERVER_ERROR;
       }
     }
 
     // Token-specific errors
-    if (error.message?.includes('token') || error.message?.includes('refresh')) {
+    if (
+      error.code === 'TOKEN_REFRESH_FAILED' ||
+      error.message?.includes('refresh token') ||
+      error.message?.includes('token refresh')
+    ) {
       return AuthErrorType.REFRESH_FAILED;
     }
 
@@ -91,26 +102,29 @@ class AuthErrorHandlerClass {
   /**
    * Generate user-friendly error messages
    */
-  private getUserMessage(errorType: AuthErrorType, originalError?: any): string {
+  private getUserMessage(
+    errorType: AuthErrorType,
+    originalError?: any
+  ): string {
     switch (errorType) {
       case AuthErrorType.NETWORK_ERROR:
         return 'Network connection lost. Please check your internet connection and try again.';
-      
+
       case AuthErrorType.TOKEN_EXPIRED:
         return 'Your session has expired. Please log in again.';
-      
+
       case AuthErrorType.REFRESH_FAILED:
         return 'Unable to refresh your session. Please log in again.';
-      
+
       case AuthErrorType.UNAUTHORIZED:
         return 'Authentication failed. Please log in again.';
-      
+
       case AuthErrorType.SERVER_ERROR:
         return 'Server is temporarily unavailable. Please try again in a few moments.';
-      
+
       case AuthErrorType.TIMEOUT:
         return 'Request timed out. Please check your connection and try again.';
-      
+
       default:
         return 'An unexpected error occurred. Please try again.';
     }
@@ -125,13 +139,13 @@ class AuthErrorHandlerClass {
       case AuthErrorType.SERVER_ERROR:
       case AuthErrorType.TIMEOUT:
         return true;
-      
+
       case AuthErrorType.TOKEN_EXPIRED:
       case AuthErrorType.REFRESH_FAILED:
       case AuthErrorType.UNAUTHORIZED:
       case AuthErrorType.UNKNOWN:
         return false;
-      
+
       default:
         return false;
     }
@@ -143,7 +157,7 @@ class AuthErrorHandlerClass {
   createAuthError(error: any, customMessage?: string): AuthError {
     const errorType = this.classifyError(error);
     const userMessage = customMessage || this.getUserMessage(errorType, error);
-    
+
     const authError: AuthError = {
       type: errorType,
       message: error.message || 'Unknown error',
@@ -155,20 +169,23 @@ class AuthErrorHandlerClass {
 
     // Add to history
     this.addToHistory(authError);
-    
+
     return authError;
   }
 
   /**
    * Handle authentication errors with appropriate recovery
    */
-  async handleAuthError(error: any, context?: string): Promise<{
+  async handleAuthError(
+    error: any,
+    context?: string
+  ): Promise<{
     shouldRetry: boolean;
     shouldLogout: boolean;
     delay?: number;
   }> {
     const authError = this.createAuthError(error);
-    
+
     console.error(`AuthErrorHandler: ${context || 'Auth error'}:`, {
       type: authError.type,
       message: authError.message,
@@ -180,20 +197,20 @@ class AuthErrorHandlerClass {
     switch (authError.type) {
       case AuthErrorType.NETWORK_ERROR:
         return this.handleNetworkError(authError);
-      
+
       case AuthErrorType.TOKEN_EXPIRED:
       case AuthErrorType.UNAUTHORIZED:
         return this.handleUnauthorizedError(authError);
-      
+
       case AuthErrorType.REFRESH_FAILED:
         return this.handleRefreshFailedError(authError);
-      
+
       case AuthErrorType.SERVER_ERROR:
         return this.handleServerError(authError);
-      
+
       case AuthErrorType.TIMEOUT:
         return this.handleTimeoutError(authError);
-      
+
       default:
         return this.handleUnknownError(authError);
     }
@@ -234,7 +251,7 @@ class AuthErrorHandlerClass {
   }> {
     // Check if we have a refresh token
     const refreshToken = TokenManager.getRefreshToken();
-    
+
     if (!refreshToken) {
       toast.error(error.userMessage);
       return {
@@ -267,11 +284,11 @@ class AuthErrorHandlerClass {
     shouldLogout: boolean;
   }> {
     toast.error(error.userMessage);
-    
+
     // Clear tokens and force logout
     TokenManager.clearTokens();
     RequestQueue.reset();
-    
+
     return {
       shouldRetry: false,
       shouldLogout: true,
@@ -340,10 +357,11 @@ class AuthErrorHandlerClass {
    */
   private calculateRetryDelay(attempt: number): number {
     const delay = Math.min(
-      this.retryConfig.baseDelayMs * Math.pow(this.retryConfig.backoffMultiplier, attempt - 1),
+      this.retryConfig.baseDelayMs *
+        Math.pow(this.retryConfig.backoffMultiplier, attempt - 1),
       this.retryConfig.maxDelayMs
     );
-    
+
     // Add jitter to prevent thundering herd
     const jitter = Math.random() * 0.1 * delay;
     return delay + jitter;
@@ -373,10 +391,10 @@ class AuthErrorHandlerClass {
    */
   private addToHistory(error: AuthError): void {
     this.errorHistory.unshift(error);
-    
+
     // Keep history size manageable
     if (this.errorHistory.length > this.maxHistorySize) {
-      this.errorHistory = this.errorHistory.slice(0, this.maxHistorySize);
+      this.errorHistory.splice(this.maxHistorySize);
     }
   }
 
@@ -404,14 +422,14 @@ class AuthErrorHandlerClass {
   } {
     const now = Date.now();
     const oneHourAgo = now - 60 * 60 * 1000;
-    
+
     const byType = this.errorHistory.reduce((acc, error) => {
       acc[error.type] = (acc[error.type] || 0) + 1;
       return acc;
     }, {} as Record<AuthErrorType, number>);
 
     const recentErrors = this.errorHistory.filter(
-      error => error.timestamp > oneHourAgo
+      (error) => error.timestamp > oneHourAgo
     ).length;
 
     return {

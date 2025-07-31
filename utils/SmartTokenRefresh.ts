@@ -1,18 +1,16 @@
 import TokenManager from './TokenManager';
-import RequestQueue from './RequestQueue';
-// import AuthErrorHandler from './AuthErrorHandler'; // Temporarily disabled to fix circular dependency
 
 export interface RefreshConfig {
-  refreshBufferMs: number; // How early to refresh before expiration
   maxRetries: number; // Max retry attempts for failed refresh
   retryDelayMs: number; // Delay between retry attempts
+  refreshBufferMs: number; // How early to refresh before expiration
   visibilityCheckIntervalMs: number; // How often to check on visibility change
 }
 
 const DEFAULT_CONFIG: RefreshConfig = {
-  refreshBufferMs: 60000, // 1 minute before expiration
   maxRetries: 3,
   retryDelayMs: 5000, // 5 seconds
+  refreshBufferMs: 60000, // 1 minute before expiration
   visibilityCheckIntervalMs: 30000, // 30 seconds
 };
 
@@ -21,12 +19,18 @@ const DEFAULT_CONFIG: RefreshConfig = {
  * Handles proactive token refresh and production-specific scenarios
  */
 class SmartTokenRefreshClass {
-  private config: RefreshConfig;
-  private refreshTimer: NodeJS.Timeout | null = null;
-  private visibilityTimer: NodeJS.Timeout | null = null;
   private retryCount = 0;
   private isRefreshing = false;
+  private config: RefreshConfig;
   private isClient = typeof window !== 'undefined';
+  private refreshTimer: NodeJS.Timeout | null = null;
+  private visibilityTimer: NodeJS.Timeout | null = null;
+
+  // Bound methods for proper event listener cleanup
+  private boundHandleVisibilityChange!: () => void;
+  private boundHandleAppBecameVisible!: () => void;
+  private boundHandleAppBecameHidden!: () => void;
+  private boundCleanup!: () => void;
 
   constructor(config: Partial<RefreshConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
@@ -43,28 +47,35 @@ class SmartTokenRefreshClass {
   private setupVisibilityHandlers(): void {
     if (!this.isClient) return;
 
+    // Store bound methods for proper cleanup
+    this.boundHandleVisibilityChange = this.handleVisibilityChange.bind(this);
+    this.boundHandleAppBecameVisible = this.handleAppBecameVisible.bind(this);
+    this.boundHandleAppBecameHidden = this.handleAppBecameHidden.bind(this);
+    this.boundCleanup = this.cleanup.bind(this);
+
     // Handle page visibility changes (tab switching, app backgrounding)
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') {
-        this.handleAppBecameVisible();
-      } else {
-        this.handleAppBecameHidden();
-      }
-    });
+    document.addEventListener(
+      'visibilitychange',
+      this.boundHandleVisibilityChange
+    );
 
     // Handle window focus/blur (additional layer)
-    window.addEventListener('focus', () => {
-      this.handleAppBecameVisible();
-    });
-
-    window.addEventListener('blur', () => {
-      this.handleAppBecameHidden();
-    });
+    window.addEventListener('focus', this.boundHandleAppBecameVisible);
+    window.addEventListener('blur', this.boundHandleAppBecameHidden);
 
     // Handle page unload cleanup
-    window.addEventListener('beforeunload', () => {
-      this.cleanup();
-    });
+    window.addEventListener('beforeunload', this.boundCleanup);
+  }
+
+  /**
+   * Handle visibility change events
+   */
+  private handleVisibilityChange(): void {
+    if (document.visibilityState === 'visible') {
+      this.handleAppBecameVisible();
+    } else {
+      this.handleAppBecameHidden();
+    }
   }
 
   /**
@@ -147,10 +158,24 @@ class SmartTokenRefreshClass {
         if (response.ok) {
           const data = await response.json();
 
+          // Store tokens in localStorage only (avoid circular dependency)
           TokenManager.setTokens({
             accessToken: data.accessToken,
             refreshToken: data.refreshToken,
           });
+
+          // TODO: Redux update should be handled by the calling code
+          // For now, we'll dispatch a custom event that AuthProvider can listen to
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(
+              new CustomEvent('tokensUpdated', {
+                detail: {
+                  accessToken: data.accessToken,
+                  refreshToken: data.refreshToken,
+                },
+              })
+            );
+          }
 
           console.log('SmartTokenRefresh: Token refresh successful');
           this.retryCount = 0; // Reset retry count on success
@@ -172,9 +197,17 @@ class SmartTokenRefreshClass {
           `SmartTokenRefresh: Retrying in ${this.config.retryDelayMs}ms (attempt ${this.retryCount}/${this.config.maxRetries})`
         );
 
+        const backoffDelay =
+          this.config.retryDelayMs * Math.pow(2, this.retryCount - 1);
+        const finalDelay = Math.min(backoffDelay, 30000); // Cap at 30 seconds
+
+        console.log(
+          `SmartTokenRefresh: Using exponential backoff delay: ${finalDelay}ms`
+        );
+
         setTimeout(() => {
           this.performTokenRefresh();
-        }, this.config.retryDelayMs);
+        }, finalDelay);
       } else {
         console.error(
           'SmartTokenRefresh: Max retries reached, clearing tokens'
@@ -326,11 +359,11 @@ class SmartTokenRefreshClass {
     if (this.isClient) {
       document.removeEventListener(
         'visibilitychange',
-        this.handleAppBecameVisible
+        this.boundHandleVisibilityChange
       );
-      window.removeEventListener('focus', this.handleAppBecameVisible);
-      window.removeEventListener('blur', this.handleAppBecameHidden);
-      window.removeEventListener('beforeunload', this.cleanup);
+      window.removeEventListener('focus', this.boundHandleAppBecameVisible);
+      window.removeEventListener('blur', this.boundHandleAppBecameHidden);
+      window.removeEventListener('beforeunload', this.boundCleanup);
     }
   }
 

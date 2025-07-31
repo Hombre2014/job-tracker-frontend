@@ -26,25 +26,22 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    const checkAuth = () => {
-      if (requireAuth && !authState.isAuthenticated && !authState.isLoading) {
-        console.log('ProtectedRoute: User not authenticated, redirecting to:', redirectTo);
-        router.push(redirectTo);
-        return;
-      }
+    // Only proceed if auth state has been initialized
+    if (authState.isLoading) return;
+    
+    if (requireAuth && !authState.isAuthenticated && !authState.isLoading) {
+      console.log('ProtectedRoute: User not authenticated, redirecting to:', redirectTo);
+      router.push(redirectTo);
+      return;
+    }
 
-      if (!requireAuth && authState.isAuthenticated) {
-        console.log('ProtectedRoute: User already authenticated, redirecting to home');
-        router.push('/home');
-        return;
-      }
+    if (!requireAuth && authState.isAuthenticated) {
+      console.log('ProtectedRoute: User already authenticated, redirecting to home');
+      router.push('/home');
+      return;
+    }
 
-      setIsChecking(false);
-    };
-
-    // Small delay to allow auth state to stabilize
-    const timer = setTimeout(checkAuth, 100);
-    return () => clearTimeout(timer);
+    setIsChecking(false);
   }, [authState.isAuthenticated, authState.isLoading, requireAuth, redirectTo, router]);
 
   // Show loading while checking authentication

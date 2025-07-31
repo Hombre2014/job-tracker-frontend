@@ -44,7 +44,7 @@ The Job Tracker Authentication System is an enterprise-grade, production-ready a
 
 ### High-Level Architecture
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                    Frontend Application                     │
 ├─────────────────────────────────────────────────────────────┤
@@ -80,7 +80,7 @@ The Job Tracker Authentication System is an enterprise-grade, production-ready a
 
 ### Component Interaction Flow
 
-```
+```text
 User Action → React Component → Redux Action → API Client → Backend
      ↓              ↓              ↓            ↓           ↓
 Performance    UI Update    State Update   HTTP Request  Response
@@ -175,7 +175,7 @@ interface SmartRefreshConfig {
 
 **Lifecycle**:
 
-```
+```text
 App Start → Initialize → Check Tokens → Schedule Refresh
     ↓
 Page Visible → Active Monitoring → Token Check → Refresh if Needed
@@ -211,7 +211,7 @@ interface AuthContextType {
 
 **Initialization Flow**:
 
-```
+```text
 App Mount → AuthProvider Init → Load Stored Tokens → Sync to Redux
     ↓
 Load User Data → Parse from localStorage → Update Redux State
@@ -415,7 +415,7 @@ const response = await RequestDeduplicator.deduplicateRequest(
 
 ### 1. Login Process
 
-```
+```text
 User Submits Credentials
          ↓
 Security Validation (Rate Limiting, Attempt Tracking)
@@ -1497,7 +1497,7 @@ const prioritizeRequest = (request: ApiRequest, priority: RequestPriority) => {
 };
 ```
 
-### 4. Memory Management
+### 4. Memory Management Implementation
 
 **Efficient Data Structures**:
 

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { SecurityValidator } from '@/utils/SecurityValidator';
+import { SecurityValidator, SecurityEvent } from '@/utils/SecurityValidator';
 import { PerformanceMonitor } from '@/utils/PerformanceMonitor';
 import { RequestDeduplicator } from '@/utils/RequestDeduplicator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,9 +17,15 @@ const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({
   isVisible = false,
   onClose,
 }) => {
-  const [stats, setStats] = useState<any>(null);
-  const [securityStats, setSecurityStats] = useState<any>(null);
-  const [deduplicatorStats, setDeduplicatorStats] = useState<any>(null);
+  const [stats, setStats] = useState<ReturnType<
+    typeof PerformanceMonitor.getStats
+  > | null>(null);
+  const [securityStats, setSecurityStats] = useState<ReturnType<
+    typeof SecurityValidator.getSecurityStats
+  > | null>(null);
+  const [deduplicatorStats, setDeduplicatorStats] = useState<ReturnType<
+    typeof RequestDeduplicator.getStats
+  > | null>(null);
   const [refreshInterval, setRefreshInterval] = useState<NodeJS.Timeout | null>(
     null
   );
@@ -50,17 +56,18 @@ const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({
   }, [isVisible]);
 
   const clearAllData = () => {
-    PerformanceMonitor.clear();
     SecurityValidator.clear();
+    PerformanceMonitor.clear();
     RequestDeduplicator.clear();
     refreshStats();
   };
 
   const exportData = () => {
     const data = {
-      performance: PerformanceMonitor.exportMetrics(),
-      security: SecurityValidator.getSecurityStats(),
       timestamp: new Date().toISOString(),
+      deduplicator: RequestDeduplicator.getStats(),
+      security: SecurityValidator.getSecurityStats(),
+      performance: PerformanceMonitor.exportMetrics(),
     };
 
     const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -255,10 +262,11 @@ const MonitoringDashboard: React.FC<MonitoringDashboardProps> = ({
                 <CardTitle>Recent Security Events</CardTitle>
               </CardHeader>
               <CardContent>
-                {securityStats?.recentEvents?.length > 0 ? (
+                {Array.isArray(securityStats?.recentEvents) &&
+                securityStats.recentEvents.length > 0 ? (
                   <div className="space-y-2 max-h-60 overflow-auto">
                     {securityStats.recentEvents.map(
-                      (event: any, index: number) => (
+                      (event: SecurityEvent, index: number) => (
                         <div
                           key={index}
                           className={`p-2 rounded text-sm ${

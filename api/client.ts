@@ -1,15 +1,11 @@
 import axios from 'axios';
 import { TokenManager } from '@/utils/TokenManager';
 import { RequestQueue } from '@/utils/RequestQueue';
-// import AuthErrorHandler from '@/utils/AuthErrorHandler'; // Temporarily disabled to fix circular dependency
 
 const client = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   timeout: 30000, // 30 second timeout
 });
-
-// Refresh token synchronization to prevent race conditions
-let refreshPromise: Promise<string> | null = null;
 
 /**
  * Perform token refresh using TokenManager
@@ -35,11 +31,23 @@ async function performTokenRefresh(): Promise<string> {
       const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
         refreshResponse.data;
 
-      // Update tokens using TokenManager (handles both localStorage and Redux)
+      // Update tokens in localStorage only (avoid circular dependency)
       TokenManager.setTokens({
         accessToken: newAccessToken,
         refreshToken: newRefreshToken,
       });
+
+      // Dispatch custom event for Redux updates
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('tokensUpdated', {
+            detail: {
+              accessToken: newAccessToken,
+              refreshToken: newRefreshToken,
+            },
+          })
+        );
+      }
 
       return newAccessToken;
     } else {
@@ -128,22 +136,16 @@ client.interceptors.response.use(
           }
         }
 
-        // Start new refresh
-        if (!refreshPromise) {
-          refreshPromise = performTokenRefresh();
-          RequestQueue.setRefreshPromise(refreshPromise);
-
-          try {
-            const newAccessToken = await refreshPromise;
-            // Update the original request with new token
-            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-            // Retry the original request
-            return client(originalRequest);
-          } catch (refreshError) {
-            return Promise.reject(error);
-          } finally {
-            refreshPromise = null;
-          }
+        // Always start or join the single refresh in RequestQueue
+        if (!RequestQueue.isCurrentlyRefreshing()) {
+          RequestQueue.setRefreshPromise(performTokenRefresh());
+        }
+        try {
+          const newAccessToken = await RequestQueue.waitForRefresh();
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+          return client(originalRequest);
+        } catch {
+          return Promise.reject(error);
         }
       } catch (refreshError) {
         // Refresh failed, clear tokens and redirect

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import MonitoringDashboard from '@/components/admin/MonitoringDashboard';
 import { useAppSelector } from '@/redux/hooks';
@@ -43,18 +43,21 @@ const DevTools: React.FC = () => {
     });
   };
 
-  const handleMouseMove = (event: MouseEvent) => {
-    if (isDragging) {
-      setPosition({
-        x: event.clientX - dragOffset.x,
-        y: event.clientY - dragOffset.y,
-      });
-    }
-  };
+  const handleMouseMove = useCallback(
+    (event: MouseEvent) => {
+      if (isDragging) {
+        setPosition({
+          x: event.clientX - dragOffset.x,
+          y: event.clientY - dragOffset.y,
+        });
+      }
+    },
+    [isDragging, dragOffset]
+  );
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false);
-  };
+  }, []);
 
   useEffect(() => {
     if (isDragging) {
@@ -65,7 +68,7 @@ const DevTools: React.FC = () => {
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [isDragging, dragOffset]);
+  }, [isDragging, dragOffset, handleMouseMove, handleMouseUp]);
 
   const clearLocalStorage = () => {
     const confirmClear = window.confirm(
@@ -102,18 +105,34 @@ const DevTools: React.FC = () => {
 
   const logUserState = () => {
     console.log('Current User State:', user);
-    console.log('LocalStorage user:', localStorage.getItem('user'));
-    console.log('LocalStorage tokens:', {
-      accessToken: localStorage.getItem('accessToken'),
-      refreshToken: localStorage.getItem('refreshToken'),
-    });
+    try {
+      console.log('LocalStorage user:', localStorage.getItem('user'));
+      console.log('LocalStorage tokens:', {
+        accessToken: localStorage.getItem('accessToken'),
+        refreshToken: localStorage.getItem('refreshToken'),
+      });
+    } catch (error) {
+      console.log('LocalStorage access failed:', error);
+    }
   };
 
   const testApiCall = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiUrl) {
+        console.error('API URL not configured');
+        return;
+      }
+
+      const accessToken = localStorage.getItem('accessToken');
+      if (!accessToken) {
+        console.error('No access token available');
+        return;
+      }
+
+      const response = await fetch(`${apiUrl}/users`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          Authorization: `Bearer ${accessToken}`,
         },
       });
       console.log('Test API Response:', response.status, await response.json());
@@ -197,7 +216,14 @@ const DevTools: React.FC = () => {
               User: {user.firstName || 'Not logged in'}
             </div>
             <div className="text-xs text-gray-300">
-              Token: {localStorage.getItem('accessToken') ? '✅' : '❌'}
+              Token:{' '}
+              {(() => {
+                try {
+                  return localStorage.getItem('accessToken') ? '✅' : '❌';
+                } catch {
+                  return '❌';
+                }
+              })()}
             </div>
           </div>
 

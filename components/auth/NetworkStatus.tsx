@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 
 interface NetworkStatusProps {
+  top?: string;
   className?: string;
   showWhenOnline?: boolean;
 }
@@ -14,6 +15,7 @@ interface NetworkStatusProps {
 export const NetworkStatus: React.FC<NetworkStatusProps> = ({
   className = '',
   showWhenOnline = false,
+  top = 'top-0',
 }) => {
   const [isOnline, setIsOnline] = useState(true);
   const [wasOffline, setWasOffline] = useState(false);
@@ -50,29 +52,55 @@ export const NetworkStatus: React.FC<NetworkStatusProps> = ({
   }
 
   return (
-    <div className={`fixed top-0 left-0 right-0 z-50 ${className}`}>
+    <div className={`fixed ${top} left-0 right-0 z-50 ${className}`}>
       {!isOnline && (
         <div className="bg-red-600 text-white px-4 py-2 text-center text-sm font-medium">
           <div className="flex items-center justify-center">
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            <svg
+              role="img"
+              fill="none"
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              className="w-4 h-4 mr-2"
+              aria-label="Warning icon"
+            >
+              <path
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+              />
             </svg>
             No internet connection. Please check your network and try again.
           </div>
         </div>
       )}
-      
+
       {isOnline && wasOffline && (
         <div className="bg-green-600 text-white px-4 py-2 text-center text-sm font-medium animate-pulse">
           <div className="flex items-center justify-center">
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              role="img"
+              fill="none"
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              className="w-4 h-4 mr-2"
+              aria-label="Success icon"
+            >
+              <path
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             Connection restored! Syncing data...
           </div>
         </div>
       )}
-      
+
       {isOnline && showWhenOnline && !wasOffline && (
         <div className="bg-green-100 text-green-800 px-4 py-1 text-center text-xs">
           <div className="flex items-center justify-center">

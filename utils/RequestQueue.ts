@@ -42,6 +42,7 @@ class RequestQueueClass {
   private readonly maxQueueSize = 50;
   private readonly requestTimeout = 30000; // 30 seconds
   private readonly refreshTimeout = 10000; // 10 seconds for refresh
+  private cleanupTimer?: NodeJS.Timeout;
 
   /**
    * Generate unique request ID
@@ -100,6 +101,7 @@ class RequestQueueClass {
   private async processQueue(newAccessToken: string): Promise<void> {
     const requestsToProcess = [...this.queue];
     this.queue = [];
+    let hasRetries = false;
 
     const processPromises = requestsToProcess.map(async (queuedRequest) => {
       try {
@@ -120,6 +122,7 @@ class RequestQueueClass {
         if (queuedRequest.retryCount < this.maxRetries) {
           queuedRequest.retryCount++;
           this.queue.push(queuedRequest);
+          hasRetries = true;
         } else {
           queuedRequest.reject(error);
         }
@@ -127,6 +130,11 @@ class RequestQueueClass {
     });
 
     await Promise.allSettled(processPromises);
+
+    // Process any retried requests
+    if (hasRetries && this.queue.length > 0) {
+      await this.processQueue(newAccessToken);
+    }
   }
 
   /**
@@ -285,9 +293,22 @@ class RequestQueueClass {
    * Periodic cleanup of stale requests
    */
   startCleanupTimer(): void {
-    setInterval(() => {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+    }
+    this.cleanupTimer = setInterval(() => {
       this.cleanupStaleRequests();
     }, 30000); // Clean up every 30 seconds
+  }
+
+  /**
+   * Stop the cleanup timer
+   */
+  stopCleanupTimer(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+      this.cleanupTimer = undefined;
+    }
   }
 }
 

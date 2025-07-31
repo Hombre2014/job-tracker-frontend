@@ -54,3 +54,6 @@ export const FIXED_GRID_STYLES = {
 
 // Max file size for uploads
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+export const MS_PER_MINUTE = 60000;
+export const MS_PER_SECOND = 1000;

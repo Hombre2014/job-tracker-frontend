@@ -1,5 +1,5 @@
-import { store } from '@/redux/store';
-import { updateUserTokens } from '@/redux/user/userSlice';
+// Removed Redux imports to break circular dependency
+// Redux updates should be handled by the calling code
 
 // Storage key constants for maintainability
 const STORAGE_KEYS = {
@@ -104,8 +104,8 @@ class TokenManagerClass {
   }
 
   /**
-   * Set tokens in both localStorage and Redux
-   * This ensures synchronization between storage and state
+   * Set tokens in localStorage only
+   * Note: Redux updates should be handled by the calling code to avoid circular dependencies
    */
   setTokens(tokens: TokenPair): void {
     if (!this.isClient) return;
@@ -113,18 +113,11 @@ class TokenManagerClass {
     // Update localStorage
     localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, tokens.accessToken);
     localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, tokens.refreshToken);
-
-    // Update Redux state
-    store.dispatch(
-      updateUserTokens({
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
-      })
-    );
   }
 
   /**
-   * Clear all tokens from localStorage and Redux
+   * Clear all tokens from localStorage only
+   * Note: Redux updates should be handled by the calling code to avoid circular dependencies
    */
   clearTokens(): void {
     if (!this.isClient) return;
@@ -133,14 +126,6 @@ class TokenManagerClass {
     localStorage.removeItem(STORAGE_KEYS.USER);
     localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
     localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-
-    // Clear Redux state
-    store.dispatch(
-      updateUserTokens({
-        accessToken: '',
-        refreshToken: '',
-      })
-    );
   }
 
   /**
@@ -174,13 +159,12 @@ class TokenManagerClass {
   }
 
   /**
-   * Sync tokens from localStorage to Redux (useful on app startup)
+   * Get tokens from localStorage for Redux sync
+   * Note: This method now returns tokens instead of dispatching to avoid circular dependencies
+   * The calling code should handle Redux updates
    */
-  syncTokensToRedux(): void {
-    const tokens = this.getTokenPair();
-    if (tokens) {
-      store.dispatch(updateUserTokens(tokens));
-    }
+  getTokensForReduxSync(): TokenPair | null {
+    return this.getTokenPair();
   }
 
   /**

@@ -5,6 +5,90 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.181.0] – Critical Bug Fixes and Code Quality Improvements - 2025-01-31
+
+### Critical Bug Fixes
+
+#### Circular Dependency Resolution
+
+- **Fixed critical circular dependency crash**: Resolved initialization order issues causing application crashes
+  - **Issue**: `ReferenceError: Cannot access 'getUser' before initialization` on board pages
+  - **Root Cause**: Circular import chain between `api/client.ts` → `TokenManager.ts` → `redux/store.ts` → `userSlice.ts` → `userThunk.ts` → `api/client.ts`
+  - **Solution**: Moved `getUser` thunk to `userSlice.ts` and implemented event-based Redux updates
+  - **Impact**: Application now loads successfully without crashes on all pages
+  - **Files**:
+    - `redux/user/userSlice.ts` (enhanced with getUser thunk)
+    - `redux/user/userThunk.ts` (getUser moved out)
+    - `utils/TokenManager.ts` (removed Redux dependencies)
+    - `api/client.ts` (event-based token updates)
+    - `utils/SmartTokenRefresh.ts` (event-based token updates)
+    - `components/auth/AuthProvider.tsx` (centralized Redux token handling)
+
+#### Memory Leak Prevention
+
+- **Fixed multiple memory leak vulnerabilities**: Prevented resource leaks in long-running applications
+  - **RequestDeduplicator cleanup timer**: Added `destroy()` method with proper interval cleanup
+  - **SmartTokenRefresh event listeners**: Implemented bound method references for proper cleanup
+  - **RequestQueue cleanup timer**: Added `stopCleanupTimer()` method with interval management
+  - **PerformanceMonitor memory tracking**: Added proper cleanup for memory tracking intervals
+  - **Benefits**: Improved application stability and performance in production environments
+  - **Files**:
+    - `utils/RequestDeduplicator.ts` (added destroy method)
+    - `utils/SmartTokenRefresh.ts` (fixed event listener cleanup)
+    - `utils/RequestQueue.ts` (added timer cleanup)
+    - `utils/PerformanceMonitor.ts` (memory tracking cleanup)
+
+### Code Quality Improvements
+
+#### Type Safety Enhancements
+
+- **Enhanced TypeScript type safety**: Replaced implicit `any` types with proper interfaces
+  - **SecurityEvent interface**: Exported and properly typed for monitoring dashboard
+  - **DevTools error handling**: Added proper validation and error boundaries
+  - **PerformanceMonitor memory types**: Added proper TypeScript interfaces for memory tracking
+  - **Benefits**: Better IDE support, compile-time error detection, and code maintainability
+  - **Files**:
+    - `utils/SecurityValidator.ts` (exported SecurityEvent interface)
+    - `components/admin/MonitoringDashboard.tsx` (proper SecurityEvent typing)
+    - `components/dev/DevTools.tsx` (enhanced error handling)
+    - `utils/PerformanceMonitor.ts` (proper memory interface typing)
+
+#### Retry Logic Improvements
+
+- **Fixed retry mechanism race conditions**: Ensured all retried requests are properly processed
+  - **RequestQueue retry processing**: Added recursive processing for retried requests
+  - **Exponential backoff**: Implemented proper delay calculation with maximum caps
+  - **Request tracking**: Enhanced retry counting and failure handling
+  - **Benefits**: More reliable API request handling and better error recovery
+  - **Files**:
+    - `utils/RequestQueue.ts` (fixed retry processing logic)
+    - `utils/SmartTokenRefresh.ts` (enhanced retry mechanisms)
+
+### Security Enhancements
+
+#### API Error Handling
+
+- **Improved API call validation**: Enhanced error handling and input validation
+  - **DevTools API testing**: Added proper URL and token validation before API calls
+  - **Environment variable checks**: Validated API configuration before making requests
+  - **Error boundaries**: Added comprehensive error handling for development tools
+  - **Benefits**: Prevents invalid API calls and provides better debugging information
+  - **Files**:
+    - `components/dev/DevTools.tsx` (enhanced API validation)
+
+### Performance Optimizations
+
+#### Event-Driven Architecture
+
+- **Implemented event-based token updates**: Decoupled utility functions from Redux store
+  - **Custom events**: Used browser events for loose coupling between modules
+  - **Centralized handling**: Moved Redux updates to AuthProvider for better organization
+  - **Reduced dependencies**: Eliminated circular dependencies while maintaining functionality
+  - **Benefits**: Better performance, cleaner architecture, and easier testing
+  - **Files**:
+    - `utils/TokenManager.ts` (localStorage-only operations)
+    - `components/auth/AuthProvider.tsx` (centralized event handling)
+
 ## [0.180.0] – Enterprise Authentication System Overhaul - 2025-01-27
 
 ### Major Features
@@ -63,7 +147,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Performance**: Optimized state updates with automatic synchronization
 - **Files**: `redux/user/userSlice.ts` (enhanced)
 
-### Security Enhancements
+### Security Enhancements - 2025-01-27
 
 #### Advanced Security Features
 
@@ -80,7 +164,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Error handling**: Secure error messages without information disclosure
 - **Audit logging**: Complete security event tracking for compliance
 
-### Performance Optimizations
+### Performance Optimizations - 2025-01-27
 
 #### Request Optimization
 
@@ -645,7 +729,7 @@ if (!boardId) {
     - `redux/auth/refreshAccessTokenSlice.ts`
     - `redux/store.ts`
 
-#### Code Quality Improvements
+#### Code Quality Improvements - 2025-07-03
 
 - **Enhanced React Hook patterns**: Fixed dependency arrays and added proper cleanup
   - **useCallback optimization**: Memoized functions to prevent unnecessary re-renders

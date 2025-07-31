@@ -155,7 +155,14 @@ class PerformanceMonitorClass {
     if (!this.config.enableMemoryTracking || typeof window === 'undefined')
       return;
 
-    const memory = (performance as any).memory;
+    interface PerformanceMemory {
+      usedJSHeapSize: number;
+      totalJSHeapSize: number;
+      jsHeapSizeLimit: number;
+    }
+
+    const memory = (performance as Performance & { memory?: PerformanceMemory })
+      .memory;
     if (!memory) return;
 
     const metric: MemoryMetric = {
@@ -304,6 +311,8 @@ class PerformanceMonitorClass {
     };
   }
 
+  private memoryTrackingInterval?: NodeJS.Timeout;
+
   /**
    * Setup automatic memory tracking
    */
@@ -311,7 +320,7 @@ class PerformanceMonitorClass {
     if (!this.config.enableMemoryTracking) return;
 
     // Track memory every 30 seconds
-    setInterval(() => {
+    this.memoryTrackingInterval = setInterval(() => {
       this.trackMemoryUsage();
     }, 30000);
   }
@@ -403,6 +412,9 @@ class PerformanceMonitorClass {
   destroy(): void {
     if (this.reportingTimer) {
       clearInterval(this.reportingTimer);
+    }
+    if (this.memoryTrackingInterval) {
+      clearInterval(this.memoryTrackingInterval);
     }
     this.clear();
   }

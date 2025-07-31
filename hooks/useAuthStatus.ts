@@ -1,22 +1,24 @@
 'use client';
 
 import { useMemo } from 'react';
+
 import { useAuth } from '@/components/auth/AuthProvider';
+import { MS_PER_MINUTE, MS_PER_SECOND } from '@/data/constants';
 
 export interface AuthStatus {
-  isAuthenticated: boolean;
-  isRefreshing: boolean;
   isLoading: boolean;
+  error: string | null;
+  isRefreshing: boolean;
+  isAuthenticated: boolean;
   timeUntilExpiration: number | null;
   timeUntilExpirationFormatted: string;
   user: {
     id: string;
     email: string;
-    firstName: string;
     lastName: string;
+    firstName: string;
     profilePicUrl?: string;
   } | null;
-  error: string | null;
 }
 
 /**
@@ -52,8 +54,8 @@ function formatTimeUntilExpiration(timeMs: number | null): string {
     return 'Expired';
   }
 
-  const minutes = Math.floor(timeMs / 60000);
-  const seconds = Math.floor((timeMs % 60000) / 1000);
+  const minutes = Math.floor(timeMs / MS_PER_MINUTE);
+  const seconds = Math.floor((timeMs % MS_PER_MINUTE) / MS_PER_SECOND);
 
   if (minutes > 60) {
     const hours = Math.floor(minutes / 60);

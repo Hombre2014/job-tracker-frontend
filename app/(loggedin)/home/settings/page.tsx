@@ -17,17 +17,25 @@ import { updateUser } from '@/redux/user/userSlice';
 const Settings = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  // Removed local open state - using router navigation instead
-  const accessToken = localStorage.getItem('accessToken');
   const { lastName } = useAppSelector((state) => state.user);
   const [newLastName, setNewLastName] = useState(lastName);
   const { firstName } = useAppSelector((state) => state.user);
   const [newFirstName, setNewFirstName] = useState(firstName);
   const { email, profilePicUrl } = useAppSelector((state) => state.user);
   const [newEmail, setNewEmail] = useState(email);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
   // Removed automatic updateUser call - should only update when user explicitly saves
+
+  useEffect(() => {
+    try {
+      setAccessToken(localStorage.getItem('accessToken'));
+    } catch (error) {
+      console.error('Failed to access localStorage:', error);
+      setAccessToken(null);
+    }
+  }, []);
 
   const handleWeeklyDigest = () => {
     // TODO: Implement weekly digest functionality
@@ -38,6 +46,14 @@ const Settings = () => {
   };
 
   const handleSaveProfile = async () => {
+    if (!accessToken) {
+      toast.error('Access token not available. Please log in again.', {
+        position: 'top-right',
+        autoClose: 3000,
+      });
+      return;
+    }
+    
     try {
       await dispatch(
         updateUser({
@@ -45,7 +61,7 @@ const Settings = () => {
           role: 'user',
           lastName: newLastName,
           firstName: newFirstName,
-          accessToken: accessToken as string,
+          accessToken: accessToken,
         })
       ).unwrap();
 
@@ -79,6 +95,14 @@ const Settings = () => {
       const selectedFile = files[0];
       setPreviewImageUrl(URL.createObjectURL(selectedFile));
 
+      if (!accessToken) {
+        toast.error('Access token not available. Please log in again.', {
+          position: 'top-right',
+          autoClose: 3000,
+        });
+        return;
+      }
+
       try {
         await dispatch(
           updateUser({
@@ -87,7 +111,7 @@ const Settings = () => {
             lastName: newLastName,
             firstName: newFirstName,
             profilePic: selectedFile,
-            accessToken: accessToken as string,
+            accessToken: accessToken,
           })
         ).unwrap();
 

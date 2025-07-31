@@ -1,5 +1,235 @@
 # Technical Documentation
 
+## Critical Bug Fixes and Architecture Improvements (31/01/2025)
+
+### Circular Dependency Resolution (31/01/2025)
+
+#### Problem Analysis (31/01/2025)
+
+The application was experiencing critical crashes due to circular dependencies in the module import chain:
+
+```text
+api/client.ts → TokenManager.ts → redux/store.ts → userSlice.ts → userThunk.ts → api/client.ts
+```
+
+This created initialization order issues where modules tried to access each other before being fully loaded, resulting in `ReferenceError: Cannot access 'getUser' before initialization`.
+
+#### Solution Implementation (31/01/2025)
+
+##### 1. Moved getUser Thunk to Break Circular Chain
+
+```typescript
+// Before: redux/user/userThunk.ts
+export const getUser = createAsyncThunk('user/getUser', async (_, thunkAPI) => {
+  const res = await client.get('/users'); // ❌ Circular dependency
+  return res.data;
+});
+
+// After: redux/user/userSlice.ts
+export const getUser = createAsyncThunk('user/getUser', async (_, thunkAPI) => {
+  const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+    headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
+  }); // ✅ Direct axios call, no circular dependency
+  return res.data;
+});
+```
+
+##### 2. Decoupled TokenManager from Redux
+
+```typescript
+// Before: utils/TokenManager.ts
+import { store } from '@/redux/store';
+import { updateUserTokens } from '@/redux/user/userSlice';
+
+setTokens(tokens: TokenPair): void {
+  localStorage.setItem('accessToken', tokens.accessToken);
+  store.dispatch(updateUserTokens(tokens)); // ❌ Circular dependency
+}
+
+// After: utils/TokenManager.ts
+setTokens(tokens: TokenPair): void {
+  localStorage.setItem('accessToken', tokens.accessToken);
+  // ✅ No Redux dependency - handled by events
+}
+```
+
+##### 3. Event-Driven Redux Updates
+
+```typescript
+// utils/SmartTokenRefresh.ts & api/client.ts
+TokenManager.setTokens({ accessToken, refreshToken });
+window.dispatchEvent(
+  new CustomEvent('tokensUpdated', {
+    detail: { accessToken, refreshToken },
+  })
+);
+
+// components/auth/AuthProvider.tsx
+const handleTokensUpdated = (event: CustomEvent) => {
+  const { accessToken, refreshToken } = event.detail;
+  dispatch(updateUserTokens({ accessToken, refreshToken }));
+};
+window.addEventListener('tokensUpdated', handleTokensUpdated);
+```
+
+### Memory Leak Prevention (31/01/2025)
+
+#### Fixed Multiple Memory Leak Vulnerabilities
+
+##### 1. RequestDeduplicator Cleanup Timer
+
+```typescript
+// Added proper cleanup method
+class RequestDeduplicatorClass {
+  private cleanupInterval?: NodeJS.Timeout;
+
+  constructor() {
+    this.cleanupInterval = setInterval(() => this.cleanup(), 60000);
+  }
+
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = undefined;
+    }
+    this.clear();
+  }
+}
+```
+
+##### 2. SmartTokenRefresh Event Listener Cleanup
+
+```typescript
+// Fixed event listener memory leaks
+class SmartTokenRefreshClass {
+  private boundHandleVisibilityChange!: () => void;
+  private boundHandleAppBecameVisible!: () => void;
+
+  setupVisibilityHandlers(): void {
+    this.boundHandleVisibilityChange = this.handleVisibilityChange.bind(this);
+    document.addEventListener(
+      'visibilitychange',
+      this.boundHandleVisibilityChange
+    );
+  }
+
+  cleanup(): void {
+    document.removeEventListener(
+      'visibilitychange',
+      this.boundHandleVisibilityChange
+    );
+  }
+}
+```
+
+##### 3. RequestQueue Timer Management
+
+```typescript
+// Added timer cleanup capabilities
+class RequestQueueClass {
+  private cleanupTimer?: NodeJS.Timeout;
+
+  startCleanupTimer(): void {
+    if (this.cleanupTimer) clearInterval(this.cleanupTimer);
+    this.cleanupTimer = setInterval(() => this.cleanupStaleRequests(), 30000);
+  }
+
+  stopCleanupTimer(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+      this.cleanupTimer = undefined;
+    }
+  }
+}
+```
+
+### Type Safety Enhancements (31/01/2025)
+
+#### Enhanced TypeScript Integration
+
+##### 1. SecurityEvent Interface Export
+
+```typescript
+// utils/SecurityValidator.ts
+export interface SecurityEvent {
+  message: string;
+  timestamp: number;
+  metadata?: Record<string, any>;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  type: 'rate_limit' | 'login_attempt' | 'token_validation' | 'suspicious_activity';
+}
+
+// components/admin/MonitoringDashboard.tsx
+import { SecurityValidator, SecurityEvent } from '@/utils/SecurityValidator';
+
+{securityStats.recentEvents.map((event: SecurityEvent, index: number) => (
+  // ✅ Proper typing instead of any
+))}
+```
+
+##### 2. PerformanceMonitor Memory Interface
+
+```typescript
+// utils/PerformanceMonitor.ts
+interface PerformanceMemory {
+  usedJSHeapSize: number;
+  totalJSHeapSize: number;
+  jsHeapSizeLimit: number;
+}
+
+const memory = (performance as Performance & { memory?: PerformanceMemory })
+  .memory;
+```
+
+### Retry Logic Improvements (31/01/2025)
+
+#### Fixed Race Conditions in Request Processing
+
+##### 1. RequestQueue Retry Processing
+
+```typescript
+// Fixed retry mechanism to ensure all retried requests are processed
+private async processQueue(newAccessToken: string): Promise<void> {
+  const requestsToProcess = [...this.queue];
+  this.queue = [];
+  let hasRetries = false;
+
+  // Process requests...
+  if (queuedRequest.retryCount < this.maxRetries) {
+    queuedRequest.retryCount++;
+    this.queue.push(queuedRequest);
+    hasRetries = true; // ✅ Track retries
+  }
+
+  await Promise.allSettled(processPromises);
+
+  // ✅ Recursively process retried requests
+  if (hasRetries && this.queue.length > 0) {
+    await this.processQueue(newAccessToken);
+  }
+}
+```
+
+### Updated Architecture Diagram (31/01/2025)
+
+```mermaid
+graph TD
+    A[API Client] --> B[TokenManager - localStorage only]
+    B --> C[Custom Events]
+    C --> D[AuthProvider]
+    D --> E[Redux Store]
+
+    F[SmartTokenRefresh] --> B
+    F --> C
+
+    G[User Components] --> H[getUser from userSlice]
+    H --> I[Direct Axios Call]
+
+    J[RequestQueue] --> K[Cleanup Timer Management]
+    L[RequestDeduplicator] --> M[Destroy Method]
+    N[PerformanceMonitor] --> O[Memory Tracking Cleanup]
+```
+
 ## Enterprise Authentication System (27/01/2025)
 
 ### Overview (27/01/2025)
@@ -267,7 +497,7 @@ class RequestDeduplicatorClass {
 #### 2. Rate Limiting (27/01/2025)
 
 - **Configurable Limits**: Default 100 requests per 15-minute window
-- **Per-Identifier Tracking**: IP-based or user-based rate limiting
+- **Per-Identifier Tracking**: IP-based or user-based rate-limiting
 - **Sliding Window**: Automatic reset after window expiration
 - **Remaining Requests**: Real-time calculation of available requests
 

@@ -1,12 +1,13 @@
 'use client';
 
 import React from 'react';
+
 import { useAuth } from './AuthProvider';
 import { useAuthStatus } from '@/hooks/useAuthStatus';
 
 interface AuthStatusDebugProps {
-  showDetails?: boolean;
   className?: string;
+  showDetails?: boolean;
 }
 
 /**
@@ -25,18 +26,22 @@ export const AuthStatusDebug: React.FC<AuthStatusDebugProps> = ({
   }
 
   return (
-    <div className={`fixed bottom-4 right-4 bg-gray-900 text-white p-4 rounded-lg shadow-lg text-xs max-w-sm z-50 ${className}`}>
+    <div
+      className={`fixed bottom-4 right-4 bg-gray-900 text-white p-4 rounded-lg shadow-lg text-xs max-w-sm z-50 ${className}`}
+    >
       <div className="flex items-center justify-between mb-2">
         <h3 className="font-bold text-sm">Auth Status</h3>
         <div className="flex gap-1">
           <button
+            type="button"
             onClick={() => refreshToken()}
-            className="px-2 py-1 bg-blue-600 rounded text-xs hover:bg-blue-700"
             disabled={authState.isRefreshing}
+            className="px-2 py-1 bg-blue-600 rounded text-xs hover:bg-blue-700"
           >
             {authState.isRefreshing ? 'Refreshing...' : 'Refresh'}
           </button>
           <button
+            type="button"
             onClick={debugAuth}
             className="px-2 py-1 bg-green-600 rounded text-xs hover:bg-green-700"
           >
@@ -44,9 +49,10 @@ export const AuthStatusDebug: React.FC<AuthStatusDebugProps> = ({
           </button>
           {authState.isAuthenticated && (
             <button
+              type="button"
               onClick={() => logout()}
-              className="px-2 py-1 bg-red-600 rounded text-xs hover:bg-red-700"
               disabled={authState.isLoading}
+              className="px-2 py-1 bg-red-600 rounded text-xs hover:bg-red-700"
             >
               Logout
             </button>
@@ -57,21 +63,33 @@ export const AuthStatusDebug: React.FC<AuthStatusDebugProps> = ({
       <div className="space-y-1">
         <div className="flex justify-between">
           <span>Authenticated:</span>
-          <span className={authState.isAuthenticated ? 'text-green-400' : 'text-red-400'}>
+          <span
+            className={
+              authState.isAuthenticated ? 'text-green-400' : 'text-red-400'
+            }
+          >
             {authState.isAuthenticated ? 'Yes' : 'No'}
           </span>
         </div>
 
         <div className="flex justify-between">
           <span>Refreshing:</span>
-          <span className={authState.isRefreshing ? 'text-yellow-400' : 'text-gray-400'}>
+          <span
+            className={
+              authState.isRefreshing ? 'text-yellow-400' : 'text-gray-400'
+            }
+          >
             {authState.isRefreshing ? 'Yes' : 'No'}
           </span>
         </div>
 
         <div className="flex justify-between">
           <span>Loading:</span>
-          <span className={authState.isLoading ? 'text-yellow-400' : 'text-gray-400'}>
+          <span
+            className={
+              authState.isLoading ? 'text-yellow-400' : 'text-gray-400'
+            }
+          >
             {authState.isLoading ? 'Yes' : 'No'}
           </span>
         </div>
@@ -79,7 +97,13 @@ export const AuthStatusDebug: React.FC<AuthStatusDebugProps> = ({
         {authState.timeUntilExpiration && (
           <div className="flex justify-between">
             <span>Expires in:</span>
-            <span className={authState.timeUntilExpiration < 300000 ? 'text-yellow-400' : 'text-green-400'}>
+            <span
+              className={
+                authState.timeUntilExpiration < 300000
+                  ? 'text-yellow-400'
+                  : 'text-green-400'
+              }
+            >
               {authStatus.timeUntilExpirationFormatted}
             </span>
           </div>
@@ -107,7 +131,18 @@ export const AuthStatusDebug: React.FC<AuthStatusDebugProps> = ({
             </summary>
             <div className="mt-2 p-2 bg-gray-800 rounded text-xs">
               <pre className="whitespace-pre-wrap overflow-auto max-h-32">
-                {JSON.stringify(authState, null, 2)}
+                {JSON.stringify(
+                  authState,
+                  (key, value) => {
+                    if (typeof value === 'object' && value !== null) {
+                      if (value instanceof Date) return value.toISOString();
+                      // Handle potential circular references
+                      return value;
+                    }
+                    return value;
+                  },
+                  2
+                )}
               </pre>
             </div>
           </details>
