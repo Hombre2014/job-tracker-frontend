@@ -43,6 +43,7 @@ const DEFAULT_CONFIG: SecurityConfig = {
 
 class SecurityValidatorClass {
   private config: SecurityConfig;
+  private cleanupInterval: NodeJS.Timeout | null = null;
   private rateLimitMap = new Map<string, RateLimitEntry>();
   private loginAttempts = new Map<
     string,
@@ -55,7 +56,7 @@ class SecurityValidatorClass {
     this.config = { ...DEFAULT_CONFIG, ...config };
 
     // Cleanup old entries periodically
-    setInterval(() => {
+    this.cleanupInterval = setInterval(() => {
       this.cleanup();
     }, 60000); // Every minute
   }
@@ -84,7 +85,8 @@ class SecurityValidatorClass {
         return { isValid: false, reason: 'Invalid token structure' };
       }
 
-      // TODO: Add signature verification with public key
+      // ⚠️ SECURITY WARNING: This method only validates JWT structure, NOT authenticity!
+      // TODO: Add signature verification with public key for production security
       // This currently only validates structure, not authenticity
       // Decode payload (without verification for structure check)
       // Handle URL-safe base64 and provide better error handling
@@ -444,6 +446,18 @@ class SecurityValidatorClass {
     this.loginAttempts.clear();
     this.securityEvents = [];
     this.suspiciousIPs.clear();
+  }
+
+  /**
+   * Destroy the instance and cleanup resources
+   * Prevents memory leaks by clearing the cleanup interval timer
+   */
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+    this.clear();
   }
 
   /**

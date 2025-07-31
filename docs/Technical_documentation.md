@@ -143,6 +143,30 @@ class RequestQueueClass {
 }
 ```
 
+##### 4. SecurityValidator Resource Management
+
+```typescript
+// Fixed memory leak in SecurityValidator cleanup interval
+class SecurityValidatorClass {
+  private cleanupInterval: NodeJS.Timeout | null = null;
+
+  constructor(config: Partial<SecurityConfig> = {}) {
+    // Store interval ID for proper cleanup
+    this.cleanupInterval = setInterval(() => {
+      this.cleanup();
+    }, 60000);
+  }
+
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+    this.clear();
+  }
+}
+```
+
 ### Type Safety Enhancements (31/01/2025)
 
 #### Enhanced TypeScript Integration
@@ -229,6 +253,49 @@ graph TD
     L[RequestDeduplicator] --> M[Destroy Method]
     N[PerformanceMonitor] --> O[Memory Tracking Cleanup]
 ```
+
+### Performance Optimizations (31/01/2025)
+
+#### Configurable Auth State Update Intervals
+
+**Problem**: Fixed 30-second auth state updates were too frequent for production environments, impacting performance and battery life.
+
+**Solution**: Environment-based configurable update intervals with validation and smart defaults.
+
+```typescript
+// components/auth/AuthProvider.tsx
+const getAuthUpdateInterval = (): number => {
+  const envInterval = process.env.NEXT_PUBLIC_AUTH_UPDATE_INTERVAL;
+
+  if (envInterval) {
+    const parsed = parseInt(envInterval, 10);
+    // Validate range: minimum 10 seconds, maximum 5 minutes
+    if (!isNaN(parsed) && parsed >= 10000 && parsed <= 300000) {
+      return parsed;
+    }
+  }
+
+  // Default: 30 seconds for development, 60 seconds for production
+  return process.env.NODE_ENV === 'development' ? 30000 : 60000;
+};
+
+const UPDATE_INTERVAL = getAuthUpdateInterval();
+const interval = setInterval(updateAuthState, UPDATE_INTERVAL);
+```
+
+**Configuration**:
+
+```env
+# Environment variable for auth update interval
+NEXT_PUBLIC_AUTH_UPDATE_INTERVAL=60000  # 60 seconds (production recommended)
+```
+
+**Benefits**:
+
+- **Performance**: Reduced CPU usage and improved battery life
+- **Flexibility**: Different intervals for different environments
+- **Validation**: Range validation prevents invalid configurations
+- **Smart Defaults**: 30s for development, 60s for production
 
 ## Enterprise Authentication System (27/01/2025)
 
@@ -489,10 +556,12 @@ class RequestDeduplicatorClass {
 
 #### 1. JWT Token Validation (27/01/2025)
 
+⚠️ **Security Note**: Client-side JWT operations use `jwt.decode()` for UX purposes only (timers, display). All security decisions require server-side `jwt.verify()` with signature validation.
+
 - **Structure Validation**: Ensures proper JWT format (header.payload.signature)
-- **Claims Verification**: Validates required claims (sub, exp, iat)
-- **Expiration Checking**: Automatic token expiration detection
-- **Clock Skew Protection**: Tolerance for server/client time differences
+- **Claims Verification**: Validates required claims (sub, exp, iat) - server-side only for security
+- **Expiration Checking**: Automatic token expiration detection (UX enhancement)
+- **Clock Skew Protection**: Tolerance for server/client time differences (display purposes)
 
 #### 2. Rate Limiting (27/01/2025)
 
@@ -1363,7 +1432,7 @@ formData.append('fileSize', file.size.toString());
 const fileSize = document.fileSize; // From API response
 ```
 
-**Benefits of Database Storage:**
+##### Benefits of Database Storage
 
 - ✅ Persistent across browser sessions and devices
 - ✅ No data loss when localStorage is cleared

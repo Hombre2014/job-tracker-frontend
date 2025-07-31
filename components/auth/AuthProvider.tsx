@@ -170,8 +170,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }));
     };
 
-    // Update every 30 seconds
-    const interval = setInterval(updateAuthState, 30000);
+    // Configurable update interval with validation and environment-based defaults
+    const getAuthUpdateInterval = (): number => {
+      const envInterval = process.env.NEXT_PUBLIC_AUTH_UPDATE_INTERVAL;
+
+      if (envInterval) {
+        const parsed = parseInt(envInterval, 10);
+        // Validate range: minimum 10 seconds, maximum 5 minutes
+        if (!isNaN(parsed) && parsed >= 10000 && parsed <= 300000) {
+          return parsed;
+        }
+      }
+
+      // Default: 30 seconds for development, 60 seconds for production
+      return process.env.NODE_ENV === 'development' ? 30000 : 60000;
+    };
+
+    const UPDATE_INTERVAL = getAuthUpdateInterval();
+    const interval = setInterval(updateAuthState, UPDATE_INTERVAL);
     return () => clearInterval(interval);
   }, []);
 

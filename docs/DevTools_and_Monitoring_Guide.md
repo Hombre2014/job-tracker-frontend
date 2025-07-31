@@ -78,7 +78,10 @@ The Job Tracker includes a comprehensive development and monitoring system that 
 
 - **DevTools Component**: Automatically available in **development mode only** (`NODE_ENV=development`)
 - **Monitoring Dashboard**: Available in **both development and production** (can be configured)
-- **Performance Monitoring**: Always running in the background (configurable)
+- **Performance Monitoring**:
+  - **Development**: Enabled by default with full features
+  - **Production**: Essential monitoring only (disabled by default, can be enabled)
+  - **Configurable**: Use `PerformanceMonitor.updateConfig()` to enable/disable
 - **Security Monitoring**: Always active for production security
 
 ---
@@ -573,6 +576,26 @@ import { PerformanceMonitor } from '@/utils/PerformanceMonitor';
 // and cleaned up automatically when the monitor is destroyed
 ```
 
+#### **SecurityValidator Resource Cleanup**
+
+```typescript
+// SecurityValidator cleanup for memory leak prevention
+import { SecurityValidator } from '@/utils/SecurityValidator';
+
+// The SecurityValidator now includes proper cleanup for interval timers
+// preventing memory leaks in long-running applications
+
+// Manual cleanup (if needed)
+SecurityValidator.destroy(); // Clears interval timer and all data
+
+// Automatic cleanup in components
+useEffect(() => {
+  return () => {
+    SecurityValidator.destroy(); // Cleanup on unmount
+  };
+}, []);
+```
+
 ### Best Practices for Memory Management
 
 #### **Component Cleanup**
@@ -586,6 +609,7 @@ const MyComponent = () => {
       RequestDeduplicator.destroy();
       RequestQueue.stopCleanupTimer();
       SmartTokenRefresh.cleanup();
+      SecurityValidator.destroy();
     };
 
     // Cleanup on unmount
@@ -608,6 +632,7 @@ afterEach(() => {
   RequestDeduplicator.destroy();
   RequestQueue.stopCleanupTimer();
   SmartTokenRefresh.cleanup();
+  SecurityValidator.destroy();
 });
 ```
 

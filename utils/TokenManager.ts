@@ -30,11 +30,23 @@ class TokenManagerClass {
 
   /**
    * Get token expiration timestamp from JWT
+   * ⚠️ SECURITY WARNING: This method decodes JWT without signature verification
+   * Used for UX purposes only (showing countdown timers, logout warnings)
+   * Never use for security decisions - server must verify signatures
    */
   private getTokenExpiration(token: string): number | null {
     try {
+      // ⚠️ UX ONLY: Decoding without verification - can be forged!
       const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.exp ? payload.exp * 1000 : null;
+      // Validate payload structure and exp field
+      if (
+        typeof payload === 'object' &&
+        payload !== null &&
+        typeof payload.exp === 'number'
+      ) {
+        return payload.exp * 1000;
+      }
+      return null;
     } catch {
       return null;
     }

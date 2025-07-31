@@ -58,7 +58,9 @@ export const login = createAsyncThunk(
 
       if (response.status === 200) {
         const { accessToken, refreshToken } = response.data;
-        // Verify token signature if public key is available
+        // ⚠️ SECURITY WARNING: jwt.decode() does NOT verify signatures!
+        // This is for UX purposes only (storing user info for display)
+        // Server must verify token signatures for all security decisions
         const decoded = jwt.decode(accessToken); // TODO: Add signature verification
 
         if (process.env.NODE_ENV === 'development') {
@@ -244,7 +246,9 @@ export const updateUser = createAsyncThunk(
 
       if (response.status === 200) {
         const updatedUserData = response.data;
-        console.log('UpdateUser: API response:', updatedUserData);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('UpdateUser: API response:', updatedUserData);
+        }
 
         // Update localStorage with new user data
         const storedUser = localStorage.getItem('user');

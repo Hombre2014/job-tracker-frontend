@@ -40,6 +40,62 @@ The Job Tracker Authentication System is an enterprise-grade, production-ready a
 
 ---
 
+## ⚠️ Critical Security Notice
+
+### JWT Client-Side Decoding Security Warning
+
+**IMPORTANT**: This documentation contains examples of client-side JWT decoding using `jwt.decode()`. These examples are for **UX purposes only** and should **NEVER** be used for security decisions.
+
+#### 🚨 Security Facts:
+
+- **`jwt.decode()` does NOT verify signatures** - it only decodes the payload
+- **Tokens can be easily forged** - anyone can create fake JWTs with any claims
+- **Client-side decoding is unsafe** for authorization or security decisions
+- **Server-side verification is mandatory** for all security-critical operations
+
+#### ✅ Safe Usage (UX Only):
+
+```typescript
+// ✅ SAFE: For display purposes only
+const decoded = jwt.decode(accessToken);
+const timeUntilExpiration = decoded.exp * 1000 - Date.now();
+// Show countdown timer to user
+```
+
+#### ❌ Unsafe Usage (Security Decisions):
+
+```typescript
+// ❌ DANGEROUS: Never use for security decisions
+const decoded = jwt.decode(accessToken);
+if (decoded.role === 'admin') {
+  // This can be forged! Never do this!
+  showAdminPanel();
+}
+```
+
+#### 🔒 Proper Security Pattern:
+
+```typescript
+// ✅ SECURE: Server-side verification required
+// Backend API endpoint with proper JWT verification
+app.get('/admin', authenticateToken, (req, res) => {
+  // jwt.verify() was called in authenticateToken middleware
+  if (req.user.role === 'admin') {
+    res.json({ adminData: true });
+  }
+});
+```
+
+#### 📋 Security Checklist:
+
+- ✅ Use `jwt.decode()` only for UX (timers, display info)
+- ✅ Always verify signatures server-side with `jwt.verify()`
+- ✅ Never trust client-side decoded claims for authorization
+- ✅ Implement proper server-side authentication middleware
+- ✅ Use HTTPS in production to prevent token interception
+
+---
+
 ## Architecture
 
 ### High-Level Architecture
@@ -904,6 +960,7 @@ NEXT_PUBLIC_TOKEN_REFRESH_THRESHOLD=300000  # 5 minutes
 NEXT_PUBLIC_MAX_LOGIN_ATTEMPTS=5
 NEXT_PUBLIC_RATE_LIMIT_WINDOW=900000        # 15 minutes
 NEXT_PUBLIC_RATE_LIMIT_MAX_REQUESTS=100
+NEXT_PUBLIC_AUTH_UPDATE_INTERVAL=60000      # Auth state update interval (60 seconds)
 
 # Development Settings
 NODE_ENV=development
@@ -1263,17 +1320,26 @@ window.addEventListener('offline', handleNetworkChange);
 **Mitigation**:
 
 ```typescript
+// ⚠️ SECURITY WARNING: This example is for UX purposes only!
+// jwt.decode() does NOT verify signatures - tokens can be forged
+// Never use this pattern for security decisions - server verification required
+
 // Clock skew tolerance (5 minutes)
 const CLOCK_SKEW_TOLERANCE = 5 * 60 * 1000;
 
 const isTokenExpired = (token: string): boolean => {
-  const payload = jwt.decode(token);
+  // ⚠️ UX ONLY: For showing countdown timers, logout warnings, etc.
+  // Server must independently verify token expiration for security
+  const payload = jwt.decode(token); // Unverified - can be forged!
   const now = Math.floor(Date.now() / 1000);
   const expiration = payload.exp;
 
-  // Add tolerance for clock skew
+  // Add tolerance for clock skew (UX enhancement only)
   return expiration + CLOCK_SKEW_TOLERANCE / 1000 < now;
 };
+
+// ✅ SECURE: Server-side verification pattern
+// app.use(authenticateToken); // Middleware that calls jwt.verify()
 ```
 
 ### 4. Concurrent Request Handling
@@ -1357,14 +1423,16 @@ const validateEmail = (email: string): boolean => {
   return emailRegex.test(email);
 };
 
-// Password strength validation
+// Password strength validation (RECOMMENDED: Use zxcvbn library for production)
+// Current implementation uses basic validation - consider upgrading to zxcvbn
 const validatePassword = (password: string): boolean => {
-  return (
-    password.length >= 8 &&
-    /[A-Z]/.test(password) &&
-    /[a-z]/.test(password) &&
-    /\d/.test(password)
-  );
+  // Basic validation (minimum requirements)
+  return password.length >= 8;
+
+  // TODO: Replace with zxcvbn for production:
+  // import zxcvbn from 'zxcvbn';
+  // const result = zxcvbn(password);
+  // return result.score >= 3; // Strong password required
 };
 ```
 
