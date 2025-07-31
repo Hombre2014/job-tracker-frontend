@@ -1,11 +1,12 @@
 'use client';
 
 import { useLocalStorage } from 'usehooks-ts';
-import { useEffect, useState, forwardRef } from 'react';
+import { useEffect, useState, forwardRef, useMemo } from 'react';
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { TokenManager } from '@/utils/TokenManager';
 import { useAppSelector, useAppDispatch } from '@/redux/hooks';
 import { getBoardWithColumns } from '@/redux/boards/boardsThunk';
 import {
@@ -49,7 +50,8 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
     const dispatch = useAppDispatch();
 
     const [open, setOpen] = useState(false);
-    const accessToken = localStorage.getItem('accessToken');
+    const accessToken = TokenManager.getAccessToken();
+    const hasValidTokens = TokenManager.hasValidTokens();
     const { lastName } = useAppSelector((state) => state.user);
     const { firstName } = useAppSelector((state) => state.user);
     const { boardsStatus } = useAppSelector((state) => state.boards);
@@ -62,14 +64,23 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
       false
     );
 
+    // Memoize authentication dependencies to reduce re-renders
+    const authDeps = useMemo(
+      () => ({
+        accessToken,
+        hasValidTokens,
+      }),
+      [accessToken, hasValidTokens]
+    );
+
     useEffect(() => {
       // Only set localStorage if user is authenticated
-      if (accessToken) {
+      if (authDeps.hasValidTokens) {
         if (itemsType === 'boards') {
           localStorage.setItem('chosenBoard', chosenBoard as string);
           const boardId = items.find((item) => item.name === chosenBoard)?.id;
           const values = {
-            accessToken,
+            accessToken: authDeps.accessToken,
             boardId: boardId,
           };
           dispatch(getBoardWithColumns(values));
@@ -83,13 +94,15 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
       itemsType,
       valueBoard,
       chosenBoard,
-      accessToken,
+      authDeps,
       chosenColumn,
       firstColumnOfTheBoard,
+      dispatch,
+      items,
     ]);
 
     useEffect(() => {
-      if (boardValueChanged && accessToken) {
+      if (boardValueChanged && authDeps.hasValidTokens) {
         localStorage.setItem('chosenColumn', firstColumnOfTheBoard!);
 
         const columnId = items.find(
@@ -101,7 +114,7 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
       boardValueChanged,
       chosenColumn,
       firstColumnOfTheBoard,
-      accessToken,
+      authDeps,
       items,
     ]);
 

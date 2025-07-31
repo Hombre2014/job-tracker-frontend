@@ -79,7 +79,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Reusable function to sync user data from localStorage to Redux
   const syncUserDataToRedux = useCallback(
     (logContext?: string) => {
-      const storedUser = localStorage.getItem('user');
+      let storedUser: string | null = null;
+      try {
+        storedUser = localStorage.getItem('user');
+      } catch (error) {
+        console.warn('AuthProvider: Failed to access localStorage:', error);
+        return null;
+      }
+
       if (storedUser) {
         try {
           const userData = JSON.parse(storedUser);
@@ -319,11 +326,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [
     dispatch,
-    reduxUser.email,
-    reduxUser.firstName,
+    reduxUser, // Use entire object instead of individual properties to reduce re-renders
     syncUserDataToRedux,
-    reduxUser.accessToken,
-    reduxUser.refreshToken,
   ]);
 
   // Auth actions
