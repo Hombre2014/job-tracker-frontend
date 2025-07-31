@@ -734,6 +734,47 @@ SecurityValidator.updateConfig({
 
 ### 🔍 **Common Issues**
 
+#### **SSR Bundling Errors with Complex Memoization**
+
+**Issue**: `Cannot find module './vendor-chunks/@radix-ui.js'` or similar vendor chunk errors
+
+**Symptoms**:
+
+- UI layout completely broken
+- Server-side rendering failures
+- Webpack bundling errors
+- Application crashes on page load
+
+**Root Cause**: Complex `useMemo` patterns in components that render server-side can create circular references during Next.js bundling
+
+**Solution**:
+
+```javascript
+// ❌ Avoid: Complex memoization in SSR components
+const authDeps = useMemo(
+  () => ({
+    accessToken,
+    hasValidTokens,
+  }),
+  [accessToken, hasValidTokens]
+);
+
+// ✅ Prefer: Direct dependencies in SSR components
+useEffect(() => {
+  if (hasValidTokens) {
+    // ... component logic
+  }
+}, [hasValidTokens /* other direct deps */]);
+```
+
+**Resolution Steps**:
+
+1. Clear Next.js cache: `rm -rf .next`
+2. Clear node modules cache: `rm -rf node_modules/.cache`
+3. Simplify complex memoization patterns
+4. Use direct dependencies instead of memoized objects
+5. Rebuild: `npm run build` or `npm run dev`
+
 #### **DevTools Not Appearing**
 
 **Problem**: DevTools panel doesn't show when pressing Ctrl+Shift+D

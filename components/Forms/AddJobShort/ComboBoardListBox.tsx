@@ -1,7 +1,7 @@
 'use client';
 
 import { useLocalStorage } from 'usehooks-ts';
-import { useEffect, useState, forwardRef, useMemo } from 'react';
+import { useEffect, useState, forwardRef } from 'react';
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 
 import { cn } from '@/lib/utils';
@@ -64,23 +64,14 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
       false
     );
 
-    // Memoize authentication dependencies to reduce re-renders
-    const authDeps = useMemo(
-      () => ({
-        accessToken,
-        hasValidTokens,
-      }),
-      [accessToken, hasValidTokens]
-    );
-
     useEffect(() => {
       // Only set localStorage if user is authenticated
-      if (authDeps.hasValidTokens) {
+      if (hasValidTokens) {
         if (itemsType === 'boards') {
           localStorage.setItem('chosenBoard', chosenBoard as string);
           const boardId = items.find((item) => item.name === chosenBoard)?.id;
           const values = {
-            accessToken: authDeps.accessToken,
+            accessToken,
             boardId: boardId,
           };
           dispatch(getBoardWithColumns(values));
@@ -94,7 +85,8 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
       itemsType,
       valueBoard,
       chosenBoard,
-      authDeps,
+      accessToken,
+      hasValidTokens,
       chosenColumn,
       firstColumnOfTheBoard,
       dispatch,
@@ -102,7 +94,7 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
     ]);
 
     useEffect(() => {
-      if (boardValueChanged && authDeps.hasValidTokens) {
+      if (boardValueChanged && hasValidTokens) {
         localStorage.setItem('chosenColumn', firstColumnOfTheBoard!);
 
         const columnId = items.find(
@@ -114,7 +106,7 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
       boardValueChanged,
       chosenColumn,
       firstColumnOfTheBoard,
-      authDeps,
+      hasValidTokens,
       items,
     ]);
 

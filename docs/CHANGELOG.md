@@ -23,14 +23,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Performance and Code Quality Optimizations
 
-- **Optimized React useEffect dependencies**: Reduced re-render frequency through dependency array optimization and memoization
+- **Optimized React useEffect dependencies**: Reduced re-render frequency through dependency array optimization
 
   - **Issue**: Complex dependency arrays in AuthProvider and ComboBoardListBox causing frequent re-renders
-  - **Solution**: Simplified dependency arrays and added strategic memoization
+  - **Solution**: Simplified dependency arrays with strategic optimizations
   - **Improvements**:
     - 🚀 **AuthProvider**: Use entire `reduxUser` object instead of individual properties
-    - 🧠 **ComboBoardListBox**: Memoized authentication dependencies to reduce re-renders
     - ⚡ **Performance**: Fewer unnecessary component re-renders
+    - 🔧 **Stability**: Simplified approach prevents SSR bundling issues
+  - **Note**: Initial memoization approach caused Radix UI bundling errors in SSR, resolved with simpler direct dependencies
   - **Files**: `components/auth/AuthProvider.tsx`, `components/Forms/AddJobShort/ComboBoardListBox.tsx`
 
 - **Centralized token management**: Replaced direct localStorage access with TokenManager utility
@@ -213,6 +214,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `utils/SmartTokenRefresh.ts` (fixed event listener cleanup)
     - `utils/RequestQueue.ts` (added timer cleanup)
     - `utils/PerformanceMonitor.ts` (memory tracking cleanup)
+
+#### Radix UI Bundling Error Resolution
+
+- **Fixed critical SSR bundling error**: Resolved "Cannot find module './vendor-chunks/@radix-ui.js'" error that crashed the application
+  - **Issue**: Complex memoization in ComboBoardListBox component caused Next.js vendor chunk bundling failures during SSR
+  - **Symptoms**:
+    - 🚨 **UI Breakdown**: Layout and styling completely broken
+    - 💥 **App Crash**: Server error preventing page loads
+    - 🔄 **Build Failures**: Webpack unable to resolve Radix UI vendor chunks
+  - **Root Cause**: `useMemo` with complex authentication dependencies created circular references during server-side rendering
+  - **Solution**: Simplified dependency management by removing complex memoization and using direct dependencies
+  - **Resolution Steps**:
+    - 🧹 **Cache Clearing**: Removed `.next` and `node_modules/.cache` directories
+    - 🔧 **Code Simplification**: Replaced memoized `authDeps` with direct `hasValidTokens` usage
+    - 🚀 **Fresh Build**: Clean rebuild resolved vendor chunk issues
+  - **Impact**: Application now stable with all performance improvements retained except complex memoization
+  - **Files**: `components/Forms/AddJobShort/ComboBoardListBox.tsx`
 
 ### Code Quality Improvements - 2025-01-31
 
