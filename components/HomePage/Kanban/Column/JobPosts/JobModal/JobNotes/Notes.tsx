@@ -228,6 +228,7 @@ const Notes = () => {
                           buttonConfirm="Delete"
                           dialogTitle="Delete Note"
                           buttonLabel="Delete Note"
+                          cleanupType="none"
                           destructiveVariant={true}
                           onOpenChange={(isOpen) => {
                             if (!isOpen) handleCancel();

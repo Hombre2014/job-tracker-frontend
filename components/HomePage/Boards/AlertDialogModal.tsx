@@ -12,7 +12,7 @@ import {
   AlertDialogContent,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { cleanupAfterJobPost } from '@/utils/helpers';
+import { cleanupAfterJobPost, cleanupAfterContact } from '@/utils/helpers';
 
 const AlertDialogModal = ({
   open,
@@ -29,6 +29,7 @@ const AlertDialogModal = ({
   actionFunction,
   destructiveVariant,
   isFormValid = true,
+  cleanupType = 'job', // 'job' | 'contact' | 'none'
 }: AlertDialogProps) => {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -59,7 +60,14 @@ const AlertDialogModal = ({
           </AlertDialogAction>
           <AlertDialogCancel
             onClick={() => {
-              cleanupAfterJobPost();
+              // Call appropriate cleanup function based on cleanupType
+              if (cleanupType === 'job') {
+                cleanupAfterJobPost();
+              } else if (cleanupType === 'contact') {
+                cleanupAfterContact();
+              }
+              // 'none' type doesn't call any cleanup
+
               onOpenChange && onOpenChange(false); // Close the alert dialog and dropdown menu
             }}
           >

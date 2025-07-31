@@ -63,29 +63,33 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
     );
 
     useEffect(() => {
-      if (itemsType === 'boards') {
-        localStorage.setItem('chosenBoard', chosenBoard as string);
-        const boardId = items.find((item) => item.name === chosenBoard)?.id;
-        const values = {
-          accessToken,
-          boardId: boardId,
-        };
-        dispatch(getBoardWithColumns(values));
-      } else {
-        localStorage.setItem('chosenColumn', chosenColumn as string);
-        const columnId = items.find((item) => item.name === chosenColumn)?.id;
-        localStorage.setItem('columnId', columnId as string);
+      // Only set localStorage if user is authenticated
+      if (accessToken) {
+        if (itemsType === 'boards') {
+          localStorage.setItem('chosenBoard', chosenBoard as string);
+          const boardId = items.find((item) => item.name === chosenBoard)?.id;
+          const values = {
+            accessToken,
+            boardId: boardId,
+          };
+          dispatch(getBoardWithColumns(values));
+        } else {
+          localStorage.setItem('chosenColumn', chosenColumn as string);
+          const columnId = items.find((item) => item.name === chosenColumn)?.id;
+          localStorage.setItem('columnId', columnId as string);
+        }
       }
     }, [
+      itemsType,
       valueBoard,
       chosenBoard,
+      accessToken,
       chosenColumn,
-      itemsType,
       firstColumnOfTheBoard,
     ]);
 
     useEffect(() => {
-      if (boardValueChanged) {
+      if (boardValueChanged && accessToken) {
         localStorage.setItem('chosenColumn', firstColumnOfTheBoard!);
 
         const columnId = items.find(
@@ -93,7 +97,13 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
         )?.id;
         localStorage.setItem('columnId', columnId as string);
       }
-    }, [boardValueChanged, chosenColumn, firstColumnOfTheBoard]);
+    }, [
+      boardValueChanged,
+      chosenColumn,
+      firstColumnOfTheBoard,
+      accessToken,
+      items,
+    ]);
 
     return (
       boardsStatus === 'succeeded' && (

@@ -121,8 +121,9 @@ const JobPostCard = ({
   const isDeadlinePassed = deadline ? new Date(deadline) < new Date() : false;
 
   const handleJobPostClick = (id: string) => {
-    if (!isDialogOpen) {
+    if (!isDialogOpen && accessToken) {
       router.push(`/home/boards/${board_id}/job/${id}/job-details`);
+      // Only set localStorage if user is authenticated
       localStorage.setItem('columnId', columnId);
       const chosenColumn = boardColumns?.find(
         (column) => column.id === columnId

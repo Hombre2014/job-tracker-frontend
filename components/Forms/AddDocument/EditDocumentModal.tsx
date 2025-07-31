@@ -73,6 +73,7 @@ const EditDocumentModal = ({
       open={isOpen}
       buttonCancel="Cancel"
       onOpenChange={onClose}
+      cleanupType="none"
       dialogTitle="Edit Document"
       actionFunction={handleEdit}
       buttonConfirm={isSaving ? 'Saving...' : 'Save Changes'}

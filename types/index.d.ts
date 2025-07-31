@@ -173,6 +173,7 @@ interface AlertDialogProps {
   destructiveVariant?: boolean;
   buttonLabel?: React.ReactNode;
   onOpenChange?: (open: boolean) => void;
+  cleanupType?: 'job' | 'contact' | 'none';
 }
 
 interface InputElementProps {

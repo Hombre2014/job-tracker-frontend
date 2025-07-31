@@ -46,14 +46,14 @@ The Job Tracker Authentication System is an enterprise-grade, production-ready a
 
 **IMPORTANT**: This documentation contains examples of client-side JWT decoding using `jwt.decode()`. These examples are for **UX purposes only** and should **NEVER** be used for security decisions.
 
-#### 🚨 Security Facts:
+#### 🚨 Security Facts
 
 - **`jwt.decode()` does NOT verify signatures** - it only decodes the payload
 - **Tokens can be easily forged** - anyone can create fake JWTs with any claims
 - **Client-side decoding is unsafe** for authorization or security decisions
 - **Server-side verification is mandatory** for all security-critical operations
 
-#### ✅ Safe Usage (UX Only):
+#### ✅ Safe Usage (UX Only)
 
 ```typescript
 // ✅ SAFE: For display purposes only
@@ -62,7 +62,7 @@ const timeUntilExpiration = decoded.exp * 1000 - Date.now();
 // Show countdown timer to user
 ```
 
-#### ❌ Unsafe Usage (Security Decisions):
+#### ❌ Unsafe Usage (Security Decisions)
 
 ```typescript
 // ❌ DANGEROUS: Never use for security decisions
@@ -73,7 +73,7 @@ if (decoded.role === 'admin') {
 }
 ```
 
-#### 🔒 Proper Security Pattern:
+#### 🔒 Proper Security Pattern
 
 ```typescript
 // ✅ SECURE: Server-side verification required
@@ -86,7 +86,7 @@ app.get('/admin', authenticateToken, (req, res) => {
 });
 ```
 
-#### 📋 Security Checklist:
+#### 📋 Security Checklist
 
 - ✅ Use `jwt.decode()` only for UX (timers, display info)
 - ✅ Always verify signatures server-side with `jwt.verify()`
@@ -1400,8 +1400,9 @@ setInterval(() => {
 
 **Storage Security**:
 
-- Never store tokens in cookies (XSS vulnerability)
-- Use localStorage with proper domain restrictions
+- Prefer HttpOnly, SameSite=strict cookies for refresh tokens (mitigates XSS)
+- Avoid exposing tokens to JavaScript; store access tokens in memory where possible
+- localStorage may be used only in low-risk environments and **must** be protected by CSP & rigorous XSS defenses
 - Implement automatic token cleanup on logout
 - Rotate tokens regularly
 

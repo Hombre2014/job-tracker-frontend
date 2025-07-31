@@ -7,6 +7,7 @@ interface SecurityConfig {
   debugMode: boolean;
   rateLimitWindow: number; // in milliseconds
   maxLoginAttempts: number;
+  lockoutDuration: number; // in milliseconds
   enableRateLimiting: boolean;
   maxRequestsPerWindow: number;
   enableTokenValidation: boolean;
@@ -33,6 +34,7 @@ export interface SecurityEvent {
 
 const DEFAULT_CONFIG: SecurityConfig = {
   maxLoginAttempts: 5,
+  lockoutDuration: 60 * 60 * 1000, // 1 hour
   enableRateLimiting: true,
   maxRequestsPerWindow: 100,
   enableTokenValidation: true,
@@ -232,9 +234,9 @@ class SecurityValidatorClass {
       };
     }
 
-    // Check if lockout period has expired (1 hour)
-    if (now - attempts.lastAttempt > 60 * 60 * 1000) {
-      // Reset attempts after 1 hour
+    // Check if lockout period has expired
+    if (now - attempts.lastAttempt > this.config.lockoutDuration) {
+      // Reset attempts after lockout duration
       this.loginAttempts.set(identifier, { count: 1, lastAttempt: now });
       return {
         allowed: true,
@@ -257,7 +259,7 @@ class SecurityValidatorClass {
       return {
         allowed: false,
         attemptsRemaining: 0,
-        lockoutTime: now + 60 * 60 * 1000, // 1 hour lockout
+        lockoutTime: now + this.config.lockoutDuration,
       };
     }
 
@@ -426,8 +428,7 @@ class SecurityValidatorClass {
 
     // Cleanup old login attempts
     for (const [key, attempts] of this.loginAttempts.entries()) {
-      if (now - attempts.lastAttempt > 60 * 60 * 1000) {
-        // 1 hour
+      if (now - attempts.lastAttempt > this.config.lockoutDuration) {
         this.loginAttempts.delete(key);
       }
     }

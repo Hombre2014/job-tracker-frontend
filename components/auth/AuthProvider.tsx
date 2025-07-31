@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 
 import DevTools from '@/components/dev/DevTools';
 import { TokenManager } from '@/utils/TokenManager';
+import { cleanupAfterLogout } from '@/utils/helpers';
 import { SmartTokenRefresh } from '@/utils/SmartTokenRefresh';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
@@ -330,11 +331,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setAuthState((prev) => ({ ...prev, isLoading: true, error: null }));
 
-      // Dispatch Redux logout
-      await dispatch(logoutThunk()).unwrap();
+      // Comprehensive cleanup of all localStorage data
+      cleanupAfterLogout();
 
-      // Clear tokens
+      // Clear tokens via TokenManager
       TokenManager.clearTokens();
+
+      // Dispatch Redux logout to reset state
+      await dispatch(logoutThunk()).unwrap();
 
       // Update local state
       setAuthState({
@@ -349,17 +353,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Redirect to login
       router.push('/login');
 
-      console.log('AuthProvider: Logout successful');
+      console.log('AuthProvider: Logout successful with full cleanup');
     } catch (error) {
       console.error('AuthProvider: Logout failed:', error);
 
-      // Handle logout error (simplified for now)
+      // ALWAYS force local cleanup for security - this is critical
+      cleanupAfterLogout();
+      TokenManager.clearTokens();
 
-      setAuthState((prev) => ({
-        ...prev,
+      // Fire-and-forget Redux logout (don't let server errors block local logout)
+      dispatch(logoutThunk());
+
+      // Determine error message based on error type
+      let errorMessage = 'Logout failed. Please try again.';
+
+      if (error instanceof Error) {
+        // Network errors
+        if (
+          error.message.includes('fetch') ||
+          error.message.includes('network') ||
+          error.message.includes('Failed to fetch')
+        ) {
+          errorMessage =
+            'Network error during logout. You have been logged out locally.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      // Update state to show user is logged out (even if server call failed)
+      setAuthState({
+        user: null,
+        error: errorMessage,
         isLoading: false,
-        error: 'Logout failed. Please try again.',
-      }));
+        isRefreshing: false,
+        isAuthenticated: false,
+        timeUntilExpiration: null,
+      });
+
+      // ALWAYS redirect to login for security
+      router.push('/login');
+
+      console.log('AuthProvider: Forced local logout due to server error');
     }
   }, [dispatch, router]);
 

@@ -1,20 +1,26 @@
 export const cleanupAfterContact = () => {
+  // Contact personal info
+  localStorage.removeItem('firstName');
+  localStorage.removeItem('lastName');
+  localStorage.removeItem('jobTitle');
+  localStorage.removeItem('location');
+  localStorage.removeItem('comment');
+  localStorage.removeItem('photoUrl');
+  localStorage.removeItem('contactId');
+
+  // Contact communication
   localStorage.removeItem('phones');
   localStorage.removeItem('emails');
-  localStorage.removeItem('comment');
-  localStorage.removeItem('jobTitle');
-  localStorage.removeItem('lastName');
-  localStorage.removeItem('location');
-  localStorage.removeItem('photoUrl');
-  localStorage.removeItem('companies');
-  localStorage.removeItem('firstName');
-  localStorage.removeItem('contactId');
+
+  // Social media URLs
   localStorage.removeItem('githubUrl');
-  localStorage.removeItem('companyIds');
   localStorage.removeItem('twitterUrl');
-  localStorage.removeItem('companyIds');
   localStorage.removeItem('linkedinUrl');
   localStorage.removeItem('facebookUrl');
+
+  // Company connections
+  localStorage.removeItem('companies');
+  localStorage.removeItem('companyIds');
   localStorage.removeItem('jobsConnectedToContact');
 };
 
@@ -23,20 +29,31 @@ export const cleanupAfterJobPost = () => {
   localStorage.removeItem('jobTitle');
   localStorage.removeItem('companyId');
   localStorage.removeItem('chosenColumn');
-  localStorage.setItem('boardValueChanged', 'false');
+  localStorage.removeItem('boardValueChanged'); // Remove instead of setting to false
 };
 
 export const cleanupAfterLogout = () => {
   cleanupAfterContact();
   cleanupAfterJobPost();
+
+  // Clear authentication tokens
   localStorage.removeItem('user');
-  localStorage.removeItem('columnId');
   localStorage.removeItem('accessToken');
-  localStorage.removeItem('chosenBoard');
   localStorage.removeItem('refreshToken');
+
+  // Clear application state
+  localStorage.removeItem('columnId');
+  localStorage.removeItem('chosenBoard');
+  localStorage.removeItem('chosenColumn');
   localStorage.removeItem('currentJobPost');
   localStorage.removeItem('boardValueChanged');
   localStorage.removeItem('firstColumnOfTheBoard');
+
+  // Clear Redux persist data
+  localStorage.removeItem('persist:root');
+
+  // Clear any debug data
+  localStorage.removeItem('debug');
 };
 
 // ⚠️ SECURITY WARNING: This function decodes JWT without signature verification

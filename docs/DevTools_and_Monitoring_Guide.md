@@ -379,6 +379,10 @@ PerformanceMonitor.disableAllLogging();
 **Solution**: Use the new granular logging controls:
 
 ```javascript
+// First, ensure PerformanceMonitor is available in the console
+// In development, you can access it via:
+// window.PerformanceMonitor or import it from '@/utils/PerformanceMonitor'
+
 // Disable all console logging (recommended for cleaner console)
 PerformanceMonitor.disableAllLogging();
 
@@ -454,7 +458,7 @@ const result = SecurityValidator.checkRateLimit('client-ip');
 // Login attempt configuration
 {
   maxLoginAttempts: 5,           // Max failed attempts
-  lockoutDuration: 3600000,      // 1 hour lockout
+  lockoutDuration: 3600000,      // 1 hour lockout (configurable)
 }
 
 // Track login attempt

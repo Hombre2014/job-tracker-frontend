@@ -131,6 +131,7 @@ const BoardColumns = () => {
               buttonCancel="Discard"
               buttonVariant="outline"
               buttonConfirm="Save Job"
+              cleanupType="job"
               isFormValid={isFormValid}
               actionFunction={createJobApplication}
               stylings="w-11/12 flex justify-center text-2xl border py-3 mb-4 mx-auto rounded-md hover:border-blue-500 transition duration-300 delay-150 cursor-pointer"
