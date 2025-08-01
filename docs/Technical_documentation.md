@@ -1,5 +1,663 @@
 # Technical Documentation
 
+## Critical Bug Fixes and Architecture Improvements (31/01/2025)
+
+### Circular Dependency Resolution (31/01/2025)
+
+#### Problem Analysis (31/01/2025)
+
+The application was experiencing critical crashes due to circular dependencies in the module import chain:
+
+```text
+api/client.ts → TokenManager.ts → redux/store.ts → userSlice.ts → userThunk.ts → api/client.ts
+```
+
+This created initialization order issues where modules tried to access each other before being fully loaded, resulting in `ReferenceError: Cannot access 'getUser' before initialization`.
+
+#### Solution Implementation (31/01/2025)
+
+##### 1. Moved getUser Thunk to Break Circular Chain
+
+```typescript
+// Before: redux/user/userThunk.ts
+export const getUser = createAsyncThunk('user/getUser', async (_, thunkAPI) => {
+  const res = await client.get('/users'); // ❌ Circular dependency
+  return res.data;
+});
+
+// After: redux/user/userSlice.ts
+export const getUser = createAsyncThunk('user/getUser', async (_, thunkAPI) => {
+  const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+    headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
+  }); // ✅ Direct axios call, no circular dependency
+  return res.data;
+});
+```
+
+##### 2. Decoupled TokenManager from Redux
+
+```typescript
+// Before: utils/TokenManager.ts
+import { store } from '@/redux/store';
+import { updateUserTokens } from '@/redux/user/userSlice';
+
+setTokens(tokens: TokenPair): void {
+  localStorage.setItem('accessToken', tokens.accessToken);
+  store.dispatch(updateUserTokens(tokens)); // ❌ Circular dependency
+}
+
+// After: utils/TokenManager.ts
+setTokens(tokens: TokenPair): void {
+  localStorage.setItem('accessToken', tokens.accessToken);
+  // ✅ No Redux dependency - handled by events
+}
+```
+
+##### 3. Event-Driven Redux Updates
+
+```typescript
+// utils/SmartTokenRefresh.ts & api/client.ts
+TokenManager.setTokens({ accessToken, refreshToken });
+window.dispatchEvent(
+  new CustomEvent('tokensUpdated', {
+    detail: { accessToken, refreshToken },
+  })
+);
+
+// components/auth/AuthProvider.tsx
+const handleTokensUpdated = (event: CustomEvent) => {
+  const { accessToken, refreshToken } = event.detail;
+  dispatch(updateUserTokens({ accessToken, refreshToken }));
+};
+window.addEventListener('tokensUpdated', handleTokensUpdated);
+```
+
+### Memory Leak Prevention (31/01/2025)
+
+#### Fixed Multiple Memory Leak Vulnerabilities
+
+##### 1. RequestDeduplicator Cleanup Timer
+
+```typescript
+// Added proper cleanup method
+class RequestDeduplicatorClass {
+  private cleanupInterval?: NodeJS.Timeout;
+
+  constructor() {
+    this.cleanupInterval = setInterval(() => this.cleanup(), 60000);
+  }
+
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = undefined;
+    }
+    this.clear();
+  }
+}
+```
+
+##### 2. SmartTokenRefresh Event Listener Cleanup
+
+```typescript
+// Fixed event listener memory leaks
+class SmartTokenRefreshClass {
+  private boundHandleVisibilityChange!: () => void;
+  private boundHandleAppBecameVisible!: () => void;
+
+  setupVisibilityHandlers(): void {
+    this.boundHandleVisibilityChange = this.handleVisibilityChange.bind(this);
+    document.addEventListener(
+      'visibilitychange',
+      this.boundHandleVisibilityChange
+    );
+  }
+
+  cleanup(): void {
+    document.removeEventListener(
+      'visibilitychange',
+      this.boundHandleVisibilityChange
+    );
+  }
+}
+```
+
+##### 3. RequestQueue Timer Management
+
+```typescript
+// Added timer cleanup capabilities
+class RequestQueueClass {
+  private cleanupTimer?: NodeJS.Timeout;
+
+  startCleanupTimer(): void {
+    if (this.cleanupTimer) clearInterval(this.cleanupTimer);
+    this.cleanupTimer = setInterval(() => this.cleanupStaleRequests(), 30000);
+  }
+
+  stopCleanupTimer(): void {
+    if (this.cleanupTimer) {
+      clearInterval(this.cleanupTimer);
+      this.cleanupTimer = undefined;
+    }
+  }
+}
+```
+
+##### 4. SecurityValidator Resource Management
+
+```typescript
+// Fixed memory leak in SecurityValidator cleanup interval
+class SecurityValidatorClass {
+  private cleanupInterval: NodeJS.Timeout | null = null;
+
+  constructor(config: Partial<SecurityConfig> = {}) {
+    // Store interval ID for proper cleanup
+    this.cleanupInterval = setInterval(() => {
+      this.cleanup();
+    }, 60000);
+  }
+
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+    this.clear();
+  }
+}
+```
+
+### Type Safety Enhancements (31/01/2025)
+
+#### Enhanced TypeScript Integration
+
+##### 1. SecurityEvent Interface Export
+
+```typescript
+// utils/SecurityValidator.ts
+export interface SecurityEvent {
+  message: string;
+  timestamp: number;
+  metadata?: Record<string, any>;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  type: 'rate_limit' | 'login_attempt' | 'token_validation' | 'suspicious_activity';
+}
+
+// components/admin/MonitoringDashboard.tsx
+import { SecurityValidator, SecurityEvent } from '@/utils/SecurityValidator';
+
+{securityStats.recentEvents.map((event: SecurityEvent, index: number) => (
+  // ✅ Proper typing instead of any
+))}
+```
+
+##### 2. PerformanceMonitor Memory Interface
+
+```typescript
+// utils/PerformanceMonitor.ts
+interface PerformanceMemory {
+  usedJSHeapSize: number;
+  totalJSHeapSize: number;
+  jsHeapSizeLimit: number;
+}
+
+const memory = (performance as Performance & { memory?: PerformanceMemory })
+  .memory;
+```
+
+### Retry Logic Improvements (31/01/2025)
+
+#### Fixed Race Conditions in Request Processing
+
+##### 1. RequestQueue Retry Processing
+
+```typescript
+// Fixed retry mechanism to ensure all retried requests are processed
+private async processQueue(newAccessToken: string): Promise<void> {
+  const requestsToProcess = [...this.queue];
+  this.queue = [];
+  let hasRetries = false;
+
+  // Process requests...
+  if (queuedRequest.retryCount < this.maxRetries) {
+    queuedRequest.retryCount++;
+    this.queue.push(queuedRequest);
+    hasRetries = true; // ✅ Track retries
+  }
+
+  await Promise.allSettled(processPromises);
+
+  // ✅ Recursively process retried requests
+  if (hasRetries && this.queue.length > 0) {
+    await this.processQueue(newAccessToken);
+  }
+}
+```
+
+### Updated Architecture Diagram (31/01/2025)
+
+```mermaid
+graph TD
+    A[API Client] --> B[TokenManager - localStorage only]
+    B --> C[Custom Events]
+    C --> D[AuthProvider]
+    D --> E[Redux Store]
+
+    F[SmartTokenRefresh] --> B
+    F --> C
+
+    G[User Components] --> H[getUser from userSlice]
+    H --> I[Direct Axios Call]
+
+    J[RequestQueue] --> K[Cleanup Timer Management]
+    L[RequestDeduplicator] --> M[Destroy Method]
+    N[PerformanceMonitor] --> O[Memory Tracking Cleanup]
+```
+
+### Performance Optimizations (31/01/2025)
+
+#### Configurable Auth State Update Intervals
+
+**Problem**: Fixed 30-second auth state updates were too frequent for production environments, impacting performance and battery life.
+
+**Solution**: Environment-based configurable update intervals with validation and smart defaults.
+
+```typescript
+// components/auth/AuthProvider.tsx
+const getAuthUpdateInterval = (): number => {
+  const envInterval = process.env.NEXT_PUBLIC_AUTH_UPDATE_INTERVAL;
+
+  if (envInterval) {
+    const parsed = parseInt(envInterval, 10);
+    // Validate range: minimum 10 seconds, maximum 5 minutes
+    if (!isNaN(parsed) && parsed >= 10000 && parsed <= 300000) {
+      return parsed;
+    }
+  }
+
+  // Default: 30 seconds for development, 60 seconds for production
+  return process.env.NODE_ENV === 'development' ? 30000 : 60000;
+};
+
+const UPDATE_INTERVAL = getAuthUpdateInterval();
+const interval = setInterval(updateAuthState, UPDATE_INTERVAL);
+```
+
+**Configuration**:
+
+```env
+# Environment variable for auth update interval
+NEXT_PUBLIC_AUTH_UPDATE_INTERVAL=60000  # 60 seconds (production recommended)
+```
+
+**Benefits**:
+
+- **Performance**: Reduced CPU usage and improved battery life
+- **Flexibility**: Different intervals for different environments
+- **Validation**: Range validation prevents invalid configurations
+- **Smart Defaults**: 30s for development, 60s for production
+
+## Enterprise Authentication System (27/01/2025)
+
+### Overview (27/01/2025)
+
+A comprehensive, production-ready JWT authentication system with advanced security features, automatic token refresh, performance monitoring, and seamless user experience. The system provides enterprise-grade security with intelligent threat detection, request optimization, and real-time monitoring capabilities.
+
+### Architecture (27/01/2025)
+
+#### Core Implementation (27/01/2025)
+
+The authentication system is built around several key components that work together to provide secure, performant, and user-friendly authentication:
+
+```typescript
+// File: utils/TokenManager.ts
+export class TokenManagerClass {
+  setTokens(tokens: { accessToken: string; refreshToken: string }): void;
+  hasValidTokens(): boolean;
+  syncTokensToRedux(): void;
+  getAuthHeader(): string | null;
+}
+
+// File: utils/SmartTokenRefresh.ts
+export class SmartTokenRefreshClass {
+  performRefresh(): Promise<boolean>;
+  scheduleRefresh(): void;
+  handleVisibilityChange(): void;
+}
+
+// File: components/auth/AuthProvider.tsx
+export const AuthProvider: React.FC<{ children: ReactNode }>;
+```
+
+#### Key Components (27/01/2025)
+
+1. **TokenManager**: Centralized token storage and validation with Redux synchronization
+2. **SmartTokenRefresh**: Intelligent background token refresh with visibility detection
+3. **AuthProvider**: React context provider for authentication state management
+4. **SecurityValidator**: Advanced security features including rate limiting and threat detection
+5. **PerformanceMonitor**: Real-time system performance tracking and analytics
+6. **RequestDeduplicator**: Intelligent request caching and duplicate prevention
+
+### Technical Implementation (27/01/2025)
+
+#### 1. Smart Token Management (27/01/2025)
+
+```typescript
+// File: utils/TokenManager.ts
+class TokenManagerClass {
+  setTokens(tokens: { accessToken: string; refreshToken: string }): void {
+    localStorage.setItem('accessToken', tokens.accessToken);
+    localStorage.setItem('refreshToken', tokens.refreshToken);
+    this.syncTokensToRedux();
+  }
+
+  hasValidTokens(): boolean {
+    const accessToken = this.getAccessToken();
+    const refreshToken = this.getRefreshToken();
+
+    if (!accessToken || !refreshToken) return false;
+
+    return (
+      !this.isTokenExpired(accessToken) || !this.isTokenExpired(refreshToken)
+    );
+  }
+}
+```
+
+#### 2. Intelligent Token Refresh (27/01/2025)
+
+**Problem**: Traditional token refresh systems interrupt user experience and don't optimize for browser visibility.
+
+**Solution**: Smart refresh system with proactive renewal and visibility detection:
+
+```typescript
+// File: utils/SmartTokenRefresh.ts
+class SmartTokenRefreshClass {
+  private scheduleRefresh(): void {
+    const accessToken = TokenManager.getAccessToken();
+    if (!accessToken) return;
+
+    const expiration = TokenManager.getTokenExpiration(accessToken);
+    if (!expiration) return;
+
+    // Refresh 5 minutes before expiration
+    const refreshTime = expiration - Date.now() - this.config.refreshThreshold;
+
+    if (refreshTime > 0) {
+      setTimeout(() => this.performRefresh(), refreshTime);
+    }
+  }
+
+  private handleVisibilityChange(): void {
+    if (document.hidden) {
+      // Page hidden: reduce check frequency
+      this.setupPeriodicChecks();
+    } else {
+      // Page visible: immediate token check
+      this.checkTokenStatus();
+    }
+  }
+}
+```
+
+#### 3. Advanced Security Features (27/01/2025)
+
+```typescript
+// File: utils/SecurityValidator.ts
+class SecurityValidatorClass {
+  checkRateLimit(identifier: string): {
+    allowed: boolean;
+    remainingRequests?: number;
+  } {
+    const entry = this.rateLimitMap.get(identifier);
+    const now = Date.now();
+
+    if (!entry || now - entry.firstRequest > this.config.rateLimitWindow) {
+      // New window or first request
+      this.rateLimitMap.set(identifier, { count: 1, firstRequest: now });
+      return {
+        allowed: true,
+        remainingRequests: this.config.maxRequestsPerWindow - 1,
+      };
+    }
+
+    if (entry.count >= this.config.maxRequestsPerWindow) {
+      return { allowed: false, remainingRequests: 0 };
+    }
+
+    entry.count++;
+    return {
+      allowed: true,
+      remainingRequests: this.config.maxRequestsPerWindow - entry.count,
+    };
+  }
+
+  trackLoginAttempt(
+    identifier: string,
+    success: boolean
+  ): { allowed: boolean } {
+    if (success) {
+      this.loginAttempts.delete(identifier);
+      return { allowed: true };
+    }
+
+    const attempts = this.loginAttempts.get(identifier) || {
+      count: 0,
+      lastAttempt: 0,
+    };
+    attempts.count++;
+    attempts.lastAttempt = Date.now();
+
+    if (attempts.count >= this.config.maxLoginAttempts) {
+      this.suspiciousIPs.add(identifier);
+      return { allowed: false };
+    }
+
+    this.loginAttempts.set(identifier, attempts);
+    return { allowed: true };
+  }
+}
+```
+
+#### 4. Performance Monitoring (27/01/2025)
+
+```typescript
+// File: utils/PerformanceMonitor.ts
+class PerformanceMonitorClass {
+  trackApiRequest(
+    method: string,
+    url: string,
+    duration: number,
+    success: boolean
+  ): void {
+    const metric: ApiMetric = {
+      id: this.generateId(),
+      type: 'api',
+      name: `${method.toUpperCase()} ${url}`,
+      method: method.toUpperCase(),
+      url,
+      duration,
+      timestamp: Date.now(),
+      success,
+    };
+
+    this.addMetric(metric);
+
+    // Alert on slow requests
+    if (duration > 2000) {
+      console.warn(
+        `Slow API request detected: ${method} ${url} - ${duration}ms`
+      );
+    }
+  }
+
+  trackMemoryUsage(): void {
+    const memory = (performance as any).memory;
+    if (!memory) return;
+
+    const metric: MemoryMetric = {
+      id: this.generateId(),
+      type: 'memory',
+      name: 'Memory Usage',
+      timestamp: Date.now(),
+      success: true,
+      usedJSHeapSize: memory.usedJSHeapSize,
+      totalJSHeapSize: memory.totalJSHeapSize,
+      jsHeapSizeLimit: memory.jsHeapSizeLimit,
+    };
+
+    this.addMetric(metric);
+  }
+}
+```
+
+#### 5. Request Optimization (27/01/2025)
+
+**Problem**: Multiple components making identical API requests simultaneously.
+
+**Solution**: Intelligent request deduplication with caching:
+
+```typescript
+// File: utils/RequestDeduplicator.ts
+class RequestDeduplicatorClass {
+  async deduplicateRequest<T>(
+    requestFn: () => Promise<T>,
+    method: string,
+    url: string,
+    data?: any
+  ): Promise<T> {
+    const requestKey = this.generateRequestKey(method, url, data);
+
+    // Check cache first
+    const cachedResponse = this.getCachedResponse(requestKey);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+
+    // Check if request is already pending
+    const pendingRequest = this.pendingRequests.get(requestKey);
+    if (pendingRequest) {
+      return pendingRequest.promise;
+    }
+
+    // Create new request
+    const promise = requestFn().then((response) => {
+      this.cacheResponse(requestKey, response);
+      return response;
+    });
+
+    this.pendingRequests.set(requestKey, { promise, timestamp: Date.now() });
+    return promise;
+  }
+}
+```
+
+### Security Features (27/01/2025)
+
+#### 1. JWT Token Validation (27/01/2025)
+
+⚠️ **Security Note**: Client-side JWT operations use `jwt.decode()` for UX purposes only (timers, display). All security decisions require server-side `jwt.verify()` with signature validation.
+
+- **Structure Validation**: Ensures proper JWT format (header.payload.signature)
+- **Claims Verification**: Validates required claims (sub, exp, iat) - server-side only for security
+- **Expiration Checking**: Automatic token expiration detection (UX enhancement)
+- **Clock Skew Protection**: Tolerance for server/client time differences (display purposes)
+
+#### 2. Rate Limiting (27/01/2025)
+
+- **Configurable Limits**: Default 100 requests per 15-minute window
+- **Per-Identifier Tracking**: IP-based or user-based rate-limiting
+- **Sliding Window**: Automatic reset after window expiration
+- **Remaining Requests**: Real-time calculation of available requests
+
+#### 3. Brute Force Protection (27/01/2025)
+
+- **Login Attempt Tracking**: Monitors failed login attempts per identifier
+- **Progressive Lockout**: Automatic lockout after 5 failed attempts
+- **Automatic Reset**: Successful login resets attempt counter
+- **IP Blocking**: Suspicious IPs are flagged for enhanced monitoring
+
+#### 4. Suspicious Activity Detection (27/01/2025)
+
+- **Pattern Recognition**: Detects rapid requests, unusual timing, multiple failures
+- **Risk Assessment**: Categorizes threats as low, medium, high, or critical
+- **Automated Response**: Configurable actions based on risk level
+- **Event Logging**: Comprehensive security event tracking
+
+### Performance Optimizations (27/01/2025)
+
+#### 1. Request Deduplication (27/01/2025)
+
+- **Intelligent Caching**: 5-minute TTL with automatic cleanup
+- **Duplicate Prevention**: Prevents identical concurrent requests
+- **Memory Efficient**: Bounded cache with LRU eviction
+- **Configurable**: Enable/disable per environment
+
+#### 2. Smart Token Refresh (27/01/2025)
+
+- **Proactive Refresh**: Refreshes 5 minutes before expiration
+- **Visibility Optimization**: Adjusts check frequency based on page visibility
+- **Background Processing**: No user interruption during refresh
+- **Exponential Backoff**: Intelligent retry logic for failed attempts
+
+#### 3. Memory Management (27/01/2025)
+
+- **Automatic Cleanup**: Expired entries removed periodically
+- **Bounded Collections**: Maximum size limits prevent memory leaks
+- **Efficient Data Structures**: Maps and Sets for O(1) operations
+- **Monitoring**: Real-time memory usage tracking
+
+### Development Tools (27/01/2025)
+
+#### 1. DevTools Component (27/01/2025)
+
+- **Keyboard Access**: Toggle with Ctrl+Shift+D
+- **Draggable Interface**: Moveable floating panel
+- **System Inspection**: Real-time state and token monitoring
+- **API Testing**: Built-in API connectivity testing
+- **Storage Management**: Clear localStorage and reset state
+
+#### 2. Monitoring Dashboard (27/01/2025)
+
+- **Real-Time Metrics**: Live performance and security statistics
+- **Visual Analytics**: Charts and graphs for system health
+- **Export Functionality**: Data export for analysis
+- **Alert System**: Configurable thresholds and notifications
+
+### DevTools and Monitoring (27/01/2025)
+
+The authentication system includes comprehensive development and monitoring tools. For detailed usage instructions, see the **[DevTools and Monitoring Guide](./DevTools_and_Monitoring_Guide.md)**.
+
+#### Quick Access (27/01/2025)
+
+- **DevTools Panel**: Press `Ctrl+Shift+D` to toggle (development only)
+- **Monitoring Dashboard**: Click "📊 Monitoring" in DevTools panel
+- **Performance Tracking**: Automatic background monitoring
+- **Security Events**: Real-time threat detection and logging
+
+### Production Considerations (27/01/2025)
+
+#### 1. Security Hardening (27/01/2025)
+
+- **HTTPS Only**: Secure token transmission
+- **Secure Headers**: Comprehensive security header configuration
+- **CORS Compatibility**: Clean requests without custom headers
+- **Audit Logging**: Complete security event tracking
+
+#### 2. Performance Monitoring (27/01/2025)
+
+- **API Metrics**: Response times, success rates, error tracking
+- **Memory Monitoring**: JavaScript heap usage and optimization
+- **User Analytics**: Authentication events and user behavior
+- **System Health**: Real-time monitoring with alerting
+
+#### 3. Error Recovery (27/01/2025)
+
+- **Automatic Recovery**: Self-healing mechanisms for common issues
+- **Graceful Degradation**: Fallback behavior for system failures
+- **User Feedback**: Clear error messages and recovery instructions
+- **Debug Information**: Comprehensive logging for troubleshooting
+
 ## Optimistic Updates System for Document Management (25/07/2025)
 
 ### Overview (25/07/2025)
@@ -774,7 +1432,7 @@ formData.append('fileSize', file.size.toString());
 const fileSize = document.fileSize; // From API response
 ```
 
-**Benefits of Database Storage:**
+##### Benefits of Database Storage
 
 - ✅ Persistent across browser sessions and devices
 - ✅ No data loss when localStorage is cleared

@@ -5,9 +5,9 @@ import { useEffect, useState, forwardRef } from 'react';
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 
 import { cn } from '@/lib/utils';
+import { useAppSelector } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
-import { useAppSelector, useAppDispatch } from '@/redux/hooks';
-import { getBoardWithColumns } from '@/redux/boards/boardsThunk';
+import { TokenManager } from '@/utils/TokenManager';
 import {
   Popover,
   PopoverContent,
@@ -22,18 +22,6 @@ import {
   CommandInput,
 } from '@/components/ui/command';
 
-interface ComboBoardListBoxProps {
-  searchItem: string;
-  initialBoardString?: string;
-  initialColumnString?: string;
-  firstColumnOfTheBoard?: string;
-  itemsType: 'boards' | 'columns';
-  items: Array<{
-    id: string;
-    name: string;
-  }>;
-}
-
 const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
   (
     {
@@ -46,10 +34,8 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
     },
     ref
   ) => {
-    const dispatch = useAppDispatch();
-
     const [open, setOpen] = useState(false);
-    const accessToken = localStorage.getItem('accessToken');
+    const hasValidTokens = TokenManager.hasValidTokens();
     const { lastName } = useAppSelector((state) => state.user);
     const { firstName } = useAppSelector((state) => state.user);
     const { boardsStatus } = useAppSelector((state) => state.boards);
@@ -62,30 +48,28 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
       false
     );
 
+    // Only localStorage operations - NO API calls in useEffect to prevent infinite loops
     useEffect(() => {
-      if (itemsType === 'boards') {
-        localStorage.setItem('chosenBoard', chosenBoard as string);
-        const boardId = items.find((item) => item.name === chosenBoard)?.id;
-        const values = {
-          accessToken,
-          boardId: boardId,
-        };
-        dispatch(getBoardWithColumns(values));
-      } else {
-        localStorage.setItem('chosenColumn', chosenColumn as string);
-        const columnId = items.find((item) => item.name === chosenColumn)?.id;
-        localStorage.setItem('columnId', columnId as string);
+      // Only set localStorage if user is authenticated
+      if (hasValidTokens) {
+        if (itemsType === 'boards') {
+          localStorage.setItem('chosenBoard', chosenBoard as string);
+        } else {
+          localStorage.setItem('chosenColumn', chosenColumn as string);
+          const columnId = items.find((item) => item.name === chosenColumn)?.id;
+          localStorage.setItem('columnId', columnId as string);
+        }
       }
     }, [
-      valueBoard,
-      chosenBoard,
-      chosenColumn,
       itemsType,
-      firstColumnOfTheBoard,
+      chosenBoard,
+      hasValidTokens,
+      chosenColumn,
+      items, // Re-added items dependency
     ]);
 
     useEffect(() => {
-      if (boardValueChanged) {
+      if (boardValueChanged && hasValidTokens) {
         localStorage.setItem('chosenColumn', firstColumnOfTheBoard!);
 
         const columnId = items.find(
@@ -93,7 +77,13 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
         )?.id;
         localStorage.setItem('columnId', columnId as string);
       }
-    }, [boardValueChanged, chosenColumn, firstColumnOfTheBoard]);
+    }, [
+      boardValueChanged,
+      chosenColumn,
+      firstColumnOfTheBoard,
+      hasValidTokens,
+      items, // Re-added items dependency
+    ]);
 
     return (
       boardsStatus === 'succeeded' && (
@@ -137,13 +127,15 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
                       )}
                       value={itemsType === 'boards' ? valueBoard : chosenColumn}
                       onSelect={() => {
-                        itemsType === 'boards'
-                          ? (setChosenBoard(item.name),
-                            setChosenColumn(firstColumn!),
-                            setValueBoard(item.name),
-                            setBoardValueChanged(true))
-                          : (setBoardValueChanged(false),
-                            setChosenColumn(item.name));
+                        if (itemsType === 'boards') {
+                          setChosenBoard(item.name);
+                          setChosenColumn(firstColumn!);
+                          setValueBoard(item.name);
+                          setBoardValueChanged(true);
+                        } else {
+                          setBoardValueChanged(false);
+                          setChosenColumn(item.name);
+                        }
                         setOpen(false);
                       }}
                     >

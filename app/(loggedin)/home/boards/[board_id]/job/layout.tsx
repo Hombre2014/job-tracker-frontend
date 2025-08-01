@@ -56,14 +56,18 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   // Defensive programming: Ensure jobPosts is always an array
   const safeJobPosts = Array.isArray(jobPosts) ? jobPosts : [];
   const currentJobPost = safeJobPosts.find((jobPost) => jobPost.id === job_id);
-  if (currentJobPost) {
+  if (currentJobPost && accessToken) {
+    // Only set localStorage if user is authenticated
     localStorage.setItem('currentJobPost', JSON.stringify(currentJobPost));
   }
 
   const handleSelectList = (value: string) => {
     setSelectedListName(value);
     setTemporaryMessage(`Moved to ${value}`);
-    localStorage.setItem('chosenColumn', value);
+    // Only set localStorage if user is authenticated
+    if (accessToken) {
+      localStorage.setItem('chosenColumn', value);
+    }
 
     const currentColumnOrder = boardColumns?.find(
       (column) => column.name === chosenColumn

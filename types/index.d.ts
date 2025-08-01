@@ -140,11 +140,14 @@ interface LinkDocumentProps {
 
 interface ComboBoardListBoxProps {
   searchItem: string;
-  items: Board[] | Column[];
   initialBoardString?: string;
   initialColumnString?: string;
   firstColumnOfTheBoard?: string;
-  itemsType?: 'boards' | 'columns';
+  itemsType: 'boards' | 'columns';
+  items: Array<{
+    id: string;
+    name: string;
+  }>;
 }
 
 interface AlertDialogProps {
@@ -173,6 +176,7 @@ interface AlertDialogProps {
   destructiveVariant?: boolean;
   buttonLabel?: React.ReactNode;
   onOpenChange?: (open: boolean) => void;
+  cleanupType?: 'job' | 'contact' | 'none';
 }
 
 interface InputElementProps {

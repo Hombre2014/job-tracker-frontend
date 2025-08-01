@@ -14,6 +14,8 @@ export const login = createAsyncThunk(
 
       if (res.status === 200) {
         const { accessToken, refreshToken } = res.data;
+        // ⚠️ SECURITY WARNING: jwt.decode() does NOT verify signatures!
+        // This is for UX purposes only - server must verify for security
         const decoded = jwt.decode(accessToken);
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
@@ -63,27 +65,6 @@ export const isLoggedIn = createAsyncThunk(
       };
     } else {
       return thunkAPI.rejectWithValue('User is not logged in');
-    }
-  }
-);
-
-export const getUser = createAsyncThunk(
-  'user/getUser',
-  async (accessToken: string, thunkAPI) => {
-    try {
-      const res = await client.get('/users', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      if (res.status === 200) {
-        return res.data;
-      } else {
-        return thunkAPI.rejectWithValue('User not found');
-      }
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(err.response?.data || 'User not found');
     }
   }
 );

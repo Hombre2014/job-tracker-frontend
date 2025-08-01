@@ -39,9 +39,10 @@ const DocumentCard = ({
     }
   };
 
-
   // Use fileExtension from backend, fallback to 'file' if missing
-  const ext = document.fileExtension ? document.fileExtension.toLowerCase() : 'file';
+  const ext = document.fileExtension
+    ? document.fileExtension.toLowerCase()
+    : 'file';
   let fileExtensionUpper = ext.toUpperCase();
   switch (ext) {
     case 'jpg':
@@ -201,6 +202,7 @@ const DocumentCard = ({
                   buttonVariant="ghost"
                   buttonConfirm="Delete"
                   destructiveVariant={true}
+                  cleanupType="none"
                   dialogTitle="Delete Document"
                   buttonLabel="Delete Document"
                   open={showDeleteConfirmation}

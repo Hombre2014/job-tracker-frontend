@@ -9,7 +9,6 @@ import { useEffect, useState, useCallback } from 'react';
 import { AddJobSchemaShort } from '@/schemas';
 import { Input } from '@/components/ui/input';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { getBoardWithColumns } from '@/redux/boards/boardsThunk';
 import ComboBoardListBox from '@/components/Forms/AddJobShort/ComboBoardListBox';
 import {
   createCompany,
@@ -36,7 +35,6 @@ const AddJobShortForm = ({
   const [jobTitle, setJobTitle] = useState('');
   const accessToken = localStorage.getItem('accessToken');
   const [showDropdown, setShowDropdown] = useState(false);
-  const chosenColumn = localStorage.getItem('chosenColumn');
   const { boards } = useAppSelector((state) => state.boards);
   const [boardColumns, setBoardColumns] = useState(
     boards.find((board) => board.id === board_id)!.columns
@@ -50,23 +48,16 @@ const AddJobShortForm = ({
 
   useEffect(() => {
     const changedBoard = boards.find((board) => board.name === chosenBoard);
-    const changedBoardId = changedBoard?.id;
 
     if (changedBoard) {
       setFirstColumnOfTheBoard(changedBoard.columns[0].name);
+      localStorage.setItem(
+        'firstColumnOfTheBoard',
+        changedBoard.columns[0].name
+      );
+      setBoardColumns(changedBoard.columns);
     }
-
-    localStorage.setItem('firstColumnOfTheBoard', firstColumnOfTheBoard);
-    const values = {
-      accessToken,
-      boardId: changedBoardId,
-    };
-
-    dispatch(getBoardWithColumns(values));
-    setBoardColumns(
-      boards.find((board) => board.id === changedBoardId)!.columns
-    );
-  }, [chosenBoard, chosenColumn, firstColumnOfTheBoard]);
+  }, [chosenBoard, boards]);
 
   const form = useForm({
     resolver: zodResolver(AddJobSchemaShort),

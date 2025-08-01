@@ -231,6 +231,7 @@ const CreateMenu = () => {
           dialogTitle="Add Job"
           buttonCancel="Discard"
           buttonConfirm="Save Job"
+          cleanupType="job"
           isFormValid={isFormValid}
           actionFunction={createJobApplication}
           onOpenChange={(open) => {
@@ -252,6 +253,7 @@ const CreateMenu = () => {
           buttonConfirm="Create"
           open={showContactModal}
           isFormValid={isFormValid}
+          cleanupType="contact"
           contentWidth="!max-w-[900px]"
           dialogTitle="Save New Contact"
           actionFunction={createNewContact}

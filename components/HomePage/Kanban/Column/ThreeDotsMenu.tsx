@@ -78,6 +78,7 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
               buttonVariant="ghost"
               buttonCancel="Discard"
               buttonLabel="Move List"
+              cleanupType="none"
               dialogTitle="Move List"
               actionFunction={handleMoveList}
               stylings="bg-none hover:!bg-gray-200 py-4 !pl-0 pr-[72px] m-0 active:!bg-gray-800 active:text-gray-200"

@@ -12,7 +12,7 @@ import { AddContactSchema } from '@/schemas';
 import { Input } from '@/components/ui/input';
 import ContactSideBar from './ContactSideBar';
 import CompaniesInput from './CompaniesInput';
-import { getUser } from '@/redux/user/userThunk';
+import { getUser } from '@/redux/user/userSlice';
 import SocialMediaLinks from './SocialMediaLinks';
 import { Textarea } from '@/components/ui/textarea';
 import { cleanupAfterContact } from '@/utils/helpers';
@@ -242,7 +242,7 @@ const CreateContactForm = ({
 
   useEffect(() => {
     if (accessToken) {
-      dispatch(getUser(accessToken));
+      dispatch(getUser());
     }
   }, [dispatch, accessToken]);
 

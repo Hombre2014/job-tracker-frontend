@@ -133,6 +133,7 @@ const EmailAndPhone = ({
             buttonCancel="Cancel"
             buttonConfirm="Delete"
             open={showDeleteModal}
+            cleanupType="none"
             destructiveVariant={true}
             onOpenChange={setShowDeleteModal}
             actionFunction={handleConfirmDelete}

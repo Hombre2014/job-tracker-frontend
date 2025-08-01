@@ -1,6 +1,7 @@
 import client from '@/api/client';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { defaultJobPostColor } from '@/data/constants';
+import { DocumentService } from '@/services/documentService';
 
 export const createJobPost = createAsyncThunk(
   'jobs/createJobPost',
@@ -105,8 +106,22 @@ export const updateJobPost = createAsyncThunk(
 export const deleteJobPost = createAsyncThunk(
   'jobs/deleteJobPost',
   async (values: any, thunkAPI) => {
-    const { accessToken, jobPostId } = values;
+    const { accessToken, jobPostId, jobPostData } = values;
     try {
+      // Step 1: Handle documents attached to this job post using DocumentService
+      if (jobPostData?.documents && jobPostData.documents.length > 0) {
+        const documentResults =
+          await DocumentService.handleDocumentsForJobDeletion(
+            jobPostData.documents,
+            jobPostId,
+            accessToken
+          );
+
+        // Log the results for debugging
+        console.log('Document processing results:', documentResults);
+      }
+
+      // Step 2: Delete the job post itself
       await client.delete(`/job-applications/${jobPostId}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,

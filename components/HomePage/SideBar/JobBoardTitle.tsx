@@ -71,6 +71,7 @@ const JobBoardTitle = (board: Board) => {
         <AlertDialogModal
           buttonCancel="Cancel"
           buttonConfirm="Archive"
+          cleanupType="none"
           stylings={cn('opacity-0')}
           dialogTitle="Archive Board"
           dialogText="Are you sure you want to archive this board?"
