@@ -232,6 +232,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Impact**: Application now stable with all performance improvements retained except complex memoization
   - **Files**: `components/Forms/AddJobShort/ComboBoardListBox.tsx`
 
+#### Smart Document Handling in Job Deletion
+
+- **Enhanced job deletion logic**: Implemented intelligent document management when deleting job applications
+  - **Issue**: Deleting jobs with attached documents caused 500 server errors
+  - **Root Cause**: Backend couldn't delete jobs that had document relationships without proper cleanup
+  - **Solution**: Implemented smart document handling before job deletion
+  - **Logic**:
+    - 📄 **Document Shared**: If document is attached to other jobs → detach from current job only
+    - 🗑️ **Document Orphaned**: If document is only attached to current job → detach and delete document
+    - ✅ **Job Deletion**: Only delete job after all document relationships are properly handled
+  - **Implementation**:
+    - 🔍 **Document Analysis**: Filter `document.jobApplications` excluding current job to determine if shared
+    - 🔗 **Smart Detachment**: Use `/documents/{id}/job-application/{jobId}/detach` endpoint
+    - 🗂️ **Conditional Deletion**: Delete documents only if not attached to other jobs
+    - 📊 **Full Data Access**: Enhanced JobPostCard to access complete job data including documents
+  - **Critical Fix**: Exclude current job from shared document check to prevent incorrect deletion
+  - **Impact**: Job deletion now works seamlessly regardless of document attachments
+  - **Files**: `redux/jobs/jobsThunk.ts`, `components/HomePage/Kanban/Column/JobPosts/JobPostCard.tsx`
+
 ### Code Quality Improvements - 2025-01-31
 
 #### Type Safety Enhancements

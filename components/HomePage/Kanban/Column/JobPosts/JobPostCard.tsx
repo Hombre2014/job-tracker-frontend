@@ -133,10 +133,17 @@ const JobPostCard = ({
   };
 
   const handleDeleteJobPost = () => {
+    // Get the full job post data from Redux state to access documents
+    const fullJobData = boards
+      .find((board) => board.id === board_id)
+      ?.columns.flatMap((column) => column.jobApplications)
+      .find((job) => job.id === id);
+
     dispatch(
       deleteJobPost({
         accessToken,
         jobPostId: id,
+        jobPostData: fullJobData,
       })
     );
     setIsDialogOpen(false);
