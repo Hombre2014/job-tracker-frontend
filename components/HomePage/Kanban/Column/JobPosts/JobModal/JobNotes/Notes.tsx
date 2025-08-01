@@ -208,7 +208,7 @@ const Notes = () => {
                 <div className="sticky top-0 right-0 z-10 flex justify-end w-full">
                   <DropdownMenu
                     open={openDropdownId === note.id}
-                    onOpenChange={(isOpen) =>
+                    onOpenChange={(isOpen: boolean) =>
                       setOpenDropdownId(isOpen ? note.id : null)
                     }
                   >
@@ -230,7 +230,7 @@ const Notes = () => {
                           buttonLabel="Delete Note"
                           cleanupType="none"
                           destructiveVariant={true}
-                          onOpenChange={(isOpen) => {
+                          onOpenChange={(isOpen: boolean) => {
                             if (!isOpen) handleCancel();
                           }}
                           actionFunction={() => handleDeleteNote(note.id)}
