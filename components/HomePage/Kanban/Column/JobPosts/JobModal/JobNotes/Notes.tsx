@@ -164,7 +164,7 @@ const Notes = () => {
         value=""
         id="notes"
         title="Notes"
-        backColor="#ffffe0"
+        backColor="#fefce8"
         buttonVisibility={true}
         placeholder="Add a note"
         sendData={handleFieldChange}
@@ -177,7 +177,7 @@ const Notes = () => {
             placeholder=""
             autoSave={true}
             title="Edit Note"
-            backColor="#ffffe0"
+            backColor="#fefce8"
             buttonVisibility={false}
             value={editingNoteContent}
             sendData={handleContentUpdate}
@@ -202,7 +202,7 @@ const Notes = () => {
               className="flex flex-col basis-[calc(33.333%-16px)] gap-1"
             >
               <Card
-                className="w-full min-h-60 max-h-60 overflow-y-auto bg-[#ffffe0] relative rounded-sm  hover:border-gray-400 cursor-pointer"
+                className="w-full min-h-60 max-h-60 overflow-y-auto bg-yellow-50 dark:bg-slate-800 dark:text-white relative rounded-sm hover:border-gray-400 cursor-pointer"
                 onClick={() => handleEditNote(note)}
               >
                 <div className="sticky top-0 right-0 z-10 flex justify-end w-full">

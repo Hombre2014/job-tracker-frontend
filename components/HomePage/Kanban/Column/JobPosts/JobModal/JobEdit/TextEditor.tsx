@@ -1,5 +1,6 @@
 import { debounce } from 'lodash';
 import { useState, useCallback, useEffect } from 'react';
+import { useTheme } from 'next-themes';
 import {
   Editor,
   BtnBold,
@@ -33,8 +34,17 @@ const TextEditor = ({
   placeholder,
   buttonVisibility,
 }: TextEditorProps) => {
+  const { theme } = useTheme();
   const [html, setHtml] = useState(value || '');
   const [showPlaceholder, setShowPlaceholder] = useState(true);
+
+  // Theme-aware background color
+  const getBackgroundColor = () => {
+    if (theme === 'dark') {
+      return '#1e293b'; // slate-800
+    }
+    return backColor || '#fefce8'; // yellow-50 as fallback
+  };
 
   const BtnAlignLeft = createButton('Align left', '⟝', 'justifyLeft');
   const BtnAlignRight = createButton('Align right', '⟞', 'justifyRight');
@@ -108,7 +118,10 @@ const TextEditor = ({
               onBlur={handleBlur}
               onFocus={handleFocus}
               onChange={handleDescription}
-              style={{ backgroundColor: `${backColor}` }}
+              style={{ 
+                backgroundColor: getBackgroundColor(),
+                color: theme === 'dark' ? '#ffffff' : '#000000'
+              }}
               value={showPlaceholder && !html ? placeholder : html}
               containerProps={{
                 style: {
