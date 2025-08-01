@@ -5,7 +5,7 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.185.0] - 2025-01-31
+## [0.185.0] - 2025-08-31
 
 ### Dark Mode Implementation and Bug Fixes
 
@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Notes system**: Added comprehensive dark mode styling for note cards, text editor, and dropdown menus with proper background and text colors
   - **Sidebar components**: Updated all sidebar elements with dark mode styling including proper hover states and active states
   - **Document management**: Enhanced document pages and components with dark mode backgrounds and text colors
-  - **Settings modal**: Completely redesigned with sidebar-style tabs and proper dark mode support
+  - **Settings modal**: Completely redesigned with sidebar-style tabs, proper dark mode support, and enhanced notification preferences management
   - **Form elements**: Fixed company dropdown and form labels for proper visibility in dark mode
   - **Board columns**: Updated column titles, hover states, and job count text for dark mode visibility
   - **Files**:
@@ -25,7 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `components/HomePage/Kanban/Column/JobPosts/JobModal/JobEdit/TextEditor.tsx` (theme-aware colors)
     - `components/HomePage/SideBar/` (multiple sidebar components)
     - `components/Documents/` (document pages)
-    - `app/(loggedin)/home/settings/page.tsx` (settings modal redesign)
+    - `app/(loggedin)/home/settings/page.tsx` (settings modal redesign and notification preferences)
+    - `components/Forms/AddContact/LinkContactComboBox.tsx` (dark mode styling)
+    - `components/HomePage/HomeNavbar/LinkDocument.tsx` (dark mode styling)
     - `components/Forms/AddContact/CompaniesInput.tsx` (company dropdown)
     - `components/Forms/AddJobShort/AddJobShortForm.tsx` (add job modal)
     - `components/HomePage/Kanban/Column/ThreeDotsMenu.tsx` (column menu)
@@ -58,8 +60,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Settings Modal Redesign
 
 - **Sidebar-style navigation**: Redesigned settings modal with professional sidebar-style tabs
+- **Notification preferences management**: Added proper state management for Weekly Digest and Daily Digest checkboxes
+- **Save Changes functionality**: Added Save Changes button to Notes & Notifications tab with proper state handling
+- **Enhanced action buttons**: Improved Download my data and Delete my account buttons with proper handlers and styling
 - **Improved user experience**: Better organization and navigation within settings
 - **Dark mode integration**: Proper styling for both light and dark themes
+
+#### Link Component Dark Mode Fixes
+
+- **Link Contact button**: Enhanced with proper dark mode background, text, and border colors
+- **Link Document button**: Added dark mode styling for better visibility and contrast
+- **Dropdown menus**: Fixed document titles and contact information visibility in dark mode
+- **Interactive states**: Improved hover and active states for better user feedback
 
 ### Technical Improvements
 

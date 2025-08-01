@@ -25,6 +25,8 @@ const Settings = () => {
   const [newEmail, setNewEmail] = useState(email);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+  const [weeklyDigest, setWeeklyDigest] = useState(true);
+  const [dailyDigest, setDailyDigest] = useState(true);
 
   // Removed automatic updateUser call - should only update when user explicitly saves
 
@@ -38,24 +40,23 @@ const Settings = () => {
   }, []);
 
   const handleWeeklyDigest = () => {
-    // TODO: Implement weekly digest functionality
+    setWeeklyDigest(!weeklyDigest);
   };
 
   const handleDailyDigest = () => {
-    // TODO: Implement daily digest functionality
+    setDailyDigest(!dailyDigest);
+  };
+
+  const handleDownloadData = () => {
+    // TODO: Implement data download functionality
+  };
+
+  const handleDeleteAccount = () => {
+    // TODO: Implement account deletion with confirmation modal
   };
 
   const handleSaveNotifications = async () => {
     // TODO: Implement notification preferences save functionality
-    toast.success('Notification preferences saved successfully!', {
-      position: 'top-right',
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
-
     // Close the modal by navigating back to the previous page
     router.back();
   };
@@ -308,10 +309,10 @@ const Settings = () => {
                       Weekly Digest
                     </span>
                     <input
-                      defaultChecked
+                      checked={weeklyDigest}
                       type="checkbox"
                       className="checkbox border-slate-300 dark:border-slate-600"
-                      onClick={handleWeeklyDigest}
+                      onChange={handleWeeklyDigest}
                     />
                   </label>
                 </div>
@@ -321,23 +322,25 @@ const Settings = () => {
                       Daily Digest
                     </span>
                     <input
-                      defaultChecked
+                      checked={dailyDigest}
                       type="checkbox"
                       className="checkbox border-slate-300 dark:border-slate-600"
-                      onClick={handleDailyDigest}
+                      onChange={handleDailyDigest}
                     />
                   </label>
                 </div>
                 <div className="flex flex-col w-fit mt-6">
                   <Button
-                    variant="none"
-                    className="ml-2 text-gray-600 dark:text-slate-400 hover:!bg-none"
+                    variant="ghost"
+                    onClick={handleDownloadData}
+                    className="justify-start text-gray-600 dark:text-slate-400"
                   >
                     Download my data
                   </Button>
                   <Button
-                    variant="none"
-                    className="ml-2 text-red-600 hover:!bg-none"
+                    variant="ghost"
+                    onClick={handleDeleteAccount}
+                    className="justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
                   >
                     Delete my account
                   </Button>

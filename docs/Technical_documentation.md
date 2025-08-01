@@ -61,7 +61,7 @@ const formattedDate = localDate.toLocaleDateString();
 
 ##### 4. Settings Modal Redesign
 
-Completely redesigned the settings modal with sidebar-style navigation and proper dark mode support:
+Completely redesigned the settings modal with sidebar-style navigation, proper dark mode support, and enhanced state management:
 
 ```typescript
 // Enhanced tab navigation with dark mode styling
@@ -73,6 +73,27 @@ Completely redesigned the settings modal with sidebar-style navigation and prope
     {/* Content area */}
   </div>
 </div>
+
+// Added proper state management for notification preferences
+const [weeklyDigest, setWeeklyDigest] = useState(true);
+const [dailyDigest, setDailyDigest] = useState(true);
+
+// Controlled checkbox components
+<input
+  checked={weeklyDigest}
+  type="checkbox"
+  onChange={handleWeeklyDigest}
+  className="checkbox border-slate-300 dark:border-slate-600"
+/>
+
+// Enhanced action buttons with proper handlers
+<Button
+  variant="ghost"
+  onClick={handleDeleteAccount}
+  className="justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+>
+  Delete my account
+</Button>
 ```
 
 #### Components Enhanced (31/01/2025)
@@ -99,6 +120,7 @@ Completely redesigned the settings modal with sidebar-style navigation and prope
    - `ThreeDotsMenu.tsx`: Column menu and dropdown styling
    - `BoardColumns.tsx`: Board column titles and hover states
    - `LinkDocument.tsx`: Document linking dropdown with dark mode support
+   - `LinkContactComboBox.tsx`: Contact linking dropdown with comprehensive dark mode styling
 
 #### TypeScript Configuration Improvements (31/01/2025)
 
