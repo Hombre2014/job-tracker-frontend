@@ -1,7 +1,7 @@
 import { toast } from 'react-toastify';
-import TokenManager from './TokenManager';
-import RequestQueue from './RequestQueue';
-import SmartTokenRefresh from './SmartTokenRefresh';
+import { TokenManager } from './TokenManager';
+import { RequestQueue } from './RequestQueue';
+import { SmartTokenRefresh } from './SmartTokenRefresh';
 
 export enum AuthErrorType {
   NETWORK_ERROR = 'NETWORK_ERROR',
@@ -83,9 +83,10 @@ class AuthErrorHandlerClass {
         // Check if it's specifically a token expiration
         let errorMessage = '';
         if (error.response?.data) {
-          errorMessage = typeof error.response.data === 'string' 
-            ? error.response.data 
-            : error.response.data.message || '';
+          errorMessage =
+            typeof error.response.data === 'string'
+              ? error.response.data
+              : error.response.data.message || '';
         }
         errorMessage = errorMessage || error.message || '';
         const lowerMessage = errorMessage.toLowerCase();
@@ -126,10 +127,12 @@ class AuthErrorHandlerClass {
       error.message?.toLowerCase().includes('refresh token') ||
       error.message?.toLowerCase().includes('token refresh') ||
       error.message?.toLowerCase().includes('refresh failed') ||
-      (typeof error.response?.data === 'string' 
-        ? error.response.data 
+      (typeof error.response?.data === 'string'
+        ? error.response.data
         : error.response?.data?.message
-      )?.toLowerCase().includes('refresh')
+      )
+        ?.toLowerCase()
+        .includes('refresh')
     ) {
       return AuthErrorType.REFRESH_FAILED;
     }

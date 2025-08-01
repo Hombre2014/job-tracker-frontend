@@ -1,4 +1,4 @@
-import TokenManager from './TokenManager';
+import { TokenManager } from '@/utils/TokenManager';
 
 export interface RefreshConfig {
   maxRetries: number; // Max retry attempts for failed refresh

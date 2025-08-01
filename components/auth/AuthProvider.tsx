@@ -326,7 +326,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [
     dispatch,
-    reduxUser, // Use entire object instead of individual properties to reduce re-renders
+    // reduxUser, // Use entire object instead of individual properties to reduce re-renders
+    reduxUser.email,
+    reduxUser.firstName,
+    reduxUser.accessToken,
+    reduxUser.refreshToken,
     syncUserDataToRedux,
   ]);
 

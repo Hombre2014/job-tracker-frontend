@@ -130,10 +130,16 @@ export class DocumentService {
     documents: any[],
     jobId: string,
     accessToken: string
-  ): Promise<{ documentId: string; action: 'detached' | 'deleted'; error?: string }[]> {
+  ): Promise<
+    { documentId: string; action: 'detached' | 'deleted'; error?: string }[]
+  > {
     const CONCURRENCY_LIMIT = 5;
-    const results: { documentId: string; action: 'detached' | 'deleted'; error?: string }[] = [];
-    
+    const results: {
+      documentId: string;
+      action: 'detached' | 'deleted';
+      error?: string;
+    }[] = [];
+
     // Process documents in batches to avoid overwhelming the API
     for (let i = 0; i < documents.length; i += CONCURRENCY_LIMIT) {
       const batch = documents.slice(i, i + CONCURRENCY_LIMIT);
@@ -154,21 +160,25 @@ export class DocumentService {
             await this.detachDocumentFromJob(document.id, jobId, accessToken);
 
             // Wait for detachment to complete
-            await this.waitForDetachmentComplete(document.id, jobId, accessToken);
+            await this.waitForDetachmentComplete(
+              document.id,
+              jobId,
+              accessToken
+            );
 
             // Then delete the document
             await this.deleteDocument(document.id, accessToken);
             return { documentId: document.id, action: 'deleted' as const };
           }
         } catch (error) {
-          return { 
-            documentId: document.id, 
-            action: 'detached' as const, 
-            error: `Failed to process document: ${error}` 
+          return {
+            documentId: document.id,
+            action: 'detached' as const,
+            error: `Failed to process document: ${error}`,
           };
         }
       });
-      
+
       const batchResults = await Promise.all(batchPromises);
       results.push(...batchResults);
     }
