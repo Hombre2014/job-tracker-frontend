@@ -57,11 +57,8 @@ const JobPostCard = ({
   const boardColumns = boards.find((board) => board.id === board_id)?.columns;
 
   const formattedStatusChangedTime = format(
-    toZonedTime(new Date(statusChangedTime), 'UTC'),
-    'dd/MM/yyyy HH:mm, a',
-    {
-      timeZone: 'UTC',
-    }
+    new Date(statusChangedTime),
+    'dd/MM/yyyy HH:mm, a'
   );
 
   const iconsOn = () => {
