@@ -229,7 +229,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => {
       SmartTokenRefresh.cleanup();
     };
-  }, [dispatch]);
+  }, [dispatch, syncUserDataToRedux]);
 
   // Watch for localStorage user data changes (e.g., profile picture updates)
   useEffect(() => {
