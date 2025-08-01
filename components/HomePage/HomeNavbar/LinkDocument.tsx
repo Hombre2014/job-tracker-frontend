@@ -42,7 +42,7 @@ export function LinkDocument({
           role="combobox"
           variant="outline"
           aria-expanded={open}
-          className="w-fit justify-between"
+          className="w-fit justify-between dark:bg-slate-800 dark:text-white dark:border-slate-600 dark:hover:bg-slate-700"
         >
           {initialString !== ''
             ? initialString
@@ -53,7 +53,7 @@ export function LinkDocument({
           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-fit p-0">
+      <PopoverContent className="w-fit p-0 dark:bg-slate-800 dark:border-slate-600">
         <Command>
           <CommandInput placeholder={`Search ${searchItem}`} className="h-9" />
           <CommandList>
@@ -87,7 +87,7 @@ export function LinkDocument({
                     />
                     {/* TODO: Implement file upload */}
                     <div className="flex items-center justify-between w-full">
-                      <span className="text-sm font-medium text-gray-900">
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">
                         {truncateFilename(doc.title)}
                       </span>
                       <span

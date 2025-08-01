@@ -30,15 +30,15 @@ const CompaniesInput = ({
         onKeyDown={onKeyDown}
         onChange={onInputChange}
         placeholder='i.e: "Google"'
-        className="outline-none bg-transparent border border-gray-300 rounded-md px-2 py-1 w-full focus:border-blue-500 focus:ring-blue-500"
+        className="outline-none bg-transparent border border-gray-300 dark:border-slate-600 rounded-md px-2 py-1 w-full focus:border-blue-500 focus:ring-blue-500 dark:text-white"
       />
       {showDropdown && matchingCompanies.length > 0 && (
-        <div className="absolute z-10 w-full bg-white mt-1 border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto top-[40px]">
+        <div className="absolute z-10 w-full bg-white dark:bg-slate-800 mt-1 border border-gray-200 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-auto top-[40px]">
           {matchingCompanies.map((company, index) => (
             <div
               key={index}
               onClick={() => onCompanySelect(company)}
-              className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+              className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700 cursor-pointer dark:text-white"
             >
               {company}
             </div>
@@ -49,11 +49,11 @@ const CompaniesInput = ({
         {companies.map((company, index) => (
           <div
             key={company}
-            className="flex items-center bg-gray-200 rounded-full px-2 py-[2px]"
+            className="flex items-center bg-gray-200 dark:bg-slate-600 rounded-full px-2 py-[2px]"
           >
-            <span className="mr-2">{company}</span>
+            <span className="mr-2 dark:text-white">{company}</span>
             <RiCloseLine
-              className="cursor-pointer"
+              className="cursor-pointer dark:text-white"
               onClick={() => handleRemoveCompany(index)}
             />
           </div>

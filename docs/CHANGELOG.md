@@ -5,6 +5,77 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.185.0] - 2025-01-31
+
+### Dark Mode Implementation and Bug Fixes
+
+#### Comprehensive Dark Mode Support
+
+- **Implemented complete dark mode styling across the application**: Enhanced user experience with proper contrast and visibility in both light and dark themes
+  - **Job post timestamps**: Fixed timezone display bug showing UTC time instead of local time by removing forced UTC conversion
+  - **Notes system**: Added comprehensive dark mode styling for note cards, text editor, and dropdown menus with proper background and text colors
+  - **Sidebar components**: Updated all sidebar elements with dark mode styling including proper hover states and active states
+  - **Document management**: Enhanced document pages and components with dark mode backgrounds and text colors
+  - **Settings modal**: Completely redesigned with sidebar-style tabs and proper dark mode support
+  - **Form elements**: Fixed company dropdown and form labels for proper visibility in dark mode
+  - **Board columns**: Updated column titles, hover states, and job count text for dark mode visibility
+  - **Files**:
+    - `components/HomePage/Kanban/Column/JobPosts/JobPostCard.tsx` (timezone fix)
+    - `components/HomePage/Kanban/Column/JobPosts/JobModal/JobNotes/Notes.tsx` (dark mode styling)
+    - `components/HomePage/Kanban/Column/JobPosts/JobModal/JobEdit/TextEditor.tsx` (theme-aware colors)
+    - `components/HomePage/SideBar/` (multiple sidebar components)
+    - `components/Documents/` (document pages)
+    - `app/(loggedin)/home/settings/page.tsx` (settings modal redesign)
+    - `components/Forms/AddContact/CompaniesInput.tsx` (company dropdown)
+    - `components/Forms/AddJobShort/AddJobShortForm.tsx` (add job modal)
+    - `components/HomePage/Kanban/Column/ThreeDotsMenu.tsx` (column menu)
+    - `components/HomePage/Kanban/Column/BoardColumns.tsx` (board columns)
+
+#### TypeScript Configuration Fixes
+
+- **Resolved TypeScript configuration issues**: Fixed missing type definitions and configuration problems
+  - **Issue**: Missing type definitions for 'ms' and 'prop-types' packages causing build errors
+  - **Solution**: Removed problematic 'moduleDetection: force' and 'typeRoots' configuration from tsconfig.json
+  - **Impact**: Clean TypeScript compilation without type definition errors
+  - **Files**: `tsconfig.json`
+
+#### Authentication Provider Enhancement
+
+- **Fixed missing dependency in useEffect**: Added missing 'syncUserDataToRedux' dependency to useEffect dependency array
+  - **Issue**: React Hook useEffect had missing dependency causing potential stale closure issues
+  - **Solution**: Added proper dependency to ensure effect runs when function changes
+  - **Files**: `components/auth/AuthProvider.tsx`
+
+### UI/UX Improvements
+
+#### Dark Mode Visual Consistency
+
+- **Consistent styling patterns**: Applied uniform dark mode styling across similar UI components
+- **Proper contrast ratios**: Ensured all text and interactive elements meet accessibility standards in dark mode
+- **Hover and active states**: Enhanced interactive feedback for all clickable elements in dark theme
+- **Form visibility**: Fixed input fields, dropdowns, and labels that were invisible or had poor contrast
+
+#### Settings Modal Redesign
+
+- **Sidebar-style navigation**: Redesigned settings modal with professional sidebar-style tabs
+- **Improved user experience**: Better organization and navigation within settings
+- **Dark mode integration**: Proper styling for both light and dark themes
+
+### Technical Improvements
+
+#### Timezone Handling
+
+- **Fixed job post timestamp display**: Resolved bug where timestamps showed UTC time instead of user's local time
+  - **Issue**: Job posts displayed creation time in UTC format instead of local timezone
+  - **Solution**: Removed forced UTC conversion and implemented proper local timezone formatting
+  - **Impact**: Users now see job post times in their local timezone for better context
+
+#### Code Quality
+
+- **Consistent theme implementation**: Used useTheme hook throughout components for proper theme detection
+- **Maintainable styling**: Applied systematic approach to dark mode styling with consistent patterns
+- **Type safety**: Maintained proper TypeScript typing throughout all changes
+
 ## [0.184.0] - 2025-08-01
 
 ### Code Quality and Security Enhancements

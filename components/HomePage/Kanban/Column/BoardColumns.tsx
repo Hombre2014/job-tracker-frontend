@@ -98,7 +98,7 @@ const BoardColumns = () => {
           >
             <div className="flex items-center justify-between px-4 pt-8">
               {returnBoardIcon(column.order + 1)}
-              <p className="hover:bg-slate-200 px-2 py-1 rounded-md cursor-text transition duration-300 delay-150 mx-2">
+              <p className="hover:bg-slate-200 dark:hover:bg-slate-700 px-2 py-1 rounded-md cursor-text transition duration-300 delay-150 mx-2">
                 <Input
                   id={column.id}
                   value={
@@ -106,7 +106,7 @@ const BoardColumns = () => {
                       ? renamedColumnName.toUpperCase()
                       : column.name.toUpperCase()
                   }
-                  className="text-lg font-semibold text-center w-full border-none outline-none shadow-none active:outline-none active:shadow-none active:border-none"
+                  className="text-lg font-semibold text-center w-full border-none outline-none shadow-none active:outline-none active:shadow-none active:border-none dark:text-white dark:bg-transparent"
                   onClick={(e) => {
                     e.preventDefault();
                     setIsEditing(true);
@@ -121,7 +121,7 @@ const BoardColumns = () => {
               <ThreeDotsMenu columnOrder={column.order} />
             </div>
             <div className="w-full flex justify-center">
-              <p className="mb-8 text-center">
+              <p className="mb-8 text-center dark:text-white">
                 {column.jobApplications && column.jobApplications.length} JOBS
               </p>
             </div>
