@@ -25,14 +25,14 @@ import {
 } from '@/components/ui/tooltip';
 import {
   AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
+  AlertDialogTitle,
   AlertDialogHeader,
   AlertDialogFooter,
-  AlertDialogTitle,
-  AlertDialogDescription,
   AlertDialogAction,
   AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogTrigger,
+  AlertDialogDescription,
 } from '@/components/ui/alert-dialog';
 
 const JobPostCard = ({

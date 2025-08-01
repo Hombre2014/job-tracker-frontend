@@ -106,7 +106,7 @@ const BoardColumns = () => {
                       ? renamedColumnName.toUpperCase()
                       : column.name.toUpperCase()
                   }
-                  className="text-lg font-semibold text-center w-full border-none outline-none shadow-none active:outline-none active:shadow-none active:border-none dark:text-white dark:bg-transparent"
+                  className="text-lg font-semibold text-center w-full border-none outline-none shadow-none active:outline-none active:shadow-none active:border-none dark:text-white dark:bg-transparent focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400"
                   onClick={(e) => {
                     e.preventDefault();
                     setIsEditing(true);
@@ -122,7 +122,7 @@ const BoardColumns = () => {
             </div>
             <div className="w-full flex justify-center">
               <p className="mb-8 text-center dark:text-white">
-                {column.jobApplications && column.jobApplications.length} JOBS
+                {column.jobApplications?.length} {column.jobApplications?.length === 1 ? 'JOB' : 'JOBS'}
               </p>
             </div>
             <AlertDialogModal

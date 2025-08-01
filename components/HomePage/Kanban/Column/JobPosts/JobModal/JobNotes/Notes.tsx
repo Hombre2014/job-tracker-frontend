@@ -164,7 +164,6 @@ const Notes = () => {
         value=""
         id="notes"
         title="Notes"
-        backColor="#fefce8"
         buttonVisibility={true}
         placeholder="Add a note"
         sendData={handleFieldChange}
@@ -177,7 +176,6 @@ const Notes = () => {
             placeholder=""
             autoSave={true}
             title="Edit Note"
-            backColor="#fefce8"
             buttonVisibility={false}
             value={editingNoteContent}
             sendData={handleContentUpdate}
@@ -223,12 +221,12 @@ const Notes = () => {
                         className="rsw-dropdown-menu-item"
                       >
                         <AlertDialogModal
+                          cleanupType="none"
                           buttonCancel="Cancel"
                           buttonVariant="ghost"
                           buttonConfirm="Delete"
                           dialogTitle="Delete Note"
                           buttonLabel="Delete Note"
-                          cleanupType="none"
                           destructiveVariant={true}
                           onOpenChange={(isOpen: boolean) => {
                             if (!isOpen) handleCancel();
@@ -249,7 +247,7 @@ const Notes = () => {
                   </DropdownMenu>
                 </div>
                 <CardContent
-                  className="pl-2 pt-0 pr-8 cursor-text text-gray-900"
+                  className="pl-2 pt-0 pr-8 cursor-text text-gray-900 dark:text-gray-100"
                   dangerouslySetInnerHTML={{ __html: note.content }}
                 />
               </Card>
