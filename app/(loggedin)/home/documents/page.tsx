@@ -152,9 +152,9 @@ const UserDocuments = () => {
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
-      <div className="w-full py-2 border-b flex justify-center items-center flex-shrink-0 bg-white">
+      <div className="w-full py-2 border-b border-slate-200 dark:border-slate-700 flex justify-center items-center flex-shrink-0 bg-white dark:bg-slate-900">
         <div className="h-9 flex items-center">
-          <h1 className="font-semibold text-center">Documents</h1>
+          <h1 className="font-semibold text-center dark:text-white">Documents</h1>
         </div>
       </div>
 

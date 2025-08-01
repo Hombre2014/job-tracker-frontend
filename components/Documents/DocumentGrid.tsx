@@ -11,7 +11,7 @@ export const DocumentGrid = ({
   if (documents.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <p className="text-center text-xl text-slate-400">{emptyMessage}</p>
+        <p className="text-center text-xl text-slate-400 dark:text-slate-500">{emptyMessage}</p>
       </div>
     );
   }

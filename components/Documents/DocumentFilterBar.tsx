@@ -10,7 +10,7 @@ export const DocumentFilterBar = ({
   setSelectedCategory,
 }: DocumentFilterBarProps) => {
   return (
-    <div className="w-full bg-white pt-6 pb-2 px-6 border-b">
+    <div className="w-full bg-white dark:bg-slate-900 pt-6 pb-2 px-6 border-b border-slate-200 dark:border-slate-700">
       <div className="flex items-center gap-2">
         {/* All filter */}
         <div
@@ -25,7 +25,7 @@ export const DocumentFilterBar = ({
           }`}
         >
           <span>All</span>
-          <span className="ml-1 px-2 py-0.5 rounded bg-gray-200 text-gray-700 font-semibold text-xs">
+          <span className="ml-1 px-2 py-0.5 rounded bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-slate-200 font-semibold text-xs">
             {allCount}
           </span>
         </div>
@@ -46,7 +46,7 @@ export const DocumentFilterBar = ({
               aria-pressed={selectedCategory === category ? 'true' : 'false'}
               className={`min-w-12 flex items-center gap-1 px-3 py-1 rounded-lg cursor-pointer font-medium text-sm transition-all duration-200 ${colorClass}`}
             >
-              <span className="px-2 py-0.5 rounded bg-gray-200 text-gray-700 font-semibold text-xs">
+              <span className="px-2 py-0.5 rounded bg-gray-200 dark:bg-slate-600 text-gray-700 dark:text-slate-200 font-semibold text-xs">
                 {count}
               </span>
               <span>{category}</span>

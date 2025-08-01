@@ -41,9 +41,17 @@ const TextEditor = ({
   // Theme-aware background color
   const getBackgroundColor = () => {
     if (theme === 'dark') {
-      return '#1e293b'; // slate-800
+      return '#475569'; // slate-600 - much lighter for better contrast
     }
     return backColor || '#fefce8'; // yellow-50 as fallback
+  };
+
+  // Theme-aware text color
+  const getTextColor = () => {
+    if (theme === 'dark') {
+      return '#ffffff'; // pure white for maximum contrast
+    }
+    return '#000000'; // pure black for light mode
   };
 
   const BtnAlignLeft = createButton('Align left', '⟝', 'justifyLeft');
@@ -120,7 +128,7 @@ const TextEditor = ({
               onChange={handleDescription}
               style={{ 
                 backgroundColor: getBackgroundColor(),
-                color: theme === 'dark' ? '#ffffff' : '#000000'
+                color: getTextColor()
               }}
               value={showPlaceholder && !html ? placeholder : html}
               containerProps={{

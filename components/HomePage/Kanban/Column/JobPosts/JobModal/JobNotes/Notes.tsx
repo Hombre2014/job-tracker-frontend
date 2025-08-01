@@ -202,7 +202,7 @@ const Notes = () => {
               className="flex flex-col basis-[calc(33.333%-16px)] gap-1"
             >
               <Card
-                className="w-full min-h-60 max-h-60 overflow-y-auto bg-yellow-50 dark:bg-slate-800 dark:text-white relative rounded-sm hover:border-gray-400 cursor-pointer"
+                className="w-full min-h-60 max-h-60 overflow-y-auto bg-yellow-50 dark:bg-slate-700 dark:text-white relative rounded-sm hover:border-gray-400 dark:hover:border-gray-300 cursor-pointer"
                 onClick={() => handleEditNote(note)}
               >
                 <div className="sticky top-0 right-0 z-10 flex justify-end w-full">
@@ -214,7 +214,7 @@ const Notes = () => {
                   >
                     <DropdownMenuTrigger asChild>
                       <Button variant="invisible" className="!mr-2 !mt-2">
-                        <BsThreeDots className="size-6 bg-white rounded-lg p-1 border border-gray-500  hover:border-gray-800" />
+                        <BsThreeDots className="size-6 bg-white dark:bg-slate-300 dark:text-slate-900 rounded-lg p-1 border border-gray-500 dark:border-gray-600 hover:border-gray-800 dark:hover:border-gray-100" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-36 rsw-dropdown-menu">
