@@ -1,4 +1,5 @@
 import client from '@/api/client';
+import { JobApplication } from '@/types';
 
 /**
  * Service for handling document-related operations and business logic
@@ -10,15 +11,14 @@ export class DocumentService {
   static async getDocumentJobApplications(
     documentId: string,
     accessToken: string
-  ): Promise<any[]> {
+  ): Promise<JobApplication[]> {
     try {
       const response = await client.get(`/documents/${documentId}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       return response.data.jobApplications || [];
     } catch (error) {
-      console.error(`Failed to fetch document ${documentId}:`, error);
-      return [];
+      throw new Error(`Failed to fetch document ${documentId}: ${error}`);
     }
   }
 
@@ -83,7 +83,8 @@ export class DocumentService {
     documentId: string,
     jobId: string,
     accessToken: string,
-    maxWait = 5000
+    maxWait = 5000,
+    pollInterval = 250
   ): Promise<void> {
     const start = Date.now();
 
@@ -101,11 +102,15 @@ export class DocumentService {
         if (!stillAttached) {
           return; // Detachment complete
         }
-      } catch {
-        return; // If document doesn't exist, detachment is complete
+      } catch (error: any) {
+        // Only treat 404 errors as completion, re-throw others
+        if (error.response?.status === 404) {
+          return; // Document doesn't exist, detachment is complete
+        }
+        throw error;
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, pollInterval));
     }
 
     throw new Error(`Document detachment timeout after ${maxWait}ms`);
@@ -119,31 +124,49 @@ export class DocumentService {
     documents: any[],
     jobId: string,
     accessToken: string
-  ): Promise<{ documentId: string; action: 'detached' | 'deleted' }[]> {
-    const documentProcessingPromises = documents.map(async (document: any) => {
-      const isShared = await this.isDocumentShared(
-        document.id,
-        jobId,
-        accessToken
-      );
+  ): Promise<{ documentId: string; action: 'detached' | 'deleted'; error?: string }[]> {
+    const CONCURRENCY_LIMIT = 5;
+    const results: { documentId: string; action: 'detached' | 'deleted'; error?: string }[] = [];
+    
+    // Process documents in batches to avoid overwhelming the API
+    for (let i = 0; i < documents.length; i += CONCURRENCY_LIMIT) {
+      const batch = documents.slice(i, i + CONCURRENCY_LIMIT);
+      const batchPromises = batch.map(async (document: any) => {
+        try {
+          const isShared = await this.isDocumentShared(
+            document.id,
+            jobId,
+            accessToken
+          );
 
-      if (isShared) {
-        // Document is shared - only detach from current job
-        await this.detachDocumentFromJob(document.id, jobId, accessToken);
-        return { documentId: document.id, action: 'detached' as const };
-      } else {
-        // Document is orphaned - detach and delete
-        await this.detachDocumentFromJob(document.id, jobId, accessToken);
+          if (isShared) {
+            // Document is shared - only detach from current job
+            await this.detachDocumentFromJob(document.id, jobId, accessToken);
+            return { documentId: document.id, action: 'detached' as const };
+          } else {
+            // Document is orphaned - detach and delete
+            await this.detachDocumentFromJob(document.id, jobId, accessToken);
 
-        // Wait for detachment to complete
-        await this.waitForDetachmentComplete(document.id, jobId, accessToken);
+            // Wait for detachment to complete
+            await this.waitForDetachmentComplete(document.id, jobId, accessToken);
 
-        // Then delete the document
-        await this.deleteDocument(document.id, accessToken);
-        return { documentId: document.id, action: 'deleted' as const };
-      }
-    });
+            // Then delete the document
+            await this.deleteDocument(document.id, accessToken);
+            return { documentId: document.id, action: 'deleted' as const };
+          }
+        } catch (error) {
+          return { 
+            documentId: document.id, 
+            action: 'detached' as const, 
+            error: `Failed to process document: ${error}` 
+          };
+        }
+      });
+      
+      const batchResults = await Promise.all(batchPromises);
+      results.push(...batchResults);
+    }
 
-    return Promise.all(documentProcessingPromises);
+    return results;
   }
 }

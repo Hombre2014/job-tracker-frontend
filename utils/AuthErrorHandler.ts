@@ -81,8 +81,13 @@ class AuthErrorHandlerClass {
 
       if (status === 401) {
         // Check if it's specifically a token expiration
-        const errorMessage =
-          error.response?.data?.message || error.message || '';
+        let errorMessage = '';
+        if (error.response?.data) {
+          errorMessage = typeof error.response.data === 'string' 
+            ? error.response.data 
+            : error.response.data.message || '';
+        }
+        errorMessage = errorMessage || error.message || '';
         const lowerMessage = errorMessage.toLowerCase();
 
         if (
@@ -121,7 +126,10 @@ class AuthErrorHandlerClass {
       error.message?.toLowerCase().includes('refresh token') ||
       error.message?.toLowerCase().includes('token refresh') ||
       error.message?.toLowerCase().includes('refresh failed') ||
-      error.response?.data?.message?.toLowerCase().includes('refresh')
+      (typeof error.response?.data === 'string' 
+        ? error.response.data 
+        : error.response?.data?.message
+      )?.toLowerCase().includes('refresh')
     ) {
       return AuthErrorType.REFRESH_FAILED;
     }

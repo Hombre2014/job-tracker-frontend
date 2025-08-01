@@ -129,6 +129,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Benefits**: Better server load management, graceful handling of rate limits
   - **Files**: `utils/SmartTokenRefresh.ts`
 
+### Error Handling and API Robustness
+
+#### Enhanced Error Message Extraction
+
+- **Defensive error response handling**: Added robust error message extraction for different API response formats
+  - **Issue**: Error handling assumed `error.response.data` was always an object with `message` property
+  - **Solution**: Added type checking to handle both string and object error responses
+  - **Benefits**: Prevents crashes when APIs return different error formats, better error messages
+  - **Files**: `utils/AuthErrorHandler.ts`
+
+#### Document Service Improvements
+
+- **Enhanced type safety and error handling**: Improved DocumentService with proper TypeScript types and error propagation
+  - **Type safety**: Changed return type from `any[]` to `JobApplication[]` for better type checking
+  - **Error handling**: Replaced error swallowing with proper error propagation for better debugging
+  - **Polling robustness**: Added configurable poll intervals and proper 404 error handling
+  - **Concurrency control**: Implemented batch processing with 5-document limit to prevent API overload
+  - **Error isolation**: Individual document failures no longer stop entire batch processing
+  - **Benefits**: Better error visibility, controlled API load, resilient batch operations
+  - **Files**: `services/documentService.ts`
+
 ### Documentation and Maintenance
 
 - **Updated component documentation**: Enhanced inline documentation for better maintainability
