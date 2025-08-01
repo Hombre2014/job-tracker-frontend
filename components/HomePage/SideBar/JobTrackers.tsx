@@ -13,13 +13,13 @@ const JobTrackers = () => {
   return (
     <div className="flex justify-between items-center pl-4 mt-4 mb-2">
       <div className="flex items-center gap-1">
-        <p className="hover:underline mr-1">
+        <p className="hover:underline mr-1 dark:text-white">
           <Link href="/home/boards">My Job Tracker</Link>
         </p>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger>
-              <RiQuestionMark className="h-5 w-5 border rounded-md p-[1px] dark:border-slate-500 cursor-help" />
+              <RiQuestionMark className="h-5 w-5 border rounded-md p-[1px] border-slate-400 dark:border-slate-500 dark:text-slate-300 cursor-help" />
             </TooltipTrigger>
             <TooltipContent>
               <p>

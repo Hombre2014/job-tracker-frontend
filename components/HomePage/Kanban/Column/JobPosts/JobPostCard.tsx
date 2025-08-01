@@ -25,14 +25,14 @@ import {
 } from '@/components/ui/tooltip';
 import {
   AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
+  AlertDialogTitle,
   AlertDialogHeader,
   AlertDialogFooter,
-  AlertDialogTitle,
-  AlertDialogDescription,
   AlertDialogAction,
   AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogTrigger,
+  AlertDialogDescription,
 } from '@/components/ui/alert-dialog';
 
 const JobPostCard = ({
@@ -57,11 +57,8 @@ const JobPostCard = ({
   const boardColumns = boards.find((board) => board.id === board_id)?.columns;
 
   const formattedStatusChangedTime = format(
-    toZonedTime(new Date(statusChangedTime), 'UTC'),
-    'dd/MM/yyyy HH:mm, a',
-    {
-      timeZone: 'UTC',
-    }
+    new Date(statusChangedTime),
+    'dd/MM/yyyy HH:mm, a'
   );
 
   const iconsOn = () => {

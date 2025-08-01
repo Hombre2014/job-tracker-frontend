@@ -200,7 +200,7 @@ const BoardDocuments = () => {
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
       {/* Header with actions */}
-      <div className="w-full flex justify-end items-center p-6 border-b flex-shrink-0 bg-white">
+      <div className="w-full flex justify-end items-center p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0 bg-white dark:bg-slate-900">
         <div className="flex gap-4">
           {/* <LinkDocument
             searchItem="Documents"

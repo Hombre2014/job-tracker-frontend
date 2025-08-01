@@ -5,6 +5,89 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.185.0] - 2025-08-1
+
+### Dark Mode Implementation and Bug Fixes
+
+#### Comprehensive Dark Mode Support
+
+- **Implemented complete dark mode styling across the application**: Enhanced user experience with proper contrast and visibility in both light and dark themes
+  - **Job post timestamps**: Fixed timezone display bug showing UTC time instead of local time by removing forced UTC conversion
+  - **Notes system**: Added comprehensive dark mode styling for note cards, text editor, and dropdown menus with proper background and text colors
+  - **Sidebar components**: Updated all sidebar elements with dark mode styling including proper hover states and active states
+  - **Document management**: Enhanced document pages and components with dark mode backgrounds and text colors
+  - **Settings modal**: Completely redesigned with sidebar-style tabs, proper dark mode support, and enhanced notification preferences management
+  - **Form elements**: Fixed company dropdown and form labels for proper visibility in dark mode
+  - **Board columns**: Updated column titles, hover states, and job count text for dark mode visibility
+  - **Files**:
+    - `components/HomePage/Kanban/Column/JobPosts/JobPostCard.tsx` (timezone fix)
+    - `components/HomePage/Kanban/Column/JobPosts/JobModal/JobNotes/Notes.tsx` (dark mode styling)
+    - `components/HomePage/Kanban/Column/JobPosts/JobModal/JobEdit/TextEditor.tsx` (theme-aware colors)
+    - `components/HomePage/SideBar/` (multiple sidebar components)
+    - `components/Documents/` (document pages)
+    - `app/(loggedin)/home/settings/page.tsx` (settings modal redesign and notification preferences)
+    - `components/Forms/AddContact/LinkContactComboBox.tsx` (dark mode styling)
+    - `components/HomePage/HomeNavbar/LinkDocument.tsx` (dark mode styling)
+    - `components/Forms/AddContact/CompaniesInput.tsx` (company dropdown)
+    - `components/Forms/AddJobShort/AddJobShortForm.tsx` (add job modal)
+    - `components/HomePage/Kanban/Column/ThreeDotsMenu.tsx` (column menu)
+    - `components/HomePage/Kanban/Column/BoardColumns.tsx` (board columns)
+
+#### TypeScript Configuration Fixes
+
+- **Resolved TypeScript configuration issues**: Fixed missing type definitions and configuration problems
+  - **Issue**: Missing type definitions for 'ms' and 'prop-types' packages causing build errors
+  - **Solution**: Removed problematic 'moduleDetection: force' and 'typeRoots' configuration from tsconfig.json
+  - **Impact**: Clean TypeScript compilation without type definition errors
+  - **Files**: `tsconfig.json`
+
+#### Authentication Provider Enhancement
+
+- **Fixed missing dependency in useEffect**: Added missing 'syncUserDataToRedux' dependency to useEffect dependency array
+  - **Issue**: React Hook useEffect had missing dependency causing potential stale closure issues
+  - **Solution**: Added proper dependency to ensure effect runs when function changes
+  - **Files**: `components/auth/AuthProvider.tsx`
+
+### UI/UX Improvements
+
+#### Dark Mode Visual Consistency
+
+- **Consistent styling patterns**: Applied uniform dark mode styling across similar UI components
+- **Proper contrast ratios**: Ensured all text and interactive elements meet accessibility standards in dark mode
+- **Hover and active states**: Enhanced interactive feedback for all clickable elements in dark theme
+- **Form visibility**: Fixed input fields, dropdowns, and labels that were invisible or had poor contrast
+
+#### Settings Modal Redesign
+
+- **Sidebar-style navigation**: Redesigned settings modal with professional sidebar-style tabs
+- **Notification preferences management**: Added proper state management for Weekly Digest and Daily Digest checkboxes
+- **Save Changes functionality**: Added Save Changes button to Notes & Notifications tab with proper state handling
+- **Enhanced action buttons**: Improved Download my data and Delete my account buttons with proper handlers and styling
+- **Improved user experience**: Better organization and navigation within settings
+- **Dark mode integration**: Proper styling for both light and dark themes
+
+#### Link Component Dark Mode Fixes
+
+- **Link Contact button**: Enhanced with proper dark mode background, text, and border colors
+- **Link Document button**: Added dark mode styling for better visibility and contrast
+- **Dropdown menus**: Fixed document titles and contact information visibility in dark mode
+- **Interactive states**: Improved hover and active states for better user feedback
+
+### Technical Improvements
+
+#### Timezone Handling
+
+- **Fixed job post timestamp display**: Resolved bug where timestamps showed UTC time instead of user's local time
+  - **Issue**: Job posts displayed creation time in UTC format instead of local timezone
+  - **Solution**: Removed forced UTC conversion and implemented proper local timezone formatting
+  - **Impact**: Users now see job post times in their local timezone for better context
+
+#### Code Quality
+
+- **Consistent theme implementation**: Used useTheme hook throughout components for proper theme detection
+- **Maintainable styling**: Applied systematic approach to dark mode styling with consistent patterns
+- **Type safety**: Maintained proper TypeScript typing throughout all changes
+
 ## [0.184.0] - 2025-08-01
 
 ### Code Quality and Security Enhancements
@@ -406,7 +489,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Impact**: Job deletion now works seamlessly regardless of document attachments
   - **Files**: `redux/jobs/jobsThunk.ts`, `components/HomePage/Kanban/Column/JobPosts/JobPostCard.tsx`
 
-### Code Quality Improvements - 2025-01-31
+### Code Quality Improvements - 2025-07-31
 
 #### Type Safety Enhancements
 
@@ -432,7 +515,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - `utils/RequestQueue.ts` (fixed retry processing logic)
     - `utils/SmartTokenRefresh.ts` (enhanced retry mechanisms)
 
-### Security Enhancements - 2025-01-31
+### Security Enhancements - 2025-07-31
 
 #### API Error Handling
 
@@ -444,7 +527,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Files**:
     - `components/dev/DevTools.tsx` (enhanced API validation)
 
-### Performance Optimizations - 2025-01-31
+### Performance Optimizations - 2025-07-31
 
 #### Event-Driven Architecture
 
@@ -499,7 +582,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Validation**: Comprehensive form validation with error handling
   - **Files**: `app/(loggedin)/home/settings/page.tsx` (enhanced)
 
-### Technical Improvements
+### Technical Improvements - 2025-07-30
 
 #### API Client Enhancement
 
@@ -517,7 +600,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Performance**: Optimized state updates with automatic synchronization
 - **Files**: `redux/user/userSlice.ts` (enhanced)
 
-### Security Enhancements - 2025-01-27
+### Security Enhancements - 2025-07-27
 
 #### Advanced Security Features
 
@@ -534,7 +617,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Error handling**: Secure error messages without information disclosure
 - **Audit logging**: Complete security event tracking for compliance
 
-### Performance Optimizations - 2025-01-27
+### Performance Optimizations - 2025-07-27
 
 #### Request Optimization
 
@@ -730,7 +813,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **API Enhancement**: Document responses include fileSize from database
   - **Reliability**: Eliminates client-side file size storage workarounds
 
-### Code Quality
+### Code Quality - 2025-07-15
 
 #### Simplified Document Enhancement Logic
 
@@ -895,7 +978,7 @@ if (!boardId) {
 - **Enhanced types**: Added `jobApplications` array to document interface
 - **Optimized selectors**: Efficient state access for different document contexts
 
-### UI/UX Improvements
+### UI/UX Improvements - 2025-07-14
 
 #### Responsive Design Revolution
 

@@ -195,10 +195,10 @@ const AddJobShortForm = ({
           render={({ field }) => (
             <FormItem className="!text-left relative">
               <span className="flex justify-between">
-                <FormLabel className="text-gray-800 font-semibold">
+                <FormLabel className="text-gray-800 dark:text-white font-semibold">
                   Company
                 </FormLabel>
-                <FormLabel className="text-gray-400">Required</FormLabel>
+                <FormLabel className="text-gray-400 dark:text-slate-400">Required</FormLabel>
               </span>
               <Input
                 {...field}
@@ -208,11 +208,11 @@ const AddJobShortForm = ({
                 onChange={handleCompanyChange}
               />
               {showDropdown && matchingCompanies.length > 0 && (
-                <div className="absolute z-10 w-full bg-white mt-1 border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                <div className="absolute z-10 w-full bg-white dark:bg-slate-800 mt-1 border border-gray-200 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-auto">
                   {matchingCompanies.map((matchingCompany, index) => (
                     <div
                       key={index}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                      className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700 cursor-pointer dark:text-white"
                       onClick={() => handleCompanySelect(matchingCompany)}
                     >
                       {matchingCompany}
@@ -231,10 +231,10 @@ const AddJobShortForm = ({
           render={({ field }) => (
             <FormItem className="!text-left">
               <span className="flex justify-between">
-                <FormLabel className="text-gray-800 font-semibold">
+                <FormLabel className="text-gray-800 dark:text-white font-semibold">
                   Job Title
                 </FormLabel>
-                <FormLabel className="text-gray-400">Required</FormLabel>
+                <FormLabel className="text-gray-400 dark:text-slate-400">Required</FormLabel>
               </span>
               <Input
                 {...field}
@@ -253,10 +253,10 @@ const AddJobShortForm = ({
             render={({ field }) => (
               <FormItem className="!text-left w-1/2">
                 <span className="flex justify-between">
-                  <FormLabel className="text-gray-800 font-semibold">
+                  <FormLabel className="text-gray-800 dark:text-white font-semibold">
                     Board
                   </FormLabel>
-                  <FormLabel className="text-gray-400">Required</FormLabel>
+                  <FormLabel className="text-gray-400 dark:text-slate-400">Required</FormLabel>
                 </span>
                 <ComboBoardListBox
                   {...field}
@@ -276,10 +276,10 @@ const AddJobShortForm = ({
             render={({ field }) => (
               <FormItem className="!text-left w-1/2">
                 <span className="flex justify-between">
-                  <FormLabel className="text-gray-800 font-semibold">
+                  <FormLabel className="text-gray-800 dark:text-white font-semibold">
                     List
                   </FormLabel>
-                  <FormLabel className="text-gray-400">Required</FormLabel>
+                  <FormLabel className="text-gray-400 dark:text-slate-400">Required</FormLabel>
                 </span>
                 <ComboBoardListBox
                   {...field}

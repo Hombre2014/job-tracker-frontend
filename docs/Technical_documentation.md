@@ -1,5 +1,218 @@
 # Technical Documentation
 
+## Dark Mode Implementation and UI Enhancements (31/01/2025)
+
+### Comprehensive Dark Mode Support (31/01/2025)
+
+#### Problem Analysis (31/01/2025)
+
+The application lacked comprehensive dark mode support, with many UI components having poor contrast or being completely invisible in dark theme. Key issues included:
+
+- Job post timestamps showing UTC time instead of local time
+- Form elements (dropdowns, inputs) invisible in dark mode
+- Sidebar components lacking proper dark mode styling
+- Document management pages with poor dark mode contrast
+- Settings modal needing complete redesign for dark theme
+- Board columns and interactive elements lacking dark mode support
+
+#### Solution Implementation (31/01/2025)
+
+##### 1. Systematic Dark Mode Styling
+
+Implemented comprehensive dark mode support across all major UI components using Tailwind's dark mode utilities:
+
+```typescript
+// Example: Enhanced button styling with dark mode support
+<Button
+  className="flex items-center gap-2 px-3 py-2 text-sm border-dashed border-2 hover:bg-gray-50 dark:hover:bg-slate-700 dark:bg-slate-800 dark:text-white dark:border-slate-600"
+>
+  Link Contact
+</Button>
+
+// Example: Card components with dark mode backgrounds
+<Card className="absolute top-full left-0 mt-2 w-80 max-h-96 overflow-hidden z-50 shadow-lg dark:bg-slate-800 dark:border-slate-600">
+```
+
+##### 2. Theme-Aware Component Design
+
+Utilized the `useTheme` hook throughout components for proper theme detection and dynamic styling:
+
+```typescript
+// File: components/HomePage/Kanban/Column/JobPosts/JobModal/JobEdit/TextEditor.tsx
+import { useTheme } from 'next-themes';
+
+const { theme } = useTheme();
+const backgroundColor = theme === 'dark' ? '#1e293b' : '#ffffff';
+const textColor = theme === 'dark' ? '#ffffff' : '#000000';
+```
+
+##### 3. Timezone Display Fix
+
+Resolved job post timestamp display showing UTC time instead of local time:
+
+```typescript
+// Before: Forced UTC conversion (incorrect)
+const utcDate = new Date(createdAt + 'Z');
+
+// After: Local timezone formatting (correct)
+const localDate = new Date(createdAt);
+const formattedDate = localDate.toLocaleDateString();
+```
+
+##### 4. Settings Modal Redesign
+
+Completely redesigned the settings modal with sidebar-style navigation, proper dark mode support, and enhanced state management:
+
+```typescript
+// Enhanced tab navigation with dark mode styling
+<div className="flex h-full">
+  <div className="w-64 bg-gray-50 dark:bg-slate-800 border-r dark:border-slate-600">
+    {/* Sidebar navigation */}
+  </div>
+  <div className="flex-1 bg-white dark:bg-slate-900">
+    {/* Content area */}
+  </div>
+</div>
+
+// Added proper state management for notification preferences
+const [weeklyDigest, setWeeklyDigest] = useState(true);
+const [dailyDigest, setDailyDigest] = useState(true);
+
+// Controlled checkbox components
+<input
+  checked={weeklyDigest}
+  type="checkbox"
+  onChange={handleWeeklyDigest}
+  className="checkbox border-slate-300 dark:border-slate-600"
+/>
+
+// Enhanced action buttons with proper handlers
+<Button
+  variant="ghost"
+  onClick={handleDeleteAccount}
+  className="justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+>
+  Delete my account
+</Button>
+```
+
+#### Components Enhanced (31/01/2025)
+
+1. **Job Post Components**
+   - `JobPostCard.tsx`: Fixed timezone display and added dark mode styling
+   - `JobModal/JobNotes/Notes.tsx`: Comprehensive dark mode for notes system
+   - `JobModal/JobEdit/TextEditor.tsx`: Theme-aware background and text colors
+
+2. **Sidebar Components**
+   - Multiple sidebar components updated with dark mode styling
+   - Proper hover states and active states for navigation
+
+3. **Document Management**
+   - Document pages enhanced with dark mode backgrounds
+   - Document cards with proper contrast in dark theme
+
+4. **Form Components**
+   - `CompaniesInput.tsx`: Company dropdown visibility fixes
+   - `AddJobShortForm.tsx`: Form labels and dropdowns enhanced
+   - `LinkContactComboBox.tsx`: Complete dark mode styling for contact linking
+
+5. **Navigation Components**
+   - `ThreeDotsMenu.tsx`: Column menu and dropdown styling
+   - `BoardColumns.tsx`: Board column titles and hover states
+   - `LinkDocument.tsx`: Document linking dropdown with dark mode support
+   - `LinkContactComboBox.tsx`: Contact linking dropdown with comprehensive dark mode styling
+
+#### TypeScript Configuration Improvements (31/01/2025)
+
+##### Problem: Build Errors from Type Definitions
+
+The application was experiencing TypeScript compilation errors due to missing type definitions and problematic configuration:
+
+```text
+Error: Cannot find module 'ms' or its corresponding type declarations
+Error: Cannot find module 'prop-types' or its corresponding type declarations
+```
+
+##### Solution: Configuration Cleanup
+
+```json
+// tsconfig.json - Removed problematic configurations
+{
+  "compilerOptions": {
+    // Removed: "moduleDetection": "force"
+    // Removed: "typeRoots": ["./types", "./node_modules/@types"]
+    // These were causing conflicts with automatic type resolution
+  }
+}
+```
+
+#### Authentication Provider Enhancement (31/01/2025)
+
+##### Fixed Missing useEffect Dependency
+
+```typescript
+// Before: Missing dependency causing potential stale closure
+useEffect(() => {
+  syncUserDataToRedux();
+}, [reduxUser]); // Missing syncUserDataToRedux dependency
+
+// After: Complete dependency array
+useEffect(() => {
+  syncUserDataToRedux();
+}, [reduxUser, syncUserDataToRedux]); // ✅ All dependencies included
+```
+
+### Technical Benefits (31/01/2025)
+
+#### User Experience Improvements
+
+- **Consistent Visual Experience**: Uniform dark mode styling across all components
+- **Proper Contrast Ratios**: All text and interactive elements meet accessibility standards
+- **Enhanced Readability**: Improved visibility of form elements and navigation in dark theme
+- **Professional Appearance**: Cohesive design language throughout the application
+
+#### Code Quality Enhancements
+
+- **Systematic Approach**: Consistent patterns for dark mode implementation
+- **Theme Integration**: Proper use of Next.js theme system throughout components
+- **Type Safety**: Maintained TypeScript compliance across all changes
+- **Maintainable Code**: Clean, organized styling with reusable patterns
+
+#### Performance Optimizations
+
+- **Efficient Theme Detection**: Minimal overhead for theme-aware styling
+- **Optimized Re-renders**: Theme changes don't cause unnecessary component updates
+- **Clean Dependencies**: Proper useEffect dependency management prevents stale closures
+
+### Implementation Details (31/01/2025)
+
+#### Dark Mode Color Palette
+
+Standardized color scheme for consistent dark mode appearance:
+
+```css
+/* Primary dark backgrounds */
+dark:bg-slate-800  /* Cards, modals, dropdowns */
+dark:bg-slate-900  /* Main content areas */
+
+/* Text colors */
+dark:text-white    /* Primary text */
+dark:text-slate-300 /* Secondary text */
+dark:text-slate-400 /* Tertiary text */
+
+/* Interactive states */
+dark:hover:bg-slate-700  /* Hover backgrounds */
+dark:border-slate-600    /* Border colors */
+```
+
+#### Component Architecture
+
+Maintained clean component architecture while adding dark mode support:
+
+- **Non-breaking Changes**: All enhancements maintain backward compatibility
+- **Reusable Patterns**: Consistent styling patterns across similar components
+- **Modular Design**: Dark mode styling integrated without affecting component logic
+
 ## Critical Bug Fixes and Architecture Improvements (31/01/2025)
 
 ### Circular Dependency Resolution (31/01/2025)

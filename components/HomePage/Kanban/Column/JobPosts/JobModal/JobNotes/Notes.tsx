@@ -164,7 +164,6 @@ const Notes = () => {
         value=""
         id="notes"
         title="Notes"
-        backColor="#ffffe0"
         buttonVisibility={true}
         placeholder="Add a note"
         sendData={handleFieldChange}
@@ -177,7 +176,6 @@ const Notes = () => {
             placeholder=""
             autoSave={true}
             title="Edit Note"
-            backColor="#ffffe0"
             buttonVisibility={false}
             value={editingNoteContent}
             sendData={handleContentUpdate}
@@ -202,19 +200,19 @@ const Notes = () => {
               className="flex flex-col basis-[calc(33.333%-16px)] gap-1"
             >
               <Card
-                className="w-full min-h-60 max-h-60 overflow-y-auto bg-[#ffffe0] relative rounded-sm  hover:border-gray-400 cursor-pointer"
+                className="w-full min-h-60 max-h-60 overflow-y-auto bg-yellow-50 dark:bg-slate-700 dark:text-white relative rounded-sm hover:border-gray-400 dark:hover:border-gray-300 cursor-pointer"
                 onClick={() => handleEditNote(note)}
               >
                 <div className="sticky top-0 right-0 z-10 flex justify-end w-full">
                   <DropdownMenu
                     open={openDropdownId === note.id}
-                    onOpenChange={(isOpen) =>
+                    onOpenChange={(isOpen: boolean) =>
                       setOpenDropdownId(isOpen ? note.id : null)
                     }
                   >
                     <DropdownMenuTrigger asChild>
                       <Button variant="invisible" className="!mr-2 !mt-2">
-                        <BsThreeDots className="size-6 bg-white rounded-lg p-1 border border-gray-500  hover:border-gray-800" />
+                        <BsThreeDots className="size-6 bg-white dark:bg-slate-300 dark:text-slate-900 rounded-lg p-1 border border-gray-500 dark:border-gray-600 hover:border-gray-800 dark:hover:border-gray-100" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-36 rsw-dropdown-menu">
@@ -223,14 +221,14 @@ const Notes = () => {
                         className="rsw-dropdown-menu-item"
                       >
                         <AlertDialogModal
+                          cleanupType="none"
                           buttonCancel="Cancel"
                           buttonVariant="ghost"
                           buttonConfirm="Delete"
                           dialogTitle="Delete Note"
                           buttonLabel="Delete Note"
-                          cleanupType="none"
                           destructiveVariant={true}
-                          onOpenChange={(isOpen) => {
+                          onOpenChange={(isOpen: boolean) => {
                             if (!isOpen) handleCancel();
                           }}
                           actionFunction={() => handleDeleteNote(note.id)}
@@ -249,7 +247,7 @@ const Notes = () => {
                   </DropdownMenu>
                 </div>
                 <CardContent
-                  className="pl-2 pt-0 pr-8 cursor-text text-gray-900"
+                  className="pl-2 pt-0 pr-8 cursor-text text-gray-900 dark:text-gray-100"
                   dangerouslySetInnerHTML={{ __html: note.content }}
                 />
               </Card>
