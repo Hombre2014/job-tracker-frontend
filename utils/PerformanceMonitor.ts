@@ -62,7 +62,8 @@ const DEFAULT_CONFIG: PerformanceConfig = {
   enableUserTracking: true,
   enableAuthTracking: true,
   reportingInterval: 60000, // 1 minute
-  debugMode: process.env.NODE_ENV === 'development',
+  debugMode:
+    typeof process !== 'undefined' && process.env?.NODE_ENV === 'development',
   // Granular logging controls - disable noisy logs by default
   logApiRequests: false,
   logMemoryUsage: false,
@@ -280,8 +281,10 @@ class PerformanceMonitorClass {
         successful: apiMetrics.filter((m) => m.success).length,
         failed: apiMetrics.filter((m) => !m.success).length,
         averageDuration:
-          apiMetrics.reduce((sum, m) => sum + (m.duration || 0), 0) /
-            apiMetrics.length || 0,
+          apiMetrics.length > 0
+            ? apiMetrics.reduce((sum, m) => sum + (m.duration || 0), 0) /
+              apiMetrics.length
+            : 0,
         slowestRequest: apiMetrics.reduce(
           (slowest, current) =>
             !slowest || (current.duration || 0) > (slowest.duration || 0)
@@ -301,8 +304,10 @@ class PerformanceMonitorClass {
         successful: authMetrics.filter((m) => m.success).length,
         failed: authMetrics.filter((m) => !m.success).length,
         averageDuration:
-          authMetrics.reduce((sum, m) => sum + (m.duration || 0), 0) /
-            authMetrics.length || 0,
+          authMetrics.length > 0
+            ? authMetrics.reduce((sum, m) => sum + (m.duration || 0), 0) /
+              authMetrics.length
+            : 0,
       },
       userMetrics: {
         total: userMetrics.length,

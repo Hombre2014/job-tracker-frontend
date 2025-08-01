@@ -17,24 +17,29 @@ export const NetworkStatus: React.FC<NetworkStatusProps> = ({
   showWhenOnline = false,
   top = 'top-0',
 }) => {
-  const [isOnline, setIsOnline] = useState(true);
+  const [isOnline, setIsOnline] = useState(() => 
+    typeof navigator !== 'undefined' ? navigator.onLine : true
+  );
   const [wasOffline, setWasOffline] = useState(false);
 
   useEffect(() => {
-    // Set initial state
-    setIsOnline(navigator.onLine);
+    let timeoutId: NodeJS.Timeout | null = null;
 
     const handleOnline = () => {
       setIsOnline(true);
       if (wasOffline) {
         // Show brief "back online" message
-        setTimeout(() => setWasOffline(false), 3000);
+        timeoutId = setTimeout(() => setWasOffline(false), 3000);
       }
     };
 
     const handleOffline = () => {
       setIsOnline(false);
       setWasOffline(true);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
     };
 
     window.addEventListener('online', handleOnline);
@@ -43,8 +48,11 @@ export const NetworkStatus: React.FC<NetworkStatusProps> = ({
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     };
-  }, [wasOffline]);
+  }, []);
 
   // Don't show anything if online and showWhenOnline is false
   if (isOnline && !showWhenOnline && !wasOffline) {

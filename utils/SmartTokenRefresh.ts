@@ -25,6 +25,7 @@ class SmartTokenRefreshClass {
   private isClient = typeof window !== 'undefined';
   private refreshTimer: NodeJS.Timeout | null = null;
   private visibilityTimer: NodeJS.Timeout | null = null;
+  private retryTimer: NodeJS.Timeout | null = null;
 
   // Bound methods for proper event listener cleanup
   private boundHandleVisibilityChange!: () => void;
@@ -205,7 +206,10 @@ class SmartTokenRefreshClass {
           `SmartTokenRefresh: Using exponential backoff delay: ${finalDelay}ms`
         );
 
-        setTimeout(() => {
+        if (this.retryTimer) {
+          clearTimeout(this.retryTimer);
+        }
+        this.retryTimer = setTimeout(() => {
           this.performTokenRefresh();
         }, finalDelay);
       } else {
@@ -355,6 +359,10 @@ class SmartTokenRefreshClass {
   cleanup(): void {
     this.clearRefreshTimer();
     this.clearVisibilityTimer();
+    if (this.retryTimer) {
+      clearTimeout(this.retryTimer);
+      this.retryTimer = null;
+    }
 
     if (this.isClient) {
       document.removeEventListener(

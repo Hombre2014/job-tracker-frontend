@@ -30,13 +30,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     if (authState.isLoading) return;
     
     if (requireAuth && !authState.isAuthenticated && !authState.isLoading) {
-      console.log('ProtectedRoute: User not authenticated, redirecting to:', redirectTo);
       router.push(redirectTo);
       return;
     }
 
     if (!requireAuth && authState.isAuthenticated) {
-      console.log('ProtectedRoute: User already authenticated, redirecting to home');
       router.push('/home');
       return;
     }

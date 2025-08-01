@@ -10,7 +10,7 @@ import React, {
 } from 'react';
 import { useRouter } from 'next/navigation';
 
-import DevTools from '@/components/dev/DevTools';
+import DevToolsWrapper from '@/components/dev/DevToolsWrapper';
 import { TokenManager } from '@/utils/TokenManager';
 import { cleanupAfterLogout } from '@/utils/helpers';
 import { SmartTokenRefresh } from '@/utils/SmartTokenRefresh';
@@ -460,7 +460,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   return (
     <AuthContext.Provider value={authContextValue}>
       {children}
-      <DevTools />
+      <DevToolsWrapper />
     </AuthContext.Provider>
   );
 };

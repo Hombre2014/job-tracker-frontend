@@ -131,18 +131,27 @@ export const AuthStatusDebug: React.FC<AuthStatusDebugProps> = ({
             </summary>
             <div className="mt-2 p-2 bg-gray-800 rounded text-xs">
               <pre className="whitespace-pre-wrap overflow-auto max-h-32">
-                {JSON.stringify(
-                  authState,
-                  (key, value) => {
-                    if (typeof value === 'object' && value !== null) {
-                      if (value instanceof Date) return value.toISOString();
-                      // Handle potential circular references
+                {(() => {
+                  const seen = new Set();
+                  return JSON.stringify(
+                    authState,
+                    (key, value) => {
+                      // Filter sensitive data
+                      if (key === 'token' || key === 'refreshToken') {
+                        return '[HIDDEN]';
+                      }
+                      
+                      if (typeof value === 'object' && value !== null) {
+                        if (value instanceof Date) return value.toISOString();
+                        // Handle circular references
+                        if (seen.has(value)) return '[Circular]';
+                        seen.add(value);
+                      }
                       return value;
-                    }
-                    return value;
-                  },
-                  2
-                )}
+                    },
+                    2
+                  );
+                })()}
               </pre>
             </div>
           </details>

@@ -118,28 +118,11 @@ client.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        // Check if refresh is already in progress
-        if (RequestQueue.isCurrentlyRefreshing()) {
-          // Wait for existing refresh or queue the request
-          try {
-            await RequestQueue.waitForRefresh();
-            // Retry with updated token
-            const authHeader = TokenManager.getAuthHeader();
-            if (authHeader) {
-              originalRequest.headers.Authorization = authHeader;
-              return client(originalRequest);
-            } else {
-              throw new Error('No token after refresh');
-            }
-          } catch (refreshError) {
-            return Promise.reject(error);
-          }
-        }
-
-        // Always start or join the single refresh in RequestQueue
+        // Start refresh if not already in progress
         if (!RequestQueue.isCurrentlyRefreshing()) {
           RequestQueue.setRefreshPromise(performTokenRefresh());
         }
+        
         try {
           const newAccessToken = await RequestQueue.waitForRefresh();
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;

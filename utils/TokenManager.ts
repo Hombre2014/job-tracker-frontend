@@ -57,7 +57,12 @@ class TokenManagerClass {
    */
   getAccessToken(): string | null {
     if (!this.isClient) return null;
-    return localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    try {
+      return localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
+    } catch (error) {
+      console.error('Failed to access localStorage:', error);
+      return null;
+    }
   }
 
   /**
@@ -65,7 +70,12 @@ class TokenManagerClass {
    */
   getRefreshToken(): string | null {
     if (!this.isClient) return null;
-    return localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+    try {
+      return localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+    } catch (error) {
+      console.error('Failed to access localStorage:', error);
+      return null;
+    }
   }
 
   /**
@@ -130,6 +140,11 @@ class TokenManagerClass {
   /**
    * Clear all tokens from localStorage only
    * Note: Redux updates should be handled by the calling code to avoid circular dependencies
+   */
+  /**
+   * Clear all tokens from localStorage only
+   * Note: Redux updates should be handled by the calling code to avoid circular dependencies
+   * Also clears the user data from localStorage
    */
   clearTokens(): void {
     if (!this.isClient) return;

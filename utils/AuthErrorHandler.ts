@@ -1,6 +1,7 @@
 import { toast } from 'react-toastify';
 import TokenManager from './TokenManager';
 import RequestQueue from './RequestQueue';
+import SmartTokenRefresh from './SmartTokenRefresh';
 
 export enum AuthErrorType {
   NETWORK_ERROR = 'NETWORK_ERROR',
@@ -79,19 +80,48 @@ class AuthErrorHandlerClass {
       const status = error.response.status;
 
       if (status === 401) {
+        // Check if it's specifically a token expiration
+        const errorMessage =
+          error.response?.data?.message || error.message || '';
+        const lowerMessage = errorMessage.toLowerCase();
+
+        if (
+          lowerMessage.includes('token') &&
+          (lowerMessage.includes('expired') ||
+            lowerMessage.includes('invalid') ||
+            lowerMessage.includes('malformed'))
+        ) {
+          return AuthErrorType.TOKEN_EXPIRED;
+        }
         return AuthErrorType.UNAUTHORIZED;
+      }
+
+      if (status === 403) {
+        return AuthErrorType.UNAUTHORIZED;
+      }
+
+      if (status === 422) {
+        // Unprocessable Entity - often used for validation errors
+        return AuthErrorType.UNKNOWN;
       }
 
       if (status >= 500) {
         return AuthErrorType.SERVER_ERROR;
       }
+
+      if (status === 429) {
+        // Too Many Requests - treat as server error for retry logic
+        return AuthErrorType.SERVER_ERROR;
+      }
     }
 
-    // Token-specific errors
+    // Token-specific errors (check for refresh failures)
     if (
       error.code === 'TOKEN_REFRESH_FAILED' ||
-      error.message?.includes('refresh token') ||
-      error.message?.includes('token refresh')
+      error.message?.toLowerCase().includes('refresh token') ||
+      error.message?.toLowerCase().includes('token refresh') ||
+      error.message?.toLowerCase().includes('refresh failed') ||
+      error.response?.data?.message?.toLowerCase().includes('refresh')
     ) {
       return AuthErrorType.REFRESH_FAILED;
     }
@@ -138,9 +168,9 @@ class AuthErrorHandlerClass {
       case AuthErrorType.NETWORK_ERROR:
       case AuthErrorType.SERVER_ERROR:
       case AuthErrorType.TIMEOUT:
+      case AuthErrorType.TOKEN_EXPIRED: // Can retry after token refresh
         return true;
 
-      case AuthErrorType.TOKEN_EXPIRED:
       case AuthErrorType.REFRESH_FAILED:
       case AuthErrorType.UNAUTHORIZED:
       case AuthErrorType.UNKNOWN:
@@ -199,6 +229,8 @@ class AuthErrorHandlerClass {
         return this.handleNetworkError(authError);
 
       case AuthErrorType.TOKEN_EXPIRED:
+        return this.handleTokenExpiredError(authError);
+
       case AuthErrorType.UNAUTHORIZED:
         return this.handleUnauthorizedError(authError);
 
@@ -243,9 +275,9 @@ class AuthErrorHandlerClass {
   }
 
   /**
-   * Handle unauthorized/token expired errors
+   * Handle token expired errors (specific case of 401 with token-related message)
    */
-  private async handleUnauthorizedError(error: AuthError): Promise<{
+  private async handleTokenExpiredError(error: AuthError): Promise<{
     shouldRetry: boolean;
     shouldLogout: boolean;
   }> {
@@ -253,27 +285,59 @@ class AuthErrorHandlerClass {
     const refreshToken = TokenManager.getRefreshToken();
 
     if (!refreshToken) {
-      toast.error(error.userMessage);
-      return {
-        shouldRetry: false,
-        shouldLogout: true,
-      };
-    }
-
-    // Try to refresh token once
-    try {
-      // This will be handled by SmartTokenRefresh
-      return {
-        shouldRetry: true,
-        shouldLogout: false,
-      };
-    } catch (refreshError) {
       toast.error('Session expired. Please log in again.');
       return {
         shouldRetry: false,
         shouldLogout: true,
       };
     }
+
+    // Try to refresh token using SmartTokenRefresh
+    try {
+      console.log('AuthErrorHandler: Token expired, attempting refresh...');
+      const refreshSuccess = await SmartTokenRefresh.refreshNow();
+
+      if (refreshSuccess) {
+        console.log(
+          'AuthErrorHandler: Token refresh successful, retrying request'
+        );
+        return {
+          shouldRetry: true,
+          shouldLogout: false,
+        };
+      } else {
+        console.warn('AuthErrorHandler: Token refresh failed');
+        toast.error('Session expired. Please log in again.');
+        return {
+          shouldRetry: false,
+          shouldLogout: true,
+        };
+      }
+    } catch (refreshError) {
+      console.error('AuthErrorHandler: Token refresh error:', refreshError);
+      toast.error('Session expired. Please log in again.');
+      return {
+        shouldRetry: false,
+        shouldLogout: true,
+      };
+    }
+  }
+
+  /**
+   * Handle general unauthorized errors (403, or 401 without token-specific message)
+   */
+  private async handleUnauthorizedError(error: AuthError): Promise<{
+    shouldRetry: boolean;
+    shouldLogout: boolean;
+  }> {
+    // For general unauthorized errors (like 403 Forbidden), don't attempt refresh
+    // These typically indicate insufficient permissions, not expired tokens
+    toast.error(error.userMessage);
+
+    return {
+      shouldRetry: false,
+      shouldLogout: true,
+    };
   }
 
   /**
