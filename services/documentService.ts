@@ -1,5 +1,11 @@
 import client from '@/api/client';
-import { JobApplication } from '@/types';
+
+// Define DocumentJobApplication interface locally to avoid import issues
+interface DocumentJobApplication {
+  id: string;
+  title: string;
+  // Add other properties as needed
+}
 
 /**
  * Service for handling document-related operations and business logic
@@ -11,7 +17,7 @@ export class DocumentService {
   static async getDocumentJobApplications(
     documentId: string,
     accessToken: string
-  ): Promise<JobApplication[]> {
+  ): Promise<DocumentJobApplication[]> {
     try {
       const response = await client.get(`/documents/${documentId}`, {
         headers: { Authorization: `Bearer ${accessToken}` },
