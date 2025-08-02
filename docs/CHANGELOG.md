@@ -1658,3 +1658,19 @@ if (!boardId) {
 7. `components/Forms/AddContact/EdgeTest.tsx` - **DELETED**: Debugging component removed
 
 _All changes maintain backward compatibility and enhance user experience with improved session management and smoother UI interactions._
+
+<!-- Version comparison links -->
+[0.186.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.185.0...v0.186.0
+[0.185.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.184.0...v0.185.0
+[0.184.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.182.0...v0.184.0
+[0.182.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.181.0...v0.182.0
+[0.181.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.180.0...v0.181.0
+[0.180.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.179.8...v0.180.0
+[0.179.8]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.179.7...v0.179.8
+[0.179.7]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.179.6...v0.179.7
+[0.179.6]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.179.5...v0.179.6
+[0.179.5]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.179.4...v0.179.5
+[0.179.4]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.179.3...v0.179.4
+[0.179.3]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.179.2...v0.179.3
+[0.179.2]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.179.1...v0.179.2
+[0.179.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.179.0...v0.179.1
