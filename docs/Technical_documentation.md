@@ -1,5 +1,262 @@
 # Technical Documentation
 
+## Authentication System Improvements and Modal Navigation (02/08/2025)
+
+### Enhanced Token Refresh Flow (02/08/2025)
+
+#### Problem Analysis
+
+The authentication system had an overly aggressive token validation approach that interfered with the sophisticated token refresh mechanism, causing unnecessary user logouts when tokens could have been successfully refreshed.
+
+#### Technical Implementation
+
+##### 1. Request Interceptor Optimization
+
+**Before**: Aggressive pre-flight token validation
+```typescript
+// REMOVED: Overly aggressive validation
+client.interceptors.request.use((config) => {
+  // Check if we have valid tokens before making any request
+  if (!TokenManager.hasValidTokens() && typeof window !== 'undefined') {
+    console.log('API Client: No valid tokens found in request interceptor, redirecting to login');
+    TokenManager.clearTokens();
+    window.location.href = '/login';
+    return Promise.reject(new Error('No valid tokens'));
+  }
+  // ... rest of interceptor
+});
+```
+
+**After**: Simplified request interceptor focused on header management
+```typescript
+// CURRENT: Streamlined approach
+client.interceptors.request.use((config) => {
+  // Add Authorization header if token exists
+  const authHeader = TokenManager.getAuthHeader();
+  if (authHeader) {
+    config.headers.Authorization = authHeader;
+  }
+  return config;
+});
+```
+
+##### 2. Response Interceptor Enhancement
+
+**Improved Flow Control**: Enhanced the order of operations in error handling
+```typescript
+// BEFORE: Token check after retry flag
+originalRequest._retry = true;
+
+// Check if we have valid tokens before attempting refresh
+if (!TokenManager.hasValidTokens()) {
+  // Handle redirect
+}
+
+// AFTER: Token check before retry flag
+// Check if we have valid tokens before attempting refresh
+if (!TokenManager.hasValidTokens()) {
+  console.log('API Client: No valid tokens found, redirecting to login');
+  TokenManager.clearTokens();
+  window.location.href = '/login';
+  return Promise.reject(error);
+}
+
+originalRequest._retry = true; // Only set if we plan to retry
+```
+
+#### Benefits of Enhanced Flow
+
+1. **Sophisticated Refresh Logic**: Allows response interceptor to handle token refresh properly
+2. **Reduced Interruptions**: Users experience fewer unnecessary logouts
+3. **Better Error Handling**: Proper flow control prevents retry mechanism issues
+4. **Maintained Security**: Still redirects to login when refresh fails
+
+### Modal Navigation System Enhancement (02/08/2025)
+
+#### Problem Analysis
+
+The job details modal had inconsistent navigation behavior depending on how the page was accessed:
+- **Normal navigation**: Modal close worked correctly using `router.back()`
+- **Direct URL access**: Modal close redirected to empty browser tab instead of board view
+
+#### Technical Solution
+
+##### 1. Enhanced Modal Component
+
+**Added Optional onDismiss Prop**:
+```typescript
+// Enhanced Modal interface
+const Modal = ({
+  children,
+  stylings,
+  onDismiss, // New optional prop
+}: {
+  children: React.ReactNode;
+  stylings: string;
+  onDismiss?: () => void; // Custom close behavior
+}) => {
+  const router = useRouter();
+  
+  const handleDismiss = useCallback(() => {
+    if (onDismiss) {
+      onDismiss(); // Use custom behavior
+    } else {
+      router.back(); // Fallback to default
+    }
+  }, [onDismiss, router]);
+};
+```
+
+##### 2. JobDetailsLayout Integration
+
+**Custom Close Behavior**:
+```typescript
+// JobDetailsLayout provides proper redirect
+const closeModal = () => {
+  push(`/home/boards/${board_id}/board`);
+};
+
+// Pass to Modal component
+<Modal 
+  stylings="sm:w-11/12 md:w-3/4 lg:w-2/3 xl:w-[960px]" 
+  onDismiss={closeModal}
+>
+```
+
+#### Navigation Flow Comparison
+
+**Before Enhancement**:
+```text
+Direct URL Access:
+User opens /home/boards/123/job/456/job-details in new tab
+→ Click overlay → router.back() → Empty browser tab ❌
+
+Normal Navigation:
+User navigates through app → Modal opens
+→ Click overlay → router.back() → Previous page ✅
+```
+
+**After Enhancement**:
+```text
+Direct URL Access:
+User opens /home/boards/123/job/456/job-details in new tab
+→ Click overlay → closeModal() → /home/boards/123/board ✅
+
+Normal Navigation:
+User navigates through app → Modal opens
+→ Click overlay → closeModal() → /home/boards/123/board ✅
+```
+
+#### Code Quality Improvements
+
+##### Removed Redundant Null Check
+
+**Issue**: Unnecessary validation of `useCallback` result
+```typescript
+// BEFORE: Redundant check
+if (handleDismiss) handleDismiss();
+
+// AFTER: Direct call (handleDismiss is always defined)
+handleDismiss();
+```
+
+**Rationale**: `useCallback` always returns a function, making null checks unnecessary.
+
+### Architecture Benefits (02/08/2025)
+
+#### Authentication System
+
+1. **Layered Security**: Request interceptor handles headers, response interceptor handles authentication errors
+2. **Smart Recovery**: Attempts token refresh before giving up
+3. **User Experience**: Minimizes authentication interruptions
+4. **Maintainable**: Clear separation of concerns between interceptors
+
+#### Modal System
+
+1. **Flexible Design**: Supports both navigation patterns without breaking changes
+2. **Backward Compatibility**: Existing modals continue to work unchanged
+3. **Consistent UX**: Predictable behavior regardless of access method
+4. **Extensible**: Easy to add custom close behaviors to other modals
+
+### Testing Strategy (02/08/2025)
+
+#### Authentication Flow Testing
+
+```typescript
+// Test scenarios for token refresh
+const authTestScenarios = [
+  {
+    name: 'Expired access token with valid refresh',
+    setup: () => localStorage.setItem('accessToken', 'expired_token'),
+    expected: 'Auto refresh and continue'
+  },
+  {
+    name: 'Missing refresh token',
+    setup: () => localStorage.removeItem('refreshToken'),
+    expected: 'Immediate redirect to login'
+  },
+  {
+    name: 'Both tokens invalid',
+    setup: () => localStorage.clear(),
+    expected: 'Immediate redirect to login'
+  }
+];
+```
+
+#### Modal Navigation Testing
+
+```typescript
+// Test scenarios for modal behavior
+const modalTestScenarios = [
+  {
+    name: 'Direct URL access',
+    setup: 'Open job details URL in new tab',
+    action: 'Click modal overlay',
+    expected: 'Redirect to board view'
+  },
+  {
+    name: 'Normal app navigation',
+    setup: 'Navigate to modal through app',
+    action: 'Click modal overlay', 
+    expected: 'Redirect to board view (consistent behavior)'
+  },
+  {
+    name: 'Keyboard navigation',
+    setup: 'Any modal access method',
+    action: 'Press Escape key',
+    expected: 'Same behavior as overlay click'
+  }
+];
+```
+
+### Performance Considerations (02/08/2025)
+
+#### Authentication Optimizations
+
+- **Reduced API Calls**: Fewer unnecessary token validation requests
+- **Smarter Retry Logic**: Only retries when refresh is possible
+- **Memory Efficiency**: Cleaner interceptor logic with less overhead
+
+#### Modal Optimizations
+
+- **Event Handling**: Efficient `useCallback` usage prevents unnecessary re-renders
+- **Navigation**: Direct routing instead of browser history manipulation
+- **Component Lifecycle**: Proper cleanup and event listener management
+
+### Security Implications (02/08/2025)
+
+#### Authentication Security
+
+- **Maintained Protection**: Still validates tokens and redirects when necessary
+- **Enhanced UX**: Better user experience without compromising security
+- **Proper Fallbacks**: Graceful degradation when refresh fails
+
+#### Modal Security
+
+- **URL Validation**: Proper handling of dynamic route parameters
+- **Access Control**: Maintains existing authentication requirements
+- **State Management**: No exposure of sensitive data through navigation
+
 ## Dark Mode Implementation and UI Enhancements (31/01/2025)
 
 ### Comprehensive Dark Mode Support (31/01/2025)

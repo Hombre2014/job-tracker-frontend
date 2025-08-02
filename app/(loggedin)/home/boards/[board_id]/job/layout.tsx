@@ -144,7 +144,7 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   }, [temporaryMessage]);
 
   return (
-    <Modal stylings="sm:w-11/12 md:w-3/4 lg:w-2/3 xl:w-[960px]">
+    <Modal stylings="sm:w-11/12 md:w-3/4 lg:w-2/3 xl:w-[960px]" onDismiss={closeModal}>
       <Card className="w-full min-h-[840px]">
         <div className="flex justify-between items-center">
           <CardHeader>
