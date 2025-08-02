@@ -114,7 +114,7 @@ client.interceptors.response.use(
         url: originalRequest?.url,
         hasValidTokens: TokenManager.hasValidTokens(),
         isRetry: originalRequest._retry,
-        isLoginRequest: originalRequest.url?.includes('/auth/login')
+        isLoginRequest: originalRequest.url?.includes('/auth/login'),
       });
     }
 
@@ -127,9 +127,11 @@ client.interceptors.response.use(
     ) {
       console.log('API Client: 401 error detected, checking tokens...', {
         url: originalRequest?.url,
-        hasValidTokens: TokenManager.hasValidTokens()
+        hasValidTokens: TokenManager.hasValidTokens(),
       });
-      
+
+      originalRequest._retry = true;
+
       // Check if we have valid tokens before attempting refresh
       if (!TokenManager.hasValidTokens()) {
         console.log('API Client: No valid tokens found, redirecting to login');
@@ -138,14 +140,12 @@ client.interceptors.response.use(
         return Promise.reject(error);
       }
 
-      originalRequest._retry = true;
-
       try {
         // Start refresh if not already in progress
         if (!RequestQueue.isCurrentlyRefreshing()) {
           RequestQueue.setRefreshPromise(performTokenRefresh());
         }
-        
+
         try {
           const newAccessToken = await RequestQueue.waitForRefresh();
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
