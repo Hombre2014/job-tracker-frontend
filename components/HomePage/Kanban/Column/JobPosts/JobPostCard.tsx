@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { deleteJobPost } from '@/redux/jobs/jobsThunk';
 import { returnJobPostIcon } from '@/utils/ReturnIcons';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { TokenManager } from '@/utils/TokenManager';
 import {
   Card,
   CardTitle,
@@ -118,7 +119,14 @@ const JobPostCard = ({
   const isDeadlinePassed = deadline ? new Date(deadline) < new Date() : false;
 
   const handleJobPostClick = (id: string) => {
-    if (!isDialogOpen && accessToken) {
+    if (!isDialogOpen) {
+      // Check if user has valid tokens
+      if (!TokenManager.hasValidTokens()) {
+        console.log('JobPostCard: No valid tokens, redirecting to login');
+        router.push('/login');
+        return;
+      }
+      
       router.push(`/home/boards/${board_id}/job/${id}/job-details`);
       // Only set localStorage if user is authenticated
       localStorage.setItem('columnId', columnId);
