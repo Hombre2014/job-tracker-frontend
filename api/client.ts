@@ -68,14 +68,6 @@ async function performTokenRefresh(): Promise<string> {
 // Request interceptor - Add Authorization header (simplified to fix CORS)
 client.interceptors.request.use(
   (config) => {
-    // Check if we have valid tokens before making any request
-    if (!TokenManager.hasValidTokens() && typeof window !== 'undefined') {
-      console.log('API Client: No valid tokens found in request interceptor, redirecting to login');
-      TokenManager.clearTokens();
-      window.location.href = '/login';
-      return Promise.reject(new Error('No valid tokens'));
-    }
-
     // Add Authorization header if token exists
     const authHeader = TokenManager.getAuthHeader();
     if (authHeader) {
@@ -138,8 +130,6 @@ client.interceptors.response.use(
         hasValidTokens: TokenManager.hasValidTokens()
       });
       
-      originalRequest._retry = true;
-
       // Check if we have valid tokens before attempting refresh
       if (!TokenManager.hasValidTokens()) {
         console.log('API Client: No valid tokens found, redirecting to login');
@@ -147,6 +137,8 @@ client.interceptors.response.use(
         window.location.href = '/login';
         return Promise.reject(error);
       }
+
+      originalRequest._retry = true;
 
       try {
         // Start refresh if not already in progress
