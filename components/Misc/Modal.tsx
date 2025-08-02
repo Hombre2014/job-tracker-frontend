@@ -43,7 +43,7 @@ const Modal = ({
         (e.target === overlay.current || e.target === wrapper.current) &&
         !mouseDownInside.current
       ) {
-        if (handleDismiss) handleDismiss();
+        handleDismiss();
       }
       // Always reset after click
       mouseDownInside.current = false;
