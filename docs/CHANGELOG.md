@@ -5,7 +5,110 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.185.0] - 2025-08-1
+## [0.186.0] - 2025-08-02
+
+### Authentication System Improvements and Modal Navigation Fixes
+
+#### Enhanced Token Refresh Flow
+
+- **Optimized token refresh mechanism**: Improved authentication flow to prevent unnecessary logouts while maintaining security
+
+  - **Issue**: Aggressive token validation in request interceptor was bypassing sophisticated refresh logic, causing unnecessary redirects to login
+  - **Solution**: Removed pre-flight token check from request interceptor to allow response interceptor's refresh mechanism to handle expired tokens properly
+  - **Flow**: Request interceptor now only adds Authorization header → Response interceptor handles 401 errors with token refresh → Only redirects to login when refresh fails
+  - **Benefits**: Users experience fewer interruptions, expired access tokens are automatically refreshed instead of immediate logout
+  - **Files**: `api/client.ts`
+
+- **Improved token validation order**: Enhanced error handling flow control in authentication interceptor
+  - **Issue**: Token validity check occurred after setting retry flag, creating potential issues with retry mechanism
+  - **Solution**: Moved token validity check before setting `originalRequest._retry = true` to maintain proper flow control
+  - **Impact**: Better retry mechanism behavior and cleaner error handling logic
+  - **Files**: `api/client.ts`
+
+#### Modal Navigation Enhancement
+
+- **Fixed job details modal navigation**: Resolved issue where direct URL access to job details caused incorrect navigation behavior
+
+  - **Issue**: Opening job details URL directly in new tab and clicking overlay redirected to empty browser tab instead of board view
+  - **Root Cause**: Modal component used `router.back()` which goes to previous page in history - empty for direct URL access
+  - **Solution**: Enhanced Modal component to accept optional `onDismiss` prop for custom close behavior, updated JobDetailsLayout to provide proper board redirect
+  - **Implementation**:
+    - Modified Modal component to accept `onDismiss?: () => void` prop
+    - Added fallback to `router.back()` for backward compatibility
+    - Updated JobDetailsLayout to pass `closeModal` function that redirects to board view
+  - **Benefits**: Consistent navigation behavior whether accessed via direct URL or app navigation
+  - **Files**: `components/Misc/Modal.tsx`, `app/(loggedin)/home/boards/[board_id]/job/layout.tsx`
+
+- **Code quality improvement**: Removed unnecessary null check in Modal component
+  - **Issue**: Redundant null check for `handleDismiss` function which is always defined as `useCallback` result
+  - **Solution**: Removed unnecessary `if (handleDismiss)` check since `useCallback` always returns a function
+  - **Files**: `components/Misc/Modal.tsx`
+
+### Technical Improvements
+
+#### Authentication Flow Optimization
+
+- **Sophisticated token refresh**: Enhanced authentication system now properly attempts token refresh before redirecting to login
+  - **Before**: Expired access token → Immediate redirect to login
+  - **After**: Expired access token → Attempt refresh → Continue on success OR redirect on failure
+  - **User Experience**: Seamless session continuation for recoverable authentication states
+
+#### Modal System Enhancement
+
+- **Flexible modal closing**: Modal component now supports both navigation patterns
+  - **Custom behavior**: Components can provide specific close actions (e.g., redirect to specific page)
+  - **Default behavior**: Falls back to browser back navigation for existing modals
+  - **Backward compatibility**: All existing modals continue to work without changes
+
+### Testing Validation
+
+#### Authentication Scenarios Tested
+
+1. **Expired Access Token with Valid Refresh Token**: ✅ Automatically refreshes and continues
+2. **Missing Refresh Token**: ✅ Immediately redirects to login
+3. **Both Tokens Invalid/Missing**: ✅ Immediately redirects to login
+
+#### Modal Navigation Scenarios Tested
+
+1. **Direct URL Access**: ✅ Clicking overlay redirects to board view
+2. **Normal App Navigation**: ✅ Clicking overlay uses browser back navigation
+3. **Keyboard Navigation**: ✅ Escape key works with custom close behavior
+
+### Code Quality Enhancements
+
+#### Clean Code Practices
+
+- **Removed redundant checks**: Eliminated unnecessary null validations
+- **Proper flow control**: Improved logical order of operations in error handling
+- **Enhanced maintainability**: Cleaner code structure with better separation of concerns
+
+#### TypeScript Improvements
+
+- **Optional props**: Proper typing for optional `onDismiss` function
+- **Callback typing**: Correct TypeScript interfaces for modal close handlers
+- **Type safety**: Maintained type safety while adding flexibility
+
+### User Experience Impact
+
+#### Authentication
+
+- **Fewer interruptions**: Users experience automatic token refresh instead of forced logouts
+- **Seamless sessions**: Background token renewal without user awareness
+- **Better reliability**: Improved handling of edge cases in token management
+
+#### Navigation
+
+- **Consistent behavior**: Modal closing works predictably regardless of how page was accessed
+- **Intuitive navigation**: Direct URL access behaves as users expect
+- **No broken states**: Eliminates navigation to empty browser tabs
+
+### Files Modified
+
+1. `api/client.ts` - Enhanced token refresh flow and removed aggressive validation
+2. `components/Misc/Modal.tsx` - Added optional onDismiss prop and removed redundant checks
+3. `app/(loggedin)/home/boards/[board_id]/job/layout.tsx` - Integrated custom modal close behavior
+
+## [0.185.0] - 2025-08-01
 
 ### Dark Mode Implementation and Bug Fixes
 
@@ -73,7 +176,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Dropdown menus**: Fixed document titles and contact information visibility in dark mode
 - **Interactive states**: Improved hover and active states for better user feedback
 
-### Technical Improvements
+### Technical Improvements - 2025-08-01
 
 #### Timezone Handling
 
@@ -1009,7 +1112,7 @@ if (!boardId) {
 - **Consistency**: Uniform document management patterns
 - **Performance**: Optimized rendering for large document collections
 
-### Files Modified
+### Files Modified - 2025-07-14
 
 - `redux/documents/documentsThunk.ts` - Added new document fetch thunks
 - `redux/documents/documentsSlice.ts` - Enhanced state management
