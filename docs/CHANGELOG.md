@@ -108,6 +108,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 2. `components/Misc/Modal.tsx` - Added optional onDismiss prop and removed redundant checks
 3. `app/(loggedin)/home/boards/[board_id]/job/layout.tsx` - Integrated custom modal close behavior
 
+### Files Deleted
+
+1. `redux/auth/refreshAccessTokenThunk.ts` - Improved token refresh logic and error handling
+2. `utils/TokenRefreshProvider.ts` - Refactored token refresh provider to handle new flow
+
 ## [0.185.0] - 2025-08-01
 
 ### Dark Mode Implementation and Bug Fixes
@@ -1660,6 +1665,7 @@ if (!boardId) {
 _All changes maintain backward compatibility and enhance user experience with improved session management and smoother UI interactions._
 
 <!-- Version comparison links -->
+
 [0.186.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.185.0...v0.186.0
 [0.185.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.184.0...v0.185.0
 [0.184.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.182.0...v0.184.0
