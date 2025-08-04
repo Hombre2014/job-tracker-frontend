@@ -1,4 +1,3 @@
-import jwt from 'jsonwebtoken';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
 import client from '@/api/client';
@@ -10,24 +9,38 @@ export const login = createAsyncThunk(
   async (values: any, thunkAPI) => {
     try {
       const res = await client.post('/auth/login', values);
-      const data = res.data;
 
       if (res.status === 200) {
-        const { accessToken, refreshToken } = res.data;
-        // ⚠️ SECURITY WARNING: jwt.decode() does NOT verify signatures!
-        // This is for UX purposes only - server must verify for security
-        const decoded = jwt.decode(accessToken);
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
+        // With HTTP-only cookies, tokens are handled automatically
+        // Try to fetch user profile
+        try {
+          const userRes = await client.get('/users');
+          if (userRes.status === 200) {
+            const userProfile = userRes.data;
 
-        if (decoded) {
-          localStorage.setItem('user', JSON.stringify(decoded));
-          return { data, decoded };
-        } else {
-          return thunkAPI.rejectWithValue('Token decoding failed');
+            // Store user info (without tokens) for persistence
+            const userInfo = {
+              userId: userProfile.id || userProfile.userId || '',
+              email: userProfile.email || '',
+              firstName: userProfile.firstName || '',
+              lastName: userProfile.lastName || '',
+              profilePicUrl: userProfile.profilePicUrl || '',
+              role: userProfile.role || 'user',
+            };
+
+            localStorage.setItem('user', JSON.stringify(userInfo));
+
+            return { userProfile };
+          }
+        } catch (userErr) {
+          console.error('Failed to fetch user profile:', userErr);
+          // Login was successful even if user fetch failed
+          return { userProfile: null };
         }
+
+        return { userProfile: null };
       } else {
-        return thunkAPI.rejectWithValue(data);
+        return thunkAPI.rejectWithValue('Login failed');
       }
     } catch (err: any) {
       return thunkAPI.rejectWithValue(err.response?.data || 'Login failed');
@@ -36,6 +49,14 @@ export const login = createAsyncThunk(
 );
 
 export const logout = createAsyncThunk('user/logout', async () => {
+  try {
+    // Call logout endpoint to clear HTTP-only cookies
+    await client.post('/auth/logout');
+  } catch (error) {
+    console.error('Logout endpoint failed:', error);
+  }
+
+  // Clean up client-side state
   cleanupAfterLogout();
 
   return {
@@ -43,8 +64,6 @@ export const logout = createAsyncThunk('user/logout', async () => {
     error: null,
     userId: null,
     status: 'idle',
-    accessToken: '',
-    refreshToken: '',
   };
 });
 
@@ -52,15 +71,15 @@ export const isLoggedIn = createAsyncThunk(
   'user/isLoggedIn',
   async (_, thunkAPI) => {
     const state = thunkAPI.getState() as RootState;
-    const { accessToken, refreshToken, email, userId } = state.user;
+    const { email, userId } = state.user;
 
-    if (accessToken && refreshToken && email && userId) {
+    // With HTTP-only cookies, we check if user data exists
+    // Authentication status is determined by successful API calls
+    if (email && userId) {
       return {
         email,
         userId,
         error: null,
-        accessToken,
-        refreshToken,
         status: 'succeeded',
       };
     } else {
@@ -72,8 +91,7 @@ export const isLoggedIn = createAsyncThunk(
 export const updateUser = createAsyncThunk(
   'user/updateUser',
   async (values: any, thunkAPI) => {
-    const { accessToken, firstName, lastName, email, profilePic, role } =
-      values;
+    const { firstName, lastName, email, profilePic, role } = values;
 
     // Create FormData object
     const formData = new FormData();
@@ -90,7 +108,6 @@ export const updateUser = createAsyncThunk(
     try {
       const res = await client.patch('/users', formData, {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'multipart/form-data',
         },
       });

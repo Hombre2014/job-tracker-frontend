@@ -38,7 +38,7 @@ const ContactCard = ({
   // Get a reliable board_id - first check URL params, then contact itself, then look for board object
   const params = useParams();
   const dispatch = useAppDispatch();
-  const accessToken = localStorage.getItem('accessToken');
+  // Access token handled by HTTP-only cookies
   const [companyNames, setCompanyNames] = useState<string[]>([]);
   const [showContactModal, setShowContactModal] = useState(false);
   const { firstName, lastName } = useAppSelector((state) => state.user);
@@ -113,7 +113,7 @@ const ContactCard = ({
           try {
             // Try to fetch the first board as default
             const boards = await dispatch(
-              getBoardsOnly(accessToken as string)
+              getBoardsOnly()
             ).unwrap();
             if (boards && boards.length > 0) {
               // Sort by creation date to get the first created board
@@ -135,7 +135,6 @@ const ContactCard = ({
           const value = {
             contactId: contact.id,
             boardId: effectiveBoardId,
-            accessToken: accessToken as string,
           };
 
           try {
@@ -162,7 +161,7 @@ const ContactCard = ({
       }
     };
     getCurrentContact();
-  }, [dispatch, accessToken, board_id, contact]);
+  }, [dispatch, board_id, contact]);
   const handleEditContact = () => {
     setShowContactModal(true);
     setOpenDropdownId(null);
@@ -170,7 +169,7 @@ const ContactCard = ({
 
   const handleDeleteContact = () => {
     dispatch(
-      deleteContact({ id: contact.id, accessToken: accessToken as string })
+      deleteContact(contact.id)
     ).then(() => {
       onDelete(contact.id);
     });

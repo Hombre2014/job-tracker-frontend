@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -13,25 +13,48 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { accessToken: reduxAccessToken } = useAppSelector(
-    (state) => state.user
-  );
-  const accessToken = reduxAccessToken || localStorage.getItem('accessToken');
+  const { userId, email } = useAppSelector((state) => state.user);
+  const hasInitializedRef = useRef(false);
+
+  // With HTTP-only cookies, authentication is determined by user data
+  const isAuthenticated = Boolean(userId && email);
 
   useEffect(() => {
-    if (!accessToken) {
-      router.push('/login');
-    } else {
-      dispatch(getBoards(accessToken));
+    if (hasInitializedRef.current) return;
+
+    if (isAuthenticated) {
+      // User is authenticated, fetch data
+      hasInitializedRef.current = true;
+      console.log('Initializing user data in HomeLayout...');
+      dispatch(getBoards());
       dispatch(getUser());
+    } else {
+      // Check if user data exists in localStorage (page refresh scenario)
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        try {
+          const userData = JSON.parse(storedUser);
+          if (userData.userId && userData.email) {
+            // User data exists, dispatch getUser to validate with server
+            dispatch(getUser());
+            return;
+          }
+        } catch (error) {
+          console.error('Error parsing stored user data:', error);
+        }
+      }
+
+      // No authentication data found, redirect to login
+      router.push('/login');
     }
-  }, [accessToken, router, dispatch]);
+  }, [isAuthenticated, router, dispatch]);
+
   return (
     <div className="flex h-full">
       <aside className="min-w-60">
         <Sidebar />
       </aside>
-      {accessToken && (
+      {isAuthenticated && (
         <div className="mx-auto w-full h-full text-slate-700 dark:text-slate-300">
           {children}
         </div>

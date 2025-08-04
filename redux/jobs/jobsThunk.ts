@@ -5,8 +5,16 @@ import { DocumentService } from '@/services/documentService';
 
 export const createJobPost = createAsyncThunk(
   'jobs/createJobPost',
-  async (values: any, thunkAPI) => {
-    const { accessToken, title, companyId, columnId, status } = values;
+  async (
+    values: {
+      title: string;
+      companyId: string;
+      columnId: string;
+      status: string;
+    },
+    thunkAPI
+  ) => {
+    const { title, companyId, columnId, status } = values;
     const body = {
       title: title,
       status: status,
@@ -16,11 +24,7 @@ export const createJobPost = createAsyncThunk(
       createdAt: new Date().toISOString(),
     };
     try {
-      const res = await client.post('/job-applications', body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.post('/job-applications', body);
 
       const data = res.data;
       return data;
@@ -34,14 +38,9 @@ export const createJobPost = createAsyncThunk(
 
 export const getAllJobPostsPerColumn = createAsyncThunk(
   'jobs/getAllJobPostsPerColumn',
-  async (values: any, thunkAPI) => {
-    const { accessToken, columnId } = values;
+  async (columnId: string, thunkAPI) => {
     try {
-      const res = await client.get(`/job-applications/column/${columnId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.get(`/job-applications/column/${columnId}`);
 
       const data = res.data;
       return data;
@@ -55,7 +54,23 @@ export const getAllJobPostsPerColumn = createAsyncThunk(
 
 export const updateJobPost = createAsyncThunk(
   'jobs/updateJobPost',
-  async (values: any, thunkAPI) => {
+  async (
+    values: {
+      title: string;
+      color: string;
+      salary: string;
+      status: string;
+      postUrl: string;
+      location: string;
+      deadline: string;
+      columnId: string;
+      jobPostId: string;
+      description: string;
+      statusChangedAt: string;
+      company: { name: string };
+    },
+    thunkAPI
+  ) => {
     const {
       title,
       color,
@@ -66,7 +81,6 @@ export const updateJobPost = createAsyncThunk(
       deadline,
       columnId,
       jobPostId,
-      accessToken,
       description,
       statusChangedAt,
       company: { name: companyName },
@@ -87,11 +101,7 @@ export const updateJobPost = createAsyncThunk(
       },
     };
     try {
-      const res = await client.put(`/job-applications/${jobPostId}`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.put(`/job-applications/${jobPostId}`, body);
 
       const data = res.data;
       return data;
@@ -105,16 +115,15 @@ export const updateJobPost = createAsyncThunk(
 
 export const deleteJobPost = createAsyncThunk(
   'jobs/deleteJobPost',
-  async (values: any, thunkAPI) => {
-    const { accessToken, jobPostId, jobPostData } = values;
+  async (values: { jobPostId: string; jobPostData: any }, thunkAPI) => {
+    const { jobPostId, jobPostData } = values;
     try {
       // Step 1: Handle documents attached to this job post using DocumentService
       if (jobPostData?.documents && jobPostData.documents.length > 0) {
         const documentResults =
           await DocumentService.handleDocumentsForJobDeletion(
             jobPostData.documents,
-            jobPostId,
-            accessToken
+            jobPostId
           );
 
         // Log the results for debugging
@@ -122,11 +131,7 @@ export const deleteJobPost = createAsyncThunk(
       }
 
       // Step 2: Delete the job post itself
-      await client.delete(`/job-applications/${jobPostId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      await client.delete(`/job-applications/${jobPostId}`);
 
       return jobPostId;
     } catch (err: any) {
@@ -139,14 +144,9 @@ export const deleteJobPost = createAsyncThunk(
 
 export const getJobPost = createAsyncThunk(
   'jobs/getJobPost',
-  async (values: any, thunkAPI) => {
-    const { accessToken, jobPostId } = values;
+  async (jobPostId: string, thunkAPI) => {
     try {
-      const res = await client.get(`/job-applications/${jobPostId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.get(`/job-applications/${jobPostId}`);
 
       const data = res.data;
       return data;

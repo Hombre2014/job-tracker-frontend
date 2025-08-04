@@ -27,14 +27,6 @@ const BoardDocuments = () => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.user);
-  const accessToken = (() => {
-    try {
-      return localStorage.getItem('accessToken');
-    } catch (error) {
-      console.warn('Failed to access localStorage:', error);
-      return null;
-    }
-  })();
 
   const userDocuments = useAppSelector(selectUserDocuments);
   const boardDocuments = useAppSelector(selectBoardDocuments);
@@ -50,14 +42,9 @@ const BoardDocuments = () => {
 
   // Function to refresh board documents
   const handleDocumentsRefresh = async () => {
-    if (boardId && accessToken) {
+    if (boardId) {
       try {
-        await dispatch(
-          getDocumentsPerBoard({
-            accessToken,
-            boardId: boardId,
-          })
-        ).unwrap();
+        await dispatch(getDocumentsPerBoard(boardId)).unwrap();
       } catch (error) {
         console.warn('Failed to refresh board documents:', error);
       }
@@ -66,7 +53,7 @@ const BoardDocuments = () => {
 
   // Fetch user info for uploader details
   useEffect(() => {
-    if (accessToken && !uploaderInfo) {
+    if (!uploaderInfo) {
       if (user.firstName && user.lastName) {
         setUploaderInfo({
           lastName: user.lastName,
@@ -87,7 +74,6 @@ const BoardDocuments = () => {
     }
   }, [
     dispatch,
-    accessToken,
     uploaderInfo,
     user.lastName,
     user.firstName,
@@ -96,16 +82,11 @@ const BoardDocuments = () => {
 
   // Fetch board documents and user documents on mount
   useEffect(() => {
-    if (accessToken && boardId) {
-      dispatch(
-        getDocumentsPerBoard({
-          accessToken,
-          boardId: boardId,
-        })
-      );
-      dispatch(getDocumentsPerUser(accessToken));
+    if (boardId) {
+      dispatch(getDocumentsPerBoard(boardId));
+      dispatch(getDocumentsPerUser());
     }
-  }, [dispatch, accessToken, boardId]);
+  }, [dispatch, boardId]);
 
   // Use the shared document actions hook - MUST be called before any conditional returns
   const {
@@ -117,12 +98,7 @@ const BoardDocuments = () => {
     handleDeleteDocument,
     handleDocumentUpdate,
     handleDownloadDocument,
-  } = useDocumentActions(
-    boardDocuments,
-    accessToken,
-    handleDocumentsRefresh,
-    true
-  ); // Enable optimistic updates
+  } = useDocumentActions(boardDocuments, handleDocumentsRefresh, true); // Enable optimistic updates
 
   // Early return after all hooks are called
   if (!boardId) {

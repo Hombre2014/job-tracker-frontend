@@ -4,7 +4,7 @@ import { debounce } from 'lodash';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 
 import { AddJobSchemaShort } from '@/schemas';
 import { Input } from '@/components/ui/input';
@@ -33,7 +33,6 @@ const AddJobShortForm = ({
   const dispatch = useAppDispatch();
   const [company, setCompany] = useState('');
   const [jobTitle, setJobTitle] = useState('');
-  const accessToken = localStorage.getItem('accessToken');
   const [showDropdown, setShowDropdown] = useState(false);
   const { boards } = useAppSelector((state) => state.boards);
   const [boardColumns, setBoardColumns] = useState(
@@ -69,33 +68,30 @@ const AddJobShortForm = ({
     },
   });
 
-  const debouncedSearch = useCallback(
-    debounce((searchTerm: string) => {
-      if (searchTerm.length >= 2) {
-        const values = {
-          accessToken,
-          companyName: searchTerm,
-        };
-        dispatch(getCompanyThatStartsWith(values))
-          .unwrap()
-          .then((result) => {
-            const companyNames: string[] = result.map(
-              (company: { name: string }) => company.name
-            );
-            setMatchingCompanies(companyNames);
-            setShowDropdown(true);
-          })
-          .catch((error) => {
-            console.error('Search error:', error);
-            setMatchingCompanies([]);
-            setShowDropdown(false);
-          });
-      } else {
-        setMatchingCompanies([]);
-        setShowDropdown(false);
-      }
-    }, 300),
-    [dispatch, accessToken]
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((searchTerm: string) => {
+        if (searchTerm.length >= 2) {
+          dispatch(getCompanyThatStartsWith(searchTerm))
+            .unwrap()
+            .then((result) => {
+              const companyNames: string[] = result.map(
+                (company: { name: string }) => company.name
+              );
+              setMatchingCompanies(companyNames);
+              setShowDropdown(true);
+            })
+            .catch((error) => {
+              console.error('Search error:', error);
+              setMatchingCompanies([]);
+              setShowDropdown(false);
+            });
+        } else {
+          setMatchingCompanies([]);
+          setShowDropdown(false);
+        }
+      }, 300),
+    [dispatch]
   );
 
   const handleCompanyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,12 +118,7 @@ const AddJobShortForm = ({
         );
 
         if (existingCompany) {
-          const values = {
-            accessToken,
-            companyName: company,
-          };
-
-          dispatch(getCompanyThatStartsWith(values))
+          dispatch(getCompanyThatStartsWith(company))
             .unwrap()
             .then((result) => {
               const companyData = result.find(
@@ -140,7 +131,7 @@ const AddJobShortForm = ({
         }
       } else {
         localStorage.setItem('company', company);
-        dispatch(createCompany({ accessToken, name: company }))
+        dispatch(createCompany(company))
           .unwrap()
           .then((result) => {
             const newCompanyId = result.id;
@@ -158,12 +149,9 @@ const AddJobShortForm = ({
     localStorage.setItem('company', fullCompanyName);
     localStorage.setItem('companySelected', 'true');
 
-    const values = {
-      accessToken,
-      companyName: fullCompanyName,
-    };
-
-    const result = await dispatch(getCompanyThatStartsWith(values)).unwrap();
+    const result = await dispatch(
+      getCompanyThatStartsWith(fullCompanyName)
+    ).unwrap();
     const existingCompany = result.find(
       (comp: any) => comp.name === fullCompanyName
     );
@@ -198,7 +186,9 @@ const AddJobShortForm = ({
                 <FormLabel className="text-gray-800 dark:text-white font-semibold">
                   Company
                 </FormLabel>
-                <FormLabel className="text-gray-400 dark:text-slate-400">Required</FormLabel>
+                <FormLabel className="text-gray-400 dark:text-slate-400">
+                  Required
+                </FormLabel>
               </span>
               <Input
                 {...field}
@@ -234,7 +224,9 @@ const AddJobShortForm = ({
                 <FormLabel className="text-gray-800 dark:text-white font-semibold">
                   Job Title
                 </FormLabel>
-                <FormLabel className="text-gray-400 dark:text-slate-400">Required</FormLabel>
+                <FormLabel className="text-gray-400 dark:text-slate-400">
+                  Required
+                </FormLabel>
               </span>
               <Input
                 {...field}
@@ -256,7 +248,9 @@ const AddJobShortForm = ({
                   <FormLabel className="text-gray-800 dark:text-white font-semibold">
                     Board
                   </FormLabel>
-                  <FormLabel className="text-gray-400 dark:text-slate-400">Required</FormLabel>
+                  <FormLabel className="text-gray-400 dark:text-slate-400">
+                    Required
+                  </FormLabel>
                 </span>
                 <ComboBoardListBox
                   {...field}
@@ -279,7 +273,9 @@ const AddJobShortForm = ({
                   <FormLabel className="text-gray-800 dark:text-white font-semibold">
                     List
                   </FormLabel>
-                  <FormLabel className="text-gray-400 dark:text-slate-400">Required</FormLabel>
+                  <FormLabel className="text-gray-400 dark:text-slate-400">
+                    Required
+                  </FormLabel>
                 </span>
                 <ComboBoardListBox
                   {...field}

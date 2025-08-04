@@ -18,7 +18,7 @@ export const AuthStatusDebug: React.FC<AuthStatusDebugProps> = ({
   showDetails = false,
   className = '',
 }) => {
-  const { authState, logout, refreshToken, debugAuth } = useAuth();
+  const { authState, logout, debugAuth } = useAuth();
   const authStatus = useAuthStatus();
 
   if (process.env.NODE_ENV !== 'development') {
@@ -32,14 +32,6 @@ export const AuthStatusDebug: React.FC<AuthStatusDebugProps> = ({
       <div className="flex items-center justify-between mb-2">
         <h3 className="font-bold text-sm">Auth Status</h3>
         <div className="flex gap-1">
-          <button
-            type="button"
-            onClick={() => refreshToken()}
-            disabled={authState.isRefreshing}
-            className="px-2 py-1 bg-blue-600 rounded text-xs hover:bg-blue-700"
-          >
-            {authState.isRefreshing ? 'Refreshing...' : 'Refresh'}
-          </button>
           <button
             type="button"
             onClick={debugAuth}
@@ -73,17 +65,6 @@ export const AuthStatusDebug: React.FC<AuthStatusDebugProps> = ({
         </div>
 
         <div className="flex justify-between">
-          <span>Refreshing:</span>
-          <span
-            className={
-              authState.isRefreshing ? 'text-yellow-400' : 'text-gray-400'
-            }
-          >
-            {authState.isRefreshing ? 'Yes' : 'No'}
-          </span>
-        </div>
-
-        <div className="flex justify-between">
           <span>Loading:</span>
           <span
             className={
@@ -93,21 +74,6 @@ export const AuthStatusDebug: React.FC<AuthStatusDebugProps> = ({
             {authState.isLoading ? 'Yes' : 'No'}
           </span>
         </div>
-
-        {authState.timeUntilExpiration && (
-          <div className="flex justify-between">
-            <span>Expires in:</span>
-            <span
-              className={
-                authState.timeUntilExpiration < 300000
-                  ? 'text-yellow-400'
-                  : 'text-green-400'
-              }
-            >
-              {authStatus.timeUntilExpirationFormatted}
-            </span>
-          </div>
-        )}
 
         {authState.user && (
           <div className="flex justify-between">
@@ -140,7 +106,7 @@ export const AuthStatusDebug: React.FC<AuthStatusDebugProps> = ({
                       if (key === 'token' || key === 'refreshToken') {
                         return '[HIDDEN]';
                       }
-                      
+
                       if (typeof value === 'object' && value !== null) {
                         if (value instanceof Date) return value.toISOString();
                         // Handle circular references

@@ -10,19 +10,20 @@ import { getAllContactsPerBoard } from '@/redux/contacts/contactsThunk';
 const BoardContacts = () => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
-  const accessToken = localStorage.getItem('accessToken');
+  // Access token handled by HTTP-only cookies
   const [allBoardContacts, setAllBoardContacts] = useState<Contact[]>([]);
 
   const fetchBoardContacts = useCallback(async () => {
     try {
+      const boardIdString = Array.isArray(board_id) ? board_id[0] : board_id;
       const contacts = await dispatch(
-        getAllContactsPerBoard({ accessToken, boardId: board_id }),
+        getAllContactsPerBoard(boardIdString)
       ).unwrap();
       setAllBoardContacts(contacts);
     } catch (error) {
       console.error('Error fetching board contacts:', error);
     }
-  }, [dispatch, accessToken, board_id]);
+  }, [dispatch, board_id]);
   useEffect(() => {
     fetchBoardContacts();
   }, [fetchBoardContacts]);

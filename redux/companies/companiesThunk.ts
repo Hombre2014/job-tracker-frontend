@@ -3,20 +3,11 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 
 export const getCompanyThatStartsWith = createAsyncThunk(
   'companies/getCompanyThatStartsWith',
-  async (values: any, thunkAPI) => {
-    const { accessToken, companyName } = values;
-
+  async (companyName: string, thunkAPI) => {
     try {
-      const res = await client.post(
-        '/companies/starts-with',
-        { name: companyName },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const res = await client.post('/companies/starts-with', {
+        name: companyName,
+      });
       return res.data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(
@@ -28,19 +19,13 @@ export const getCompanyThatStartsWith = createAsyncThunk(
 
 export const createCompany = createAsyncThunk(
   'companies/createNewCompany',
-  async (values: any, thunkAPI) => {
-    const { accessToken, name } = values;
+  async (name: string, thunkAPI) => {
     const body = {
       name: name,
     };
 
     try {
-      const res = await client.post('/companies', body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const res = await client.post('/companies', body);
       return res.data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(
@@ -52,15 +37,9 @@ export const createCompany = createAsyncThunk(
 
 export const getCompany = createAsyncThunk(
   'companies/getCompany',
-  async (values: any, thunkAPI) => {
-    const { companyId, accessToken } = values;
+  async (companyId: string, thunkAPI) => {
     try {
-      const res = await client.get(`/companies/${companyId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const res = await client.get(`/companies/${companyId}`);
       return res.data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(
@@ -72,15 +51,10 @@ export const getCompany = createAsyncThunk(
 
 export const updateCompany = createAsyncThunk(
   'companies/updateCompany',
-  async (values: any, thunkAPI) => {
-    const { companyId, accessToken, ...rest } = values;
+  async (values: { companyId: string; [key: string]: any }, thunkAPI) => {
+    const { companyId, ...rest } = values;
     try {
-      const res = await client.put(`/companies/${companyId}`, rest, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const res = await client.put(`/companies/${companyId}`, rest);
       return res.data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(

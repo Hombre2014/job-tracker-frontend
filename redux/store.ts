@@ -47,9 +47,9 @@ const persistConfig = {
   storage: createPersistStorage(),
   whitelist: [
     'user',
-    'boards',
     'jobs',
     'notes',
+    'boards',
     'contacts',
     'companies',
     'documents',

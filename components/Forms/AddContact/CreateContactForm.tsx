@@ -66,7 +66,6 @@ const CreateContactForm = ({
   const user = useAppSelector((state) => state.user);
   const jobs = useAppSelector((state) => state.jobs);
   const { board_id } = useParams<{ board_id: string }>();
-  const accessToken = localStorage.getItem('accessToken');
   const [showDropdown, setShowDropdown] = useState(false);
   const [companies, setCompanies] = useState<string[]>([]);
   const [companyIds, setCompanyIds] = useState<string[]>([]);
@@ -241,45 +240,32 @@ const CreateContactForm = ({
   });
 
   useEffect(() => {
-    if (accessToken) {
-      dispatch(getUser());
-    }
-  }, [dispatch, accessToken]);
+    dispatch(getUser());
+  }, [dispatch]);
 
   useEffect(() => {
     const fetchJobs = async () => {
       try {
         if (defaultJobPost) {
           // Case 1: From Job Post Modal - fetch jobs for specific column
-          const jobPostsData = {
-            accessToken: accessToken as string,
-            columnId: localStorage.getItem('columnId'),
-          };
-          const result = await dispatch(
-            getAllJobPostsPerColumn(jobPostsData)
-          ).unwrap();
-          setAllJobPosts(result);
+          const columnId = localStorage.getItem('columnId');
+          if (columnId) {
+            const result = await dispatch(
+              getAllJobPostsPerColumn(columnId)
+            ).unwrap();
+            setAllJobPosts(result);
+          }
         } else if (isUserContactsPage) {
           // Case 3: From User's Contacts page - fetch jobs from all boards
-          const boardsResponse = await dispatch(
-            getBoardsOnly(accessToken as string)
-          ).unwrap();
+          const boardsResponse = await dispatch(getBoardsOnly()).unwrap();
 
           const jobsPromises = boardsResponse.flatMap(async (board: Board) => {
             const boardData = await dispatch(
-              getBoardWithColumns({
-                accessToken,
-                boardId: board.id,
-              })
+              getBoardWithColumns(board.id)
             ).unwrap();
 
             const columnPromises = boardData.columns.map((column: Column) =>
-              dispatch(
-                getAllJobPostsPerColumn({
-                  accessToken,
-                  columnId: column.id,
-                })
-              ).unwrap()
+              dispatch(getAllJobPostsPerColumn(column.id)).unwrap()
             );
 
             const columnJobs = await Promise.all(columnPromises);
@@ -299,9 +285,7 @@ const CreateContactForm = ({
           if (!effectiveBoardId) {
             try {
               // Get all boards and use the first one (default "Job Search" board)
-              const boards = await dispatch(
-                getBoardsOnly(accessToken as string)
-              ).unwrap();
+              const boards = await dispatch(getBoardsOnly()).unwrap();
               if (boards && boards.length > 0) {
                 // Sort by creation date to get the first created board
                 const sortedBoards = [...boards].sort(
@@ -320,19 +304,11 @@ const CreateContactForm = ({
           }
 
           const boardData = await dispatch(
-            getBoardWithColumns({
-              accessToken,
-              boardId: effectiveBoardId,
-            })
+            getBoardWithColumns(effectiveBoardId)
           ).unwrap();
 
           const jobsPromises = boardData.columns.map((column: Column) =>
-            dispatch(
-              getAllJobPostsPerColumn({
-                accessToken,
-                columnId: column.id,
-              })
-            ).unwrap()
+            dispatch(getAllJobPostsPerColumn(column.id)).unwrap()
           );
 
           const jobsArrays = await Promise.all(jobsPromises);
@@ -348,7 +324,7 @@ const CreateContactForm = ({
     };
 
     fetchJobs();
-  }, [dispatch, accessToken, defaultJobPost, board_id, isUserContactsPage]);
+  }, [dispatch, defaultJobPost, board_id, isUserContactsPage]);
   // Sync allJobPosts with Redux jobs to ensure sidebar always has access to jobs
   useEffect(() => {
     if (jobs.jobPosts.length && jobs.jobPosts.length !== allJobPosts.length) {
@@ -397,12 +373,7 @@ const CreateContactForm = ({
         contactToEdit.emails &&
         contactToEdit.emails.some((email) => email.id === id)
       ) {
-        dispatch(
-          deleteContactEmail({
-            id,
-            accessToken: accessToken as string,
-          })
-        );
+        dispatch(deleteContactEmail(id));
       }
       // Remove from local state and localStorage
       setEmails((prev) => prev.filter((email) => email.id !== id));
@@ -416,12 +387,7 @@ const CreateContactForm = ({
         contactToEdit.phones &&
         contactToEdit.phones.some((phone) => phone.id === id)
       ) {
-        dispatch(
-          deleteContactPhone({
-            id,
-            accessToken: accessToken as string,
-          })
-        );
+        dispatch(deleteContactPhone(id));
       }
       setPhones((prev) => prev.filter((phone) => phone.id !== id));
       localStorage.setItem(
@@ -460,7 +426,6 @@ const CreateContactForm = ({
           id,
           type,
           email: value,
-          accessToken: accessToken as string,
         })
       );
     }
@@ -487,7 +452,6 @@ const CreateContactForm = ({
           id,
           type,
           phone: value,
-          accessToken: accessToken as string,
         })
       );
     }
@@ -497,11 +461,7 @@ const CreateContactForm = ({
     (searchTerm: string) => {
       const debounced = debounce((searchTerm: string) => {
         if (searchTerm.length >= 2) {
-          const values = {
-            accessToken,
-            companyName: searchTerm,
-          };
-          dispatch(getCompanyThatStartsWith(values))
+          dispatch(getCompanyThatStartsWith(searchTerm))
             .unwrap()
             .then((result) => {
               const companyNames: string[] = result.map(
@@ -522,7 +482,7 @@ const CreateContactForm = ({
       }, 300);
       return debounced(searchTerm);
     },
-    [dispatch, accessToken, setMatchingCompanies, setShowDropdown]
+    [dispatch, setMatchingCompanies, setShowDropdown]
   );
 
   const handleCompanyInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -532,12 +492,9 @@ const CreateContactForm = ({
   };
 
   const handleCompanySelect = async (selectedCompany: string) => {
-    const values = {
-      accessToken,
-      companyName: selectedCompany,
-    };
-
-    const result = await dispatch(getCompanyThatStartsWith(values)).unwrap();
+    const result = await dispatch(
+      getCompanyThatStartsWith(selectedCompany)
+    ).unwrap();
     const existingCompany = result.find(
       (comp: any) => comp.name === selectedCompany
     );
@@ -563,10 +520,7 @@ const CreateContactForm = ({
         handleCompanySelect(currentCompanyInput);
       } else {
         const result = await dispatch(
-          createCompany({
-            accessToken,
-            name: currentCompanyInput,
-          })
+          createCompany(currentCompanyInput)
         ).unwrap();
 
         const newCompanies = [...companies, currentCompanyInput];

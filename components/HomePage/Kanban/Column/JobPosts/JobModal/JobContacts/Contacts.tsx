@@ -26,7 +26,7 @@ const Contacts = () => {
   const dispatch = useAppDispatch();
   const { job_id, board_id } = useParams();
   const jobs = useAppSelector((state) => state.jobs);
-  const accessToken = localStorage.getItem('accessToken');
+  // Access token handled by HTTP-only cookies
   const isContactsPage = pathname?.includes('/home/contacts');
   const [availableContacts, setAvailableContacts] = useState<Contact[]>([]);
   const numberOfContactsPerJob =
@@ -52,13 +52,12 @@ const Contacts = () => {
   // Fetch all board contacts when component mounts
   useEffect(() => {
     const fetchBoardContacts = async () => {
-      if (board_id && accessToken) {
+      if (board_id) {
         try {
           const response = await dispatch(
-            getAllContactsPerBoard({
-              boardId: Array.isArray(board_id) ? board_id[0] : board_id,
-              accessToken,
-            })
+            getAllContactsPerBoard(
+              Array.isArray(board_id) ? board_id[0] : board_id
+            )
           ).unwrap();
 
           const unlinkedContacts = filterUnlinkedContacts(response, job_id);
@@ -70,7 +69,7 @@ const Contacts = () => {
       }
     };
     fetchBoardContacts();
-  }, [dispatch, board_id, accessToken, job_id, filterUnlinkedContacts]);
+  }, [dispatch, board_id, job_id, filterUnlinkedContacts]);
 
   const handleContactUpdated = (updatedContact: Contact) => {
     // Refresh data from the backend to update Redux state
@@ -82,19 +81,15 @@ const Contacts = () => {
       if (columnId) {
         // Refresh job posts to get updated contact assignments
         const jobPostsResponse = await dispatch(
-          getAllJobPostsPerColumn({
-            columnId,
-            accessToken,
-          })
+          getAllJobPostsPerColumn(columnId)
         ).unwrap();
 
         // Also refresh the available contacts list
         if (board_id) {
           const boardContactsResponse = await dispatch(
-            getAllContactsPerBoard({
-              accessToken,
-              boardId: Array.isArray(board_id) ? board_id[0] : board_id,
-            })
+            getAllContactsPerBoard(
+              Array.isArray(board_id) ? board_id[0] : board_id
+            )
           ).unwrap();
 
           // Use the fresh job posts data from the API response to filter contacts
@@ -114,7 +109,7 @@ const Contacts = () => {
     } catch (error) {
       console.error('Error refreshing contacts:', error);
     }
-  }, [dispatch, accessToken, board_id, job_id]);
+  }, [dispatch, board_id, job_id]);
 
   // Remove the additional useEffect that might cause issues
   const handleContactDeleted = () => {
@@ -122,13 +117,12 @@ const Contacts = () => {
     refreshContacts();
   }; // Handle linking existing contact to job
   const handleLinkContact = async (contact: Contact) => {
-    if (!job_id || !accessToken) return;
+    if (!job_id) return;
     try {
       await dispatch(
         assignContactToJobPost({
-          accessToken,
           contactId: contact.id,
-          jobApplicationId: job_id,
+          jobApplicationId: job_id as string,
         })
       ).unwrap();
 

@@ -48,11 +48,16 @@ const JobInfo = () => {
     value: string,
     status?: string
   ) => {
-    // Check the payload if it is the same as the current job post data and if so, do not send the request
-    if (currentJobPost) {
+    // Check if the value is actually changing to avoid unnecessary requests
+    if (currentJobPost && fieldName !== 'company') {
       if (currentJobPost[fieldName] === value) {
         return;
       }
+    }
+
+    // Special check for company name
+    if (fieldName === 'company' && currentJobPost?.company.name === value) {
+      return;
     }
 
     if (fieldName === 'postUrl') {
@@ -65,20 +70,49 @@ const JobInfo = () => {
 
     setFirstVisit(false);
 
-    const updatePayload = {
-      accessToken: localStorage.getItem('accessToken'),
+    // Create base payload with current job data
+    let updatePayload = {
+      title: currentJobPost?.title || '',
+      color: currentJobPost?.color || '',
+      salary: currentJobPost?.salary || '',
+      status: status || currentJobPost?.status || '',
+      postUrl: currentJobPost?.postUrl || '',
+      location: currentJobPost?.location || '',
+      deadline: currentJobPost?.deadline || '',
+      columnId: currentJobPost?.column_id || '', // Try both field names
+      description: currentJobPost?.description || '',
+      statusChangedAt: new Date().toISOString(),
       company: {
-        name: currentJobPost?.company.name,
+        name: currentJobPost?.company.name || '',
       },
-      ...(status && { status }),
-      jobPostId: job_id,
-      [fieldName]:
-        status === 'Deadline'
-          ? format(new Date(value), 'yyyy-MM-dd HH:mm a')
-          : value,
     };
 
-    dispatch(updateJobPost(updatePayload));
+    // Remove empty columnId if it exists
+    if (!updatePayload.columnId) {
+      delete (updatePayload as any).columnId;
+    }
+
+    // Handle special cases for fields
+    if (fieldName === 'company') {
+      updatePayload.company.name = value;
+    } else if (fieldName === 'deadline' && status === 'Deadline') {
+      updatePayload.deadline = format(new Date(value), 'yyyy-MM-dd HH:mm a');
+    } else {
+      // For all other fields, update directly
+      (updatePayload as any)[fieldName] = value;
+    }
+
+    // Add jobPostId for the thunk to use in URL construction
+    const payloadWithId = {
+      ...updatePayload,
+      jobPostId: job_id as string,
+    };
+
+    console.log(
+      'Update payload being sent:',
+      JSON.stringify(payloadWithId, null, 2)
+    );
+    dispatch(updateJobPost(payloadWithId));
   };
 
   useEffect(() => {
@@ -90,12 +124,10 @@ const JobInfo = () => {
   }, []);
 
   useEffect(() => {
-    const jobPostsData = {
-      accessToken: localStorage.getItem('accessToken') as string,
-      columnId: localStorage.getItem('columnId'),
-    };
-
-    dispatch(getAllJobPostsPerColumn(jobPostsData));
+    const columnId = localStorage.getItem('columnId');
+    if (columnId) {
+      dispatch(getAllJobPostsPerColumn(columnId));
+    }
   }, [dispatch, job_id]);
 
   const handleSelectDeadline = (date: Date | undefined) => {
@@ -122,6 +154,7 @@ const JobInfo = () => {
                     id="company"
                     labelName="Company"
                     stylings="space-y-1 w-1/2"
+                    sendData={handleFieldChange}
                     defaultValue={currentJobPost?.company.name}
                   />
                   <InputElement

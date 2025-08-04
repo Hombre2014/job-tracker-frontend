@@ -7,27 +7,28 @@ import { ChangeEvent, useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
-import { useAppSelector, useAppDispatch } from '@/redux/hooks';
+import { Button } from '@/components/ui/button';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getBoards, renameBoard } from '@/redux/boards/boardsThunk';
 import CreateNewBoard from '@/components/HomePage/Boards/CreateNewBoard';
 
-const UserBoards = () => {
+const BoardsPage = () => {
   const dispatch = useAppDispatch();
   const user = localStorage.getItem('user');
   const email = user ? JSON.parse(user).email : '';
   const [isEditing, setIsEditing] = useState(false);
-  const accessToken = localStorage.getItem('accessToken');
   const [currentBoardId, setCurrentBoardId] = useState('');
   const { lastName } = useAppSelector((state) => state.user);
   const { firstName } = useAppSelector((state) => state.user);
   const [renamedBoardName, setRenamedBoardName] = useState('');
   const { boards, boardsStatus } = useAppSelector((state) => state.boards);
 
-  useEffect(() => {
-    if (boardsStatus === 'succeeded') {
-      dispatch(getBoards(accessToken as string));
-    }
-  }, [dispatch, accessToken]);
+  // Remove this useEffect - boards are already fetched in HomeLayout
+  // useEffect(() => {
+  //   if (boardsStatus === 'succeeded') {
+  //     dispatch(getBoards());
+  //   }
+  // }, [dispatch, boardsStatus]);
 
   useEffect(() => {
     if (isEditing) {
@@ -38,10 +39,9 @@ const UserBoards = () => {
         currentInputElement!.focus();
         currentInputElement!.select();
       }
-    } else {
-      dispatch(getBoards(accessToken as string));
     }
-  }, [isEditing, currentBoardId, accessToken, dispatch]);
+    // Remove getBoards call - boards are already fetched in HomeLayout
+  }, [isEditing, currentBoardId]);
 
   const handleBoardNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -50,9 +50,7 @@ const UserBoards = () => {
 
   const confirmBoardNameChange = () => {
     setIsEditing(false);
-    dispatch(
-      renameBoard({ name: renamedBoardName, accessToken, id: currentBoardId })
-    );
+    dispatch(renameBoard({ name: renamedBoardName, id: currentBoardId }));
     setCurrentBoardId('');
   };
 
@@ -126,4 +124,4 @@ const UserBoards = () => {
   );
 };
 
-export default UserBoards;
+export default BoardsPage;

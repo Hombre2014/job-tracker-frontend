@@ -18,7 +18,6 @@ export const createContact = createAsyncThunk(
       companyIds,
       twitterUrl,
       linkedinUrl,
-      accessToken,
       facebookUrl,
     } = values;
 
@@ -40,11 +39,7 @@ export const createContact = createAsyncThunk(
     };
 
     try {
-      const res = await client.post(`/contacts`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.post(`/contacts`, body);
       const data = res.data;
       return { id: data.id, ...data }; // Return the contact ID along with other data
     } catch (err: any) {
@@ -72,7 +67,6 @@ export const updateContact = createAsyncThunk(
       companyIds,
       twitterUrl,
       linkedinUrl,
-      accessToken,
       facebookUrl,
     } = values;
     const body = {
@@ -91,11 +85,7 @@ export const updateContact = createAsyncThunk(
       facebookUrl: facebookUrl,
     };
     try {
-      const res = await client.put(`/contacts`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.put(`/contacts`, body);
       const data = res.data;
       return data;
     } catch (err: any) {
@@ -108,14 +98,9 @@ export const updateContact = createAsyncThunk(
 
 export const deleteContact = createAsyncThunk(
   'contacts/deleteContact',
-  async (values: any, thunkAPI) => {
-    const { id, accessToken } = values;
+  async (id: string, thunkAPI) => {
     try {
-      const res = await client.delete(`/contacts/${id}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.delete(`/contacts/${id}`);
       const data = res.data;
       return data;
     } catch (err: any) {
@@ -128,15 +113,10 @@ export const deleteContact = createAsyncThunk(
 
 export const getContact = createAsyncThunk(
   'contacts/getContact',
-  async ({ accessToken, boardId, contactId }: any, thunkAPI) => {
+  async ({ boardId, contactId }: any, thunkAPI) => {
     try {
       const res = await client.get(
-        `/contacts?boardId=${boardId}&contactId=${contactId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+        `/contacts?boardId=${boardId}&contactId=${contactId}`
       );
       const data = res.data;
       return data;
@@ -150,14 +130,9 @@ export const getContact = createAsyncThunk(
 
 export const getAllContactsPerBoard = createAsyncThunk(
   'contacts/getAllContactsPerBoard',
-  async (values: any, thunkAPI) => {
-    const { accessToken, boardId } = values;
+  async (boardId: string, thunkAPI) => {
     try {
-      const res = await client.get(`/contacts?boardId=${boardId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.get(`/contacts?boardId=${boardId}`);
       const data = res.data;
       return data;
     } catch (err: any) {
@@ -170,18 +145,14 @@ export const getAllContactsPerBoard = createAsyncThunk(
 
 export const assignContactToJobPost = createAsyncThunk(
   'contacts/assignContactToJobPost',
-  async (values: any, thunkAPI) => {
-    const { accessToken, contactId, jobApplicationId } = values;
+  async (values: { contactId: string; jobApplicationId: string }, thunkAPI) => {
+    const { contactId, jobApplicationId } = values;
     const body = {
       contactId: contactId,
       jobApplicationId: jobApplicationId,
     };
     try {
-      const res = await client.post(`/contacts/jobApplication/assign`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.post(`/contacts/jobApplication/assign`, body);
       const data = res.data;
       return data;
     } catch (err: any) {
@@ -194,8 +165,8 @@ export const assignContactToJobPost = createAsyncThunk(
 
 export const unassignContactFromJobPost = createAsyncThunk(
   'contacts/unassignContactFromJobPost',
-  async (values: any, thunkAPI) => {
-    const { accessToken, contactId, jobApplicationId } = values;
+  async (values: { contactId: string; jobApplicationId: string }, thunkAPI) => {
+    const { contactId, jobApplicationId } = values;
     const body = {
       contactId: contactId,
       jobApplicationId: jobApplicationId,
@@ -203,7 +174,6 @@ export const unassignContactFromJobPost = createAsyncThunk(
     try {
       const res = await client.delete(`/contacts/jobApplication/unassign`, {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
         data: body,
@@ -220,21 +190,13 @@ export const unassignContactFromJobPost = createAsyncThunk(
 
 export const uploadContactImage = createAsyncThunk(
   'contacts/uploadContactImage',
-  async (
-    {
-      file,
-      contactId,
-      accessToken,
-    }: { file: File; contactId: string; accessToken: string },
-    thunkAPI
-  ) => {
+  async ({ file, contactId }: { file: File; contactId: string }, thunkAPI) => {
     const formData = new FormData();
     formData.append('file', file);
 
     try {
       const res = await client.post('/appwrite-uploads', formData, {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'multipart/form-data',
         },
       });
@@ -251,19 +213,18 @@ export const uploadContactImage = createAsyncThunk(
 
 export const createContactEmail = createAsyncThunk(
   'contacts/createContactEmail',
-  async (values: any, thunkAPI) => {
-    const { accessToken, contactId, email, type } = values;
+  async (
+    values: { contactId: string; email: string; type: string },
+    thunkAPI
+  ) => {
+    const { contactId, email, type } = values;
     const body = {
       type: type,
       email: email,
       contactId: contactId,
     };
     try {
-      const res = await client.post(`/contacts/contact-method/email`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.post(`/contacts/contact-method/email`, body);
       const data = res.data;
       return data;
     } catch (err: any) {
@@ -276,19 +237,18 @@ export const createContactEmail = createAsyncThunk(
 
 export const createContactPhone = createAsyncThunk(
   'contacts/createContactPhone',
-  async (values: any, thunkAPI) => {
-    const { accessToken, contactId, phone, type } = values;
+  async (
+    values: { contactId: string; phone: string; type: string },
+    thunkAPI
+  ) => {
+    const { contactId, phone, type } = values;
     const body = {
       type: type,
       phone: phone,
       contactId: contactId,
     };
     try {
-      const res = await client.post(`/contacts/contact-method/phone`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.post(`/contacts/contact-method/phone`, body);
       const data = res.data;
       return data;
     } catch (err: any) {
@@ -301,19 +261,15 @@ export const createContactPhone = createAsyncThunk(
 
 export const updateContactEmail = createAsyncThunk(
   'contacts/updateContactEmail',
-  async (values: any, thunkAPI) => {
-    const { accessToken, email, type, id } = values;
+  async (values: { email: string; type: string; id: string }, thunkAPI) => {
+    const { email, type, id } = values;
     const body = {
       id: id,
       type: type,
       email: email,
     };
     try {
-      const res = await client.put(`/contacts/contact-method/email`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.put(`/contacts/contact-method/email`, body);
       const data = res.data;
       return data;
     } catch (err: any) {
@@ -326,19 +282,15 @@ export const updateContactEmail = createAsyncThunk(
 
 export const updateContactPhone = createAsyncThunk(
   'contacts/updateContactPhone',
-  async (values: any, thunkAPI) => {
-    const { accessToken, phone, type, id } = values;
+  async (values: { phone: string; type: string; id: string }, thunkAPI) => {
+    const { phone, type, id } = values;
     const body = {
       id: id,
       type: type,
       phone: phone,
     };
     try {
-      const res = await client.put(`/contacts/contact-method/phone`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.put(`/contacts/contact-method/phone`, body);
       const data = res.data;
       return data;
     } catch (err: any) {
@@ -351,14 +303,9 @@ export const updateContactPhone = createAsyncThunk(
 
 export const deleteContactEmail = createAsyncThunk(
   'contacts/deleteContactEmail',
-  async (values: any, thunkAPI) => {
-    const { accessToken, id } = values;
+  async (id: string, thunkAPI) => {
     try {
-      const res = await client.delete(`/contacts/contact-method/email/${id}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.delete(`/contacts/contact-method/email/${id}`);
       const data = res.data;
       return data;
     } catch (err: any) {
@@ -371,14 +318,9 @@ export const deleteContactEmail = createAsyncThunk(
 
 export const deleteContactPhone = createAsyncThunk(
   'contacts/deleteContactPhone',
-  async (values: any, thunkAPI) => {
-    const { accessToken, id } = values;
+  async (id: string, thunkAPI) => {
     try {
-      const res = await client.delete(`/contacts/contact-method/phone/${id}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.delete(`/contacts/contact-method/phone/${id}`);
       const data = res.data;
       return data;
     } catch (err: any) {
@@ -391,16 +333,10 @@ export const deleteContactPhone = createAsyncThunk(
 
 export const getContactEmails = createAsyncThunk(
   'contacts/getContactEmails',
-  async (values: any, thunkAPI) => {
-    const { accessToken, contactId } = values;
+  async (contactId: string, thunkAPI) => {
     try {
       const res = await client.get(
-        `/contacts/contact-method/email?contactId=${contactId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+        `/contacts/contact-method/email?contactId=${contactId}`
       );
       const data = res.data;
       return data;
@@ -414,16 +350,10 @@ export const getContactEmails = createAsyncThunk(
 
 export const getContactPhones = createAsyncThunk(
   'contacts/getContactPhones',
-  async (values: any, thunkAPI) => {
-    const { accessToken, contactId } = values;
+  async (contactId: string, thunkAPI) => {
     try {
       const res = await client.get(
-        `/contacts/contact-method/phone?contactId=${contactId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+        `/contacts/contact-method/phone?contactId=${contactId}`
       );
       const data = res.data;
       return data;

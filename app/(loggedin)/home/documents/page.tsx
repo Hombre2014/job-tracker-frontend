@@ -27,30 +27,20 @@ const UserDocuments = () => {
     firstName: string;
     profilePicUrl?: string;
   } | null>(null);
-  const accessToken = (() => {
-    try {
-      return localStorage.getItem('accessToken');
-    } catch (error) {
-      console.warn('Failed to access localStorage:', error);
-      return null;
-    }
-  })();
 
   // Function to refresh user documents
   const handleDocumentsRefresh = async () => {
-    if (accessToken) {
-      try {
-        // Directly dispatch the action without unwrapping to ensure Redux store is updated
-        await dispatch(getDocumentsPerUser(accessToken));
-      } catch (error) {
-        console.warn('Failed to refresh user documents:', error);
-      }
+    try {
+      // Directly dispatch the action without unwrapping to ensure Redux store is updated
+      await dispatch(getDocumentsPerUser());
+    } catch (error) {
+      console.warn('Failed to refresh user documents:', error);
     }
   };
 
   // Fetch user info for uploader details
   useEffect(() => {
-    if (accessToken && !uploaderInfo) {
+    if (!uploaderInfo) {
       if (user.firstName && user.lastName) {
         setUploaderInfo({
           lastName: user.lastName,
@@ -70,20 +60,12 @@ const UserDocuments = () => {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    dispatch,
-    accessToken,
-    user.lastName,
-    user.firstName,
-    user.profilePicUrl,
-  ]);
+  }, [dispatch, user.lastName, user.firstName, user.profilePicUrl]);
 
   // Fetch user documents on mount
   useEffect(() => {
-    if (accessToken) {
-      dispatch(getDocumentsPerUser(accessToken));
-    }
-  }, [dispatch, accessToken]);
+    dispatch(getDocumentsPerUser());
+  }, [dispatch]);
 
   // Count documents per category
   const categoryCounts: CategoryCount[] = [];
@@ -135,12 +117,7 @@ const UserDocuments = () => {
     handleDeleteDocument,
     handleDocumentUpdate,
     handleDownloadDocument,
-  } = useDocumentActions(
-    userDocuments,
-    accessToken,
-    handleDocumentsRefresh,
-    true
-  ); // Enable optimistic updates
+  } = useDocumentActions(userDocuments, handleDocumentsRefresh, true); // Enable optimistic updates
 
   if (userDocumentsStatus === 'loading') {
     return (
@@ -154,7 +131,9 @@ const UserDocuments = () => {
     <div className="w-full h-full flex flex-col overflow-hidden">
       <div className="w-full py-2 border-b border-slate-200 dark:border-slate-700 flex justify-center items-center flex-shrink-0 bg-white dark:bg-slate-900">
         <div className="h-9 flex items-center">
-          <h1 className="font-semibold text-center dark:text-white">Documents</h1>
+          <h1 className="font-semibold text-center dark:text-white">
+            Documents
+          </h1>
         </div>
       </div>
 

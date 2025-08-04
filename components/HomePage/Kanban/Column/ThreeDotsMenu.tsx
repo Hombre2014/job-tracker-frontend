@@ -22,7 +22,6 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const [isEditing, setIsEditing] = useState(false);
-  const accessToken = localStorage.getItem('accessToken');
   const { boards } = useAppSelector((state) => state.boards);
   const { boardsStatus } = useAppSelector((state) => state.boards);
   const currentBoard = boards.find((board) => board.id === board_id);
@@ -42,9 +41,8 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
 
     dispatch(
       rearrangeColumns({
-        boardId: board_id,
+        boardId: board_id as string,
         columns_id: columnIds,
-        accessToken: accessToken,
       })
     );
     setIsEditing(true);
@@ -52,10 +50,11 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
 
   useEffect(() => {
     if (boardsStatus === 'succeeded' && isEditing) {
-      dispatch(getBoards(accessToken as string));
+      // Only refresh boards if we just finished editing (column rearrangement)
+      // This prevents infinite loops by not dispatching getBoards unnecessarily
       setIsEditing(false);
     }
-  }, [dispatch, accessToken, isEditing, boardsStatus]);
+  }, [isEditing, boardsStatus]);
 
   return (
     <div className="dropdown">

@@ -36,10 +36,8 @@ export const cleanupAfterLogout = () => {
   cleanupAfterContact();
   cleanupAfterJobPost();
 
-  // Clear authentication tokens
+  // Clear user data (but not tokens since they're HTTP-only cookies)
   localStorage.removeItem('user');
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
 
   // Clear application state
   localStorage.removeItem('columnId');

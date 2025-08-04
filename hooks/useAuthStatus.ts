@@ -8,10 +8,7 @@ import { MS_PER_MINUTE, MS_PER_SECOND } from '@/data/constants';
 export interface AuthStatus {
   isLoading: boolean;
   error: string | null;
-  isRefreshing: boolean;
   isAuthenticated: boolean;
-  timeUntilExpiration: number | null;
-  timeUntilExpirationFormatted: string;
   user: {
     id: string;
     email: string;
@@ -31,12 +28,7 @@ export const useAuthStatus = (): AuthStatus => {
   const authStatus = useMemo(
     () => ({
       isAuthenticated: authState.isAuthenticated,
-      isRefreshing: authState.isRefreshing,
       isLoading: authState.isLoading,
-      timeUntilExpiration: authState.timeUntilExpiration,
-      timeUntilExpirationFormatted: formatTimeUntilExpiration(
-        authState.timeUntilExpiration
-      ),
       user: authState.user,
       error: authState.error,
     }),

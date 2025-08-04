@@ -20,7 +20,6 @@ const BoardColumns = () => {
   const dispatch = useAppDispatch();
   const [isEditing, setIsEditing] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
-  const accessToken = localStorage.getItem('accessToken');
   const [currentColumnId, setCurrentColumnId] = useState('');
   const { boards } = useAppSelector((state) => state.boards);
   const { jobPosts } = useAppSelector((state) => state.jobs);
@@ -36,10 +35,10 @@ const BoardColumns = () => {
         currentInputElement!.focus();
         currentInputElement!.select();
       }
-    } else {
-      dispatch(getBoards(accessToken as string));
     }
-  }, [isEditing, currentColumnId, accessToken, dispatch, jobPosts]);
+    // Removed getBoards() call to prevent infinite loops
+    // Boards are fetched on login and when needed, not on every jobPosts change
+  }, [isEditing, currentColumnId]);
 
   if (!currentBoard) return null;
 
@@ -54,12 +53,10 @@ const BoardColumns = () => {
     setIsEditing(false);
     dispatch(
       updateColumnName({
-        accessToken,
         id: currentColumnId,
         name: renamedColumnName,
       })
     );
-    dispatch(getBoards(accessToken as string));
   };
 
   const checkForEnter = (e: any) => {
@@ -73,17 +70,15 @@ const BoardColumns = () => {
 
     const jobPost = {
       status: 'Job Created',
-      accessToken: accessToken as string,
-      title: localStorage.getItem('jobTitle'),
-      columnId: localStorage.getItem('columnId'),
-      companyId: localStorage.getItem('companyId'),
+      title: localStorage.getItem('jobTitle') || '',
+      columnId: localStorage.getItem('columnId') || '',
+      companyId: localStorage.getItem('companyId') || '',
     };
 
     dispatch(createJobPost(jobPost)).then((result) => {
       const newJobPostId = result.payload.id;
       router.push(`/home/boards/${board_id}/job/${newJobPostId}/job-details`);
     });
-    dispatch(getBoards(accessToken as string));
 
     cleanupAfterJobPost();
   };
@@ -122,7 +117,8 @@ const BoardColumns = () => {
             </div>
             <div className="w-full flex justify-center">
               <p className="mb-8 text-center dark:text-white">
-                {column.jobApplications?.length} {column.jobApplications?.length === 1 ? 'JOB' : 'JOBS'}
+                {column.jobApplications?.length}{' '}
+                {column.jobApplications?.length === 1 ? 'JOB' : 'JOBS'}
               </p>
             </div>
             <AlertDialogModal

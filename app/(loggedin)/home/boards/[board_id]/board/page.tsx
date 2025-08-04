@@ -9,15 +9,14 @@ import BoardColumns from '@/components/HomePage/Kanban/Column/BoardColumns';
 
 const KanbanBoard = () => {
   const dispatch = useAppDispatch();
-  const accessToken = localStorage.getItem('accessToken');
   const { jobPosts } = useAppSelector((state) => state.jobs);
 
   // Check it out. It reduces the number of requests to the server.
   useEffect(() => {
     if (jobPosts.length >= 0) {
-      dispatch(getBoards(accessToken as string));
+      dispatch(getBoards());
     }
-  }, [dispatch, accessToken, jobPosts]);
+  }, [dispatch, jobPosts]);
 
   useEffect(() => {
     return () => {

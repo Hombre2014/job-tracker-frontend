@@ -10,7 +10,6 @@ import {
 
 export const useDocumentActions = (
   documents: JobDocument[],
-  accessToken: string | null,
   refreshDocuments: () => Promise<void>,
   optimisticUpdates: boolean = true // New parameter for controlling behavior
 ) => {
@@ -28,19 +27,9 @@ export const useDocumentActions = (
 
   const handleDocumentUpdate = async (updatedDocument: JobDocument) => {
     try {
-      if (!accessToken) {
-        toast.error('Authentication required');
-        return;
-      }
-
       if (optimisticUpdates) {
         // Optimistic update: immediately update Redux state
         dispatch(updateDocumentInState(updatedDocument));
-      }
-
-      // Safety guard for authentication
-      if (!accessToken) {
-        throw new Error('No access token – user might be unauthenticated');
       }
 
       // Persist changes and capture server-normalized document
@@ -50,7 +39,6 @@ export const useDocumentActions = (
           documentId: updatedDocument.id,
           category: updatedDocument.category,
           description: updatedDocument.description,
-          accessToken,
         })
       ).unwrap();
 
@@ -76,17 +64,7 @@ export const useDocumentActions = (
 
   const handleDeleteDocument = async (documentId: string) => {
     try {
-      if (!accessToken) {
-        toast.error('Authentication required');
-        return;
-      }
-
-      await dispatch(
-        deleteDocument({
-          documentId,
-          accessToken: accessToken as string,
-        })
-      ).unwrap();
+      await dispatch(deleteDocument(documentId)).unwrap();
 
       toast.success('Document deleted successfully!');
       await refreshDocuments();

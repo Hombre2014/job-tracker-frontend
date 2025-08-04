@@ -71,7 +71,7 @@ export const jobsSlice = createSlice({
       .addCase(deleteJobPost.fulfilled, (state, action) => {
         state.jobPostsStatus = 'succeeded';
         state.jobPosts = state.jobPosts.filter(
-          (jobPost) => jobPost.id !== action.payload.id
+          (jobPost) => jobPost.id !== action.payload
         );
         state.error = null;
       })
@@ -85,7 +85,9 @@ export const jobsSlice = createSlice({
       .addCase(getJobPost.fulfilled, (state, action) => {
         state.jobPostsStatus = 'succeeded';
         // Update the specific job post in the array instead of replacing the entire array
-        const index = state.jobPosts.findIndex(job => job.id === action.payload.id);
+        const index = state.jobPosts.findIndex(
+          (job) => job.id === action.payload.id
+        );
         if (index !== -1) {
           state.jobPosts[index] = action.payload;
         } else {

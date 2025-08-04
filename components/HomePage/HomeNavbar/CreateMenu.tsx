@@ -32,7 +32,6 @@ const CreateMenu = () => {
   const dispatch = useAppDispatch();
   const [, setIsMenuOpen] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
-  const accessToken = localStorage.getItem('accessToken');
   const [showJobModal, setShowJobModal] = useState(false);
   const isContactsPage = pathname?.includes('/home/contacts');
   const [showContactModal, setShowContactModal] = useState(false);
@@ -43,19 +42,26 @@ const CreateMenu = () => {
 
     setShowJobModal(false);
 
+    const title = localStorage.getItem('jobTitle');
+    const columnId = localStorage.getItem('columnId');
+    const companyId = localStorage.getItem('companyId');
+
+    if (!title || !columnId || !companyId) {
+      console.error('Missing required job data');
+      return;
+    }
+
     const jobPost = {
-      jobPostStatus: 'Job Created',
-      accessToken: accessToken as string,
-      title: localStorage.getItem('jobTitle'),
-      columnId: localStorage.getItem('columnId'),
-      companyId: localStorage.getItem('companyId'),
+      title,
+      columnId,
+      companyId,
+      status: 'Job Created',
     };
 
     dispatch(createJobPost(jobPost)).then((result) => {
       const newJobPostId = result.payload.id;
       router.push(`/home/boards/${board_id}/job/${newJobPostId}/job-details`);
     });
-    dispatch(getBoards(accessToken as string));
 
     cleanupAfterJobPost();
   };
@@ -93,9 +99,7 @@ const CreateMenu = () => {
     if (!effectiveBoardId) {
       try {
         // Get all boards and use the first one (default "Job Search" board)
-        const boards = await dispatch(
-          getBoardsOnly(accessToken as string)
-        ).unwrap();
+        const boards = await dispatch(getBoardsOnly()).unwrap();
         if (boards && boards.length > 0) {
           // Sort by creation date to get the first created board
           const sortedBoards = [...boards].sort(
@@ -113,7 +117,6 @@ const CreateMenu = () => {
     const values = {
       emails,
       phones,
-      accessToken,
       boardId: effectiveBoardId,
       comment: localStorage.getItem('comment'),
       jobTitle: localStorage.getItem('jobTitle'),
@@ -138,7 +141,6 @@ const CreateMenu = () => {
           uploadContactImage({
             file: pendingImage,
             contactId: newContactId,
-            accessToken: accessToken as string,
           })
         ).unwrap();
 
@@ -147,7 +149,6 @@ const CreateMenu = () => {
             id: newContactId,
             boardId: board_id,
             photoUrl: uploadImageResult.imageUrl,
-            accessToken: accessToken as string,
           })
         ).unwrap();
       }
@@ -162,7 +163,6 @@ const CreateMenu = () => {
         await Promise.all(
           jobsConnectedToContact.map(async (jobPost: JobApplication) => {
             const assignData = {
-              accessToken,
               contactId: newContactId,
               jobApplicationId: jobPost.id,
             };
@@ -170,9 +170,8 @@ const CreateMenu = () => {
           })
         );
       } // Fetch all contacts for the board
-      await dispatch(
-        getAllContactsPerBoard({ accessToken, boardId: board_id })
-      ).unwrap();
+      const boardIdString = Array.isArray(board_id) ? board_id[0] : board_id;
+      await dispatch(getAllContactsPerBoard(boardIdString)).unwrap();
 
       // Redirect to the contacts page to show the newly created contact
       router.push(`/home/boards/${board_id}/contacts`);

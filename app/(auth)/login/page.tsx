@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useState, useTransition, useRef } from 'react';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 
 import { LoginSchema } from '@/schemas';
@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { cleanupAfterLogout } from '@/utils/helpers';
 import { getBoards } from '@/redux/boards/boardsThunk';
-import { login, logout } from '@/redux/user/userSlice';
+import { login, clearUserState } from '@/redux/user/userSlice';
 import { FormError } from '@/components/Forms/form-error';
 import { FormSuccess } from '@/components/Forms/form-success';
 import {
@@ -32,9 +32,9 @@ const Login = () => {
   const [isPending, startTransition] = useTransition();
   const { status } = useAppSelector((state) => state.user);
   const [error, setError] = useState<string | undefined>('');
-  const { accessToken } = useAppSelector((state) => state.user);
   const [success, setSuccess] = useState<string | undefined>('');
   const { boards, boardsStatus } = useAppSelector((state) => state.boards);
+  const hasCleanedUpRef = useRef(false);
 
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
@@ -45,9 +45,14 @@ const Login = () => {
   });
 
   useEffect(() => {
-    // Ensure clean state when visiting login page
-    cleanupAfterLogout();
-    dispatch(logout());
+    // Only clean up client-side state on initial mount, don't call logout endpoint
+    if (!hasCleanedUpRef.current) {
+      hasCleanedUpRef.current = true;
+      console.log('Login page: Cleaning up state (no API calls)');
+      cleanupAfterLogout();
+      // Clear Redux user state without making API calls
+      dispatch(clearUserState());
+    }
   }, [dispatch]);
 
   useEffect(() => {
@@ -58,7 +63,7 @@ const Login = () => {
 
     if (status === 'succeeded') {
       setSuccess('Logged in successfully');
-      dispatch(getBoards(accessToken as string));
+      dispatch(getBoards());
     }
 
     if (status === 'failed') {
@@ -69,7 +74,7 @@ const Login = () => {
         clearTimeout(timeout);
       };
     }
-  }, [status, dispatch, accessToken]);
+  }, [status, dispatch]);
 
   useEffect(() => {
     if (boardsStatus === 'succeeded') {

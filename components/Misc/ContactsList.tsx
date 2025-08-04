@@ -15,11 +15,10 @@ const ContactsList = ({
   const pathname = usePathname();
   const dispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(false);
-  const accessToken = localStorage.getItem('accessToken');
   const [error, setError] = useState<string | null>(null);
   const isContactsPage = pathname?.includes('/home/contacts');
   const [contactsWithBoardIds, setContactsWithBoardIds] = useState<Contact[]>(
-    initialContacts || [],
+    initialContacts || []
   );
   const board_id = params.board_id
     ? Array.isArray(params.board_id)
@@ -32,10 +31,7 @@ const ContactsList = ({
     async (boardId: string) => {
       try {
         const boardContacts = await dispatch(
-          getAllContactsPerBoard({
-            accessToken,
-            boardId,
-          }),
+          getAllContactsPerBoard(boardId)
         ).unwrap();
 
         return boardContacts.map((contact: Contact) => ({
@@ -47,19 +43,17 @@ const ContactsList = ({
         return [];
       }
     },
-    [dispatch, accessToken],
+    [dispatch]
   );
 
   // Fetch contacts from all boards
   const fetchAllContacts = useCallback(async () => {
     try {
-      const boards = await dispatch(
-        getBoardsOnly(accessToken as string),
-      ).unwrap();
+      const boards = await dispatch(getBoardsOnly()).unwrap();
 
       // Fetch contacts for all boards in parallel
       const contactPromises = boards.map((board: Board) =>
-        fetchContactsForBoard(board.id),
+        fetchContactsForBoard(board.id)
       );
 
       // Wait for all promises to resolve
@@ -72,12 +66,10 @@ const ContactsList = ({
       setError('Failed to fetch contacts from all boards');
       return [];
     }
-  }, [dispatch, accessToken, fetchContactsForBoard]);
+  }, [dispatch, fetchContactsForBoard]);
 
   useEffect(() => {
     const loadContacts = async () => {
-      if (!accessToken) return;
-
       // If parent is managing contacts (refetchContacts exists), don't fetch here
       if (refetchContacts) return;
 
@@ -106,7 +98,6 @@ const ContactsList = ({
     loadContacts();
   }, [
     board_id,
-    accessToken,
     isContactsPage,
     fetchAllContacts,
     fetchContactsForBoard,
@@ -120,15 +111,15 @@ const ContactsList = ({
 
   const handleContactDeleted = (deletedContactId: string) => {
     setContactsWithBoardIds((prevContacts) =>
-      prevContacts.filter((contact) => contact.id !== deletedContactId),
+      prevContacts.filter((contact) => contact.id !== deletedContactId)
     );
   };
 
   const handleContactUpdated = (updatedContact: Contact) => {
     setContactsWithBoardIds((prevContacts) =>
       prevContacts.map((contact) =>
-        contact.id === updatedContact.id ? updatedContact : contact,
-      ),
+        contact.id === updatedContact.id ? updatedContact : contact
+      )
     );
   };
 
@@ -144,8 +135,8 @@ const ContactsList = ({
             onContactUpdated={(updatedContact) => {
               setContactsWithBoardIds((prevContacts) =>
                 prevContacts.map((contact) =>
-                  contact.id === updatedContact.id ? updatedContact : contact,
-                ),
+                  contact.id === updatedContact.id ? updatedContact : contact
+                )
               );
             }}
           />

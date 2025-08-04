@@ -39,7 +39,6 @@ const CreateContactModal = ({
   const dispatch = useAppDispatch();
   const [, setIsMenuOpen] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
-  const accessToken = localStorage.getItem('accessToken');
   const isDefaultJobPost = pathname?.includes('job-details');
   const [showContactModal, setShowContactModal] = useState(false);
   const [pendingImage, setPendingImage] = useState<File | null>(null);
@@ -65,9 +64,12 @@ const CreateContactModal = ({
 
           // Fetch board data once instead of per job
           let boardData: Board | null = null;
-          if (effectiveBoardId && accessToken) {
+          if (effectiveBoardId) {
+            const boardIdString = Array.isArray(effectiveBoardId) 
+              ? effectiveBoardId[0] 
+              : effectiveBoardId;
             boardData = await dispatch(
-              getBoardWithColumns({ boardId: effectiveBoardId, accessToken })
+              getBoardWithColumns(boardIdString)
             ).unwrap();
           }
 
@@ -99,7 +101,7 @@ const CreateContactModal = ({
     };
 
     fetchCompleteJobData();
-  }, [contactToEdit, board_id, dispatch, accessToken]);
+  }, [contactToEdit, board_id, dispatch]);
 
   const handleContact = async () => {
     if (!isFormValid) return;
@@ -135,9 +137,7 @@ const CreateContactModal = ({
     else if (!effectiveBoardId && userContactsPage) {
       try {
         // Get all boards and use the first one (default "Job Search" board)
-        const boards = await dispatch(
-          getBoardsOnly(accessToken as string)
-        ).unwrap();
+        const boards = await dispatch(getBoardsOnly()).unwrap();
         if (boards && boards.length > 0) {
           // Sort by creation date to get the first created board
           const sortedBoards = [...boards].sort(
@@ -155,7 +155,6 @@ const CreateContactModal = ({
     const values = {
       emails,
       phones,
-      accessToken,
       boardId: effectiveBoardId,
       comment: localStorage.getItem('comment'),
       jobTitle: localStorage.getItem('jobTitle'),
@@ -268,7 +267,6 @@ const CreateContactModal = ({
               type: email.type,
               contactId: contactToEdit.id,
               email: email.email ?? email.value,
-              accessToken: accessToken as string,
             })
           ).unwrap();
         }
@@ -278,7 +276,6 @@ const CreateContactModal = ({
               type: phone.type,
               contactId: contactToEdit.id,
               phone: phone.phone ?? phone.value,
-              accessToken: accessToken as string,
             })
           ).unwrap();
         }
@@ -288,7 +285,6 @@ const CreateContactModal = ({
               id: email.id,
               type: email.type,
               email: email.email ?? email.value,
-              accessToken: accessToken as string,
             })
           ).unwrap();
         }
@@ -298,7 +294,6 @@ const CreateContactModal = ({
               id: phone.id,
               type: phone.type,
               phone: phone.phone ?? phone.value,
-              accessToken: accessToken as string,
             })
           ).unwrap();
         }
@@ -316,7 +311,6 @@ const CreateContactModal = ({
           await dispatch(
             updateContact({
               ...updateValues,
-              accessToken,
               id: contactToEdit.id,
             })
           ).unwrap();
@@ -328,7 +322,6 @@ const CreateContactModal = ({
             uploadContactImage({
               file: pendingImage,
               contactId: contactToEdit.id,
-              accessToken: accessToken as string,
             })
           ).unwrap();
 
@@ -341,7 +334,6 @@ const CreateContactModal = ({
               id: contactToEdit.id,
               boardId: updateBoardId,
               photoUrl: uploadResult.imageUrl,
-              accessToken: accessToken as string,
             })
           ).unwrap();
         } // After updating contact info, handle job assignment/unassignment
@@ -355,7 +347,6 @@ const CreateContactModal = ({
             .map((job) =>
               dispatch(
                 assignContactToJobPost({
-                  accessToken,
                   jobApplicationId: job.id,
                   contactId: contactToEdit.id,
                 })
@@ -370,7 +361,6 @@ const CreateContactModal = ({
             .map((job) =>
               dispatch(
                 unassignContactFromJobPost({
-                  accessToken,
                   jobApplicationId: job.id,
                   contactId: contactToEdit.id,
                 })
@@ -384,7 +374,6 @@ const CreateContactModal = ({
         const value = {
           boardId: contactBoardId,
           contactId: contactToEdit.id,
-          accessToken: accessToken as string,
         };
         const contactDataArr = await dispatch(getContact(value)).unwrap();
         updatedContactData = contactDataArr[0] || contactToEdit;
@@ -405,7 +394,6 @@ const CreateContactModal = ({
             uploadContactImage({
               file: pendingImage,
               contactId: newContactId,
-              accessToken: accessToken as string,
             })
           ).unwrap();
 
@@ -414,7 +402,6 @@ const CreateContactModal = ({
               id: newContactId,
               boardId: board_id,
               photoUrl: uploadResult.imageUrl,
-              accessToken: accessToken as string,
             })
           ).unwrap();
         }
@@ -424,7 +411,6 @@ const CreateContactModal = ({
           await Promise.all(
             jobsConnectedToContact.map(async (jobPost: JobApplication) => {
               const assignData = {
-                accessToken,
                 contactId: newContactId,
                 jobApplicationId: jobPost.id,
               };

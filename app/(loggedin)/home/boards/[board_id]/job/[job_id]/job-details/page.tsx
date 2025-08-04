@@ -17,25 +17,21 @@ const JobDetails = () => {
   const { job_id } = useParams();
   const dispatch = useAppDispatch();
   const jobs = useAppSelector((state) => state.jobs);
-  const accessToken = localStorage.getItem('accessToken');
   const { notes } = useAppSelector((state) => state.notes);
 
   useEffect(() => {
-    const jobPostsData = {
-      accessToken: accessToken as string,
-      columnId: localStorage.getItem('columnId'),
-    };
-
-    dispatch(getAllJobPostsPerColumn(jobPostsData));
-  }, [dispatch, accessToken]);
+    const columnId = localStorage.getItem('columnId');
+    if (columnId) {
+      dispatch(getAllJobPostsPerColumn(columnId));
+    }
+  }, [dispatch]);
 
   useEffect(() => {
-    const updatePayload = {
-      accessToken,
-      jobApplicationId: job_id,
-    };
-    dispatch(getAllJobApplicationNotes(updatePayload));
-  }, [accessToken, dispatch, job_id]);
+    const jobId = Array.isArray(job_id) ? job_id[0] : job_id;
+    if (jobId) {
+      dispatch(getAllJobApplicationNotes(jobId));
+    }
+  }, [dispatch, job_id]);
 
   // TODO: Maybe make it the same way as Documents and Contacts
   const numberOfNotes = notes.length;

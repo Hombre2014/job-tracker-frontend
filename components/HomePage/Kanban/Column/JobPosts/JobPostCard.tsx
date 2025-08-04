@@ -11,7 +11,6 @@ import { cn } from '@/lib/utils';
 import { deleteJobPost } from '@/redux/jobs/jobsThunk';
 import { returnJobPostIcon } from '@/utils/ReturnIcons';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { TokenManager } from '@/utils/TokenManager';
 import {
   Card,
   CardTitle,
@@ -53,7 +52,8 @@ const JobPostCard = ({
   const dispatch = useAppDispatch();
   const [showIcons, setShowIcons] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const accessToken = localStorage.getItem('accessToken');
+  // Access token handled by HTTP-only cookies
+  const { userId } = useAppSelector((state) => state.user);
   const { boards } = useAppSelector((state) => state.boards);
   const boardColumns = boards.find((board) => board.id === board_id)?.columns;
 
@@ -120,13 +120,13 @@ const JobPostCard = ({
 
   const handleJobPostClick = (id: string) => {
     if (!isDialogOpen) {
-      // Check if user has valid tokens
-      if (!TokenManager.hasValidTokens()) {
-        console.log('JobPostCard: No valid tokens, redirecting to login');
+      // Check if user is authenticated
+      if (!userId) {
+        console.log('JobPostCard: No authenticated user, redirecting to login');
         router.push('/login');
         return;
       }
-      
+
       router.push(`/home/boards/${board_id}/job/${id}/job-details`);
       // Only set localStorage if user is authenticated
       localStorage.setItem('columnId', columnId);
@@ -146,7 +146,6 @@ const JobPostCard = ({
 
     dispatch(
       deleteJobPost({
-        accessToken,
         jobPostId: id,
         jobPostData: fullJobData,
       })

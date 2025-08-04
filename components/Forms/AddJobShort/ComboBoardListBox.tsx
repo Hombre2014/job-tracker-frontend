@@ -7,7 +7,6 @@ import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 import { cn } from '@/lib/utils';
 import { useAppSelector } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
-import { TokenManager } from '@/utils/TokenManager';
 import {
   Popover,
   PopoverContent,
@@ -35,7 +34,7 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
     ref
   ) => {
     const [open, setOpen] = useState(false);
-    const hasValidTokens = TokenManager.hasValidTokens();
+    const { userId } = useAppSelector((state) => state.user);
     const { lastName } = useAppSelector((state) => state.user);
     const { firstName } = useAppSelector((state) => state.user);
     const { boardsStatus } = useAppSelector((state) => state.boards);
@@ -51,7 +50,7 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
     // Only localStorage operations - NO API calls in useEffect to prevent infinite loops
     useEffect(() => {
       // Only set localStorage if user is authenticated
-      if (hasValidTokens) {
+      if (userId) {
         if (itemsType === 'boards') {
           localStorage.setItem('chosenBoard', chosenBoard as string);
         } else {
@@ -63,13 +62,13 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
     }, [
       itemsType,
       chosenBoard,
-      hasValidTokens,
+      userId,
       chosenColumn,
       items, // Re-added items dependency
     ]);
 
     useEffect(() => {
-      if (boardValueChanged && hasValidTokens) {
+      if (boardValueChanged && userId) {
         localStorage.setItem('chosenColumn', firstColumnOfTheBoard!);
 
         const columnId = items.find(
@@ -81,7 +80,7 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
       boardValueChanged,
       chosenColumn,
       firstColumnOfTheBoard,
-      hasValidTokens,
+      userId,
       items, // Re-added items dependency
     ]);
 

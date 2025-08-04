@@ -24,7 +24,7 @@ export const AuthErrorNotification: React.FC<AuthErrorNotificationProps> = ({
   className = '',
 }) => {
   const [isRetrying, setIsRetrying] = useState(false);
-  const { authState, refreshToken, logout } = useAuth();
+  const { authState, logout } = useAuth();
   const [recentErrors, setRecentErrors] = useState<AuthError[]>([]);
 
   // Update recent errors periodically
@@ -44,7 +44,9 @@ export const AuthErrorNotification: React.FC<AuthErrorNotificationProps> = ({
   const handleRetry = async () => {
     setIsRetrying(true);
     try {
-      await refreshToken();
+      // With HTTP-only cookies, token refresh is handled automatically
+      // Just trigger a page reload to retry
+      window.location.reload();
     } catch (error) {
       console.error('Manual retry failed:', error);
     } finally {
@@ -95,10 +97,10 @@ export const AuthErrorNotification: React.FC<AuthErrorNotificationProps> = ({
               <button
                 type="button"
                 onClick={handleRetry}
-                disabled={isRetrying || authState.isRefreshing}
+                disabled={isRetrying}
                 className="bg-red-100 px-3 py-1 rounded-md text-sm font-medium text-red-800 hover:bg-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isRetrying || authState.isRefreshing ? 'Retrying...' : 'Retry'}
+                {isRetrying ? 'Retrying...' : 'Retry'}
               </button>
               <button
                 type="button"

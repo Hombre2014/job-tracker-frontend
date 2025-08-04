@@ -14,7 +14,6 @@ const JobBoardTitle = (board: Board) => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const [showTrash, setShowTrash] = useState(false);
-  const accessToken = localStorage.getItem('accessToken');
   const { boards } = useAppSelector((state) => state.boards);
 
   const toggleTrashIcon = () => {
@@ -23,24 +22,17 @@ const JobBoardTitle = (board: Board) => {
     }, 300);
   };
 
-  const handleArchiveBoard = (accessToken: string, boardId: string) => {
+  const handleArchiveBoard = (boardId: string) => {
     if (
       pathName === `/home/boards` ||
       boards.length === 1 ||
       board_id === boardId
     ) {
-      dispatch(archiveBoard({ accessToken, id: boardId }));
-      setTimeout(() => {
-        dispatch(getBoards(accessToken));
-        console.log('JobBoard Title handleArchiveBoard getBoards dispatched');
-      }, 2000);
+      dispatch(archiveBoard({ id: boardId }));
       router.push('/home/boards');
       return;
     } else {
-      dispatch(archiveBoard({ accessToken, id: boardId }));
-      setTimeout(() => {
-        dispatch(getBoards(accessToken));
-      }, 2000);
+      dispatch(archiveBoard({ id: boardId }));
       router.push(pathName);
     }
   };
@@ -75,9 +67,7 @@ const JobBoardTitle = (board: Board) => {
           stylings={cn('opacity-0')}
           dialogTitle="Archive Board"
           dialogText="Are you sure you want to archive this board?"
-          actionFunction={() =>
-            handleArchiveBoard(accessToken as string, board.id)
-          }
+          actionFunction={() => handleArchiveBoard(board.id)}
         />
       </div>
     </div>

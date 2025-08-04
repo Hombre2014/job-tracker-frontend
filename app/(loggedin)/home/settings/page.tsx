@@ -23,21 +23,11 @@ const Settings = () => {
   const [newFirstName, setNewFirstName] = useState(firstName);
   const { email, profilePicUrl } = useAppSelector((state) => state.user);
   const [newEmail, setNewEmail] = useState(email);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [weeklyDigest, setWeeklyDigest] = useState(true);
   const [dailyDigest, setDailyDigest] = useState(true);
 
   // Removed automatic updateUser call - should only update when user explicitly saves
-
-  useEffect(() => {
-    try {
-      setAccessToken(localStorage.getItem('accessToken'));
-    } catch (error) {
-      console.error('Failed to access localStorage:', error);
-      setAccessToken(null);
-    }
-  }, []);
 
   const handleWeeklyDigest = () => {
     setWeeklyDigest(!weeklyDigest);
@@ -62,13 +52,7 @@ const Settings = () => {
   };
 
   const handleSaveProfile = async () => {
-    if (!accessToken) {
-      toast.error('Access token not available. Please log in again.', {
-        position: 'top-right',
-        autoClose: 3000,
-      });
-      return;
-    }
+    // Access token handled by HTTP-only cookies - no validation needed
 
     try {
       await dispatch(
@@ -77,7 +61,6 @@ const Settings = () => {
           role: 'user',
           lastName: newLastName,
           firstName: newFirstName,
-          accessToken: accessToken,
         })
       ).unwrap();
 
@@ -111,13 +94,7 @@ const Settings = () => {
       const selectedFile = files[0];
       setPreviewImageUrl(URL.createObjectURL(selectedFile));
 
-      if (!accessToken) {
-        toast.error('Access token not available. Please log in again.', {
-          position: 'top-right',
-          autoClose: 3000,
-        });
-        return;
-      }
+      // Access token handled by HTTP-only cookies - no validation needed
 
       try {
         await dispatch(
@@ -127,7 +104,6 @@ const Settings = () => {
             lastName: newLastName,
             firstName: newFirstName,
             profilePic: selectedFile,
-            accessToken: accessToken,
           })
         ).unwrap();
 

@@ -62,7 +62,7 @@ const EditCompanyForm = ({
   }, [initialData, reset]);
 
   const onSubmit = async (data: z.infer<typeof EditCompanySchema>) => {
-    const accessToken = localStorage.getItem('accessToken');
+    // Access token handled by HTTP-only cookies
     const formattedUrl = data.url?.trim()
       ? data.url.startsWith('http')
         ? data.url
@@ -77,8 +77,7 @@ const EditCompanyForm = ({
     await dispatch(
       updateCompany({
         ...formattedData,
-        accessToken,
-        companyId: currentJobPost?.company?.id,
+        companyId: currentJobPost?.company?.id || '',
       })
     ).unwrap();
 
