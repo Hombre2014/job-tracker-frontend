@@ -7,11 +7,12 @@ import { RiDeleteBinLine } from 'react-icons/ri';
 import { format, toZonedTime } from 'date-fns-tz';
 import { useRouter, useParams } from 'next/navigation';
 
+
 import { cn } from '@/lib/utils';
+import { TokenManager } from '@/utils/TokenManager';
 import { deleteJobPost } from '@/redux/jobs/jobsThunk';
 import { returnJobPostIcon } from '@/utils/ReturnIcons';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { TokenManager } from '@/utils/TokenManager';
 import {
   Card,
   CardTitle,
@@ -126,7 +127,7 @@ const JobPostCard = ({
         router.push('/login');
         return;
       }
-      
+
       router.push(`/home/boards/${board_id}/job/${id}/job-details`);
       // Only set localStorage if user is authenticated
       localStorage.setItem('columnId', columnId);
@@ -156,16 +157,14 @@ const JobPostCard = ({
 
   return (
     <Card
+      style={{ backgroundColor: color }}
       onMouseEnter={iconsOn}
       onMouseLeave={iconsOff}
-      style={{ backgroundColor: color }}
       className={cn(
         'w-11/12 mx-auto mt-2 rounded-sm text-white cursor-pointer',
         color === null ? 'bg-[#6a776b]' : `bg-[${color}]`
       )}
-      onClick={() => {
-        handleJobPostClick(id);
-      }}
+      onClick={() => handleJobPostClick(id)}
     >
       <div className="flex h-[90px]">
         <CardHeader className="w-3/4">
@@ -179,13 +178,15 @@ const JobPostCard = ({
             <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <AlertDialogTrigger asChild>
                 <div
-                  className="h-[24px] w-[24px] rounded-md border border-gray-200 p-[1px] hover:border-gray-400 hover:border flex items-center justify-center"
+                  className="h-[24px] w-[24px] rounded-md border border-gray-200 p-[1px] hover:border-gray-400 hover:border flex items-center justify-center cursor-pointer"
                   id={id}
                   onClick={(e) => {
-                    e.stopPropagation(); // Prevent triggering the card click event
+                    e.stopPropagation();
                     setIsDialogOpen(true);
                   }}
-                  style={{ backgroundColor: color }} // Ensure the background color matches the card color
+
+
+                  style={{ backgroundColor: color }}
                 >
                   <RiDeleteBinLine className="h-[20px] w-[20px]" />
                 </div>
