@@ -33,12 +33,12 @@ const BoardColumns = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
+  const [overId, setOverId] = useState<string | null>(null);
   const [currentColumnId, setCurrentColumnId] = useState('');
   const { boards } = useAppSelector((state) => state.boards);
   const { jobPosts } = useAppSelector((state) => state.jobs);
-  const [renamedColumnName, setRenamedColumnName] = useState('');
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [overId, setOverId] = useState<string | null>(null);
+  const [renamedColumnName, setRenamedColumnName] = useState('');
   const currentBoard = boards.find((board) => board.id === board_id);
 
   const sensors = useSensors(
@@ -177,8 +177,8 @@ const BoardColumns = () => {
     dispatch(
       updateJobPost({
         accessToken,
-        jobPostId: draggedJob.id,
         status: newStatus,
+        jobPostId: draggedJob.id,
         columnId: targetColumn.id,
         statusChangedTime: new Date().toISOString(),
         company: {
@@ -189,13 +189,8 @@ const BoardColumns = () => {
   };
 
   const DraggableJobPostCard = (props: JobPostCardProps) => {
-    const {
-      attributes,
-      listeners,
-      setNodeRef,
-      transform,
-      isDragging,
-    } = useDraggable({ id: props.id });
+    const { attributes, listeners, setNodeRef, transform, isDragging } =
+      useDraggable({ id: props.id });
 
     const style = {
       transform: CSS.Translate.toString(transform),
@@ -238,10 +233,10 @@ const BoardColumns = () => {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
+      onDragOver={handleDragOver}
+      onDragStart={handleDragStart}
+      collisionDetection={closestCorners}
     >
       <div className="w-full flex h-full">
         {boardColumns &&
@@ -279,11 +274,11 @@ const BoardColumns = () => {
               </div>
               <AlertDialogModal
                 buttonLabel="+"
+                cleanupType="job"
                 dialogTitle="Add Job"
                 buttonCancel="Discard"
                 buttonVariant="outline"
                 buttonConfirm="Save Job"
-                cleanupType="job"
                 isFormValid={isFormValid}
                 actionFunction={createJobApplication}
                 stylings="w-11/12 flex justify-center text-2xl border py-3 mb-4 mx-auto rounded-md hover:border-blue-500 transition duration-300 delay-150 cursor-pointer"
@@ -327,9 +322,9 @@ const BoardColumns = () => {
                   title={draggedJob.title}
                   color={draggedJob.color}
                   status={draggedJob.status}
-                  columnId={draggedJob.column_id}
                   postUrl={draggedJob.postUrl}
                   deadline={draggedJob.deadline}
+                  columnId={draggedJob.column_id}
                   timeStamp={draggedJob.createdAt}
                   companyName={draggedJob.company.name}
                   statusChangedTime={draggedJob.statusChangedAt}
