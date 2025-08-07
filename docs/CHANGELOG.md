@@ -5,7 +5,15 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.188.0] - 2025-08-02
+## [0.188.0] - 2025-08-07
+
+### Update the documentation
+
+#### Basic dnd-kit Integration for Kanban Board implementation
+
+The document CHANGELOG.md was update with tis implementation.
+
+## [0.187.0] - 2025-08-02
 
 ### Drag and Drop System Implementation
 
