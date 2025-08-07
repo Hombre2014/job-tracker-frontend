@@ -5,6 +5,88 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.187.0] - 2025-08-02
+
+### Drag and Drop System Implementation
+
+#### Basic dnd-kit Integration for Kanban Board
+
+- **Implemented drag and drop functionality for job post cards**: Enhanced user experience with intuitive job status management through visual drag and drop interface
+
+  - **Core Implementation**: Integrated `@dnd-kit/core` library for basic drag and drop functionality
+
+    - **DndContext**: Main context provider with `closestCorners` collision detection for optimal drop zone detection
+    - **PointerSensor**: Configured with 8px activation distance to prevent accidental drags during scrolling
+    - **DragOverlay**: Custom overlay with rotation and opacity effects during drag operations
+    - **Files**: `components/HomePage/Kanban/Column/BoardColumns.tsx`
+
+  - **Draggable Job Cards**: Each job post card is wrapped in draggable functionality
+
+    - **useDraggable Hook**: Provides drag handles, transform properties, and drag state
+    - **Visual Feedback**: 50% opacity during drag, smooth CSS transforms for movement
+    - **Touch Support**: Works on both desktop and mobile devices
+    - **Component**: `DraggableJobPostCard` wrapper component
+
+  - **Droppable Columns**: Each board column accepts dropped job cards
+
+    - **useDroppable Hook**: Handles drop zone detection and visual feedback
+    - **Visual Indicators**: Blue background highlight when hovering over valid drop zones
+    - **Dark Mode Support**: Proper styling for both light and dark themes
+    - **Component**: `DroppableColumn` wrapper component
+
+  - **Smart Status Management**: Automatic job status updates based on column transitions
+    - **Forward Movement**: Moving to higher-order columns updates status appropriately
+      - Column 0 (Wishlist) → 'Job Created'
+      - Column 1 (Applied) → 'Applied'
+      - Column 2 (Interview) → 'Interview'
+      - Column 3 (Offer) → 'Offer Received'
+    - **Backward/Archive Movement**: Moving to lower-order columns or archive sets status to 'Job Moved'
+    - **Timestamp Tracking**: Automatic `statusChangedTime` update on every move
+    - **Redux Integration**: Seamless integration with existing job post state management
+
+#### Technical Implementation Details
+
+- **Event Handling Flow**:
+
+  1. **handleDragStart**: Sets active item ID for overlay rendering
+  2. **handleDragOver**: Tracks hover state for visual feedback
+  3. **handleDragEnd**: Processes drop logic and updates job status
+
+- **Collision Detection**: Uses `closestCorners` algorithm for accurate drop zone detection
+
+- **State Management**:
+
+  - Local state for drag operations (`activeId`, `overId`)
+  - Redux integration for persistent job updates
+  - Automatic board refresh after successful moves
+
+- **Error Handling**: Graceful handling of invalid drops and missing data
+
+- **Performance Optimizations**:
+  - Minimal re-renders during drag operations
+  - Efficient job lookup algorithms
+  - Debounced state updates
+
+#### User Experience Features
+
+- **Visual Feedback**: Clear indication of draggable items and valid drop zones
+- **Smooth Animations**: CSS transforms provide fluid movement during drag
+- **Responsive Design**: Works across different screen sizes and devices
+- **Accessibility**: Maintains keyboard navigation and screen reader compatibility
+- **Error Prevention**: Cannot drop items in invalid locations
+
+#### Integration with Existing Features
+
+- **Column Management**: Drag and drop works alongside existing column rename functionality
+- **Job Creation**: New jobs can be created and immediately dragged to different columns
+- **Authentication**: All drag operations respect user authentication and permissions
+- **Real-time Updates**: Changes are immediately reflected in the UI and persisted to backend
+
+### Files Modified
+
+1. `components/HomePage/Kanban/Column/BoardColumns.tsx` - Complete drag and drop implementation
+2. `app/(loggedin)/home/boards/[board_id]/layout.tsx` - Board layout structure for drag context
+
 ## [0.186.0] - 2025-08-02
 
 ### Authentication System Improvements and Modal Navigation Fixes
@@ -102,7 +184,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Intuitive navigation**: Direct URL access behaves as users expect
 - **No broken states**: Eliminates navigation to empty browser tabs
 
-### Files Modified
+### Files Modified - 2025-08-02
 
 1. `api/client.ts` - Enhanced token refresh flow and removed aggressive validation
 2. `components/Misc/Modal.tsx` - Added optional onDismiss prop and removed redundant checks
@@ -1499,9 +1581,9 @@ if (!boardId) {
 #### Social Media Links - 2025-06-19
 
 - **Fixed social media link URLs**: Resolved issue where clicking social media links generated incorrect URLs
-  - **Issue**: Links like "Joko" redirected to `http://localhost:3001/.../Joko` instead of proper social media URLs
+  - **Issue**: Links like "John" redirected to `http://localhost:3001/.../John` instead of proper social media URLs
   - **Solution**: Added `getFullUrl()` helper function to reconstruct proper URLs from handles
-  - **Result**: Links now correctly redirect to `https://facebook.com/Joko`, `https://github.com/username`, etc.
+  - **Result**: Links now correctly redirect to `https://facebook.com/John`, `https://github.com/username`, etc.
   - **Files**: `components/Forms/AddContact/SocialMediaLinks.tsx`
 
 #### URL Handle Extraction
@@ -1660,6 +1742,7 @@ if (!boardId) {
 _All changes maintain backward compatibility and enhance user experience with improved session management and smoother UI interactions._
 
 <!-- Version comparison links -->
+
 [0.186.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.185.0...v0.186.0
 [0.185.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.184.0...v0.185.0
 [0.184.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.182.0...v0.184.0
