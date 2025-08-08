@@ -1,15 +1,16 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Fragment } from 'react';
+
 import { ModeToggle } from '@/components/Themes/mode-toggle';
 import HamburgerMenu from '@/components/Hamburger/HamburgerMenu';
 
 const Navbar = () => {
   return (
     <Fragment>
-      <header className="md:flex gap-x-1 w-11/12 mx-auto fixed top-0 left-0 right-0 z-50 py-8 bg-white dark:bg-black justify-between flex xl:w-5/6 2xl:w-2/3">
+      <header className="md:flex gap-x-1 w-11/12 mx-auto fixed top-0 left-0 right-0 z-50 py-8 px-8 rounded-lg bg-white dark:bg-black justify-between border border-gray-200 flex xl:w-5/6 2xl:w-2/3">
         <Link href="/">
           <div className="flex items-center gap-x-1 w-44">
             <Image

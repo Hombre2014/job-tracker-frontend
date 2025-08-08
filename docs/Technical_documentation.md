@@ -1191,7 +1191,7 @@ const handleDocumentUpdate = async (updatedDocument: JobDocument) => {
       throw new Error('No access token – user might be unauthenticated');
     }
 
-    // Step 3: Persist changes and capture server-normalised document
+    // Step 3: Persist changes and capture server-normalized document
     const persistedDoc = await dispatch(
       updateDocument({
         documentId: updatedDocument.id,
