@@ -8,9 +8,9 @@ const HeroSection = () => {
     <section
       aria-labelledby="hero-heading"
       role="region"
-      className="w-full bg-gradient-to-br from-blue-50 via-white to-purple-100 dark:from-gray-900 dark:via-black dark:to-gray-800 pt-48 pb-20 px-4"
+      className="w-full bg-gradient-to-br from-blue-50 via-white to-purple-100 dark:from-gray-900 dark:via-black dark:to-gray-800 pt-48 pb-20 px-8"
     >
-      <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-12">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-20">
         <div className="flex-1 flex flex-col items-start justify-center text-left">
           <h1
             id="hero-heading"
@@ -41,16 +41,16 @@ const HeroSection = () => {
             No credit card required
           </span>
         </div>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-full max-w-md aspect-[4/3] bg-gradient-to-tr from-blue-200 via-purple-200 to-pink-200 dark:from-gray-800 dark:via-gray-900 dark:to-gray-700 rounded-2xl shadow-xl flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center min-w-0">
+          <div className="w-full aspect-[4/3] bg-gradient-to-tr from-blue-200 via-purple-200 to-pink-200 dark:from-gray-800 dark:via-gray-900 dark:to-gray-700 rounded-2xl shadow-xl flex items-center justify-center">
             <Image
               priority
               width={1200}
               height={900}
-              src="/images/Dashboard.png"
-              sizes="(min-width: 768px) 384px, 66vw"
+              src="/images/Job_Search_Board.png"
+              sizes="(min-width: 768px) 50vw, 90vw"
               alt="Screenshot of job tracker dashboard"
-              className="w-5/6 h-5/6 object-contain rounded-xl shadow-lg"
+              className="w-full h-full object-contain rounded-xl shadow-lg"
             />
           </div>
         </div>

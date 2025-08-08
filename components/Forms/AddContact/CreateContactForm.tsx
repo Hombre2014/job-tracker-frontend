@@ -603,23 +603,23 @@ const CreateContactForm = ({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel htmlFor="file-input">
-                          {previewImageUrl ? (
-                            <Image
-                              width={50}
-                              height={50}
-                              src={previewImageUrl}
-                              alt="User profile picture"
-                              className="cursor-pointer rounded-lg"
-                            />
-                          ) : (
-                            <Image
-                              width={50}
-                              height={50}
-                              alt="User profile picture"
-                              className="cursor-pointer rounded-lg"
-                              src={formData.photoUrl || '/images/Yuriy.jpg'}
-                            />
-                          )}
+                          <div className="w-[50px] h-[50px] relative overflow-hidden rounded-lg cursor-pointer">
+                            {previewImageUrl ? (
+                              <Image
+                                fill
+                                src={previewImageUrl}
+                                alt="User profile picture"
+                                className="object-cover"
+                              />
+                            ) : (
+                              <Image
+                                fill
+                                alt="User profile picture"
+                                className="object-cover"
+                                src={formData.photoUrl || '/images/Yuriy.jpg'}
+                              />
+                            )}
+                          </div>
                           <input
                             {...field}
                             type="file"

@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
+
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { cleanupAfterJobPost, cleanupAfterContact } from '@/utils/helpers';
 import {
   AlertDialog,
   AlertDialogTitle,
@@ -13,7 +15,6 @@ import {
   AlertDialogContent,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { cleanupAfterJobPost, cleanupAfterContact } from '@/utils/helpers';
 
 const AlertDialogModal = ({
   open,
@@ -50,13 +51,23 @@ const AlertDialogModal = ({
             company = window.localStorage.getItem('company');
             jobTitle = window.localStorage.getItem('jobTitle');
           } else {
-            console.warn('Form validation skipped: localStorage not available.');
+            console.warn(
+              'Form validation skipped: localStorage not available.'
+            );
           }
         } catch (e) {
-          console.warn('Form validation skipped: localStorage access blocked.', e);
+          console.warn(
+            'Form validation skipped: localStorage access blocked.',
+            e
+          );
         }
 
-        if (!company || !jobTitle || company.trim() === '' || jobTitle.trim() === '') {
+        if (
+          !company ||
+          !jobTitle ||
+          company.trim() === '' ||
+          jobTitle.trim() === ''
+        ) {
           console.warn('Form validation failed - missing company or job title');
           return;
         }
@@ -64,7 +75,7 @@ const AlertDialogModal = ({
 
       // If validation passes, call the action function
       await actionFunction?.();
-      
+
       // For controlled modals, manually close after successful action
       // Note: For uncontrolled modals, AlertDialogAction should close automatically
       if (open !== undefined) {
@@ -119,7 +130,6 @@ const AlertDialogModal = ({
               } else if (cleanupType === 'contact') {
                 cleanupAfterContact();
               }
-              // 'none' type doesn't call any cleanup
 
               onOpenChange && onOpenChange(false); // Close the alert dialog and dropdown menu
             }}

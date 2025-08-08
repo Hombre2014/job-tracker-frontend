@@ -6,7 +6,7 @@ const Footer = (): JSX.Element => {
 
   return (
     <footer id="footer" className="w-full bg-gray-900 text-gray-100 py-8 mt-16">
-      <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-4">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 px-8">
         <div className="flex items-center gap-2">
           <Image
             src="/images/logo.png"
@@ -15,34 +15,21 @@ const Footer = (): JSX.Element => {
             height={32}
             className="rounded bg-gray-700"
           />
-          <Link href="/" aria-label="Home" className="font-bold text-lg tracking-wide">
+          <Link
+            href="/"
+            aria-label="Home"
+            className="font-bold text-lg tracking-wide"
+          >
             Job Tracker
           </Link>
         </div>
-        <div className="flex gap-4 text-gray-400">
+        <div className="flex text-gray-400">
           <a
-            href="https://twitter.com/your_handle"
-            className="hover:text-gray-200 transition"
-            aria-label="Twitter"
             target="_blank"
-            rel="noopener noreferrer"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-              focusable="false"
-            >
-              <path d="M24 4.557a9.93 9.93 0 0 1-2.828.775A4.932 4.932 0 0 0 23.337 3.1a9.864 9.864 0 0 1-3.127 1.195A4.916 4.916 0 0 0 16.616 2c-2.73 0-4.942 2.21-4.942 4.932 0 .386.045.763.127 1.124C7.728 7.89 4.1 6.13 1.671 3.149c-.423.722-.666 1.561-.666 2.475 0 1.708.87 3.216 2.188 4.099a4.904 4.904 0 0 1-2.237-.616c-.054 2.281 1.581 4.415 3.949 4.89a4.936 4.936 0 0 1-2.224.084c.627 1.956 2.444 3.377 4.6 3.417A9.867 9.867 0 0 1 0 21.543a13.94 13.94 0 0 0 7.548 2.209c9.057 0 14.009-7.496 14.009-13.986 0-.213-.005-.425-.014-.636A9.936 9.936 0 0 0 24 4.557z" />
-            </svg>
-          </a>
-          <a
-            href="https://github.com/Hombre2014/job-tracker-frontend"
-            className="hover:text-gray-200 transition"
             aria-label="GitHub"
-            target="_blank"
             rel="noopener noreferrer"
+            className="hover:text-gray-200 transition"
+            href="https://github.com/Hombre2014/job-tracker-frontend"
           >
             <svg
               className="w-5 h-5"
@@ -56,7 +43,8 @@ const Footer = (): JSX.Element => {
           </a>
         </div>
         <div className="text-xs text-gray-400">
-          &copy; <span suppressHydrationWarning>{year}</span> Job Tracker. All rights reserved.
+          &copy; <span suppressHydrationWarning>{year}</span> Job Tracker. All
+          rights reserved.
         </div>
       </div>
     </footer>

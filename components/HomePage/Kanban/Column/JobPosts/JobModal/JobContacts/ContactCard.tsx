@@ -208,10 +208,11 @@ const ContactCard = ({
         <div className="flex justify-between px-2 mt-2 items-start">
           <div className="flex justify-start gap-4 items-center">
             <Image
-              width={40}
-              height={40}
+              width={50}
+              height={50}
               alt="Contact photo"
               src={contact.photoUrl || '/images/Yuriy.jpg'}
+              className="rounded-lg"
             />
             <div className="flex flex-col items-start justify-center text-sm">
               <p className="font-bold">

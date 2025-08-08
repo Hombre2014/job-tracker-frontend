@@ -1,10 +1,13 @@
 'use client';
 
+import React from 'react';
+import Image from 'next/image';
+
 type SectionId = 'applications' | 'documents' | 'contacts';
 
 interface ContentSectionProps {
-  id?: SectionId;
   name: string;
+  id?: SectionId;
   description: string;
 }
 
@@ -15,6 +18,12 @@ const sectionColors: Record<SectionId, string> = {
     'from-purple-100 via-pink-50 to-white dark:from-purple-900 dark:via-gray-900 dark:to-black',
   contacts:
     'from-green-100 via-green-50 to-white dark:from-green-900 dark:via-gray-900 dark:to-black',
+};
+
+const sectionImages: Record<SectionId, string> = {
+  applications: '/images/Add_Job.png',
+  documents: '/images/Documents.png',
+  contacts: '/images/Contacts.png',
 };
 
 const sectionIcons: Record<SectionId, JSX.Element> = {
@@ -75,28 +84,39 @@ const ContentSection = ({ name, description, id }: ContentSectionProps) => {
   const colorClass = id ? sectionColors[id] : 'from-gray-100 to-white';
   const icon = id ? sectionIcons[id] : null;
   const paragraph = id ? sectionParagraphs[id] : '';
+  const imageSrc = id ? sectionImages[id] : '/images/Job_Search_Board.png';
+
   return (
     <section
       id={id}
-      className={`w-full py-16 px-4 bg-gradient-to-br ${colorClass}`}
+      className={`w-full py-40 px-8 bg-gradient-to-br ${colorClass}`}
     >
-      <div className="max-w-4xl mx-auto flex flex-col items-center text-center">
-        {icon}
-        <h2 className="text-3xl md:text-4xl font-bold mb-2 text-gray-900 dark:text-white">
-          {name}
-        </h2>
-        <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 mb-2 max-w-2xl">
-          {description}
-        </p>
-        {paragraph && (
-          <p className="text-base md:text-lg text-gray-600 dark:text-gray-400 mb-4 max-w-2xl">
-            {paragraph}
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-20">
+        <div className="flex-1 flex flex-col items-start justify-center text-left">
+          {icon}
+          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900 dark:text-white">
+            {name}
+          </h2>
+          <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 mb-6 max-w-xl">
+            {description}
           </p>
-        )}
-        <div className="w-full max-w-md h-40 bg-white/60 dark:bg-gray-800/60 rounded-xl flex items-center justify-center shadow-inner border border-dashed border-gray-300 dark:border-gray-700">
-          <span className="text-gray-400 text-sm">
-            [Placeholder for {name.toLowerCase()} screenshot or illustration]
-          </span>
+          {paragraph && (
+            <p className="text-base md:text-lg text-gray-600 dark:text-gray-400 mb-4 max-w-xl">
+              {paragraph}
+            </p>
+          )}
+        </div>
+        <div className="flex-1 flex items-center justify-center min-w-0">
+          <div className="w-full aspect-[4/3] bg-gradient-to-tr from-white/80 via-gray-50/80 to-gray-100/80 dark:from-gray-800 dark:via-gray-900 dark:to-gray-700 rounded-2xl shadow-xl flex items-center justify-center">
+            <Image
+              width={1200}
+              height={900}
+              src={imageSrc}
+              sizes="(min-width: 768px) 50vw, 90vw"
+              alt={`Screenshot of ${name.toLowerCase()} feature`}
+              className="w-full h-full object-contain rounded-xl shadow-lg"
+            />
+          </div>
         </div>
       </div>
     </section>
