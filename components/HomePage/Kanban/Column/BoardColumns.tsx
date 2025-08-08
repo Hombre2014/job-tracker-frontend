@@ -2,7 +2,7 @@
 
 import { CSS } from '@dnd-kit/utilities';
 import { useParams, useRouter } from 'next/navigation';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState, useMemo } from 'react';
 import {
   useSensor,
   DndContext,
@@ -31,7 +31,7 @@ const BoardColumns = () => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const [isEditing, setIsEditing] = useState(false);
-  const [isFormValid, setIsFormValid] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const [overId, setOverId] = useState<string | null>(null);
   const [currentColumnId, setCurrentColumnId] = useState('');
@@ -39,7 +39,16 @@ const BoardColumns = () => {
   const { jobPosts } = useAppSelector((state) => state.jobs);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [renamedColumnName, setRenamedColumnName] = useState('');
-  const currentBoard = boards.find((board) => board.id === board_id);
+
+  // Memoize currentBoard to prevent unnecessary re-renders
+  const currentBoard = useMemo(() => {
+    return boards.find((board) => board.id === board_id);
+  }, [boards, board_id]);
+
+  // Memoize boardColumns to prevent forms from re-mounting
+  const boardColumns = useMemo(() => {
+    return currentBoard?.columns || [];
+  }, [currentBoard?.columns]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -50,6 +59,13 @@ const BoardColumns = () => {
   );
 
   useEffect(() => {
+    console.log(
+      '🔄 BoardColumns effect triggered - isEditing:',
+      isEditing,
+      'currentColumnId:',
+      currentColumnId
+    );
+
     if (isEditing) {
       const currentInputElement = document.getElementById(
         currentColumnId
@@ -59,13 +75,12 @@ const BoardColumns = () => {
         currentInputElement!.select();
       }
     } else {
+      console.log('📡 Dispatching getBoards from BoardColumns effect');
       dispatch(getBoards(accessToken as string));
     }
-  }, [isEditing, currentColumnId, accessToken, dispatch, jobPosts]);
+  }, [isEditing, currentColumnId, accessToken, dispatch]);
 
   if (!currentBoard) return null;
-
-  const { columns: boardColumns } = currentBoard;
 
   const handleColumnNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -91,8 +106,8 @@ const BoardColumns = () => {
   };
 
   const createJobApplication = () => {
-    if (!isFormValid) return;
-
+    console.log('🚀 Creating job application');
+    
     const jobPost = {
       status: 'Job Created',
       accessToken: accessToken as string,
@@ -111,15 +126,18 @@ const BoardColumns = () => {
   };
 
   const handleDragStart = (event: any) => {
+    console.log('🖱️ Drag started:', event.active.id);
     setActiveId(event.active.id);
   };
 
   const handleDragOver = (event: any) => {
     const { over } = event;
+    console.log('🖱️ Drag over:', over?.id);
     setOverId(over?.id || null);
   };
 
   const handleDragEnd = (event: any) => {
+    console.log('🖱️ Drag ended');
     const { active, over } = event;
     setActiveId(null);
     setOverId(null);
@@ -279,13 +297,11 @@ const BoardColumns = () => {
                 buttonCancel="Discard"
                 buttonVariant="outline"
                 buttonConfirm="Save Job"
-                isFormValid={isFormValid}
                 actionFunction={createJobApplication}
                 stylings="w-11/12 flex justify-center text-2xl border py-3 mb-4 mx-auto rounded-md hover:border-blue-500 transition duration-300 delay-150 cursor-pointer"
               >
                 <AddJobShortForm
                   columnOrder={column.order}
-                  onValidationChange={setIsFormValid}
                 />
               </AlertDialogModal>
               {column.jobApplications &&

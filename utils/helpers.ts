@@ -25,6 +25,11 @@ export const cleanupAfterContact = () => {
 };
 
 export const cleanupAfterJobPost = () => {
+  console.log('🧹 cleanupAfterJobPost called');
+  console.log(
+    '🗑️ Removing localStorage items: company, jobTitle, companyId, chosenColumn, boardValueChanged'
+  );
+
   localStorage.removeItem('company');
   localStorage.removeItem('jobTitle');
   localStorage.removeItem('companyId');

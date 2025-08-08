@@ -27,8 +27,10 @@ const AddJobShortForm = ({
   onValidationChange,
 }: {
   columnOrder: number;
-  onValidationChange: (isValid: boolean) => void;
+  onValidationChange?: (isValid: boolean) => void;
 }) => {
+  console.log('🔄 AddJobShortForm render - columnOrder:', columnOrder);
+  
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const [company, setCompany] = useState('');
@@ -47,9 +49,11 @@ const AddJobShortForm = ({
     useState(initialColumnName);
 
   useEffect(() => {
+    console.log('🔄 AddJobShortForm - effect: chosenBoard changed to:', chosenBoard);
     const changedBoard = boards.find((board) => board.name === chosenBoard);
 
     if (changedBoard) {
+      console.log('📋 Setting first column of board to:', changedBoard.columns[0].name);
       setFirstColumnOfTheBoard(changedBoard.columns[0].name);
       localStorage.setItem(
         'firstColumnOfTheBoard',
@@ -69,37 +73,45 @@ const AddJobShortForm = ({
     },
   });
 
+  console.log('📋 Form state - company:', form.watch('company'), 'jobTitle:', form.watch('jobTitle'));
+  console.log('🔢 Local state - company:', company, 'jobTitle:', jobTitle);
+
   const debouncedSearch = useCallback(
-    debounce((searchTerm: string) => {
-      if (searchTerm.length >= 2) {
-        const values = {
-          accessToken,
-          companyName: searchTerm,
-        };
-        dispatch(getCompanyThatStartsWith(values))
-          .unwrap()
-          .then((result) => {
-            const companyNames: string[] = result.map(
-              (company: { name: string }) => company.name
-            );
-            setMatchingCompanies(companyNames);
-            setShowDropdown(true);
-          })
-          .catch((error) => {
-            console.error('Search error:', error);
-            setMatchingCompanies([]);
-            setShowDropdown(false);
-          });
-      } else {
-        setMatchingCompanies([]);
-        setShowDropdown(false);
-      }
-    }, 300),
+    (searchTerm: string) => {
+      const debouncedFn = debounce((term: string) => {
+        if (term.length >= 2) {
+          const values = {
+            accessToken,
+            companyName: term,
+          };
+          dispatch(getCompanyThatStartsWith(values))
+            .unwrap()
+            .then((result) => {
+              const companyNames: string[] = result.map(
+                (company: { name: string }) => company.name
+              );
+              setMatchingCompanies(companyNames);
+              setShowDropdown(true);
+            })
+            .catch((error) => {
+              console.error('Search error:', error);
+              setMatchingCompanies([]);
+              setShowDropdown(false);
+            });
+        } else {
+          setMatchingCompanies([]);
+          setShowDropdown(false);
+        }
+      }, 300);
+      
+      debouncedFn(searchTerm);
+    },
     [dispatch, accessToken]
   );
 
   const handleCompanyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
+    console.log('📝 Company field changed to:', value);
     setCompany(value);
     form.setValue('company', value);
     debouncedSearch(value);
@@ -151,6 +163,7 @@ const AddJobShortForm = ({
   };
 
   const handleCompanySelect = async (selectedCompany: string) => {
+    console.log('🏢 Company selected from dropdown:', selectedCompany);
     const fullCompanyName = selectedCompany;
     setCompany(fullCompanyName);
     form.setValue('company', fullCompanyName);
@@ -163,16 +176,19 @@ const AddJobShortForm = ({
       companyName: fullCompanyName,
     };
 
+    console.log('📡 Dispatching getCompanyThatStartsWith for selected company');
     const result = await dispatch(getCompanyThatStartsWith(values)).unwrap();
     const existingCompany = result.find(
       (comp: any) => comp.name === fullCompanyName
     );
     if (existingCompany) {
+      console.log('💾 Setting companyId to localStorage:', existingCompany.id);
       localStorage.setItem('companyId', existingCompany.id);
     }
   };
 
   const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('📝 Job title field changed to:', e.target.value);
     setJobTitle(e.target.value);
     localStorage.setItem('jobTitle', e.target.value);
     form.setValue('jobTitle', e.target.value);
@@ -183,7 +199,10 @@ const AddJobShortForm = ({
 
   useEffect(() => {
     const isValid = watchCompany.length > 0 && watchJobTitle.length > 0;
-    onValidationChange(isValid);
+    console.log('✅ Form validation - company:', watchCompany, 'jobTitle:', watchJobTitle, 'isValid:', isValid);
+    if (onValidationChange) {
+      onValidationChange(isValid);
+    }
   }, [watchCompany, watchJobTitle, onValidationChange]);
 
   return (
