@@ -5,6 +5,149 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.189.0] - 2025-08-08
+
+### Critical Bug Fix and Landing Page Enhancement
+
+#### Modal Form Reset Issue Resolution
+
+- **Fixed critical bug where Add Job modal fields would reset while typing**: Resolved React re-rendering cascade that was destroying form state during user input
+
+  - **Root Cause Analysis**: The issue was caused by shared validation state between parent (`BoardColumns`) and child (`AddJobShortForm`) components creating a destructive re-render cycle:
+
+    1. User types in Company/Job Title fields
+    2. Form validation triggers `onValidationChange` callback
+    3. Parent component (`BoardColumns`) updates `isFormValid` state
+    4. Parent re-renders due to state change
+    5. Modal component gets destroyed and recreated during re-render
+    6. Form loses all input values and user sees typing disappear
+
+  - **Solution Implementation**: Eliminated shared validation state by making `AlertDialogModal` self-validating:
+
+    - **Self-Validating Modal**: Modified `AlertDialogModal.tsx` to validate form data internally using localStorage instead of shared state
+
+    ```typescript
+    const handleSubmit = () => {
+      const company = localStorage.getItem('company') || '';
+      const jobTitle = localStorage.getItem('jobTitle') || '';
+      const isValid = company.trim() !== '' && jobTitle.trim() !== '';
+
+      if (isValid) {
+        onSubmit();
+      }
+    };
+    ```
+
+    - **Optional Validation Callback**: Made `onValidationChange` prop optional in `AddJobShortForm.tsx` to break the shared state dependency
+
+    - **Removed Shared State**: Eliminated `isFormValid` state from `BoardColumns.tsx` to prevent re-render cascades
+
+  - **Technical Benefits**:
+    - **Stable Component Tree**: Modal component never gets destroyed during typing
+    - **Form State Preservation**: React Hook Form maintains values throughout user interaction
+    - **No Parent Re-renders**: Validation changes don't trigger parent component updates
+    - **localStorage Backup**: Form data persists even if component unmounts
+    - **Better Performance**: Reduced unnecessary re-render cycles
+
+#### React Architecture Lesson
+
+This fix demonstrates a fundamental React principle: **avoid unnecessary shared state that causes re-render cascades**. The solution moved from:
+
+- **Before**: Parent manages validation → Parent re-renders → Children destroyed
+- **After**: Child self-validates → No parent state changes → Stable component tree
+
+### Landing Page Enhancement Implementation
+
+#### Complete Landing Page Sections Development
+
+- **Implemented comprehensive landing page with modern design**: Enhanced user onboarding experience with professional sections and responsive design
+
+  - **Hero Section Enhancement** (`components/LandingPage/HeroSection.tsx`):
+
+    - **Compelling Headlines**: "Transform Your Job Search with Smart Organization"
+    - **Value Proposition**: Clear messaging about application tracking and career organization
+    - **Call-to-Action**: Prominent "Get Started Free" button with smooth navigation
+    - **Visual Design**: Modern gradient backgrounds and professional typography
+    - **Responsive Layout**: Mobile-first design approach with proper breakpoints
+
+  - **Content Sections Implementation** (`components/LandingPage/ContentSection.tsx`):
+
+    **Features Section**:
+
+    - **Smart Organization**: Kanban-style board management for job applications
+    - **Document Management**: Centralized storage for resumes, cover letters, and certificates
+    - **Contact Tracking**: Company contact information and interaction history
+    - **Progress Analytics**: Visual insights into application status and success rates
+
+    **Benefits Section**:
+
+    - **Time Efficiency**: Streamlined application process management
+    - **Better Organization**: Never lose track of applications again
+    - **Strategic Insights**: Data-driven job search optimization
+    - **Professional Presentation**: Impress employers with organized approach
+
+    **How It Works Section**:
+
+    - **Step 1**: Create your account and set up boards
+    - **Step 2**: Add job applications and track progress
+    - **Step 3**: Manage documents and contacts
+    - **Step 4**: Analyze and optimize your job search
+
+  - **Footer Enhancement** (`components/LandingPage/Footer.tsx`):
+
+    - **Company Information**: Professional branding and contact details
+    - **Navigation Links**: Quick access to key pages and features
+    - **Legal Compliance**: Privacy policy and terms of service links
+    - **Social Media Integration**: Professional network connections
+    - **Responsive Design**: Proper mobile and desktop layouts
+
+  - **Navigation Improvements** (`components/LandingPage/Navbar.tsx`):
+    - **Clear Branding**: Professional logo and company identity
+    - **Intuitive Navigation**: User-friendly menu structure
+    - **Authentication Links**: Seamless login/signup access
+    - **Mobile Optimization**: Responsive hamburger menu for mobile devices
+
+#### Landing Page Technical Implementation
+
+- **Modern React Patterns**: Functional components with hooks for state management
+- **Tailwind CSS Styling**: Utility-first CSS framework for consistent design
+- **Responsive Design**: Mobile-first approach with breakpoint optimization
+- **SEO Optimization**: Proper semantic HTML structure for search engines
+- **Performance**: Optimized component loading and minimal bundle impact
+- **Accessibility**: WCAG compliant with proper ARIA labels and keyboard navigation
+
+#### Landing Page User Experience
+
+- **Professional Design**: Clean, modern interface that builds trust
+- **Clear Value Proposition**: Immediate understanding of product benefits
+- **Smooth Navigation**: Intuitive user flow from landing to registration
+- **Mobile Friendly**: Excellent experience across all device sizes
+- **Fast Loading**: Optimized performance for quick page loads
+
+#### Landing Page System Integration
+
+- **Authentication Flow**: Seamless integration with existing login/signup system
+- **Brand Consistency**: Matches existing application design patterns
+- **Route Management**: Proper Next.js routing integration
+- **State Management**: Compatible with existing Redux store structure
+
+### Combined Files Modified
+
+**Modal Form Fix**:
+
+1. `components/Forms/AddJobShort/AddJobShortForm.tsx` - Made validation callback optional
+2. `components/HomePage/Boards/AlertDialogModal.tsx` - Added self-validation logic
+3. `components/HomePage/Kanban/Column/BoardColumns.tsx` - Removed shared validation state
+4. `utils/helpers.ts` - Added form cleanup utilities
+
+**Landing Page Enhancement**:
+
+1. `components/LandingPage/HeroSection.tsx` - Enhanced hero section with compelling content
+2. `components/LandingPage/ContentSection.tsx` - Complete feature and benefit sections
+3. `components/LandingPage/Footer.tsx` - Professional footer with navigation and legal links
+4. `components/LandingPage/Navbar.tsx` - Improved navigation with mobile optimization
+5. `docs/Technical_documentation.md` - Updated documentation links
+
 ## [0.188.0] - 2025-08-07
 
 ### Update the documentation

@@ -1,10 +1,284 @@
 # Technical Documentation
 
+## Modal Form State Preservation and Landing Page Enhancement (08/08/2025)
+
+### Critical Modal Form Reset Bug Fix (08/08/2025)
+
+#### Problem Analysis
+
+A critical bug was discovered where the Add Job modal form fields (Company and Job Title) would reset while users were typing. This issue emerged after implementing the dnd-kit drag-and-drop functionality and was caused by a React re-rendering cascade that destroyed form state during user input.
+
+#### Root Cause Investigation
+
+The issue was traced to a shared validation state pattern between parent and child components:
+
+```typescript
+// PROBLEMATIC PATTERN: Shared validation state causing re-render cascade
+// BoardColumns.tsx (Parent)
+const [isFormValid, setIsFormValid] = useState(false);
+
+// AddJobShortForm.tsx (Child)
+useEffect(() => {
+  const isValid = company.trim() !== '' && jobTitle.trim() !== '';
+  onValidationChange(isValid); // Triggers parent re-render
+}, [company, jobTitle]);
+```
+
+**The Destructive Sequence**:
+
+1. User types in form field
+2. Form validation triggers `onValidationChange` callback
+3. Parent component (`BoardColumns`) updates `isFormValid` state
+4. Parent re-renders due to state change
+5. Modal component gets destroyed and recreated
+6. Form loses all input values and user sees typing disappear
+
+#### Technical Solution Implementation
+
+##### 1. Self-Validating Modal Pattern
+
+**Before**: Shared validation state
+
+```typescript
+// BoardColumns.tsx - REMOVED
+const [isFormValid, setIsFormValid] = useState(false);
+
+const handleValidationChange = (isValid: boolean) => {
+  setIsFormValid(isValid); // Caused re-render cascade
+};
+```
+
+**After**: Self-contained validation
+
+```typescript
+// AlertDialogModal.tsx - NEW APPROACH
+const [isSubmitting, setIsSubmitting] = useState(false);
+
+const handleSubmit = () => {
+  // Self-validate using localStorage instead of shared state
+  const company = localStorage.getItem('company') || '';
+  const jobTitle = localStorage.getItem('jobTitle') || '';
+  const isValid = company.trim() !== '' && jobTitle.trim() !== '';
+
+  if (!isValid) {
+    console.log('❌ Form validation failed - missing required fields');
+    return;
+  }
+
+  setIsSubmitting(true);
+  onSubmit();
+  setIsSubmitting(false);
+};
+```
+
+##### 2. Optional Validation Callback
+
+**Modified Child Component**:
+
+```typescript
+// AddJobShortForm.tsx - Made callback optional
+interface AddJobShortFormProps {
+  onValidationChange?: (isValid: boolean) => void; // Made optional
+}
+
+// Conditional validation callback
+useEffect(() => {
+  const isValid = company.trim() !== '' && jobTitle.trim() !== '';
+  onValidationChange?.(isValid); // Only call if provided
+}, [company, jobTitle, onValidationChange]);
+```
+
+##### 3. Eliminated Shared State
+
+**Simplified Parent Component**:
+
+```typescript
+// BoardColumns.tsx - CLEANED UP
+// Removed all validation state management
+// No more isFormValid state
+// No more handleValidationChange function
+// Modal now self-manages validation
+```
+
+#### Architecture Benefits
+
+1. **Stable Component Tree**: Modal component never gets destroyed during typing
+2. **Form State Preservation**: React Hook Form maintains values throughout interaction
+3. **No Parent Re-renders**: Validation changes don't trigger parent updates
+4. **localStorage Backup**: Form data persists even if component unmounts
+5. **Better Performance**: Reduced unnecessary re-render cycles
+6. **Cleaner Code**: Separation of concerns between validation and UI state
+
+#### React Architecture Lesson
+
+This fix demonstrates the fundamental React principle: **avoid unnecessary shared state that causes re-render cascades**.
+
+**Anti-Pattern**: Parent manages child validation state
+
+- Child validation → Parent state change → Parent re-render → Child destruction
+
+**Best Practice**: Components self-manage their own state
+
+- Child validation → Local handling → Stable component tree
+
+### Landing Page Enhancement Implementation (08/08/2025)
+
+#### Component Architecture Overview
+
+The landing page was completely redesigned with a modern, professional approach using a component-based architecture:
+
+```text
+LandingPage/
+├── HeroSection.tsx     - Main banner with CTA
+├── ContentSection.tsx  - Features, benefits, how-it-works
+├── Footer.tsx         - Navigation and legal links
+└── Navbar.tsx         - Header navigation
+```
+
+#### Technical Implementation Details
+
+##### 1. Hero Section Enhancement
+
+**Modern Design Pattern**:
+
+```typescript
+// HeroSection.tsx
+export default function HeroSection() {
+  return (
+    <section className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600">
+      <div className="absolute inset-0 bg-black/20" />
+      <div className="relative max-w-7xl mx-auto px-4 py-20">
+        <div className="text-center text-white">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6">
+            Transform Your Job Search
+          </h1>
+          {/* Interactive CTA with smooth navigation */}
+        </div>
+      </div>
+    </section>
+  );
+}
+```
+
+**Key Features**:
+
+- Gradient background with overlay for visual appeal
+- Responsive typography (text-5xl to text-7xl)
+- Prominent call-to-action buttons
+- Mobile-first responsive design
+
+##### 2. Content Sections Architecture
+
+**Modular Section Pattern**:
+
+```typescript
+// ContentSection.tsx
+const sections = [
+  {
+    id: 'features',
+    title: 'Powerful Features',
+    items: [
+      {
+        icon: '📋',
+        title: 'Smart Organization',
+        description: 'Kanban-style boards for visual job tracking',
+      },
+      // ... more features
+    ],
+  },
+  // ... more sections
+];
+```
+
+**Benefits**:
+
+- Reusable component structure
+- Easy content management
+- Consistent visual patterns
+- SEO-friendly semantic HTML
+
+##### 3. Responsive Design Implementation
+
+**Breakpoint Strategy**:
+
+```css
+/* Mobile First Approach */
+.hero-title {
+  @apply text-4xl; /* Mobile */
+  @apply md:text-6xl; /* Tablet */
+  @apply lg:text-7xl; /* Desktop */
+}
+
+.content-grid {
+  @apply grid-cols-1; /* Mobile: Single column */
+  @apply md:grid-cols-2; /* Tablet: Two columns */
+  @apply lg:grid-cols-3; /* Desktop: Three columns */
+}
+```
+
+#### Performance Optimizations
+
+1. **Component Splitting**: Logical separation of concerns
+2. **CSS Optimization**: Tailwind utility classes for minimal bundle
+3. **Image Optimization**: Proper Next.js image handling
+4. **SEO Structure**: Semantic HTML with proper heading hierarchy
+
+#### Integration Patterns
+
+**Authentication Flow**:
+
+```typescript
+// Navbar.tsx
+const authLinks = user ? (
+  <Link href="/home" className="btn-primary">
+    Dashboard
+  </Link>
+) : (
+  <>
+    <Link href="/login" className="btn-secondary">
+      Sign In
+    </Link>
+    <Link href="/signup" className="btn-primary">
+      Get Started
+    </Link>
+  </>
+);
+```
+
+**Route Management**:
+
+- Seamless integration with Next.js App Router
+- Proper TypeScript definitions
+- Authentication state awareness
+
+### Files Modified and Architecture Impact
+
+#### Modal Fix Files
+
+1. `components/Forms/AddJobShort/AddJobShortForm.tsx` - Optional validation callback
+2. `components/HomePage/Boards/AlertDialogModal.tsx` - Self-validation logic
+3. `components/HomePage/Kanban/Column/BoardColumns.tsx` - Removed shared state
+4. `utils/helpers.ts` - Form cleanup utilities
+
+#### Landing Page Files
+
+1. `components/LandingPage/HeroSection.tsx` - Modern hero design
+2. `components/LandingPage/ContentSection.tsx` - Feature sections
+3. `components/LandingPage/Footer.tsx` - Professional footer
+4. `components/LandingPage/Navbar.tsx` - Enhanced navigation
+
+#### Impact on System Architecture
+
+- **Improved State Management**: Better separation of concerns
+- **Enhanced User Experience**: Stable forms and professional landing
+- **Better Maintainability**: Cleaner component relationships
+- **Performance Gains**: Reduced unnecessary re-renders
+
 ## Authentication System Improvements and Modal Navigation (02/08/2025)
 
 ### Enhanced Token Refresh Flow (02/08/2025)
 
-#### Problem Analysis
+#### Problem Analysis (02/08/2025)
 
 The authentication system had an overly aggressive token validation approach that interfered with the sophisticated token refresh mechanism, causing unnecessary user logouts when tokens could have been successfully refreshed.
 
@@ -268,11 +542,11 @@ const modalTestScenarios = [
 - **Access Control**: Maintains existing authentication requirements
 - **State Management**: No exposure of sensitive data through navigation
 
-## Dark Mode Implementation and UI Enhancements (31/01/2025)
+## Dark Mode Implementation and UI Enhancements (31/07/2025)
 
-### Comprehensive Dark Mode Support (31/01/2025)
+### Comprehensive Dark Mode Support (31/07/2025)
 
-#### Problem Analysis (31/01/2025)
+#### Problem Analysis (31/07/2025)
 
 The application lacked comprehensive dark mode support, with many UI components having poor contrast or being completely invisible in dark theme. Key issues included:
 
@@ -283,7 +557,7 @@ The application lacked comprehensive dark mode support, with many UI components 
 - Settings modal needing complete redesign for dark theme
 - Board columns and interactive elements lacking dark mode support
 
-#### Solution Implementation (31/01/2025)
+#### Solution Implementation (31/07/2025)
 
 ##### 1. Systematic Dark Mode Styling
 
@@ -364,7 +638,7 @@ const [dailyDigest, setDailyDigest] = useState(true);
 </Button>
 ```
 
-#### Components Enhanced (31/01/2025)
+#### Components Enhanced (31/07/2025)
 
 1. **Job Post Components**
 
@@ -394,7 +668,7 @@ const [dailyDigest, setDailyDigest] = useState(true);
    - `LinkDocument.tsx`: Document linking dropdown with dark mode support
    - `LinkContactComboBox.tsx`: Contact linking dropdown with comprehensive dark mode styling
 
-#### TypeScript Configuration Improvements (31/01/2025)
+#### TypeScript Configuration Improvements (31/07/2025)
 
 ##### Problem: Build Errors from Type Definitions
 
@@ -418,7 +692,7 @@ Error: Cannot find module 'prop-types' or its corresponding type declarations
 }
 ```
 
-#### Authentication Provider Enhancement (31/01/2025)
+#### Authentication Provider Enhancement (31/07/2025)
 
 ##### Fixed Missing useEffect Dependency
 
@@ -434,7 +708,7 @@ useEffect(() => {
 }, [reduxUser, syncUserDataToRedux]); // ✅ All dependencies included
 ```
 
-### Technical Benefits (31/01/2025)
+### Technical Benefits (31/07/2025)
 
 #### User Experience Improvements
 
@@ -450,13 +724,7 @@ useEffect(() => {
 - **Type Safety**: Maintained TypeScript compliance across all changes
 - **Maintainable Code**: Clean, organized styling with reusable patterns
 
-#### Performance Optimizations
-
-- **Efficient Theme Detection**: Minimal overhead for theme-aware styling
-- **Optimized Re-renders**: Theme changes don't cause unnecessary component updates
-- **Clean Dependencies**: Proper useEffect dependency management prevents stale closures
-
-### Implementation Details (31/01/2025)
+### Implementation Details (31/07/2025)
 
 #### Dark Mode Color Palette
 
@@ -485,11 +753,11 @@ Maintained clean component architecture while adding dark mode support:
 - **Reusable Patterns**: Consistent styling patterns across similar components
 - **Modular Design**: Dark mode styling integrated without affecting component logic
 
-## Critical Bug Fixes and Architecture Improvements (31/01/2025)
+## Critical Bug Fixes and Architecture Improvements (31/07/2025)
 
-### Circular Dependency Resolution (31/01/2025)
+### Circular Dependency Resolution (31/07/2025)
 
-#### Problem Analysis - (31/01/2025)
+#### Problem Analysis - (31/07/2025)
 
 The application was experiencing critical crashes due to circular dependencies in the module import chain:
 
@@ -499,7 +767,7 @@ api/client.ts → TokenManager.ts → redux/store.ts → userSlice.ts → userTh
 
 This created initialization order issues where modules tried to access each other before being fully loaded, resulting in `ReferenceError: Cannot access 'getUser' before initialization`.
 
-#### Solution Implementation - (31/01/2025)
+#### Solution Implementation - (31/07/2025)
 
 ##### 1. Moved getUser Thunk to Break Circular Chain
 
@@ -557,7 +825,7 @@ const handleTokensUpdated = (event: CustomEvent) => {
 window.addEventListener('tokensUpdated', handleTokensUpdated);
 ```
 
-### Memory Leak Prevention (31/01/2025)
+### Memory Leak Prevention (31/07/2025)
 
 #### Fixed Multiple Memory Leak Vulnerabilities
 
@@ -652,7 +920,7 @@ class SecurityValidatorClass {
 }
 ```
 
-### Type Safety Enhancements (31/01/2025)
+### Type Safety Enhancements (31/07/2025)
 
 #### Enhanced TypeScript Integration
 
@@ -690,7 +958,7 @@ const memory = (performance as Performance & { memory?: PerformanceMemory })
   .memory;
 ```
 
-### Retry Logic Improvements (31/01/2025)
+### Retry Logic Improvements (31/07/2025)
 
 #### Fixed Race Conditions in Request Processing
 
@@ -719,7 +987,7 @@ private async processQueue(newAccessToken: string): Promise<void> {
 }
 ```
 
-### Updated Architecture Diagram (31/01/2025)
+### Updated Architecture Diagram (31/07/2025)
 
 ```mermaid
 graph TD
@@ -739,7 +1007,11 @@ graph TD
     N[PerformanceMonitor] --> O[Memory Tracking Cleanup]
 ```
 
-### Performance Optimizations (31/01/2025)
+### Performance Optimizations (31/07/2025)
+
+- **Efficient Theme Detection**: Minimal overhead for theme-aware styling
+- **Optimized Re-renders**: Theme changes don't cause unnecessary component updates
+- **Clean Dependencies**: Proper useEffect dependency management prevents stale closures
 
 #### Configurable Auth State Update Intervals
 
@@ -782,15 +1054,15 @@ NEXT_PUBLIC_AUTH_UPDATE_INTERVAL=60000  # 60 seconds (production recommended)
 - **Validation**: Range validation prevents invalid configurations
 - **Smart Defaults**: 30s for development, 60s for production
 
-## Enterprise Authentication System (27/01/2025)
+## Enterprise Authentication System (27/07/2025)
 
-### Overview (27/01/2025)
+### Overview (27/07/2025)
 
 A comprehensive, production-ready JWT authentication system with advanced security features, automatic token refresh, performance monitoring, and seamless user experience. The system provides enterprise-grade security with intelligent threat detection, request optimization, and real-time monitoring capabilities.
 
-### Architecture (27/01/2025)
+### Architecture (27/07/2025)
 
-#### Core Implementation (27/01/2025)
+#### Core Implementation (27/07/2025)
 
 The authentication system is built around several key components that work together to provide secure, performant, and user-friendly authentication:
 
@@ -814,7 +1086,7 @@ export class SmartTokenRefreshClass {
 export const AuthProvider: React.FC<{ children: ReactNode }>;
 ```
 
-#### Key Components (27/01/2025)
+#### Key Components (27/07/2025)
 
 1. **TokenManager**: Centralized token storage and validation with Redux synchronization
 2. **SmartTokenRefresh**: Intelligent background token refresh with visibility detection
@@ -823,9 +1095,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }>;
 5. **PerformanceMonitor**: Real-time system performance tracking and analytics
 6. **RequestDeduplicator**: Intelligent request caching and duplicate prevention
 
-### Technical Implementation (27/01/2025)
+### Technical Implementation (27/07/2025)
 
-#### 1. Smart Token Management (27/01/2025)
+#### 1. Smart Token Management (27/07/2025)
 
 ```typescript
 // File: utils/TokenManager.ts
@@ -849,7 +1121,7 @@ class TokenManagerClass {
 }
 ```
 
-#### 2. Intelligent Token Refresh (27/01/2025)
+#### 2. Intelligent Token Refresh (27/07/2025)
 
 **Problem**: Traditional token refresh systems interrupt user experience and don't optimize for browser visibility.
 
@@ -885,7 +1157,7 @@ class SmartTokenRefreshClass {
 }
 ```
 
-#### 3. Advanced Security Features (27/01/2025)
+#### 3. Advanced Security Features (27/07/2025)
 
 ```typescript
 // File: utils/SecurityValidator.ts
@@ -944,7 +1216,7 @@ class SecurityValidatorClass {
 }
 ```
 
-#### 4. Performance Monitoring (27/01/2025)
+#### 4. Performance Monitoring (27/07/2025)
 
 ```typescript
 // File: utils/PerformanceMonitor.ts
@@ -996,7 +1268,7 @@ class PerformanceMonitorClass {
 }
 ```
 
-#### 5. Request Optimization (27/01/2025)
+#### 5. Request Optimization (27/07/2025)
 
 **Problem**: Multiple components making identical API requests simultaneously.
 
@@ -1037,9 +1309,9 @@ class RequestDeduplicatorClass {
 }
 ```
 
-### Security Features (27/01/2025)
+### Security Features (27/07/2025)
 
-#### 1. JWT Token Validation (27/01/2025)
+#### 1. JWT Token Validation (27/07/2025)
 
 ⚠️ **Security Note**: Client-side JWT operations use `jwt.decode()` for UX purposes only (timers, display). All security decisions require server-side `jwt.verify()` with signature validation.
 
@@ -1048,53 +1320,53 @@ class RequestDeduplicatorClass {
 - **Expiration Checking**: Automatic token expiration detection (UX enhancement)
 - **Clock Skew Protection**: Tolerance for server/client time differences (display purposes)
 
-#### 2. Rate Limiting (27/01/2025)
+#### 2. Rate Limiting (27/07/2025)
 
 - **Configurable Limits**: Default 100 requests per 15-minute window
 - **Per-Identifier Tracking**: IP-based or user-based rate-limiting
 - **Sliding Window**: Automatic reset after window expiration
 - **Remaining Requests**: Real-time calculation of available requests
 
-#### 3. Brute Force Protection (27/01/2025)
+#### 3. Brute Force Protection (27/07/2025)
 
 - **Login Attempt Tracking**: Monitors failed login attempts per identifier
 - **Progressive Lockout**: Automatic lockout after 5 failed attempts
 - **Automatic Reset**: Successful login resets attempt counter
 - **IP Blocking**: Suspicious IPs are flagged for enhanced monitoring
 
-#### 4. Suspicious Activity Detection (27/01/2025)
+#### 4. Suspicious Activity Detection (27/07/2025)
 
 - **Pattern Recognition**: Detects rapid requests, unusual timing, multiple failures
 - **Risk Assessment**: Categorizes threats as low, medium, high, or critical
 - **Automated Response**: Configurable actions based on risk level
 - **Event Logging**: Comprehensive security event tracking
 
-### Performance Optimizations (27/01/2025)
+### Performance Optimizations (27/07/2025)
 
-#### 1. Request Deduplication (27/01/2025)
+#### 1. Request Deduplication (27/07/2025)
 
 - **Intelligent Caching**: 5-minute TTL with automatic cleanup
 - **Duplicate Prevention**: Prevents identical concurrent requests
 - **Memory Efficient**: Bounded cache with LRU eviction
 - **Configurable**: Enable/disable per environment
 
-#### 2. Smart Token Refresh (27/01/2025)
+#### 2. Smart Token Refresh (27/07/2025)
 
 - **Proactive Refresh**: Refreshes 5 minutes before expiration
 - **Visibility Optimization**: Adjusts check frequency based on page visibility
 - **Background Processing**: No user interruption during refresh
 - **Exponential Backoff**: Intelligent retry logic for failed attempts
 
-#### 3. Memory Management (27/01/2025)
+#### 3. Memory Management (27/07/2025)
 
 - **Automatic Cleanup**: Expired entries removed periodically
 - **Bounded Collections**: Maximum size limits prevent memory leaks
 - **Efficient Data Structures**: Maps and Sets for O(1) operations
 - **Monitoring**: Real-time memory usage tracking
 
-### Development Tools (27/01/2025)
+### Development Tools (27/07/2025)
 
-#### 1. DevTools Component (27/01/2025)
+#### 1. DevTools Component (27/07/2025)
 
 - **Keyboard Access**: Toggle with Ctrl+Shift+D
 - **Draggable Interface**: Moveable floating panel
@@ -1102,41 +1374,41 @@ class RequestDeduplicatorClass {
 - **API Testing**: Built-in API connectivity testing
 - **Storage Management**: Clear localStorage and reset state
 
-#### 2. Monitoring Dashboard (27/01/2025)
+#### 2. Monitoring Dashboard (27/07/2025)
 
 - **Real-Time Metrics**: Live performance and security statistics
 - **Visual Analytics**: Charts and graphs for system health
 - **Export Functionality**: Data export for analysis
 - **Alert System**: Configurable thresholds and notifications
 
-### DevTools and Monitoring (27/01/2025)
+### DevTools and Monitoring (27/07/2025)
 
 The authentication system includes comprehensive development and monitoring tools. For detailed usage instructions, see the **[DevTools and Monitoring Guide](./DevTools_and_Monitoring_Guide.md)**.
 
-#### Quick Access (27/01/2025)
+#### Quick Access (27/07/2025)
 
 - **DevTools Panel**: Press `Ctrl+Shift+D` to toggle (development only)
 - **Monitoring Dashboard**: Click "📊 Monitoring" in DevTools panel
 - **Performance Tracking**: Automatic background monitoring
 - **Security Events**: Real-time threat detection and logging
 
-### Production Considerations (27/01/2025)
+### Production Considerations (27/07/2025)
 
-#### 1. Security Hardening (27/01/2025)
+#### 1. Security Hardening (27/07/2025)
 
 - **HTTPS Only**: Secure token transmission
 - **Secure Headers**: Comprehensive security header configuration
 - **CORS Compatibility**: Clean requests without custom headers
 - **Audit Logging**: Complete security event tracking
 
-#### 2. Performance Monitoring (27/01/2025)
+#### 2. Performance Monitoring (27/07/2025)
 
 - **API Metrics**: Response times, success rates, error tracking
 - **Memory Monitoring**: JavaScript heap usage and optimization
 - **User Analytics**: Authentication events and user behavior
 - **System Health**: Real-time monitoring with alerting
 
-#### 3. Error Recovery (27/01/2025)
+#### 3. Error Recovery (27/07/2025)
 
 - **Automatic Recovery**: Self-healing mechanisms for common issues
 - **Graceful Degradation**: Fallback behavior for system failures
@@ -1454,7 +1726,7 @@ if (optimisticUpdates) {
 4. **Business Rules**: Any server-side transformations are immediately visible
 5. **No State Drift**: Eliminates discrepancies between local and server data
 
-#### Technical Implementation Details
+#### Technical Implementation Details (25/07/2025)
 
 - **Performance**: No additional API calls required
 - **User Experience**: Still provides instant visual feedback

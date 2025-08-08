@@ -31,7 +31,6 @@ const BoardColumns = () => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const [isEditing, setIsEditing] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const [overId, setOverId] = useState<string | null>(null);
   const [currentColumnId, setCurrentColumnId] = useState('');
@@ -59,23 +58,14 @@ const BoardColumns = () => {
   );
 
   useEffect(() => {
-    console.log(
-      '🔄 BoardColumns effect triggered - isEditing:',
-      isEditing,
-      'currentColumnId:',
-      currentColumnId
-    );
-
     if (isEditing) {
       const currentInputElement = document.getElementById(
         currentColumnId
-      ) as HTMLInputElement | null;
-      if (currentColumnId === currentInputElement!.id) {
-        currentInputElement!.focus();
-        currentInputElement!.select();
+      ) as HTMLInputElement;
+      if (currentInputElement) {
+        currentInputElement.focus();
       }
     } else {
-      console.log('📡 Dispatching getBoards from BoardColumns effect');
       dispatch(getBoards(accessToken as string));
     }
   }, [isEditing, currentColumnId, accessToken, dispatch]);
@@ -106,8 +96,6 @@ const BoardColumns = () => {
   };
 
   const createJobApplication = () => {
-    console.log('🚀 Creating job application');
-    
     const jobPost = {
       status: 'Job Created',
       accessToken: accessToken as string,
@@ -126,18 +114,15 @@ const BoardColumns = () => {
   };
 
   const handleDragStart = (event: any) => {
-    console.log('🖱️ Drag started:', event.active.id);
     setActiveId(event.active.id);
   };
 
   const handleDragOver = (event: any) => {
     const { over } = event;
-    console.log('🖱️ Drag over:', over?.id);
     setOverId(over?.id || null);
   };
 
   const handleDragEnd = (event: any) => {
-    console.log('🖱️ Drag ended');
     const { active, over } = event;
     setActiveId(null);
     setOverId(null);
@@ -300,9 +285,7 @@ const BoardColumns = () => {
                 actionFunction={createJobApplication}
                 stylings="w-11/12 flex justify-center text-2xl border py-3 mb-4 mx-auto rounded-md hover:border-blue-500 transition duration-300 delay-150 cursor-pointer"
               >
-                <AddJobShortForm
-                  columnOrder={column.order}
-                />
+                <AddJobShortForm columnOrder={column.order} />
               </AlertDialogModal>
               {column.jobApplications &&
                 column.jobApplications.map((job) =>

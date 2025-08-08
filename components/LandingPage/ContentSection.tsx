@@ -1,12 +1,14 @@
 'use client';
 
+type SectionId = 'applications' | 'documents' | 'contacts';
+
 interface ContentSectionProps {
-  id?: string;
+  id?: SectionId;
   name: string;
   description: string;
 }
 
-const sectionColors: Record<string, string> = {
+const sectionColors: Record<SectionId, string> = {
   applications:
     'from-blue-100 via-blue-50 to-white dark:from-blue-900 dark:via-gray-900 dark:to-black',
   documents:
@@ -15,7 +17,7 @@ const sectionColors: Record<string, string> = {
     'from-green-100 via-green-50 to-white dark:from-green-900 dark:via-gray-900 dark:to-black',
 };
 
-const sectionIcons: Record<string, JSX.Element> = {
+const sectionIcons: Record<SectionId, JSX.Element> = {
   applications: (
     <span className="inline-block bg-blue-500 text-white rounded-full p-4 shadow-lg mb-4">
       <svg
@@ -60,7 +62,7 @@ const sectionIcons: Record<string, JSX.Element> = {
   ),
 };
 
-const sectionParagraphs: Record<string, string> = {
+const sectionParagraphs: Record<SectionId, string> = {
   applications:
     'Bring all your job search details together—no more scattered spreadsheets or sticky notes. Track every opportunity, from company data and job descriptions to interview dates, contacts, and more. Your entire job search, organized and accessible in one place.',
   documents:
@@ -70,10 +72,9 @@ const sectionParagraphs: Record<string, string> = {
 };
 
 const ContentSection = ({ name, description, id }: ContentSectionProps) => {
-  const colorClass =
-    id && sectionColors[id] ? sectionColors[id] : 'from-gray-100 to-white';
-  const icon = id && sectionIcons[id] ? sectionIcons[id] : null;
-  const paragraph = id && sectionParagraphs[id] ? sectionParagraphs[id] : '';
+  const colorClass = id ? sectionColors[id] : 'from-gray-100 to-white';
+  const icon = id ? sectionIcons[id] : null;
+  const paragraph = id ? sectionParagraphs[id] : '';
   return (
     <section
       id={id}

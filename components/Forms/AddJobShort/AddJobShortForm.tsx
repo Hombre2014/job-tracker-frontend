@@ -3,8 +3,8 @@
 import { debounce } from 'lodash';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'next/navigation';
+import { useEffect, useState, useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState, useCallback } from 'react';
 
 import { AddJobSchemaShort } from '@/schemas';
 import { Input } from '@/components/ui/input';
@@ -29,8 +29,6 @@ const AddJobShortForm = ({
   columnOrder: number;
   onValidationChange?: (isValid: boolean) => void;
 }) => {
-  console.log('🔄 AddJobShortForm render - columnOrder:', columnOrder);
-  
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const [company, setCompany] = useState('');
@@ -49,11 +47,9 @@ const AddJobShortForm = ({
     useState(initialColumnName);
 
   useEffect(() => {
-    console.log('🔄 AddJobShortForm - effect: chosenBoard changed to:', chosenBoard);
     const changedBoard = boards.find((board) => board.name === chosenBoard);
 
     if (changedBoard) {
-      console.log('📋 Setting first column of board to:', changedBoard.columns[0].name);
       setFirstColumnOfTheBoard(changedBoard.columns[0].name);
       localStorage.setItem(
         'firstColumnOfTheBoard',
@@ -73,12 +69,9 @@ const AddJobShortForm = ({
     },
   });
 
-  console.log('📋 Form state - company:', form.watch('company'), 'jobTitle:', form.watch('jobTitle'));
-  console.log('🔢 Local state - company:', company, 'jobTitle:', jobTitle);
-
-  const debouncedSearch = useCallback(
-    (searchTerm: string) => {
-      const debouncedFn = debounce((term: string) => {
+  const debouncedSearch = useMemo(
+    () =>
+      debounce((term: string) => {
         if (term.length >= 2) {
           const values = {
             accessToken,
@@ -102,16 +95,19 @@ const AddJobShortForm = ({
           setMatchingCompanies([]);
           setShowDropdown(false);
         }
-      }, 300);
-      
-      debouncedFn(searchTerm);
-    },
+      }, 300),
     [dispatch, accessToken]
   );
 
+  // Cleanup debounced function on unmount
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
+
   const handleCompanyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    console.log('📝 Company field changed to:', value);
     setCompany(value);
     form.setValue('company', value);
     debouncedSearch(value);
@@ -163,7 +159,6 @@ const AddJobShortForm = ({
   };
 
   const handleCompanySelect = async (selectedCompany: string) => {
-    console.log('🏢 Company selected from dropdown:', selectedCompany);
     const fullCompanyName = selectedCompany;
     setCompany(fullCompanyName);
     form.setValue('company', fullCompanyName);
@@ -176,19 +171,16 @@ const AddJobShortForm = ({
       companyName: fullCompanyName,
     };
 
-    console.log('📡 Dispatching getCompanyThatStartsWith for selected company');
     const result = await dispatch(getCompanyThatStartsWith(values)).unwrap();
     const existingCompany = result.find(
       (comp: any) => comp.name === fullCompanyName
     );
     if (existingCompany) {
-      console.log('💾 Setting companyId to localStorage:', existingCompany.id);
       localStorage.setItem('companyId', existingCompany.id);
     }
   };
 
   const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('📝 Job title field changed to:', e.target.value);
     setJobTitle(e.target.value);
     localStorage.setItem('jobTitle', e.target.value);
     form.setValue('jobTitle', e.target.value);
@@ -199,7 +191,6 @@ const AddJobShortForm = ({
 
   useEffect(() => {
     const isValid = watchCompany.length > 0 && watchJobTitle.length > 0;
-    console.log('✅ Form validation - company:', watchCompany, 'jobTitle:', watchJobTitle, 'isValid:', isValid);
     if (onValidationChange) {
       onValidationChange(isValid);
     }
@@ -217,7 +208,9 @@ const AddJobShortForm = ({
                 <FormLabel className="text-gray-800 dark:text-white font-semibold">
                   Company
                 </FormLabel>
-                <FormLabel className="text-gray-400 dark:text-slate-400">Required</FormLabel>
+                <FormLabel className="text-gray-400 dark:text-slate-400">
+                  Required
+                </FormLabel>
               </span>
               <Input
                 {...field}
@@ -253,7 +246,9 @@ const AddJobShortForm = ({
                 <FormLabel className="text-gray-800 dark:text-white font-semibold">
                   Job Title
                 </FormLabel>
-                <FormLabel className="text-gray-400 dark:text-slate-400">Required</FormLabel>
+                <FormLabel className="text-gray-400 dark:text-slate-400">
+                  Required
+                </FormLabel>
               </span>
               <Input
                 {...field}
@@ -275,7 +270,9 @@ const AddJobShortForm = ({
                   <FormLabel className="text-gray-800 dark:text-white font-semibold">
                     Board
                   </FormLabel>
-                  <FormLabel className="text-gray-400 dark:text-slate-400">Required</FormLabel>
+                  <FormLabel className="text-gray-400 dark:text-slate-400">
+                    Required
+                  </FormLabel>
                 </span>
                 <ComboBoardListBox
                   {...field}
@@ -298,7 +295,9 @@ const AddJobShortForm = ({
                   <FormLabel className="text-gray-800 dark:text-white font-semibold">
                     List
                   </FormLabel>
-                  <FormLabel className="text-gray-400 dark:text-slate-400">Required</FormLabel>
+                  <FormLabel className="text-gray-400 dark:text-slate-400">
+                    Required
+                  </FormLabel>
                 </span>
                 <ComboBoardListBox
                   {...field}

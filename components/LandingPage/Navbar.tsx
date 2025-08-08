@@ -10,7 +10,7 @@ import HamburgerMenu from '@/components/Hamburger/HamburgerMenu';
 const Navbar = () => {
   return (
     <Fragment>
-      <header className="md:flex gap-x-1 w-11/12 mx-auto fixed top-0 left-0 right-0 z-50 py-8 px-8 rounded-lg bg-white dark:bg-black justify-between border border-gray-200 flex xl:w-5/6 2xl:w-2/3">
+      <header className="flex gap-x-1 w-11/12 mx-auto fixed inset-x-0 top-0 z-50 py-8 px-4 md:px-8 rounded-lg bg-white dark:bg-black justify-between border border-gray-200 dark:border-gray-800 xl:w-5/6 2xl:w-2/3">
         <Link href="/">
           <div className="flex items-center gap-x-1 w-44">
             <Image
