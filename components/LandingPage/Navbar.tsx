@@ -15,13 +15,14 @@ const Navbar = () => {
           <Link href="/">
             <div className="flex items-center gap-x-1 w-44">
               <Image
-                alt="Logo"
+                priority
                 width="40"
                 height="40"
+                alt="JobTracker logo"
                 src="/images/logo.png"
                 className="cursor-pointer rounded-md"
               />
-              <h1 className="text-2xl font-bold ml-4">JobTracker</h1>
+              <span className="text-2xl font-bold ml-4">JobTracker</span>
             </div>
           </Link>
           <div className="items-center justify-between gap-x-2 w-full hidden md:flex">

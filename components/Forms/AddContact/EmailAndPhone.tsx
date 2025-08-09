@@ -27,6 +27,8 @@ interface EmailAndPhoneProps {
   value: string;
   initialType: string;
   contact: 'email' | 'phone';
+  hasError?: boolean; // New prop for validation error
+  errorMessage?: string; // New prop for error message
   returnData: (contact: 'email' | 'phone', id: string) => void;
   handleChange: (
     id: string,
@@ -43,6 +45,8 @@ const EmailAndPhone = ({
   returnData,
   initialType,
   handleChange,
+  hasError = false,
+  errorMessage,
 }: EmailAndPhoneProps) => {
   const [open, setOpen] = useState(false);
   const [type, setType] = useState(initialType);
@@ -76,11 +80,17 @@ const EmailAndPhone = ({
   return (
     <div className="w-full px-2">
       <div className="w-full flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-1">
           {contact === 'email' ? (
-            <RxEnvelopeClosed size={20} className="text-gray-500" />
+            <RxEnvelopeClosed 
+              size={20} 
+              className={hasError ? "text-red-500" : "text-gray-500"} 
+            />
           ) : (
-            <HiOutlinePhone size={20} className="text-gray-500" />
+            <HiOutlinePhone 
+              size={20} 
+              className={hasError ? "text-red-500" : "text-gray-500"} 
+            />
           )}
           <input
             ref={inputRef}
@@ -88,7 +98,11 @@ const EmailAndPhone = ({
             title="contact"
             value={inputValue}
             onChange={handleInputChange}
-            className="outline-none bg-transparent border-none pl-2 text-sm"
+            className={`outline-none bg-transparent border-none pl-2 text-sm flex-1 ${
+              hasError 
+                ? 'text-red-600 placeholder-red-400' 
+                : 'text-gray-900 dark:text-white'
+            }`}
             placeholder={contact.charAt(0).toUpperCase() + contact.slice(1)}
           />
         </div>
@@ -148,6 +162,11 @@ const EmailAndPhone = ({
           />
         </div>
       </div>
+      {hasError && errorMessage && (
+        <div className="px-4 mt-1">
+          <p className="text-red-500 text-xs">{errorMessage}</p>
+        </div>
+      )}
     </div>
   );
 };

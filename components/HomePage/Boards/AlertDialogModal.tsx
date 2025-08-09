@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,13 @@ const AlertDialogModal = ({
   cleanupType = 'job', // 'job' | 'contact' | 'none'
 }: AlertDialogProps) => {
   const [internalFormValid, setInternalFormValid] = useState(false);
+
+  // Reset internal validation state when modal closes (only for controlled modals)
+  useEffect(() => {
+    if (open === false) {
+      setInternalFormValid(false);
+    }
+  }, [open]);
 
   // For job forms, use internal validation state; for others use the prop
   const finalFormValid =
@@ -83,6 +91,19 @@ const AlertDialogModal = ({
       }
     } catch (err) {
       console.error('AlertDialogModal handleSubmit failed', err);
+
+      // Provide user feedback on failure
+      toast.error(
+        'Unable to complete action. Please check required fields and try again.',
+        {
+          autoClose: 5000,
+          draggable: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          position: 'top-right',
+          hideProgressBar: false,
+        }
+      );
     }
   };
 

@@ -31,7 +31,30 @@ const initialState: BoardsState = {
 export const boardsSlice = createSlice({
   name: 'boards',
   initialState,
-  reducers: {},
+  reducers: {
+    // Optimistic update for column reordering
+    optimisticReorderColumns: (state, action) => {
+      const { boardId, newColumnOrder } = action.payload;
+      const boardIndex = state.boards.findIndex(
+        (board) => board.id === boardId
+      );
+      if (boardIndex !== -1) {
+        // Reorder the columns based on the new order array
+        const board = state.boards[boardIndex];
+        const reorderedColumns = newColumnOrder.map(
+          (index: number) => board.columns[index]
+        );
+        // Update the order property of each column to match its new position
+        reorderedColumns.forEach((column: any, index: number) => {
+          column.order = index;
+        });
+        state.boards[boardIndex] = {
+          ...board,
+          columns: reorderedColumns,
+        };
+      }
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(getBoards.pending, (state) => {

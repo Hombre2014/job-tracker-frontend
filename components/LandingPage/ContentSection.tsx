@@ -30,11 +30,13 @@ const sectionIcons: Record<SectionId, JSX.Element> = {
   applications: (
     <span className="inline-block bg-blue-500 text-white rounded-full p-4 shadow-lg mb-4">
       <svg
-        className="w-8 h-8"
         fill="none"
-        stroke="currentColor"
         strokeWidth="2"
+        focusable="false"
+        aria-hidden="true"
         viewBox="0 0 24 24"
+        className="w-8 h-8"
+        stroke="currentColor"
       >
         <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
       </svg>
@@ -43,11 +45,13 @@ const sectionIcons: Record<SectionId, JSX.Element> = {
   documents: (
     <span className="inline-block bg-purple-500 text-white rounded-full p-4 shadow-lg mb-4">
       <svg
-        className="w-8 h-8"
         fill="none"
-        stroke="currentColor"
         strokeWidth="2"
+        focusable="false"
+        aria-hidden="true"
         viewBox="0 0 24 24"
+        className="w-8 h-8"
+        stroke="currentColor"
       >
         <path d="M7 7v10a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V7" />
         <path d="M7 7V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2" />
@@ -57,11 +61,13 @@ const sectionIcons: Record<SectionId, JSX.Element> = {
   contacts: (
     <span className="inline-block bg-green-500 text-white rounded-full p-4 shadow-lg mb-4">
       <svg
-        className="w-8 h-8"
         fill="none"
-        stroke="currentColor"
         strokeWidth="2"
+        focusable="false"
+        aria-hidden="true"
         viewBox="0 0 24 24"
+        className="w-8 h-8"
+        stroke="currentColor"
       >
         <path d="M17 20h5v-2a4 4 0 0 0-3-3.87" />
         <path d="M9 20H4v-2a4 4 0 0 1 3-3.87" />

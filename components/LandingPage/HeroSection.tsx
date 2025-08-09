@@ -7,7 +7,6 @@ const HeroSection = () => {
   return (
     <section
       aria-labelledby="hero-heading"
-      role="region"
       className="w-full bg-gradient-to-br from-blue-50 via-white to-purple-100 dark:from-gray-900 dark:via-black dark:to-gray-800 pt-48 pb-20 px-8"
     >
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-20">

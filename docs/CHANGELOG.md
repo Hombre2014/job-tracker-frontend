@@ -5,7 +5,146 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.190.0] - 2025-08-08
+## [0.190.0] - 2025-08-09
+
+### Additional CodeRabbit Implementation and Critical Bug Fixes - 2025-08-09
+
+#### AlertDialogModal Enhanced Functionality
+
+- **Toast Notification Integration** (`AlertDialogModal.tsx`):
+
+  - Added comprehensive toast notification system with success/error states
+  - Implemented conditional toast display based on `cleanupType` prop
+  - Added descriptive success messages for contact creation, job archiving, board operations
+  - Enhanced user feedback for all modal operations
+
+- **Validation State Management**:
+
+  - Added automatic validation reset on modal open/close
+  - Implemented proper form state cleanup between modal instances
+  - Fixed validation state persistence issues across different modal usage patterns
+  - Enhanced form reset logic for consistent user experience
+
+- **Flexible Cleanup System**:
+  - Added `cleanupType` prop for different cleanup scenarios ('contact', 'jobPost', 'none')
+  - Implemented context-aware cleanup functions
+  - Enhanced modal reusability across different form types
+  - Maintained backward compatibility with existing implementations
+
+#### Critical Focus Management Bug Fix
+
+- **Column Editing Focus Loss Resolution** (`BoardColumns.tsx`):
+  - **Fixed critical bug**: Users losing focus when clicking outside input during column editing
+  - **Root cause**: React 18 double rendering + component lifecycle conflicts
+  - **Solution**: Implemented aggressive focus restoration with timeout-based recovery
+  - **Technical details**: Added `focusTimeoutRef` with 50ms delay to ensure DOM updates complete
+  - **User impact**: Seamless editing experience without unexpected focus loss
+
+#### Email Validation Enhancement
+
+- **Visual Feedback System** (`EmailAndPhone.tsx`, `CreateContactForm.tsx`):
+  - Added real-time email validation with visual error indicators
+  - Implemented red border styling for invalid email inputs
+  - Enhanced error state propagation from child to parent components
+  - Added proper validation state management with `hasValidationError` prop
+  - Improved user experience with immediate feedback on email format errors
+
+#### Column Movement Optimization
+
+- **Async State Management** (`ThreeDotsMenu.tsx`):
+  - Fixed column move functionality to show immediate UI updates
+  - Implemented async/await pattern for proper API call handling
+  - Added optimistic updates for better user experience
+  - Enhanced error handling for failed column move operations
+  - Resolved timing issues between API calls and UI updates
+
+#### Board Title Editing Improvements
+
+- **Mouse Click Support** (`JobBoardTitle.tsx`):
+  - Enhanced board title editing to support both keyboard and mouse interactions
+  - Fixed event handling conflicts between Link navigation and edit mode
+  - Implemented conditional rendering (div vs Link) based on editing state
+  - Added proper event propagation control with `stopPropagation`
+  - Resolved navigation conflicts during editing operations
+
+#### Archived Boards Functionality
+
+- **Unarchive Button Fix** (`archived-boards/page.tsx`):
+
+  - Fixed broken unarchive button functionality
+  - Enhanced navigation flow after unarchiving boards
+  - Implemented proper state cleanup and board list refresh
+  - Added real-time timestamp display with human-readable format
+
+- **Real Timestamp Implementation**:
+  - Created `getTimeAgo` utility function for human-readable timestamps
+  - Added support for both `updatedAt` and `createdAt` timestamps
+  - Implemented fallback handling for missing timestamp data
+  - Enhanced archived board display with "Last updated" information
+
+#### Code Organization and Performance
+
+- **Utility Function Organization** (`utils/helpers.ts`):
+
+  - Moved `getTimeAgo` function to proper utils folder for reusability
+  - Added comprehensive JSDoc documentation
+  - Implemented robust error handling with fallbacks
+  - Enhanced type safety with TypeScript interfaces
+
+- **Unused Code Cleanup** (`boards/page.tsx`):
+  - Removed unused `boardsStatus` variable from component
+  - Optimized component performance by reducing unnecessary re-renders
+  - Cleaned up Redux state destructuring to only include used properties
+  - Improved code maintainability and readability
+
+#### Dark Mode Accessibility Fix
+
+- **Dropdown Menu Styling** (`ComboBoardListBox.tsx`):
+  - **Fixed critical dark mode issue**: Board and List dropdowns were unreadable in dark mode
+  - **Problem**: Hardcoded light colors (`!bg-white`, `!bg-slate-200`) not adapting to dark theme
+  - **Solution**: Added comprehensive dark mode variants for all dropdown states
+  - **Implementation**:
+    - Hover states: `dark:hover:!bg-slate-600`
+    - Selected items: `dark:!bg-slate-600`
+    - Unselected items: `dark:!bg-slate-800`
+  - **Result**: Fully accessible dropdowns with proper contrast in both light and dark modes
+
+#### Technical Debt Resolution
+
+- **Component Lifecycle Management**:
+
+  - Fixed multiple useEffect timing issues across components
+  - Resolved React 18 double rendering conflicts
+  - Enhanced component mounting/unmounting lifecycle handling
+  - Improved state management timing and synchronization
+
+- **Event Handling Optimization**:
+
+  - Resolved event bubbling conflicts in editing interfaces
+  - Enhanced click event handling for better user interactions
+  - Fixed pointer-events CSS conflicts during editing states
+  - Improved overall interaction responsiveness
+
+- **API Call Optimization**:
+  - Fixed infinite loop issues in board data fetching
+  - Enhanced async operation handling with proper error boundaries
+  - Optimized Redux thunk patterns for better performance
+  - Reduced unnecessary API calls through better state management
+
+#### Enhanced User Experience and Interaction Patterns
+
+- **Consistent Interaction Patterns**:
+
+  - Unified editing behaviors across board titles and column names
+  - Enhanced feedback systems for all user actions
+  - Improved error handling and user messaging
+  - Consistent dark mode support across all interactive elements
+
+- **Performance Enhancements**:
+  - Reduced component re-render cycles
+  - Optimized state update patterns
+  - Enhanced memory management with proper cleanup
+  - Improved overall application responsiveness
 
 ### CodeRabbit Review Implementation and Landing Page Optimization
 
@@ -120,7 +259,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - **Navbar Glassmorphism Design** (`Navbar.tsx`):
 
       - Implemented modern glassmorphism effect with `backdrop-blur-md`
-      - Added warm amber background: `bg-amber-50/95` (light) / `bg-amber-900/95` (dark)
+      - Added warm amber background: `bg-amber-50/95` (light) / `bg-amber-700/95` (dark)
       - Enhanced with subtle shadow: `shadow-lg` and matching borders
       - Created excellent contrast for hover effects on menu items
 
@@ -2047,6 +2186,8 @@ _All changes maintain backward compatibility and enhance user experience with im
 
 <!-- Version comparison links -->
 
+[0.189.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.188.0...v0.189.0
+[0.190.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.189.0...v0.190.0
 [0.186.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.185.0...v0.186.0
 [0.185.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.184.0...v0.185.0
 [0.184.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.182.0...v0.184.0

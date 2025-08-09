@@ -116,14 +116,14 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
                     <CommandItem
                       key={item.id}
                       className={cn(
-                        'hover:!bg-slate-200 cursor-pointer my-[2px]',
+                        'hover:!bg-slate-200 dark:hover:!bg-slate-600 cursor-pointer my-[2px]',
                         itemsType === 'boards'
                           ? chosenBoard === item.name
-                            ? '!bg-slate-200'
-                            : '!bg-white'
+                            ? '!bg-slate-200 dark:!bg-slate-600'
+                            : '!bg-white dark:!bg-slate-800'
                           : chosenColumn === item.name
-                          ? '!bg-slate-200'
-                          : '!bg-white'
+                          ? '!bg-slate-200 dark:!bg-slate-600'
+                          : '!bg-white dark:!bg-slate-800'
                       )}
                       value={itemsType === 'boards' ? valueBoard : chosenColumn}
                       onSelect={() => {

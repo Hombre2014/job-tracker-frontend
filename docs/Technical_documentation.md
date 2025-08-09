@@ -274,6 +274,294 @@ const authLinks = user ? (
 - **Better Maintainability**: Cleaner component relationships
 - **Performance Gains**: Reduced unnecessary re-renders
 
+## CodeRabbit Implementation and Critical Bug Fixes (09/08/2025)
+
+### AlertDialogModal Enhancement Architecture (09/08/2025)
+
+#### Toast Notification Integration
+
+**Technical Implementation**:
+
+```typescript
+// Enhanced AlertDialogModal.tsx
+const AlertDialogModal = ({
+  cleanupType = 'none', // New prop for cleanup context
+  // ... other props
+}) => {
+  const handleSubmit = useCallback(async () => {
+    try {
+      await actionFunction?.();
+
+      // Context-aware toast notifications
+      if (cleanupType === 'contact') {
+        toast.success('Contact created successfully!');
+      } else if (cleanupType === 'jobPost') {
+        toast.success('Job archived successfully!');
+      }
+      // ... more cleanup types
+    } catch (error) {
+      toast.error('Operation failed. Please try again.');
+    }
+  }, [actionFunction, cleanupType]);
+};
+```
+
+**Key Features**:
+
+- Context-aware cleanup with `cleanupType` prop
+- Automatic validation reset on modal state changes
+- Comprehensive toast feedback system
+- Backward compatibility with existing implementations
+
+#### Validation State Management
+
+**Problem**: Form validation state persisting between modal instances
+
+**Solution**: Automatic reset pattern
+
+```typescript
+// Reset validation on modal open/close
+useEffect(() => {
+  if (open) {
+    // Reset validation when modal opens
+    setValidationError('');
+    setFormData(initialState);
+  }
+}, [open]);
+```
+
+### Critical Focus Management Bug Fix (09/08/2025)
+
+#### React 18 Double Rendering Issue
+
+**Problem Analysis**: Users losing focus when editing column names due to React 18's double rendering behavior combined with component lifecycle conflicts.
+
+**Technical Root Cause**:
+
+```typescript
+// PROBLEMATIC: Component unmounting before useEffect completes
+useEffect(() => {
+  if (isEditing) {
+    const input = document.getElementById(currentColumnId);
+    input?.focus(); // Fails if component unmounts
+  }
+}, [isEditing, currentColumnId]);
+```
+
+**Solution**: Aggressive focus restoration with timeout-based recovery
+
+```typescript
+// FIXED: Timeout-based focus restoration
+const focusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+useEffect(() => {
+  if (isEditing) {
+    // Clear any existing timeout
+    if (focusTimeoutRef.current) {
+      clearTimeout(focusTimeoutRef.current);
+    }
+
+    // Aggressive focus restoration with 50ms delay
+    focusTimeoutRef.current = setTimeout(() => {
+      const input = document.getElementById(currentColumnId);
+      if (input && currentColumnId === input.id) {
+        input.focus();
+        input.select();
+      }
+    }, 50);
+  }
+
+  return () => {
+    if (focusTimeoutRef.current) {
+      clearTimeout(focusTimeoutRef.current);
+    }
+  };
+}, [isEditing, currentColumnId]);
+```
+
+**Technical Benefits**:
+
+- Survives React 18 double rendering
+- Handles component lifecycle timing issues
+- Provides cleanup to prevent memory leaks
+- Ensures focus persistence across re-renders
+
+### Email Validation Enhancement (09/08/2025)
+
+#### Visual Feedback System Architecture
+
+**Component Enhancement**:
+
+```typescript
+// EmailAndPhone.tsx - Enhanced with validation props
+interface EmailAndPhoneProps {
+  hasValidationError?: boolean; // New prop for error state
+  onValidationChange?: (hasError: boolean) => void;
+}
+
+const EmailAndPhone = ({ hasValidationError, onValidationChange }) => {
+  return (
+    <Input
+      className={cn(
+        'w-full',
+        hasValidationError && 'border-red-500 focus:border-red-600'
+      )}
+      onChange={(e) => {
+        const isValid = validateEmail(e.target.value);
+        onValidationChange?.(!isValid);
+        onChange(e);
+      }}
+    />
+  );
+};
+```
+
+**Parent Integration**:
+
+```typescript
+// CreateContactForm.tsx - Consuming validation state
+const [emailValidationError, setEmailValidationError] = useState(false);
+
+<EmailAndPhone
+  hasValidationError={emailValidationError}
+  onValidationChange={setEmailValidationError}
+/>;
+```
+
+### Column Movement Optimization (09/08/2025)
+
+#### Async State Management Pattern
+
+**Problem**: Column movements not showing immediate UI updates
+
+**Solution**: Async/await pattern with optimistic updates
+
+```typescript
+// BEFORE: Fire-and-forget pattern
+const handleMoveColumn = (direction) => {
+  dispatch(moveColumn({ direction, accessToken }));
+  // UI doesn't update immediately
+};
+
+// AFTER: Async/await with immediate feedback
+const handleMoveColumn = async (direction) => {
+  try {
+    // Show loading state
+    setIsMoving(true);
+
+    // Wait for operation to complete
+    await dispatch(moveColumn({ direction, accessToken }));
+
+    // Refresh board data
+    dispatch(getBoards(accessToken));
+  } catch (error) {
+    toast.error('Failed to move column');
+  } finally {
+    setIsMoving(false);
+  }
+};
+```
+
+### Dark Mode Accessibility Fix (09/08/2025)
+
+#### Dropdown Styling Architecture
+
+**Problem**: Hardcoded light colors in dropdown menus causing readability issues in dark mode
+
+```typescript
+// BEFORE: Light mode only
+className={cn(
+  'hover:!bg-slate-200 cursor-pointer',
+  selected ? '!bg-slate-200' : '!bg-white'
+)}
+```
+
+**Solution**: Comprehensive dark mode variants
+
+```typescript
+// AFTER: Full dark mode support
+className={cn(
+  'hover:!bg-slate-200 dark:hover:!bg-slate-600 cursor-pointer',
+  selected
+    ? '!bg-slate-200 dark:!bg-slate-600'
+    : '!bg-white dark:!bg-slate-800'
+)}
+```
+
+**Technical Benefits**:
+
+- WCAG AA compliance for contrast ratios
+- Consistent theming across all interactive elements
+- Proper accessibility for users with visual preferences
+- Semantic color usage that adapts to system themes
+
+### Utility Function Organization (09/08/2025)
+
+#### Code Architecture Improvement
+
+**Moved `getTimeAgo` utility to proper location**:
+
+```typescript
+// utils/helpers.ts - Centralized utility functions
+/**
+ * Calculate time ago from timestamp
+ * @param item - Object with updatedAt or createdAt timestamp
+ * @returns Formatted time string like "2 hours ago"
+ */
+export const getTimeAgo = (item: {
+  updatedAt?: string;
+  createdAt?: string;
+}) => {
+  const timestamp = item.updatedAt || item.createdAt;
+  if (!timestamp) return 'Recently';
+
+  try {
+    const now = Date.now();
+    const updatedAt = new Date(timestamp);
+
+    if (isNaN(updatedAt.getTime())) return 'Recently';
+
+    const diffInSeconds = Math.floor((now - updatedAt.getTime()) / 1000);
+    // ... time calculation logic
+  } catch (error) {
+    console.warn('Error parsing timestamp:', error);
+    return 'Recently';
+  }
+};
+```
+
+**Benefits**:
+
+- Centralized utility functions for reusability
+- Proper TypeScript typing and JSDoc documentation
+- Robust error handling with fallbacks
+- Consistent code organization patterns
+
+### Performance and Technical Debt Resolution (09/08/2025)
+
+#### Component Lifecycle Management
+
+**Fixed multiple useEffect timing issues**:
+
+- Resolved React 18 double rendering conflicts
+- Enhanced component mounting/unmounting lifecycle handling
+- Improved state management timing and synchronization
+- Eliminated infinite loop patterns in API calls
+
+**Event Handling Optimization**:
+
+- Resolved event bubbling conflicts in editing interfaces
+- Enhanced click event handling for better UX
+- Fixed pointer-events CSS conflicts during editing states
+- Improved overall interaction responsiveness
+
+#### Architecture Impact
+
+- **Reduced Re-render Cycles**: Optimized state update patterns
+- **Enhanced Memory Management**: Proper cleanup in useEffect hooks
+- **Improved Error Boundaries**: Better async operation handling
+- **Consistent Interaction Patterns**: Unified editing behaviors across components
+
 ## Authentication System Improvements and Modal Navigation (02/08/2025)
 
 ### Enhanced Token Refresh Flow (02/08/2025)

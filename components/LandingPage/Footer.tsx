@@ -31,6 +31,7 @@ const Footer = (): JSX.Element => {
             className="hover:text-gray-200 transition"
             href="https://github.com/Hombre2014/job-tracker-frontend"
           >
+            <span className="sr-only">Open project on GitHub</span>
             <svg
               className="w-5 h-5"
               fill="currentColor"

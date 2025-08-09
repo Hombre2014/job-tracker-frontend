@@ -306,6 +306,8 @@ interface Board {
   userId: string;
   columns: Column[];
   isArchived: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface JobPostCardProps {

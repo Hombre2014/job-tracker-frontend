@@ -213,8 +213,10 @@ const AddJobShortForm = ({
                 </FormLabel>
               </span>
               <Input
+                required
                 {...field}
                 value={company}
+                aria-required="true"
                 placeholder="Company name"
                 onBlur={handleCompanyBlur}
                 onChange={handleCompanyChange}
@@ -251,8 +253,10 @@ const AddJobShortForm = ({
                 </FormLabel>
               </span>
               <Input
+                required
                 {...field}
                 value={jobTitle}
+                aria-required="true"
                 placeholder="Job Title"
                 onChange={(e) => handleJobTitleChange(e)}
               />

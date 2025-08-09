@@ -2,7 +2,7 @@
 
 import { CSS } from '@dnd-kit/utilities';
 import { useParams, useRouter } from 'next/navigation';
-import { ChangeEvent, useEffect, useState, useMemo } from 'react';
+import { ChangeEvent, useEffect, useState, useMemo, useRef } from 'react';
 import {
   useSensor,
   DndContext,
@@ -38,6 +38,7 @@ const BoardColumns = () => {
   const { jobPosts } = useAppSelector((state) => state.jobs);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [renamedColumnName, setRenamedColumnName] = useState('');
+  const focusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Memoize currentBoard to prevent unnecessary re-renders
   const currentBoard = useMemo(() => {
@@ -75,10 +76,33 @@ const BoardColumns = () => {
   const handleColumnNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     setRenamedColumnName(e.target.value);
+
+    // Maintain focus after state changes (handles double render focus loss)
+    if (focusTimeoutRef.current) clearTimeout(focusTimeoutRef.current);
+    focusTimeoutRef.current = setTimeout(() => {
+      const input = document.getElementById(
+        currentColumnId
+      ) as HTMLInputElement;
+      if (input && document.activeElement !== input) {
+        input.focus();
+        const len = input.value.length;
+        input.setSelectionRange(len, len);
+      }
+    }, 0);
   };
 
   const confirmColumnNameChange = () => {
     setIsEditing(false);
+
+    // Skip rename dispatch if the name didn't change
+    const current =
+      boards
+        .find((b) => b.id === board_id)
+        ?.columns?.find((c) => c.id === currentColumnId)?.name ?? '';
+    if (renamedColumnName.trim() === current.trim()) {
+      return;
+    }
+
     dispatch(
       updateColumnName({
         accessToken,
@@ -207,11 +231,18 @@ const BoardColumns = () => {
     );
   };
 
+  interface Column {
+    id: string;
+    order: number;
+    name: string;
+    jobApplications?: { id: string }[];
+  }
+
   const DroppableColumn = ({
     column,
     children,
   }: {
-    column: any;
+    column: Column;
     children: React.ReactNode;
   }) => {
     const { setNodeRef, isOver } = useDroppable({

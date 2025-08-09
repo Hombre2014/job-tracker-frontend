@@ -222,6 +222,7 @@ const CreateContactForm = ({
 
   const form = useForm({
     resolver: zodResolver(AddContactSchema),
+    mode: 'onChange', // Enable real-time validation
     defaultValues: {
       emails: [],
       phones: [],
@@ -376,10 +377,31 @@ const CreateContactForm = ({
   const watchLastName = form.watch('lastName');
   const watchFirstName = form.watch('firstName');
 
+  // Email validation function
+  const validateEmail = (email: string) => {
+    if (!email || email.trim() === '') return { isValid: true, message: '' };
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const isValid = emailRegex.test(email);
+    return {
+      isValid,
+      message: isValid ? '' : 'Please enter a valid email address'
+    };
+  };
+
   useEffect(() => {
-    const isValid = watchFirstName.length > 1 && watchLastName.length > 1;
+    // Basic validation: names must be > 1 char
+    const basicValid = watchFirstName.length > 1 && watchLastName.length > 1;
+    
+    // Validate emails from the actual emails state (not form state)
+    const hasValidEmails = emails.every(email => {
+      const emailValue = email.email || email.value;
+      return validateEmail(emailValue).isValid;
+    });
+    
+    // Combine basic validation with email validation
+    const isValid = basicValid && hasValidEmails;
     onValidationChange(isValid);
-  }, [watchFirstName, watchLastName, onValidationChange]);
+  }, [watchFirstName, watchLastName, emails, onValidationChange]);
 
   const handleFileInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -607,6 +629,7 @@ const CreateContactForm = ({
                             {previewImageUrl ? (
                               <Image
                                 fill
+                                sizes="50px"
                                 src={previewImageUrl}
                                 alt="User profile picture"
                                 className="object-cover"
@@ -614,6 +637,7 @@ const CreateContactForm = ({
                             ) : (
                               <Image
                                 fill
+                                sizes="50px"
                                 alt="User profile picture"
                                 className="object-cover"
                                 src={formData.photoUrl || '/images/Yuriy.jpg'}
@@ -790,18 +814,24 @@ const CreateContactForm = ({
                             emails.length === 0 && 'hidden'
                           )}
                         >
-                          {emails.map((email) => (
-                            <div key={email.id} className="mb-2">
-                              <EmailAndPhone
-                                id={email.id}
-                                contact="email"
-                                value={email.value}
-                                initialType={email.type}
-                                handleChange={handleEmailChange}
-                                returnData={handleRemoveContactType}
-                              />
-                            </div>
-                          ))}
+                          {emails.map((email) => {
+                            const emailValue = email.email || email.value;
+                            const validation = validateEmail(emailValue);
+                            return (
+                              <div key={email.id} className="mb-2">
+                                <EmailAndPhone
+                                  id={email.id}
+                                  contact="email"
+                                  value={email.value}
+                                  initialType={email.type}
+                                  hasError={!validation.isValid}
+                                  errorMessage={validation.message}
+                                  handleChange={handleEmailChange}
+                                  returnData={handleRemoveContactType}
+                                />
+                              </div>
+                            );
+                          })}
                         </div>
                         <div className="flex p-2">
                           <span

@@ -211,8 +211,8 @@ const ContactCard = ({
               width={50}
               height={50}
               alt="Contact photo"
+              className="rounded-lg object-cover"
               src={contact.photoUrl || '/images/Yuriy.jpg'}
-              className="rounded-lg"
             />
             <div className="flex flex-col items-start justify-center text-sm">
               <p className="font-bold">

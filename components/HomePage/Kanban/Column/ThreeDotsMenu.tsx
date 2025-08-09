@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { BsThreeDots } from 'react-icons/bs';
 import { RiDragMove2Fill } from 'react-icons/ri';
@@ -21,10 +21,8 @@ import {
 const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
-  const [isEditing, setIsEditing] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const { boards } = useAppSelector((state) => state.boards);
-  const { boardsStatus } = useAppSelector((state) => state.boards);
   const currentBoard = boards.find((board) => board.id === board_id);
   const [selectedColumn, setSelectedColumn] = useState<number>(columnOrder);
   const currentBoardColumns = currentBoard?.columns;
@@ -33,29 +31,25 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
     (column) => column.order === columnOrder
   );
 
-  const handleMoveList = () => {
+  const handleMoveList = async () => {
     const columnsArray = moveColumn(5, columnOrder, selectedColumn);
     const columns = currentBoardColumns?.map((column) => column.id);
     const columnIds = columnsArray.map((v) => columns![v]);
 
     if (columnOrder === selectedColumn) return;
 
-    dispatch(
+    // Dispatch and wait for the API call to complete
+    await dispatch(
       rearrangeColumns({
         boardId: board_id,
         columns_id: columnIds,
         accessToken: accessToken,
       })
     );
-    setIsEditing(true);
+    
+    // Then refresh the boards data
+    dispatch(getBoards(accessToken as string));
   };
-
-  useEffect(() => {
-    if (boardsStatus === 'succeeded' && isEditing) {
-      dispatch(getBoards(accessToken as string));
-      setIsEditing(false);
-    }
-  }, [dispatch, accessToken, isEditing, boardsStatus]);
 
   return (
     <div className="dropdown">
