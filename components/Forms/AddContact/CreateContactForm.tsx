@@ -384,20 +384,20 @@ const CreateContactForm = ({
     const isValid = emailRegex.test(email);
     return {
       isValid,
-      message: isValid ? '' : 'Please enter a valid email address'
+      message: isValid ? '' : 'Please enter a valid email address',
     };
   };
 
   useEffect(() => {
     // Basic validation: names must be > 1 char
     const basicValid = watchFirstName.length > 1 && watchLastName.length > 1;
-    
+
     // Validate emails from the actual emails state (not form state)
-    const hasValidEmails = emails.every(email => {
-      const emailValue = email.email || email.value;
+    const hasValidEmails = emails.every((email) => {
+      const emailValue = email.value;
       return validateEmail(emailValue).isValid;
     });
-    
+
     // Combine basic validation with email validation
     const isValid = basicValid && hasValidEmails;
     onValidationChange(isValid);
@@ -815,7 +815,7 @@ const CreateContactForm = ({
                           )}
                         >
                           {emails.map((email) => {
-                            const emailValue = email.email || email.value;
+                            const emailValue = email.value;
                             const validation = validateEmail(emailValue);
                             return (
                               <div key={email.id} className="mb-2">
