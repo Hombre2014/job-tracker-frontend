@@ -5,6 +5,7 @@ import { SlUser } from 'react-icons/sl';
 import { BsPencil } from 'react-icons/bs';
 import { ChangeEvent, useEffect, useState } from 'react';
 
+import { getTimeAgo } from '@/utils/helpers';
 import { Input } from '@/components/ui/input';
 import { useAppSelector, useAppDispatch } from '@/redux/hooks';
 import { getBoards, renameBoard } from '@/redux/boards/boardsThunk';
@@ -82,13 +83,13 @@ const UserBoards = () => {
             // Render as div when editing (no Link)
             <div
               key={board.id}
-              className="border-2 border-blue-500 rounded-sm px-6 py-5 flex items-center justify-center h-[160px]"
               title="board name"
+              className="border-2 border-blue-500 rounded-sm px-6 py-5 flex items-center justify-center h-[160px]"
             >
               <div className="relative w-full h-full">
                 <BsPencil
-                  z-index={1000}
-                  className="absolute top-0 right-0"
+                  size={24}
+                  className="absolute top-0 right-0 p-1 rounded-sm border border-transparent hover:border-slate-300 dark:hover:border-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors z-10"
                   onClick={(e) => {
                     e.preventDefault();
                     setIsEditing(true);
@@ -97,20 +98,22 @@ const UserBoards = () => {
                   }}
                 />
                 <Input
-                  id={board.id}
-                  placeholder="Board name (e.g., Job Search 2024)"
-                  value={renamedBoardName}
                   type="text"
-                  onChange={(e) => handleBoardNameChange(e)}
-                  onKeyDown={(e) => checkForEnter(e)}
+                  id={board.id}
+                  value={renamedBoardName}
                   onBlur={confirmBoardNameChange}
                   className="focus:border-blue-500"
+                  onKeyDown={(e) => checkForEnter(e)}
+                  onChange={(e) => handleBoardNameChange(e)}
+                  placeholder="Board name (e.g., Job Search 2025)"
                 />
                 <p className="text-slate-700 text-sm mb-2">
                   {firstName} {lastName}
                 </p>
-                <p className="text-slate-400 text-xs">{email}</p>
-                {/* TODO: Created at or how many days/weeks/months ago? */}
+                <p className="text-slate-500 text-xs">{email}</p>
+                <p className="text-slate-500 text-[10px] mt-1">
+                  Last updated: {getTimeAgo(board)}
+                </p>
               </div>
             </div>
           ) : (
@@ -123,8 +126,8 @@ const UserBoards = () => {
             >
               <div className="relative w-full h-full">
                 <BsPencil
-                  z-index={1000}
-                  className="absolute top-0 right-0"
+                  size={24}
+                  className="absolute top-0 right-0 p-1 rounded-sm border border-transparent hover:border-slate-300 dark:hover:border-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors z-10"
                   onClick={(e) => {
                     e.preventDefault();
                     setIsEditing(true);
@@ -136,8 +139,10 @@ const UserBoards = () => {
                 <p className="text-slate-700 text-sm mb-2">
                   {firstName} {lastName}
                 </p>
-                <p className="text-slate-400 text-xs">{email}</p>
-                {/* TODO: Created at or how many days/weeks/months ago? */}
+                <p className="text-slate-500 text-xs">{email}</p>
+                <p className="text-slate-500 text-[10px] mt-8">
+                  Last updated: {getTimeAgo(board)}
+                </p>
               </div>
             </Link>
           )
