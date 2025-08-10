@@ -314,6 +314,9 @@ const AddJobShortForm = ({
                   items={boards.map((b) => ({ id: b.id, name: b.name }))}
                   onSelectItem={(item) => {
                     setSelectedBoardId(item.id);
+                    // Immediate persistence to ensure redirect uses updated board
+                    localStorage.setItem('chosenBoardId', item.id);
+                    localStorage.setItem('chosenBoard', item.name);
                   }}
                 />
                 <FormMessage />

@@ -52,9 +52,15 @@ const CreateMenu = () => {
     dispatch(createJobPost(jobPost)).then((result) => {
       const newJobPostId = result.payload.id;
       const selectedBoardId = localStorage.getItem('chosenBoardId') || (board_id as string);
-      router.push(
-        `/home/boards/${selectedBoardId}/job/${newJobPostId}/job-details`
-      );
+      const targetBoardId = selectedBoardId || (board_id as string);
+      const currentBoardId = board_id as string;
+      const targetPath = `/home/boards/${targetBoardId}/job/${newJobPostId}/job-details`;
+      // Avoid redundant navigation if already on intended board
+      if (targetBoardId === currentBoardId) {
+        router.push(targetPath);
+      } else {
+        router.push(targetPath);
+      }
     });
     dispatch(getBoards(accessToken as string));
 

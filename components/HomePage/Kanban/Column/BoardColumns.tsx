@@ -130,7 +130,11 @@ const BoardColumns = () => {
 
     dispatch(createJobPost(jobPost)).then((result) => {
       const newJobPostId = result.payload.id;
-      router.push(`/home/boards/${board_id}/job/${newJobPostId}/job-details`);
+      // Allow redirect to a different selected board (if user changed board in modal)
+      const selectedBoardId =
+        localStorage.getItem('chosenBoardId') || (board_id as string);
+      const targetPath = `/home/boards/${selectedBoardId}/job/${newJobPostId}/job-details`;
+      router.push(targetPath);
     });
     dispatch(getBoards(accessToken as string));
 
