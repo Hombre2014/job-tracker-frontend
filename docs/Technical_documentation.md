@@ -1,5 +1,51 @@
 # Technical Documentation
 
+## Board Rename Flow Experiment and Rollback (10/08/2025)
+
+### Context
+
+An experimental refinement of the inline board rename interaction was attempted to: (1) eliminate duplicate network calls, (2) harden against double submissions (Enter + blur), (3) provide Escape cancel restoration, and (4) introduce toast-based user feedback. After manual evaluation the changes were rolled back due to unreliable feedback and inconsistent Escape handling. Stability over micro-optimization was prioritized.
+
+### Experimental Architecture (Rolled Back)
+
+| Concern | Experimental Mechanism | Outcome |
+|---------|------------------------|---------|
+| Double dispatch (Enter + blur) | `hasConfirmedRef` guard set on first trigger | Guard worked but added complexity |
+| Concurrent rename protection | `isRenamingRef` in-flight flag | Effective, but not essential with low latency |
+| Escape restore | `originalNameRef` captured initial value | Inconsistent restoration observed in manual tests |
+| Network reduction | Removed trailing `getBoards` after successful `renameBoard` | Reduced requests but surfaced perceived staleness risk |
+| User feedback | Toast success/error notifications | Not reliably visible; removed |
+
+### Rollback Implementation
+
+Restored simpler previous logic in `app/(loggedin)/home/boards/page.tsx`:
+
+1. Input blur or Enter → `renameBoard` thunk dispatch
+2. On success → explicit `getBoards` fetch (ensures fresh boards state)
+3. Escape → revert UI value using current boards slice (existing stable behavior)
+4. Removed toast notifications (both success and error) for now
+
+### Current Behavior (Post-Rollback)
+
+- Always performs a follow-up `getBoards` after rename (sacrifices one extra request for deterministic state sync).
+- No user-facing toast; failures log to console; name reverts to last confirmed board name.
+- Escape key cancels editing and restores original name using slice state.
+
+### Lessons Learned
+
+1. Introduce UX hardening incrementally behind internal flags rather than replacing working flow wholesale.
+2. Add lightweight automated tests (JSDOM / RTL) for: Enter rename, blur rename, Escape cancel, unchanged name no-op, failed rename rollback.
+3. Optimize network only after test coverage + deterministic UI feedback (e.g., inline status indicator instead of toast).
+4. Reintroduce guards only if empirical evidence of double-dispatch issues (analytics / logging) justifies added complexity.
+
+### Forward Plan (Deferred)
+
+- Implement inline status indicator (saving / saved / failed) rather than global toast.
+- Add optional optimistic-only mode that skips `getBoards` when payload shape from `renameBoard` is fully trusted.
+- Refactor common rename patterns (board title, column title) into a reusable hook with pluggable persistence + rollback logic.
+
+---
+
 ## Modal Form State Preservation and Landing Page Enhancement (08/08/2025)
 
 ### Critical Modal Form Reset Bug Fix (08/08/2025)

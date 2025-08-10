@@ -71,7 +71,11 @@ const BoardColumns = () => {
     }
   }, [isEditing, currentColumnId, accessToken, dispatch]);
   // Draft + submission guard hooks must appear before any early return
-  const jobDraftRef = useRef<{ company?: string; jobTitle?: string; companyId?: string } | null>(null);
+  const jobDraftRef = useRef<{
+    company?: string;
+    jobTitle?: string;
+    companyId?: string;
+  } | null>(null);
   const [isSubmittingJob, setIsSubmittingJob] = useState(false);
 
   if (!currentBoard) return null;

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { SlUser } from 'react-icons/sl';
 import { BsPencil } from 'react-icons/bs';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState, useRef } from 'react';
 
 import { getTimeAgo } from '@/utils/helpers';
 import { Input } from '@/components/ui/input';
@@ -22,6 +22,9 @@ const UserBoards = () => {
   const { boards } = useAppSelector((state) => state.boards);
   const { firstName } = useAppSelector((state) => state.user);
   const [renamedBoardName, setRenamedBoardName] = useState('');
+  // Guards to prevent double invocation (Enter + blur) & concurrent rename
+  const isRenamingRef = useRef(false);
+  const hasConfirmedRef = useRef(false);
 
   useEffect(() => {
     // Only fetch boards on initial load, not on every status change
@@ -50,18 +53,55 @@ const UserBoards = () => {
   };
 
   const confirmBoardNameChange = async () => {
+    if (hasConfirmedRef.current) return; // already handled via Enter or blur
+    const trimmed = renamedBoardName.trim();
+    const current = boards.find((b) => b.id === currentBoardId);
+
+    // No-op: empty, no current board, or unchanged name
+    if (!trimmed || !current || current.name === trimmed) {
+      setIsEditing(false);
+      setCurrentBoardId('');
+      hasConfirmedRef.current = true;
+      return;
+    }
+
+    if (isRenamingRef.current) return; // concurrent guard
+    isRenamingRef.current = true;
     setIsEditing(false);
-    // Wait for the rename to complete, then refresh
-    await dispatch(
-      renameBoard({ name: renamedBoardName, accessToken, id: currentBoardId })
-    );
-    dispatch(getBoards(accessToken as string));
-    setCurrentBoardId('');
+    try {
+      await dispatch(
+        renameBoard({
+          name: trimmed,
+          accessToken: accessToken ?? '',
+          id: currentBoardId,
+        })
+      ).unwrap();
+      if (accessToken) {
+        await dispatch(getBoards(accessToken)).unwrap();
+      }
+      // Toasts removed per request
+    } catch (err: any) {
+      console.error('Rename failed', err);
+      // Restore previous name visually
+      setRenamedBoardName(current?.name || '');
+    } finally {
+      setCurrentBoardId('');
+      hasConfirmedRef.current = true;
+      isRenamingRef.current = false;
+    }
   };
 
   const checkForEnter = (e: any) => {
     if (e.key === 'Enter') {
+      e.preventDefault();
       confirmBoardNameChange();
+    } else if (e.key === 'Escape') {
+      // Cancel editing, restore original name
+      const original = boards.find((b) => b.id === currentBoardId);
+      if (original) setRenamedBoardName(original.name);
+      setIsEditing(false);
+      setCurrentBoardId('');
+      hasConfirmedRef.current = true;
     }
   };
 
@@ -101,10 +141,13 @@ const UserBoards = () => {
                   type="text"
                   id={board.id}
                   value={renamedBoardName}
-                  onBlur={confirmBoardNameChange}
+                  onBlur={() => confirmBoardNameChange()}
                   className="focus:border-blue-500"
                   onKeyDown={(e) => checkForEnter(e)}
-                  onChange={(e) => handleBoardNameChange(e)}
+                  onChange={(e) => {
+                    hasConfirmedRef.current = false; // allow new confirmation while editing
+                    handleBoardNameChange(e);
+                  }}
                   placeholder="Board name (e.g., Job Search 2025)"
                 />
                 <p className="text-slate-700 text-sm mb-2">

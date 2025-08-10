@@ -1,9 +1,59 @@
 # Changelog
 
-All notable changes and improvements to the Job Tracker Frontend project are documented in this file.
-
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.190.0] - 2025-08-10
+
+### Board Rename Flow Experiment and Rollback - 2025-08-10
+
+#### Summary
+
+An experimental hardening of the inline Board Rename UX (guards, original name restore, toast feedback, and removal of an extra refetch) was implemented, evaluated, and fully rolled back the same day due to unmet functional expectations. The only retained net change is the removal of toast notifications for the rename action (simplifying UX until a more reliable feedback pattern is re‑introduced).
+
+#### Experimental Changes (Rolled Back)
+
+- Added in‑flight guard (`isRenamingRef`) and double-trigger guard (`hasConfirmedRef`) to prevent Enter + blur double dispatch.
+- Captured original board name in a ref for Escape / failure restoration.
+- Removed explicit `getBoards` refetch after successful rename (relying solely on `renameBoard.fulfilled` reducer for optimistic state update).
+- Introduced success/error toast notifications.
+
+#### Issues Observed in User Testing
+
+- Toast notifications did not appear reliably (inconsistent feedback path).
+- Escape key did not always restore the original name as expected.
+- Perceived instability / regressions without clear functional gain for end user.
+- Reduction in network requests not considered a sufficient trade‑off versus UX reliability for this flow.
+
+#### Rollback Actions
+
+- Restored prior simpler rename logic including explicit `getBoards` call after successful rename for guaranteed state sync.
+- Removed toast notifications from the rename path (noise reduction & to eliminate unreliable feedback channel).
+- Discarded guard/original-name ref experiment pending a more incremental re‑introduction with dedicated tests.
+
+#### Current State (Post Rollback)
+
+- Board rename triggers: inline input blur or Enter → dispatch `renameBoard` → immediate follow‑up `getBoards` fetch.
+- Escape restores the original value via the previous (stable) approach.
+- No toast feedback on success or failure (failures logged to console; future enhancement will provide consistent inline/error messaging).
+- Network request count not re‑optimized in this commit (stability prioritized over micro‑optimization).
+
+#### Rationale
+
+Stability and user predictability outweighed the incremental reduction in network calls. A future optimization pass will: (1) introduce a feature‑flagged guard/toast system, (2) add deterministic unit/integration tests for Enter/blur/Escape scenarios, and (3) safely remove redundant refetch once visual and state consistency is proven.
+
+#### No Schema / API Changes
+
+- No changes to backend contracts, data models, or persisted state shapes.
+- Safe to integrate without backend coordination.
+
+#### Related Documentation Update
+
+- Technical documentation updated with architectural notes and lessons learned for the rollback (see “Board Rename Flow Experiment and Rollback (10/08/2025)” section).
+
+---
+
+All notable changes and improvements to the Job Tracker Frontend project are documented in this file.
 
 ## [0.190.0] - 2025-08-09
 
