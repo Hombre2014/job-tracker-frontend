@@ -393,24 +393,48 @@ useEffect(() => {
 **Component Enhancement**:
 
 ```typescript
-// EmailAndPhone.tsx - Enhanced with validation props
+// EmailAndPhone.tsx - Simplified example aligned with production component
 interface EmailAndPhoneProps {
-  hasValidationError?: boolean; // New prop for error state
-  onValidationChange?: (hasError: boolean) => void;
+  id: string;
+  value: string;
+  initialType: string;
+  contact: 'email' | 'phone';
+  hasError?: boolean;
+  errorMessage?: string;
+  returnData: (contact: 'email' | 'phone', id: string) => void;
+  handleChange: (
+    id: string,
+    value: string,
+    type: string,
+    options?: { blur?: boolean }
+  ) => void;
 }
 
-const EmailAndPhone = ({ hasValidationError, onValidationChange }) => {
+const EmailAndPhone = ({
+  id,
+  value,
+  contact,
+  initialType,
+  handleChange,
+  hasError,
+  errorMessage,
+}: EmailAndPhoneProps) => {
+  const [type, setType] = useState(initialType);
+  const [inputValue, setInputValue] = useState(value);
+
   return (
-    <Input
+    <input
+      value={inputValue}
       className={cn(
         'w-full',
-        hasValidationError && 'border-red-500 focus:border-red-600'
+        hasError && 'border-red-500 focus:border-red-600'
       )}
       onChange={(e) => {
-        const isValid = validateEmail(e.target.value);
-        onValidationChange?.(!isValid);
-        onChange(e);
+        const next = e.target.value;
+        setInputValue(next);
+        handleChange(id, next, type);
       }}
+      placeholder={contact === 'email' ? 'Email' : 'Phone'}
     />
   );
 };
