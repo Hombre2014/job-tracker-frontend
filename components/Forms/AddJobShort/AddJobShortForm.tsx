@@ -36,28 +36,55 @@ const AddJobShortForm = ({
   const accessToken = localStorage.getItem('accessToken');
   const [showDropdown, setShowDropdown] = useState(false);
   const { boards } = useAppSelector((state) => state.boards);
-  const [boardColumns, setBoardColumns] = useState(
-    boards.find((board) => board.id === board_id)!.columns
+  const initialBoard = boards.find((b) => b.id === board_id)!;
+  const [selectedBoardId, setSelectedBoardId] = useState(initialBoard.id);
+  const [selectedBoardName, setSelectedBoardName] = useState(initialBoard.name);
+  const [boardColumns, setBoardColumns] = useState(initialBoard.columns);
+  const [selectedColumnId, setSelectedColumnId] = useState(
+    initialBoard.columns[columnOrder]?.id
   );
-  const initialColumnName = boardColumns![columnOrder].name;
+  const [selectedColumnName, setSelectedColumnName] = useState(
+    initialBoard.columns[columnOrder]?.name
+  );
+  const [firstColumnOfTheBoard, setFirstColumnOfTheBoard] = useState(
+    initialBoard.columns[0]?.name
+  );
   const [matchingCompanies, setMatchingCompanies] = useState<string[]>([]);
-  const initialBoardName = boards.find((board) => board.id === board_id)!.name;
-  const chosenBoard = localStorage.getItem('chosenBoard') || initialBoardName;
-  const [firstColumnOfTheBoard, setFirstColumnOfTheBoard] =
-    useState(initialColumnName);
+  const initialColumnName = initialBoard.columns[columnOrder].name;
+  const initialBoardName = initialBoard.name;
 
+  // Update columns and first column when selectedBoardId changes
   useEffect(() => {
-    const changedBoard = boards.find((board) => board.name === chosenBoard);
-
-    if (changedBoard) {
-      setFirstColumnOfTheBoard(changedBoard.columns[0].name);
-      localStorage.setItem(
-        'firstColumnOfTheBoard',
-        changedBoard.columns[0].name
-      );
-      setBoardColumns(changedBoard.columns);
+    const newBoard = boards.find((b) => b.id === selectedBoardId);
+    if (!newBoard) return;
+    setSelectedBoardName(newBoard.name);
+    setBoardColumns(newBoard.columns);
+    const firstCol = newBoard.columns[0];
+    setFirstColumnOfTheBoard(firstCol?.name);
+    // If previously selected column doesn't belong to new board, reset
+    if (!newBoard.columns.some((c) => c.id === selectedColumnId)) {
+      setSelectedColumnId(firstCol?.id);
+      setSelectedColumnName(firstCol?.name);
     }
-  }, [chosenBoard, boards]);
+  }, [selectedBoardId, boards, selectedColumnId]);
+
+  // Centralize localStorage writes for board/column
+  useEffect(() => {
+    if (selectedBoardName)
+      localStorage.setItem('chosenBoard', selectedBoardName);
+    if (selectedBoardId) localStorage.setItem('chosenBoardId', selectedBoardId);
+    if (firstColumnOfTheBoard)
+      localStorage.setItem('firstColumnOfTheBoard', firstColumnOfTheBoard);
+    if (selectedColumnName)
+      localStorage.setItem('chosenColumn', selectedColumnName);
+    if (selectedColumnId) localStorage.setItem('columnId', selectedColumnId);
+  }, [
+    selectedBoardName,
+    selectedBoardId,
+    firstColumnOfTheBoard,
+    selectedColumnName,
+    selectedColumnId,
+  ]);
 
   const form = useForm({
     resolver: zodResolver(AddJobSchemaShort),
@@ -280,11 +307,14 @@ const AddJobShortForm = ({
                 </span>
                 <ComboBoardListBox
                   {...field}
-                  items={boards}
                   itemsType="boards"
                   searchItem="Boards"
+                  value={selectedBoardName}
                   initialBoardString={initialBoardName}
-                  firstColumnOfTheBoard={firstColumnOfTheBoard}
+                  items={boards.map((b) => ({ id: b.id, name: b.name }))}
+                  onSelectItem={(item) => {
+                    setSelectedBoardId(item.id);
+                  }}
                 />
                 <FormMessage />
               </FormItem>
@@ -307,9 +337,13 @@ const AddJobShortForm = ({
                   {...field}
                   searchItem="Lists"
                   itemsType="columns"
-                  items={boardColumns}
+                  value={selectedColumnName}
                   initialColumnString={initialColumnName}
-                  firstColumnOfTheBoard={firstColumnOfTheBoard}
+                  items={boardColumns.map((c) => ({ id: c.id, name: c.name }))}
+                  onSelectItem={(item) => {
+                    setSelectedColumnId(item.id);
+                    setSelectedColumnName(item.name);
+                  }}
                 />
                 <FormMessage />
               </FormItem>

@@ -39,12 +39,10 @@ const CreateMenu = () => {
   const [pendingImage, setPendingImage] = useState<File | null>(null);
 
   const createJobApplication = () => {
-    if (!isFormValid) return;
-
     setShowJobModal(false);
 
     const jobPost = {
-      jobPostStatus: 'Job Created',
+      status: 'Job Created',
       accessToken: accessToken as string,
       title: localStorage.getItem('jobTitle'),
       columnId: localStorage.getItem('columnId'),
@@ -53,7 +51,10 @@ const CreateMenu = () => {
 
     dispatch(createJobPost(jobPost)).then((result) => {
       const newJobPostId = result.payload.id;
-      router.push(`/home/boards/${board_id}/job/${newJobPostId}/job-details`);
+      const selectedBoardId = localStorage.getItem('chosenBoardId') || (board_id as string);
+      router.push(
+        `/home/boards/${selectedBoardId}/job/${newJobPostId}/job-details`
+      );
     });
     dispatch(getBoards(accessToken as string));
 
@@ -199,7 +200,6 @@ const CreateMenu = () => {
                     className="flex items-center px-4 mt-1 py-2 cursor-pointer hover:bg-blue-400 rounded-md text-white"
                     onClick={() => {
                       setShowJobModal(true);
-                      setIsFormValid(false);
                     }}
                   >
                     <PiBriefcaseLight />
@@ -226,34 +226,30 @@ const CreateMenu = () => {
 
       {showJobModal && (
         <AlertDialogModal
+          cleanupType="job"
           open={showJobModal}
           buttonVariant="none"
           dialogTitle="Add Job"
           buttonCancel="Discard"
           buttonConfirm="Save Job"
-          cleanupType="job"
-          isFormValid={isFormValid}
           actionFunction={createJobApplication}
           onOpenChange={(open) => {
             setShowJobModal(open);
             if (!open) setIsMenuOpen(false);
           }}
         >
-          <AddJobShortForm
-            columnOrder={0}
-            onValidationChange={setIsFormValid}
-          />
+          <AddJobShortForm columnOrder={0} />
         </AlertDialogModal>
       )}
 
       {showContactModal && (
         <AlertDialogModal
           buttonVariant="none"
+          cleanupType="contact"
           buttonCancel="Discard"
           buttonConfirm="Create"
           open={showContactModal}
           isFormValid={isFormValid}
-          cleanupType="contact"
           contentWidth="!max-w-[900px]"
           dialogTitle="Save New Contact"
           actionFunction={createNewContact}

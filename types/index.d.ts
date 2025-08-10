@@ -139,11 +139,14 @@ interface LinkDocumentProps {
 }
 
 interface ComboBoardListBoxProps {
+  value?: string;
   searchItem: string;
   initialBoardString?: string;
   initialColumnString?: string;
   firstColumnOfTheBoard?: string;
   itemsType: 'boards' | 'columns';
+  // Optional controlled value overrides
+  onSelectItem?: (item: { id: string; name: string }) => void;
   items: Array<{
     id: string;
     name: string;
