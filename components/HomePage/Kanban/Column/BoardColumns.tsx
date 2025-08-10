@@ -70,6 +70,9 @@ const BoardColumns = () => {
       dispatch(getBoards(accessToken as string));
     }
   }, [isEditing, currentColumnId, accessToken, dispatch]);
+  // Draft + submission guard hooks must appear before any early return
+  const jobDraftRef = useRef<{ company?: string; jobTitle?: string; companyId?: string } | null>(null);
+  const [isSubmittingJob, setIsSubmittingJob] = useState(false);
 
   if (!currentBoard) return null;
 
@@ -120,24 +123,28 @@ const BoardColumns = () => {
   };
 
   const createJobApplication = () => {
+    if (isSubmittingJob) return;
+    setIsSubmittingJob(true);
+    const legacyTitle = localStorage.getItem('jobTitle');
+    const legacyCompanyId = localStorage.getItem('companyId');
+    const draft = jobDraftRef.current || {};
     const jobPost = {
       status: 'Job Created',
       accessToken: accessToken as string,
-      title: localStorage.getItem('jobTitle'),
+      title: draft.jobTitle || legacyTitle,
       columnId: localStorage.getItem('columnId'),
-      companyId: localStorage.getItem('companyId'),
+      companyId: draft.companyId || legacyCompanyId,
     };
 
     dispatch(createJobPost(jobPost)).then((result) => {
       const newJobPostId = result.payload.id;
-      // Allow redirect to a different selected board (if user changed board in modal)
       const selectedBoardId =
         localStorage.getItem('chosenBoardId') || (board_id as string);
       const targetPath = `/home/boards/${selectedBoardId}/job/${newJobPostId}/job-details`;
       router.push(targetPath);
+      setIsSubmittingJob(false);
     });
     dispatch(getBoards(accessToken as string));
-
     cleanupAfterJobPost();
   };
 
@@ -316,11 +323,16 @@ const BoardColumns = () => {
                 dialogTitle="Add Job"
                 buttonCancel="Discard"
                 buttonVariant="outline"
-                buttonConfirm="Save Job"
+                buttonConfirm={isSubmittingJob ? 'Saving...' : 'Save Job'}
                 actionFunction={createJobApplication}
                 stylings="w-11/12 flex justify-center text-2xl border py-3 mb-4 mx-auto rounded-md hover:border-blue-500 transition duration-300 delay-150 cursor-pointer"
               >
-                <AddJobShortForm columnOrder={column.order} />
+                <AddJobShortForm
+                  columnOrder={column.order}
+                  onDraftChange={(d) => {
+                    jobDraftRef.current = { ...jobDraftRef.current, ...d };
+                  }}
+                />
               </AlertDialogModal>
               {column.jobApplications &&
                 column.jobApplications.map((job) =>

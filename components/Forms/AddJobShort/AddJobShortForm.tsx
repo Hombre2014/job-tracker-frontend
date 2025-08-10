@@ -3,7 +3,7 @@
 import { debounce } from 'lodash';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'next/navigation';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { AddJobSchemaShort } from '@/schemas';
@@ -22,17 +22,29 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 
+interface AddJobShortFormProps {
+  columnOrder: number;
+  onValidationChange?: (isValid: boolean) => void;
+  // Incremental refactor: surface an in-memory draft so parents (modals) don't rely on localStorage.
+  onDraftChange?: (draft: {
+    company: string;
+    jobTitle: string;
+    companyId?: string;
+  }) => void;
+}
+
 const AddJobShortForm = ({
   columnOrder,
   onValidationChange,
-}: {
-  columnOrder: number;
-  onValidationChange?: (isValid: boolean) => void;
-}) => {
+  onDraftChange,
+}: AddJobShortFormProps) => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const [company, setCompany] = useState('');
   const [jobTitle, setJobTitle] = useState('');
+  const [companyId, setCompanyId] = useState<string | undefined>(undefined);
+  // Guard to prevent blur handler from firing creation when user is selecting from dropdown
+  const selectingRef = useRef(false);
   const accessToken = localStorage.getItem('accessToken');
   const [showDropdown, setShowDropdown] = useState(false);
   const { boards } = useAppSelector((state) => state.boards);
@@ -50,6 +62,7 @@ const AddJobShortForm = ({
     initialBoard.columns[0]?.name
   );
   const [matchingCompanies, setMatchingCompanies] = useState<string[]>([]);
+  const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
   const initialColumnName = initialBoard.columns[columnOrder].name;
   const initialBoardName = initialBoard.name;
 
@@ -133,56 +146,62 @@ const AddJobShortForm = ({
     };
   }, [debouncedSearch]);
 
+  const emitDraft = useCallback(
+    (next?: Partial<{ company: string; jobTitle: string; companyId?: string }>) => {
+      if (onDraftChange) {
+        onDraftChange({
+          company,
+          jobTitle,
+          companyId,
+          ...(next || {}),
+        });
+      }
+    },
+    [onDraftChange, company, jobTitle, companyId]
+  );
+
   const handleCompanyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setCompany(value);
     form.setValue('company', value);
     debouncedSearch(value);
+    emitDraft({ company: value });
+  setHighlightedIndex(-1); // reset highlight when user types
   };
 
   const handleCompanyBlur = () => {
-    setTimeout(() => {
-      setShowDropdown(false);
-      // Only proceed if no company was selected from dropdown
-      if (localStorage.getItem('companySelected') === 'true') {
-        localStorage.removeItem('companySelected');
-        return;
-      }
+    // If user is in the middle of selecting from dropdown, skip blur logic
+    if (selectingRef.current) {
+      selectingRef.current = false;
+      return;
+    }
+    setShowDropdown(false);
+    if (company.trim().length === 0) return;
 
-      if (matchingCompanies.includes(company)) {
-        localStorage.setItem('company', company);
-        // Get the existing company's ID
-        const existingCompany = matchingCompanies.find(
-          (comp) => comp === company
-        );
-
-        if (existingCompany) {
-          const values = {
-            accessToken,
-            companyName: company,
-          };
-
-          dispatch(getCompanyThatStartsWith(values))
-            .unwrap()
-            .then((result) => {
-              const companyData = result.find(
-                (comp: any) => comp.name === company
-              );
-              if (companyData) {
-                localStorage.setItem('companyId', companyData.id);
-              }
-            });
-        }
-      } else {
-        localStorage.setItem('company', company);
-        dispatch(createCompany({ accessToken, name: company }))
-          .unwrap()
-          .then((result) => {
-            const newCompanyId = result.id;
-            localStorage.setItem('companyId', newCompanyId);
-          });
-      }
-    }, 200);
+    if (matchingCompanies.includes(company)) {
+      const values = { accessToken, companyName: company };
+      dispatch(getCompanyThatStartsWith(values))
+        .unwrap()
+        .then((result) => {
+          const companyData = result.find((comp: any) => comp.name === company);
+          if (companyData) {
+            setCompanyId(companyData.id);
+            localStorage.setItem('companyId', companyData.id); // legacy
+            localStorage.setItem('company', company); // legacy
+            emitDraft({ company, companyId: companyData.id });
+          }
+        });
+    } else {
+      dispatch(createCompany({ accessToken, name: company }))
+        .unwrap()
+        .then((result) => {
+          const newCompanyId = result.id;
+          setCompanyId(newCompanyId);
+          localStorage.setItem('companyId', newCompanyId); // legacy
+          localStorage.setItem('company', company); // legacy
+          emitDraft({ company, companyId: newCompanyId });
+        });
+    }
   };
 
   const handleCompanySelect = async (selectedCompany: string) => {
@@ -190,27 +209,27 @@ const AddJobShortForm = ({
     setCompany(fullCompanyName);
     form.setValue('company', fullCompanyName);
     setShowDropdown(false);
-    localStorage.setItem('company', fullCompanyName);
-    localStorage.setItem('companySelected', 'true');
+    localStorage.setItem('company', fullCompanyName); // legacy persistence
 
-    const values = {
-      accessToken,
-      companyName: fullCompanyName,
-    };
-
-    const result = await dispatch(getCompanyThatStartsWith(values)).unwrap();
-    const existingCompany = result.find(
-      (comp: any) => comp.name === fullCompanyName
-    );
-    if (existingCompany) {
-      localStorage.setItem('companyId', existingCompany.id);
+    const values = { accessToken, companyName: fullCompanyName };
+    try {
+      const result = await dispatch(getCompanyThatStartsWith(values)).unwrap();
+      const existingCompany = result.find((comp: any) => comp.name === fullCompanyName);
+      if (existingCompany) {
+        setCompanyId(existingCompany.id);
+        localStorage.setItem('companyId', existingCompany.id); // legacy
+        emitDraft({ company: fullCompanyName, companyId: existingCompany.id });
+      }
+    } finally {
+      selectingRef.current = false;
     }
   };
 
   const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setJobTitle(e.target.value);
-    localStorage.setItem('jobTitle', e.target.value);
+    localStorage.setItem('jobTitle', e.target.value); // legacy persistence
     form.setValue('jobTitle', e.target.value);
+    emitDraft({ jobTitle: e.target.value });
   };
 
   const watchCompany = form.watch('company');
@@ -221,7 +240,8 @@ const AddJobShortForm = ({
     if (onValidationChange) {
       onValidationChange(isValid);
     }
-  }, [watchCompany, watchJobTitle, onValidationChange]);
+  emitDraft();
+  }, [watchCompany, watchJobTitle, onValidationChange, emitDraft]);
 
   return (
     <Form {...form}>
@@ -247,14 +267,46 @@ const AddJobShortForm = ({
                 placeholder="Company name"
                 onBlur={handleCompanyBlur}
                 onChange={handleCompanyChange}
+                onKeyDown={(e) => {
+                  if (!showDropdown || matchingCompanies.length === 0) return;
+                  if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setHighlightedIndex((prev) => {
+                      const next = prev + 1;
+                      return next >= matchingCompanies.length ? 0 : next;
+                    });
+                  } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setHighlightedIndex((prev) => {
+                      const next = prev - 1;
+                      return next < 0 ? matchingCompanies.length - 1 : next;
+                    });
+                  } else if (e.key === 'Enter') {
+                    if (highlightedIndex >= 0) {
+                      e.preventDefault();
+                      selectingRef.current = true; // prevent blur logic
+                      handleCompanySelect(matchingCompanies[highlightedIndex]);
+                    }
+                  } else if (e.key === 'Escape') {
+                    setShowDropdown(false);
+                  }
+                }}
               />
               {showDropdown && matchingCompanies.length > 0 && (
                 <div className="absolute z-10 w-full bg-white dark:bg-slate-800 mt-1 border border-gray-200 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-auto">
                   {matchingCompanies.map((matchingCompany, index) => (
                     <div
                       key={index}
-                      className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-slate-700 cursor-pointer dark:text-white"
-                      onClick={() => handleCompanySelect(matchingCompany)}
+                      className={`px-4 py-2 cursor-pointer dark:text-white hover:bg-gray-100 dark:hover:bg-slate-700 ${
+                        index === highlightedIndex
+                          ? 'bg-gray-100 dark:bg-slate-700'
+                          : ''
+                      }`}
+                      onMouseDown={() => {
+                        selectingRef.current = true; // set before blur fires
+                        handleCompanySelect(matchingCompany);
+                      }}
+                      onClick={(e) => e.preventDefault()}
                     >
                       {matchingCompany}
                     </div>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { GoPersonAdd } from 'react-icons/go';
 import { PiBriefcaseLight } from 'react-icons/pi';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -34,24 +34,36 @@ const CreateMenu = () => {
   const [isFormValid, setIsFormValid] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const [showJobModal, setShowJobModal] = useState(false);
+  const [isSubmittingJob, setIsSubmittingJob] = useState(false);
+  // In-memory draft (incremental refactor) populated by AddJobShortForm via onDraftChange
+  const jobDraftRef = useRef<{
+    company?: string;
+    jobTitle?: string;
+    companyId?: string;
+  } | null>(null);
   const isContactsPage = pathname?.includes('/home/contacts');
   const [showContactModal, setShowContactModal] = useState(false);
   const [pendingImage, setPendingImage] = useState<File | null>(null);
 
   const createJobApplication = () => {
+    if (isSubmittingJob) return; // guard against double click
+    setIsSubmittingJob(true);
     setShowJobModal(false);
-
+    const legacyTitle = localStorage.getItem('jobTitle');
+    const legacyCompanyId = localStorage.getItem('companyId');
+    const draft = jobDraftRef.current || {};
     const jobPost = {
       status: 'Job Created',
       accessToken: accessToken as string,
-      title: localStorage.getItem('jobTitle'),
+      title: draft.jobTitle || legacyTitle,
       columnId: localStorage.getItem('columnId'),
-      companyId: localStorage.getItem('companyId'),
+      companyId: draft.companyId || legacyCompanyId,
     };
 
     dispatch(createJobPost(jobPost)).then((result) => {
       const newJobPostId = result.payload.id;
-      const selectedBoardId = localStorage.getItem('chosenBoardId') || (board_id as string);
+      const selectedBoardId =
+        localStorage.getItem('chosenBoardId') || (board_id as string);
       const targetBoardId = selectedBoardId || (board_id as string);
       const currentBoardId = board_id as string;
       const targetPath = `/home/boards/${targetBoardId}/job/${newJobPostId}/job-details`;
@@ -61,6 +73,7 @@ const CreateMenu = () => {
       } else {
         router.push(targetPath);
       }
+      setIsSubmittingJob(false);
     });
     dispatch(getBoards(accessToken as string));
 
@@ -237,14 +250,19 @@ const CreateMenu = () => {
           buttonVariant="none"
           dialogTitle="Add Job"
           buttonCancel="Discard"
-          buttonConfirm="Save Job"
+          buttonConfirm={isSubmittingJob ? 'Saving...' : 'Save Job'}
           actionFunction={createJobApplication}
           onOpenChange={(open) => {
             setShowJobModal(open);
             if (!open) setIsMenuOpen(false);
           }}
         >
-          <AddJobShortForm columnOrder={0} />
+          <AddJobShortForm
+            columnOrder={0}
+            onDraftChange={(d) => {
+              jobDraftRef.current = { ...jobDraftRef.current, ...d };
+            }}
+          />
         </AlertDialogModal>
       )}
 
