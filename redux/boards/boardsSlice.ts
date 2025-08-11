@@ -16,45 +16,22 @@ import {
 
 interface BoardsState {
   boards: Board[];
+  error: string | null;
   archivedBoards: Board[];
   boardsStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
-  error: string | null;
 }
 
 const initialState: BoardsState = {
   boards: [],
+  error: null,
   archivedBoards: [],
   boardsStatus: 'idle',
-  error: null,
 };
 
 export const boardsSlice = createSlice({
   name: 'boards',
   initialState,
-  reducers: {
-    // Optimistic update for column reordering
-    optimisticReorderColumns: (state, action) => {
-      const { boardId, newColumnOrder } = action.payload;
-      const boardIndex = state.boards.findIndex(
-        (board) => board.id === boardId
-      );
-      if (boardIndex !== -1) {
-        // Reorder the columns based on the new order array
-        const board = state.boards[boardIndex];
-        const reorderedColumns = newColumnOrder.map(
-          (index: number) => board.columns[index]
-        );
-        // Update the order property of each column to match its new position
-        reorderedColumns.forEach((column: any, index: number) => {
-          column.order = index;
-        });
-        state.boards[boardIndex] = {
-          ...board,
-          columns: reorderedColumns,
-        };
-      }
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(getBoards.pending, (state) => {

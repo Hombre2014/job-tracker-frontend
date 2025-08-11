@@ -22,22 +22,6 @@ const types = [
   { value: 'PERSONAL', label: 'PERSONAL' },
 ];
 
-interface EmailAndPhoneProps {
-  id: string;
-  value: string;
-  initialType: string;
-  contact: 'email' | 'phone';
-  hasError?: boolean; // New prop for validation error
-  errorMessage?: string; // New prop for error message
-  returnData: (contact: 'email' | 'phone', id: string) => void;
-  handleChange: (
-    id: string,
-    value: string,
-    type: string,
-    options?: { blur?: boolean }
-  ) => void;
-}
-
 const EmailAndPhone = ({
   id,
   value,
@@ -77,19 +61,24 @@ const EmailAndPhone = ({
     setShowDeleteModal(false);
   };
 
+  const isError = hasError || Boolean(errorMessage);
+  const describedBy = errorMessage ? `${id}-error` : undefined;
+
   return (
     <div className="w-full px-2">
       <div className="w-full flex items-center justify-between">
         <div className="flex items-center gap-2 flex-1">
           {contact === 'email' ? (
-            <RxEnvelopeClosed 
-              size={20} 
-              className={hasError ? "text-red-500" : "text-gray-500"} 
+            <RxEnvelopeClosed
+              size={20}
+              aria-hidden={true}
+              className={isError ? 'text-red-500' : 'text-gray-500'}
             />
           ) : (
-            <HiOutlinePhone 
-              size={20} 
-              className={hasError ? "text-red-500" : "text-gray-500"} 
+            <HiOutlinePhone
+              size={20}
+              aria-hidden={true}
+              className={isError ? 'text-red-500' : 'text-gray-500'}
             />
           )}
           <input
@@ -98,12 +87,14 @@ const EmailAndPhone = ({
             title="contact"
             value={inputValue}
             onChange={handleInputChange}
+            placeholder={contact.charAt(0).toUpperCase() + contact.slice(1)}
             className={`outline-none bg-transparent border-none pl-2 text-sm flex-1 ${
-              hasError 
-                ? 'text-red-600 placeholder-red-400' 
+              isError
+                ? 'text-red-600 placeholder-red-400'
                 : 'text-gray-900 dark:text-white'
             }`}
-            placeholder={contact.charAt(0).toUpperCase() + contact.slice(1)}
+            // aria-invalid={isError ? true : false}
+            aria-describedby={describedBy}
           />
         </div>
         <div className="flex items-center gap-4">
@@ -142,12 +133,12 @@ const EmailAndPhone = ({
             </PopoverContent>
           </Popover>
           <AlertDialogModal
+            cleanupType="none"
             stylings="p-0 pr-1"
             buttonVariant="none"
             buttonCancel="Cancel"
             buttonConfirm="Delete"
             open={showDeleteModal}
-            cleanupType="none"
             destructiveVariant={true}
             onOpenChange={setShowDeleteModal}
             actionFunction={handleConfirmDelete}
@@ -162,9 +153,11 @@ const EmailAndPhone = ({
           />
         </div>
       </div>
-      {hasError && errorMessage && (
+      {errorMessage && (
         <div className="px-4 mt-1">
-          <p className="text-red-500 text-xs">{errorMessage}</p>
+          <p className="text-red-500 text-xs" id={describedBy} role="alert">
+            {errorMessage}
+          </p>
         </div>
       )}
     </div>

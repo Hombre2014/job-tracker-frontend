@@ -370,3 +370,19 @@ interface DocumentFilterBarProps {
   selectedCategory: string | null;
   setSelectedCategory: (category: string | null) => void;
 }
+
+interface EmailAndPhoneProps {
+  id: string;
+  value: string;
+  hasError?: boolean; // New prop for validation error
+  initialType: string;
+  errorMessage?: string; // New prop for error message
+  contact: 'email' | 'phone';
+  returnData: (contact: 'email' | 'phone', id: string) => void;
+  handleChange: (
+    id: string,
+    value: string,
+    type: string,
+    options?: { blur?: boolean }
+  ) => void;
+}
