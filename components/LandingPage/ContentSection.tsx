@@ -90,7 +90,7 @@ const ContentSection = ({ name, description, id }: ContentSectionProps) => {
   const colorClass = id ? sectionColors[id] : 'from-gray-100 to-white';
   const icon = id ? sectionIcons[id] : null;
   const paragraph = id ? sectionParagraphs[id] : '';
-  const imageSrc = id ? sectionImages[id] : '/images/Job_Search_Board.png';
+  const imageSrc = id ? sectionImages[id] : '/images/JobsBoard.png';
 
   return (
     <section

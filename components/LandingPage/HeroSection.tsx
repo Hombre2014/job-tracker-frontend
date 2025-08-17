@@ -46,7 +46,7 @@ const HeroSection = () => {
               priority
               width={1200}
               height={900}
-              src="/images/Job_Search_Board.png"
+              src="/images/JobsBoard.png"
               sizes="(min-width: 768px) 50vw, 90vw"
               alt="Screenshot of job tracker dashboard"
               className="w-full h-full object-contain rounded-xl shadow-lg"
