@@ -3,6 +3,73 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.191.0] - 2025-08-17
+
+### Email Notifications System Implementation
+
+#### Comprehensive Notification Preferences Management
+
+- **Implemented complete email notifications system**: Added daily and weekly job board status digest functionality
+  - **Redux Architecture**: Created dedicated notifications slice with proper state management for daily/weekly settings
+  - **API Integration**: Implemented thunks for fetching and updating notification preferences via `/notifications/report` endpoint
+  - **Settings UI Integration**: Enhanced settings modal with functional notification toggles and save functionality
+  - **Default Configuration**: Daily and weekly notifications default to 9:00 AM in user's local timezone
+  - **Smart Scheduling**: Weekly notifications scheduled for Monday, daily notifications respect user's timezone offset
+  - **Files**:
+    - `redux/notifications/notificationsThunk.ts` (new)
+    - `redux/notifications/notificationsSlice.ts` (new)
+    - `redux/notifications/index.ts` (new)
+    - `redux/store.ts` (enhanced with notifications reducer)
+    - `app/(loggedin)/home/settings/page.tsx` (integrated notification management)
+
+#### Technical Implementation Details
+
+- **State Management Architecture**: Comprehensive Redux integration with proper TypeScript interfaces
+
+  - **NotificationSettings Interface**: Strongly typed with time, timezone offset, day of week, and type fields
+  - **API Response Handling**: Proper handling of null values representing "OFF" state for notifications
+  - **Loading States**: Comprehensive loading and error state management for better UX
+  - **Persistence**: Notifications state included in Redux persist whitelist for local storage
+
+- **API Integration Pattern**: Single endpoint handling both GET and POST operations
+  - **Unified Endpoint**: Uses `/notifications/report` for both fetching and updating preferences
+  - **Request Structure**: Separate daily and weekly objects with null values for disabled notifications
+  - **Timezone Handling**: Automatic timezone offset calculation using JavaScript Date API
+  - **Error Handling**: Comprehensive error management with user-friendly toast notifications
+
+#### User Experience Features
+
+- **Settings Modal Enhancement**: Seamless integration with existing settings interface
+
+  - **Tab-Based Navigation**: Notification preferences accessible via "Notes & Notifications" tab
+  - **Toggle Interface**: Simple checkbox toggles for daily and weekly digest preferences
+  - **Save Functionality**: Dedicated save button with loading states and success/error feedback
+  - **State Synchronization**: UI toggles reflect actual backend notification settings
+  - **Automatic Loading**: Notification preferences loaded automatically when settings modal opens
+
+- **Default Notification Schedule**: User-friendly default configuration
+  - **Daily Notifications**: 9:00 AM in user's local timezone
+  - **Weekly Notifications**: Monday at 9:00 AM in user's local timezone
+  - **Timezone Awareness**: Automatic timezone offset calculation for accurate delivery
+  - **Flexible Configuration**: Backend supports different times and days (extensible for future enhancements)
+
+#### Technical Benefits
+
+- **Type Safety**: Complete TypeScript coverage with proper interfaces and type checking
+- **Error Resilience**: Comprehensive error handling prevents crashes and provides user feedback
+- **Performance**: Efficient state management with minimal re-renders and optimized API calls
+- **Maintainability**: Clean separation of concerns between Redux logic, API calls, and UI components
+- **Extensibility**: Architecture supports future notification types and scheduling options
+
+#### CodeRabbit Implementation - Error Handling Improvements
+
+- **Enhanced Redux error handling**: Implemented robust error fallback patterns in notifications slice
+  - **Issue**: Redux rejected actions assumed `action.payload` was always a string, risking undefined errors
+  - **Solution**: Added defensive error handling with fallback chain: `action.payload` → `action.error.message` → `'Unknown error'`
+  - **Implementation**: Both `getBothNotifications` and `createUpdateDeleteNotifications` thunks now use consistent error handling
+  - **Benefits**: Prevents runtime crashes from undefined error payloads, ensures meaningful error messages for users
+  - **Files**: `redux/notifications/notificationsSlice.ts`
+
 ## [0.190.0] - 2025-08-10
 
 ### Board Rename Flow Experiment and Rollback - 2025-08-10

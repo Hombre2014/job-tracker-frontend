@@ -1,11 +1,15 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { getBothNotifications, createUpdateDeleteNotifications, NotificationsResponse } from './notificationsThunk';
+import {
+  getBothNotifications,
+  createUpdateDeleteNotifications,
+  NotificationsResponse,
+} from './notificationsThunk';
 
 interface NotificationsState {
-  daily: any | null;
-  weekly: any | null;
   loading: boolean;
   error: string | null;
+  daily: NotificationsResponse['daily'] | null;
+  weekly: NotificationsResponse['weekly'] | null;
 }
 
 const initialState: NotificationsState = {
@@ -37,9 +41,10 @@ const notificationsSlice = createSlice({
       })
       .addCase(getBothNotifications.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        const fallback = (action as any)?.error?.message ?? 'Unknown error';
+        state.error = (action.payload as string | undefined) ?? fallback;
       })
-    // createUpdateDeleteNotifications
+      // createUpdateDeleteNotifications
       .addCase(createUpdateDeleteNotifications.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -51,7 +56,8 @@ const notificationsSlice = createSlice({
       })
       .addCase(createUpdateDeleteNotifications.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string;
+        const fallback = (action as any)?.error?.message ?? 'Unknown error';
+        state.error = (action.payload as string | undefined) ?? fallback;
       });
   },
 });

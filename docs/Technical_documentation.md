@@ -1,5 +1,350 @@
 # Technical Documentation
 
+## Email Notifications System Architecture (17/08/2025)
+
+### System Overview
+
+The email notifications system provides users with automated job board status updates via daily and weekly digest emails. The system is built with a Redux-based state management architecture, integrated with a unified backend API endpoint, and seamlessly embedded into the existing settings modal interface.
+
+### Architecture Components
+
+#### Redux State Management
+
+**Notifications Slice Structure**:
+
+```typescript
+// redux/notifications/notificationsSlice.ts
+interface NotificationsState {
+  daily: NotificationSettings | null;
+  weekly: NotificationSettings | null;
+  loading: boolean;
+  error: string | null;
+}
+
+interface NotificationSettings {
+  id?: string;
+  time: string; // "HH:MM" format (e.g., "09:00")
+  timezoneOffset: number; // -840 to 720 minutes
+  type: 'DAILY' | 'WEEKLY';
+  dayOfWeek?:
+    | 'MONDAY'
+    | 'TUESDAY'
+    | 'WEDNESDAY'
+    | 'THURSDAY'
+    | 'FRIDAY'
+    | 'SATURDAY'
+    | 'SUNDAY';
+  scheduledTime?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string | null;
+}
+```
+
+**Key Design Decisions**:
+
+- **Null State Handling**: `null` values represent disabled notifications ("OFF" state)
+- **Timezone Awareness**: `timezoneOffset` ensures notifications are sent at correct local time
+- **Type Safety**: Strongly typed interfaces prevent runtime errors
+- **Extensible Structure**: Architecture supports future notification types and scheduling options
+
+#### API Integration Pattern
+
+**Unified Endpoint Design**:
+
+```typescript
+// Single endpoint for both GET and POST operations
+const ENDPOINT = '/notifications/report';
+
+// GET: Fetch current notification settings
+export const getBothNotifications = createAsyncThunk(
+  'notifications/getBothNotifications',
+  async (accessToken: string) => {
+    const response = await client.get(ENDPOINT, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    return response.data as NotificationsResponse;
+  }
+);
+
+// POST: Update notification preferences
+export const createUpdateDeleteNotifications = createAsyncThunk(
+  'notifications/createUpdateDeleteNotifications',
+  async ({
+    accessToken,
+    notifications,
+  }: {
+    accessToken: string;
+    notifications: CreateUpdateNotificationRequest;
+  }) => {
+    const response = await client.post(ENDPOINT, notifications, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    return response.data as NotificationsResponse;
+  }
+);
+```
+
+**Request/Response Structure**:
+
+```typescript
+// Request format for updating notifications
+interface CreateUpdateNotificationRequest {
+  daily: {
+    time: string;
+    timezoneOffset: number;
+  } | null;
+  weekly: {
+    time: string;
+    timezoneOffset: number;
+    dayOfWeek:
+      | 'MONDAY'
+      | 'TUESDAY'
+      | 'WEDNESDAY'
+      | 'THURSDAY'
+      | 'FRIDAY'
+      | 'SATURDAY'
+      | 'SUNDAY';
+  } | null;
+}
+
+// Response format from backend
+interface NotificationsResponse {
+  daily: NotificationSettings | null;
+  weekly: NotificationSettings | null;
+}
+```
+
+#### UI Integration Architecture
+
+**Settings Modal Enhancement**:
+
+```typescript
+// app/(loggedin)/home/settings/page.tsx
+const Settings = () => {
+  const { daily, weekly, loading } = useAppSelector(
+    (state) => state.notifications
+  );
+  const [weeklyDigest, setWeeklyDigest] = useState(!!weekly);
+  const [dailyDigest, setDailyDigest] = useState(!!daily);
+
+  // Load notifications on component mount
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      dispatch(getBothNotifications(token));
+    }
+  }, [dispatch]);
+
+  // Sync UI state with Redux state
+  useEffect(() => {
+    setWeeklyDigest(!!weekly);
+    setDailyDigest(!!daily);
+  }, [weekly, daily]);
+
+  const handleSaveNotifications = async () => {
+    const timezoneOffset = new Date().getTimezoneOffset();
+    const notifications = {
+      daily: dailyDigest
+        ? {
+            time: '09:00',
+            timezoneOffset: -timezoneOffset, // Convert to server format
+          }
+        : null,
+      weekly: weeklyDigest
+        ? {
+            time: '09:00',
+            timezoneOffset: -timezoneOffset,
+            dayOfWeek: 'MONDAY' as const,
+          }
+        : null,
+    };
+
+    await dispatch(
+      createUpdateDeleteNotifications({
+        accessToken,
+        notifications,
+      })
+    );
+  };
+};
+```
+
+### Technical Implementation Details
+
+#### Timezone Handling Strategy
+
+**Client-Side Calculation**:
+
+```typescript
+// JavaScript getTimezoneOffset() returns minutes behind UTC
+// Server expects minutes ahead of UTC, so we negate the value
+const timezoneOffset = new Date().getTimezoneOffset();
+const serverTimezoneOffset = -timezoneOffset;
+
+// Example: User in EST (UTC-5)
+// getTimezoneOffset() returns 300 (5 hours * 60 minutes)
+// Server receives -300 (indicating UTC-5)
+```
+
+**Benefits**:
+
+- Automatic timezone detection without user input
+- Accurate notification delivery regardless of user location
+- Handles daylight saving time transitions automatically
+- Server can schedule notifications in user's local time
+
+#### State Persistence Strategy
+
+**Redux Persist Integration**:
+
+```typescript
+// redux/store.ts
+const persistConfig = {
+  key: 'root',
+  storage,
+  whitelist: [
+    'user',
+    'boards',
+    'companies',
+    'contacts',
+    'jobs',
+    'notes',
+    'documents',
+    'notifications', // Added to persist whitelist
+  ],
+};
+```
+
+**Benefits**:
+
+- Notification preferences persist across browser sessions
+- Reduces API calls by caching settings locally
+- Provides immediate UI feedback while API calls are in progress
+- Maintains user preferences during offline periods
+
+#### Error Handling Architecture
+
+**Comprehensive Error Management**:
+
+```typescript
+// Thunk-level error handling
+export const createUpdateDeleteNotifications = createAsyncThunk(
+  'notifications/createUpdateDeleteNotifications',
+  async (values, thunkAPI) => {
+    try {
+      const response = await client.post(
+        '/notifications/report',
+        values.notifications,
+        {
+          headers: { Authorization: `Bearer ${values.accessToken}` },
+        }
+      );
+      return response.data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Error updating notifications'
+      );
+    }
+  }
+);
+
+// UI-level error handling
+const handleSaveNotifications = async () => {
+  try {
+    await dispatch(
+      createUpdateDeleteNotifications({ accessToken, notifications })
+    ).unwrap();
+    toast.success('Notification preferences updated successfully!');
+    router.back();
+  } catch (error) {
+    console.error('Error updating notifications:', error);
+    toast.error('Failed to update notification preferences. Please try again.');
+  }
+};
+```
+
+### Default Configuration Strategy
+
+#### User-Friendly Defaults
+
+**Notification Schedule**:
+
+- **Daily Notifications**: 9:00 AM in user's local timezone
+- **Weekly Notifications**: Monday at 9:00 AM in user's local timezone
+- **Rationale**: Morning delivery ensures users see updates at start of workday
+
+**Implementation**:
+
+```typescript
+const notifications = {
+  daily: dailyDigest
+    ? {
+        time: '09:00', // Fixed time for simplicity
+        timezoneOffset: -timezoneOffset,
+      }
+    : null,
+  weekly: weeklyDigest
+    ? {
+        time: '09:00', // Consistent with daily
+        timezoneOffset: -timezoneOffset,
+        dayOfWeek: 'MONDAY' as const, // Start of work week
+      }
+    : null,
+};
+```
+
+### Performance Considerations
+
+#### Optimized State Updates
+
+**Minimal Re-renders**:
+
+- UI state only updates when Redux state changes
+- Loading states prevent multiple simultaneous API calls
+- Debounced user interactions prevent excessive state updates
+
+**Efficient API Usage**:
+
+- Single API call loads both daily and weekly preferences
+- Batch updates send both preferences in single request
+- Cached state reduces redundant API calls
+
+### Security Considerations
+
+#### Authentication Integration
+
+**Token-Based Security**:
+
+- All API calls require valid JWT access token
+- Token validation handled by existing authentication system
+- Automatic token refresh maintains session continuity
+
+**Data Privacy**:
+
+- Notification preferences stored per-user with proper isolation
+- No sensitive data exposed in client-side state
+- Timezone information calculated client-side (no server tracking)
+
+### Future Enhancement Opportunities
+
+#### Extensible Architecture
+
+**Potential Enhancements**:
+
+1. **Custom Time Selection**: Allow users to choose notification times
+2. **Multiple Weekly Days**: Support notifications on multiple days
+3. **Notification Types**: Add different digest formats (summary, detailed, etc.)
+4. **Frequency Options**: Support bi-weekly, monthly notifications
+5. **Content Customization**: Allow users to choose what information to include
+
+**Implementation Readiness**:
+
+- Current architecture supports these enhancements without breaking changes
+- TypeScript interfaces can be extended for new notification types
+- Redux state structure accommodates additional notification settings
+- API endpoint design supports additional parameters
+
 ## Board Rename Flow Experiment and Rollback (10/08/2025)
 
 ### Context
@@ -8,13 +353,13 @@ An experimental refinement of the inline board rename interaction was attempted 
 
 ### Experimental Architecture (Rolled Back)
 
-| Concern | Experimental Mechanism | Outcome |
-|---------|------------------------|---------|
-| Double dispatch (Enter + blur) | `hasConfirmedRef` guard set on first trigger | Guard worked but added complexity |
-| Concurrent rename protection | `isRenamingRef` in-flight flag | Effective, but not essential with low latency |
-| Escape restore | `originalNameRef` captured initial value | Inconsistent restoration observed in manual tests |
-| Network reduction | Removed trailing `getBoards` after successful `renameBoard` | Reduced requests but surfaced perceived staleness risk |
-| User feedback | Toast success/error notifications | Not reliably visible; removed |
+| Concern                        | Experimental Mechanism                                      | Outcome                                                |
+| ------------------------------ | ----------------------------------------------------------- | ------------------------------------------------------ |
+| Double dispatch (Enter + blur) | `hasConfirmedRef` guard set on first trigger                | Guard worked but added complexity                      |
+| Concurrent rename protection   | `isRenamingRef` in-flight flag                              | Effective, but not essential with low latency          |
+| Escape restore                 | `originalNameRef` captured initial value                    | Inconsistent restoration observed in manual tests      |
+| Network reduction              | Removed trailing `getBoards` after successful `renameBoard` | Reduced requests but surfaced perceived staleness risk |
+| User feedback                  | Toast success/error notifications                           | Not reliably visible; removed                          |
 
 ### Rollback Implementation
 
@@ -181,7 +526,7 @@ LandingPage/
 └── Navbar.tsx         - Header navigation
 ```
 
-#### Technical Implementation Details
+#### Technical Implementation Details (08/08/2025)
 
 ##### 1. Hero Section Enhancement
 

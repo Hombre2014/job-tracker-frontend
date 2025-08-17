@@ -13,7 +13,10 @@ import { useAppSelector } from '@/redux/hooks';
 import { useAppDispatch } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
 import { updateUser } from '@/redux/user/userSlice';
-import { getBothNotifications, createUpdateDeleteNotifications } from '@/redux/notifications/notificationsThunk';
+import {
+  getBothNotifications,
+  createUpdateDeleteNotifications,
+} from '@/redux/notifications/notificationsThunk';
 
 const Settings = () => {
   const router = useRouter();
@@ -26,7 +29,9 @@ const Settings = () => {
   const [newEmail, setNewEmail] = useState(email);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
-  const { daily, weekly, loading } = useAppSelector((state) => state.notifications);
+  const { daily, weekly, loading } = useAppSelector(
+    (state) => state.notifications
+  );
   const [weeklyDigest, setWeeklyDigest] = useState(!!weekly);
   const [dailyDigest, setDailyDigest] = useState(!!daily);
 
@@ -69,8 +74,8 @@ const Settings = () => {
   const handleSaveNotifications = async () => {
     if (!accessToken) {
       toast.error('Access token not available. Please log in again.', {
-        position: 'top-right',
         autoClose: 3000,
+        position: 'top-right',
       });
       return;
     }
@@ -78,42 +83,51 @@ const Settings = () => {
     try {
       const timezoneOffset = new Date().getTimezoneOffset();
       const notifications = {
-        daily: dailyDigest ? {
-          time: '09:00',
-          timezoneOffset: -timezoneOffset
-        } : null,
-        weekly: weeklyDigest ? {
-          time: '09:00',
-          timezoneOffset: -timezoneOffset,
-          dayOfWeek: 'MONDAY' as const
-        } : null
+        daily: dailyDigest
+          ? {
+              time: '09:00',
+              timezoneOffset: timezoneOffset,
+            }
+          : null,
+        weekly: weeklyDigest
+          ? {
+              time: '09:00',
+              dayOfWeek: 'MONDAY' as const,
+              timezoneOffset: timezoneOffset,
+            }
+          : null,
       };
 
-      await dispatch(createUpdateDeleteNotifications({
-        accessToken,
-        notifications
-      })).unwrap();
+      await dispatch(
+        createUpdateDeleteNotifications({
+          accessToken,
+          notifications,
+        })
+      ).unwrap();
 
       toast.success('Notification preferences updated successfully!', {
-        position: 'top-right',
         autoClose: 3000,
+        position: 'top-right',
       });
 
       router.back();
     } catch (error) {
       console.error('Error updating notifications:', error);
-      toast.error('Failed to update notification preferences. Please try again.', {
-        position: 'top-right',
-        autoClose: 3000,
-      });
+      toast.error(
+        'Failed to update notification preferences. Please try again.',
+        {
+          autoClose: 3000,
+          position: 'top-right',
+        }
+      );
     }
   };
 
   const handleSaveProfile = async () => {
     if (!accessToken) {
       toast.error('Access token not available. Please log in again.', {
-        position: 'top-right',
         autoClose: 3000,
+        position: 'top-right',
       });
       return;
     }
@@ -121,8 +135,8 @@ const Settings = () => {
     try {
       await dispatch(
         updateUser({
-          email: newEmail,
           role: 'user',
+          email: newEmail,
           lastName: newLastName,
           firstName: newFirstName,
           accessToken: accessToken,
@@ -130,12 +144,12 @@ const Settings = () => {
       ).unwrap();
 
       toast.success('Profile updated successfully!', {
-        position: 'top-right',
         autoClose: 3000,
-        hideProgressBar: false,
+        draggable: true,
         closeOnClick: true,
         pauseOnHover: true,
-        draggable: true,
+        position: 'top-right',
+        hideProgressBar: false,
       });
 
       // Close the modal by navigating back to the previous page
@@ -143,12 +157,12 @@ const Settings = () => {
     } catch (error) {
       console.error('Error updating profile:', error);
       toast.error('Failed to update profile. Please try again.', {
-        position: 'top-right',
         autoClose: 3000,
-        hideProgressBar: false,
+        draggable: true,
         closeOnClick: true,
         pauseOnHover: true,
-        draggable: true,
+        position: 'top-right',
+        hideProgressBar: false,
       });
     }
   };
