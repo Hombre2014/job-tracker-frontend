@@ -5,13 +5,20 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 export interface NotificationSettings {
   id?: string;
   time: string; // "HH:MM" format
-  timezoneOffset: number; // -840 to 720
-  dayOfWeek?: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
-  type: 'DAILY' | 'WEEKLY';
-  scheduledTime?: string;
-  createdAt?: string;
   updatedAt?: string;
+  createdAt?: string;
+  timezoneOffset: number; // -840 to 720
+  scheduledTime?: string;
+  type: 'DAILY' | 'WEEKLY';
   deletedAt?: string | null;
+  dayOfWeek?:
+    | 'MONDAY'
+    | 'TUESDAY'
+    | 'WEDNESDAY'
+    | 'THURSDAY'
+    | 'FRIDAY'
+    | 'SATURDAY'
+    | 'SUNDAY';
 }
 
 export interface NotificationsResponse {
@@ -20,8 +27,20 @@ export interface NotificationsResponse {
 }
 
 export interface CreateUpdateNotificationRequest {
-  daily: Omit<NotificationSettings, 'id' | 'type' | 'scheduledTime' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'dayOfWeek'> | null;
-  weekly: Omit<NotificationSettings, 'id' | 'type' | 'scheduledTime' | 'createdAt' | 'updatedAt' | 'deletedAt'> | null;
+  weekly: Omit<
+    NotificationSettings,
+    'id' | 'type' | 'scheduledTime' | 'createdAt' | 'updatedAt' | 'deletedAt'
+  > | null;
+  daily: Omit<
+    NotificationSettings,
+    | 'id'
+    | 'type'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'deletedAt'
+    | 'dayOfWeek'
+    | 'scheduledTime'
+  > | null;
 }
 
 export const getBothNotifications = createAsyncThunk(
@@ -44,7 +63,13 @@ export const getBothNotifications = createAsyncThunk(
 
 export const createUpdateDeleteNotifications = createAsyncThunk(
   'notifications/createUpdateDeleteNotifications',
-  async (values: { accessToken: string; notifications: CreateUpdateNotificationRequest }, thunkAPI) => {
+  async (
+    values: {
+      accessToken: string;
+      notifications: CreateUpdateNotificationRequest;
+    },
+    thunkAPI
+  ) => {
     const { accessToken, notifications } = values;
     try {
       const res = await client.post('/notifications/report', notifications, {

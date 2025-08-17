@@ -17,6 +17,7 @@ import jobsSlice from './jobs/jobsSlice';
 import notesSlice from './notes/notesSlice';
 import boardsSlice from './boards/boardsSlice';
 import contactsSlice from './contacts/contactsSlice';
+import { notificationsReducer } from './notifications';
 import companiesSlice from './companies/companiesSlice';
 import documentsSlice from './documents/documentsSlice';
 
@@ -53,6 +54,7 @@ const persistConfig = {
     'contacts',
     'companies',
     'documents',
+    'notifications',
   ],
 };
 
@@ -64,6 +66,7 @@ const rootReducer = combineReducers({
   contacts: contactsSlice,
   companies: companiesSlice,
   documents: documentsSlice,
+  notifications: notificationsReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
