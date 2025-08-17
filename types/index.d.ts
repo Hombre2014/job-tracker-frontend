@@ -139,11 +139,14 @@ interface LinkDocumentProps {
 }
 
 interface ComboBoardListBoxProps {
+  value?: string;
   searchItem: string;
   initialBoardString?: string;
   initialColumnString?: string;
   firstColumnOfTheBoard?: string;
   itemsType: 'boards' | 'columns';
+  // Optional controlled value overrides
+  onSelectItem?: (item: { id: string; name: string }) => void;
   items: Array<{
     id: string;
     name: string;
@@ -306,6 +309,8 @@ interface Board {
   userId: string;
   columns: Column[];
   isArchived: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface JobPostCardProps {
@@ -364,4 +369,20 @@ interface DocumentFilterBarProps {
   categoryCounts: CategoryCount[];
   selectedCategory: string | null;
   setSelectedCategory: (category: string | null) => void;
+}
+
+interface EmailAndPhoneProps {
+  id: string;
+  value: string;
+  hasError?: boolean; // New prop for validation error
+  initialType: string;
+  errorMessage?: string; // New prop for error message
+  contact: 'email' | 'phone';
+  returnData: (contact: 'email' | 'phone', id: string) => void;
+  handleChange: (
+    id: string,
+    value: string,
+    type: string,
+    options?: { blur?: boolean }
+  ) => void;
 }

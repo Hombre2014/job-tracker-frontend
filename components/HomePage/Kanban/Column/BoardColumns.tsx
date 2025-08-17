@@ -2,7 +2,7 @@
 
 import { CSS } from '@dnd-kit/utilities';
 import { useParams, useRouter } from 'next/navigation';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState, useMemo, useRef } from 'react';
 import {
   useSensor,
   DndContext,
@@ -31,7 +31,6 @@ const BoardColumns = () => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const [isEditing, setIsEditing] = useState(false);
-  const [isFormValid, setIsFormValid] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const [overId, setOverId] = useState<string | null>(null);
   const [currentColumnId, setCurrentColumnId] = useState('');
@@ -39,7 +38,17 @@ const BoardColumns = () => {
   const { jobPosts } = useAppSelector((state) => state.jobs);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [renamedColumnName, setRenamedColumnName] = useState('');
-  const currentBoard = boards.find((board) => board.id === board_id);
+  const focusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Memoize currentBoard to prevent unnecessary re-renders
+  const currentBoard = useMemo(() => {
+    return boards.find((board) => board.id === board_id);
+  }, [boards, board_id]);
+
+  // Memoize boardColumns to prevent forms from re-mounting
+  const boardColumns = useMemo(() => {
+    return currentBoard?.columns || [];
+  }, [currentBoard?.columns]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -53,27 +62,54 @@ const BoardColumns = () => {
     if (isEditing) {
       const currentInputElement = document.getElementById(
         currentColumnId
-      ) as HTMLInputElement | null;
-      if (currentColumnId === currentInputElement!.id) {
-        currentInputElement!.focus();
-        currentInputElement!.select();
+      ) as HTMLInputElement;
+      if (currentInputElement) {
+        currentInputElement.focus();
       }
     } else {
       dispatch(getBoards(accessToken as string));
     }
-  }, [isEditing, currentColumnId, accessToken, dispatch, jobPosts]);
+  }, [isEditing, currentColumnId, accessToken, dispatch]);
+  // Draft + submission guard hooks must appear before any early return
+  const jobDraftRef = useRef<{
+    company?: string;
+    jobTitle?: string;
+    companyId?: string;
+  } | null>(null);
+  const [isSubmittingJob, setIsSubmittingJob] = useState(false);
 
   if (!currentBoard) return null;
-
-  const { columns: boardColumns } = currentBoard;
 
   const handleColumnNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     setRenamedColumnName(e.target.value);
+
+    // Maintain focus after state changes (handles double render focus loss)
+    if (focusTimeoutRef.current) clearTimeout(focusTimeoutRef.current);
+    focusTimeoutRef.current = setTimeout(() => {
+      const input = document.getElementById(
+        currentColumnId
+      ) as HTMLInputElement;
+      if (input && document.activeElement !== input) {
+        input.focus();
+        const len = input.value.length;
+        input.setSelectionRange(len, len);
+      }
+    }, 0);
   };
 
   const confirmColumnNameChange = () => {
     setIsEditing(false);
+
+    // Skip rename dispatch if the name didn't change
+    const current =
+      boards
+        .find((b) => b.id === board_id)
+        ?.columns?.find((c) => c.id === currentColumnId)?.name ?? '';
+    if (renamedColumnName.trim() === current.trim()) {
+      return;
+    }
+
     dispatch(
       updateColumnName({
         accessToken,
@@ -91,22 +127,28 @@ const BoardColumns = () => {
   };
 
   const createJobApplication = () => {
-    if (!isFormValid) return;
-
+    if (isSubmittingJob) return;
+    setIsSubmittingJob(true);
+    const legacyTitle = localStorage.getItem('jobTitle');
+    const legacyCompanyId = localStorage.getItem('companyId');
+    const draft = jobDraftRef.current || {};
     const jobPost = {
       status: 'Job Created',
       accessToken: accessToken as string,
-      title: localStorage.getItem('jobTitle'),
+      title: draft.jobTitle || legacyTitle,
       columnId: localStorage.getItem('columnId'),
-      companyId: localStorage.getItem('companyId'),
+      companyId: draft.companyId || legacyCompanyId,
     };
 
     dispatch(createJobPost(jobPost)).then((result) => {
       const newJobPostId = result.payload.id;
-      router.push(`/home/boards/${board_id}/job/${newJobPostId}/job-details`);
+      const selectedBoardId =
+        localStorage.getItem('chosenBoardId') || (board_id as string);
+      const targetPath = `/home/boards/${selectedBoardId}/job/${newJobPostId}/job-details`;
+      router.push(targetPath);
+      setIsSubmittingJob(false);
     });
     dispatch(getBoards(accessToken as string));
-
     cleanupAfterJobPost();
   };
 
@@ -204,11 +246,18 @@ const BoardColumns = () => {
     );
   };
 
+  interface Column {
+    id: string;
+    order: number;
+    name: string;
+    jobApplications?: { id: string }[];
+  }
+
   const DroppableColumn = ({
     column,
     children,
   }: {
-    column: any;
+    column: Column;
     children: React.ReactNode;
   }) => {
     const { setNodeRef, isOver } = useDroppable({
@@ -278,14 +327,15 @@ const BoardColumns = () => {
                 dialogTitle="Add Job"
                 buttonCancel="Discard"
                 buttonVariant="outline"
-                buttonConfirm="Save Job"
-                isFormValid={isFormValid}
+                buttonConfirm={isSubmittingJob ? 'Saving...' : 'Save Job'}
                 actionFunction={createJobApplication}
                 stylings="w-11/12 flex justify-center text-2xl border py-3 mb-4 mx-auto rounded-md hover:border-blue-500 transition duration-300 delay-150 cursor-pointer"
               >
                 <AddJobShortForm
                   columnOrder={column.order}
-                  onValidationChange={setIsFormValid}
+                  onDraftChange={(d) => {
+                    jobDraftRef.current = { ...jobDraftRef.current, ...d };
+                  }}
                 />
               </AlertDialogModal>
               {column.jobApplications &&

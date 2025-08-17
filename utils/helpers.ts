@@ -45,6 +45,7 @@ export const cleanupAfterLogout = () => {
   localStorage.removeItem('columnId');
   localStorage.removeItem('chosenBoard');
   localStorage.removeItem('chosenColumn');
+  localStorage.removeItem('chosenBoardId');
   localStorage.removeItem('currentJobPost');
   localStorage.removeItem('boardValueChanged');
   localStorage.removeItem('firstColumnOfTheBoard');
@@ -66,5 +67,51 @@ export const getTokenExpiration = (token: string): number | null => {
     return payload.exp ? payload.exp * 1000 : null;
   } catch {
     return null;
+  }
+};
+
+/**
+ * Calculate time ago from timestamp
+ * @param item - Object with updatedAt or createdAt timestamp
+ * @returns Formatted time string like "2 hours ago" or "3 days ago"
+ */
+export const getTimeAgo = (item: {
+  updatedAt?: string;
+  createdAt?: string;
+}) => {
+  // Use updatedAt if available, otherwise fall back to createdAt, then to fallback text
+  const timestamp = item.updatedAt || item.createdAt;
+  if (!timestamp) return 'Recently';
+
+  try {
+    const now = Date.now();
+    const updatedAt = new Date(timestamp);
+
+    // Check if date is valid
+    if (isNaN(updatedAt.getTime())) return 'Recently';
+
+    const diffInSeconds = Math.floor((now - updatedAt.getTime()) / 1000);
+
+    const formatTimeUnit = (value: number, unit: string) => {
+      return `${value} ${unit}${value === 1 ? '' : 's'} ago`;
+    };
+
+    if (diffInSeconds < 60) {
+      return diffInSeconds <= 0
+        ? 'Just now'
+        : formatTimeUnit(diffInSeconds, 'second');
+    } else if (diffInSeconds < 3600) {
+      const diffInMinutes = Math.floor(diffInSeconds / 60);
+      return formatTimeUnit(diffInMinutes, 'minute');
+    } else if (diffInSeconds < 86400) {
+      const diffInHours = Math.floor(diffInSeconds / 3600);
+      return formatTimeUnit(diffInHours, 'hour');
+    } else {
+      const diffInDays = Math.floor(diffInSeconds / 86400);
+      return formatTimeUnit(diffInDays, 'day');
+    }
+  } catch (error) {
+    console.warn('Error parsing timestamp:', error);
+    return 'Recently';
   }
 };

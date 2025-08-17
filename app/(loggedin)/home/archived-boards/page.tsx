@@ -4,12 +4,13 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { RiInbox2Line } from 'react-icons/ri';
 
+import { getTimeAgo } from '@/utils/helpers';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import AlertDialogModal from '@/components/HomePage/Boards/AlertDialogModal';
 import {
-  getArchivedBoards,
   getBoards,
   unarchiveBoard,
+  getArchivedBoards,
 } from '@/redux/boards/boardsThunk';
 
 const ArchivedBoards = () => {
@@ -47,18 +48,19 @@ const ArchivedBoards = () => {
               </div>
               <div>
                 <p className="text-slate-400 text-xs pt-8">
-                  Last updated: 4 days ago
+                  Last updated: {getTimeAgo(board)}
                 </p>
                 <AlertDialogModal
-                  buttonLabel="Unarchive"
-                  dialogTitle="Unarchive Board"
-                  dialogText="Are you sure you want to unarchive this board?"
+                  cleanupType="none"
                   buttonCancel="Cancel"
+                  buttonLabel="Unarchive"
                   buttonConfirm="Unarchive"
+                  dialogTitle="Unarchive Board"
+                  stylings="mt-4 bg-blue-500 text-white"
+                  dialogText="Are you sure you want to unarchive this board?"
                   actionFunction={() =>
                     handleUnarchiveBoard(accessToken as string, board.id)
                   }
-                  stylings="mt-4 bg-blue-500 text-white"
                 />
               </div>
             </div>

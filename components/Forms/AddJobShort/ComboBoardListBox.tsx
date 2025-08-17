@@ -1,7 +1,6 @@
 'use client';
 
-import { useLocalStorage } from 'usehooks-ts';
-import { useEffect, useState, forwardRef } from 'react';
+import { useState, forwardRef, useEffect } from 'react';
 import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 
 import { cn } from '@/lib/utils';
@@ -31,6 +30,8 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
       initialBoardString,
       initialColumnString,
       firstColumnOfTheBoard,
+      value,
+      onSelectItem,
     },
     ref
   ) => {
@@ -39,51 +40,14 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
     const { lastName } = useAppSelector((state) => state.user);
     const { firstName } = useAppSelector((state) => state.user);
     const { boardsStatus } = useAppSelector((state) => state.boards);
-    const [valueBoard, setValueBoard] = useState(initialBoardString);
-    const firstColumn = localStorage.getItem('firstColumnOfTheBoard');
-    const [chosenBoard, setChosenBoard] = useState(initialBoardString);
-    const [chosenColumn, setChosenColumn] = useState(initialColumnString);
-    const [boardValueChanged, setBoardValueChanged] = useLocalStorage(
-      'boardValueChanged',
-      false
+    const [internalValue, setInternalValue] = useState(
+      initialBoardString || initialColumnString || ''
     );
 
-    // Only localStorage operations - NO API calls in useEffect to prevent infinite loops
+    // Sync controlled value
     useEffect(() => {
-      // Only set localStorage if user is authenticated
-      if (hasValidTokens) {
-        if (itemsType === 'boards') {
-          localStorage.setItem('chosenBoard', chosenBoard as string);
-        } else {
-          localStorage.setItem('chosenColumn', chosenColumn as string);
-          const columnId = items.find((item) => item.name === chosenColumn)?.id;
-          localStorage.setItem('columnId', columnId as string);
-        }
-      }
-    }, [
-      itemsType,
-      chosenBoard,
-      hasValidTokens,
-      chosenColumn,
-      items, // Re-added items dependency
-    ]);
-
-    useEffect(() => {
-      if (boardValueChanged && hasValidTokens) {
-        localStorage.setItem('chosenColumn', firstColumnOfTheBoard!);
-
-        const columnId = items.find(
-          (item) => item.name === firstColumnOfTheBoard
-        )?.id;
-        localStorage.setItem('columnId', columnId as string);
-      }
-    }, [
-      boardValueChanged,
-      chosenColumn,
-      firstColumnOfTheBoard,
-      hasValidTokens,
-      items, // Re-added items dependency
-    ]);
+      if (value !== undefined) setInternalValue(value);
+    }, [value]);
 
     return (
       boardsStatus === 'succeeded' && (
@@ -95,11 +59,11 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
               aria-expanded={open}
               className="w-full justify-between"
             >
-              {itemsType === 'boards'
-                ? valueBoard
-                : boardValueChanged
-                ? firstColumn
-                : chosenColumn}
+              {internalValue ||
+                (itemsType === 'boards'
+                  ? initialBoardString
+                  : initialColumnString) ||
+                'Select'}
               <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
@@ -116,26 +80,15 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
                     <CommandItem
                       key={item.id}
                       className={cn(
-                        'hover:!bg-slate-200 cursor-pointer my-[2px]',
-                        itemsType === 'boards'
-                          ? chosenBoard === item.name
-                            ? '!bg-slate-200'
-                            : '!bg-white'
-                          : chosenColumn === item.name
-                          ? '!bg-slate-200'
-                          : '!bg-white'
+                        'hover:!bg-slate-200 dark:hover:!bg-slate-600 cursor-pointer my-[2px]',
+                        internalValue === item.name
+                          ? '!bg-slate-200 dark:!bg-slate-600'
+                          : '!bg-white dark:!bg-slate-800'
                       )}
-                      value={itemsType === 'boards' ? valueBoard : chosenColumn}
+                      value={internalValue}
                       onSelect={() => {
-                        if (itemsType === 'boards') {
-                          setChosenBoard(item.name);
-                          setChosenColumn(firstColumn!);
-                          setValueBoard(item.name);
-                          setBoardValueChanged(true);
-                        } else {
-                          setBoardValueChanged(false);
-                          setChosenColumn(item.name);
-                        }
+                        setInternalValue(item.name);
+                        onSelectItem?.(item);
                         setOpen(false);
                       }}
                     >
@@ -143,11 +96,7 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
                         key={item.id}
                         className={cn(
                           'mr-2 h-4 w-4',
-                          itemsType === 'boards'
-                            ? chosenBoard === item.name
-                              ? 'opacity-100'
-                              : 'opacity-0'
-                            : chosenColumn === item.name
+                          internalValue === item.name
                             ? 'opacity-100'
                             : 'opacity-0'
                         )}

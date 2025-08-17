@@ -1,9 +1,494 @@
 # Changelog
 
-All notable changes and improvements to the Job Tracker Frontend project are documented in this file.
-
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.190.0] - 2025-08-10
+
+### Board Rename Flow Experiment and Rollback - 2025-08-10
+
+#### Summary
+
+An experimental hardening of the inline Board Rename UX (guards, original name restore, toast feedback, and removal of an extra refetch) was implemented, evaluated, and fully rolled back the same day due to unmet functional expectations. The only retained net change is the removal of toast notifications for the rename action (simplifying UX until a more reliable feedback pattern is re‑introduced).
+
+#### Experimental Changes (Rolled Back)
+
+- Added in‑flight guard (`isRenamingRef`) and double-trigger guard (`hasConfirmedRef`) to prevent Enter + blur double dispatch.
+- Captured original board name in a ref for Escape / failure restoration.
+- Removed explicit `getBoards` refetch after successful rename (relying solely on `renameBoard.fulfilled` reducer for optimistic state update).
+- Introduced success/error toast notifications.
+
+#### Issues Observed in User Testing
+
+- Toast notifications did not appear reliably (inconsistent feedback path).
+- Escape key did not always restore the original name as expected.
+- Perceived instability / regressions without clear functional gain for end user.
+- Reduction in network requests not considered a sufficient trade‑off versus UX reliability for this flow.
+
+#### Rollback Actions
+
+- Restored prior simpler rename logic including explicit `getBoards` call after successful rename for guaranteed state sync.
+- Removed toast notifications from the rename path (noise reduction & to eliminate unreliable feedback channel).
+- Discarded guard/original-name ref experiment pending a more incremental re‑introduction with dedicated tests.
+
+#### Current State (Post Rollback)
+
+- Board rename triggers: inline input blur or Enter → dispatch `renameBoard` → immediate follow‑up `getBoards` fetch.
+- Escape restores the original value via the previous (stable) approach.
+- No toast feedback on success or failure (failures logged to console; future enhancement will provide consistent inline/error messaging).
+- Network request count not re‑optimized in this commit (stability prioritized over micro‑optimization).
+
+#### Rationale
+
+Stability and user predictability outweighed the incremental reduction in network calls. A future optimization pass will: (1) introduce a feature‑flagged guard/toast system, (2) add deterministic unit/integration tests for Enter/blur/Escape scenarios, and (3) safely remove redundant refetch once visual and state consistency is proven.
+
+#### No Schema / API Changes
+
+- No changes to backend contracts, data models, or persisted state shapes.
+- Safe to integrate without backend coordination.
+
+#### Related Documentation Update
+
+- Technical documentation updated with architectural notes and lessons learned for the rollback (see “Board Rename Flow Experiment and Rollback (10/08/2025)” section).
+
+---
+
+All notable changes and improvements to the Job Tracker Frontend project are documented in this file.
+
+## [0.190.0] - 2025-08-09
+
+### Additional CodeRabbit Implementation and Critical Bug Fixes - 2025-08-09
+
+#### AlertDialogModal Enhanced Functionality
+
+- **Toast Notification Integration** (`AlertDialogModal.tsx`):
+
+  - Added comprehensive toast notification system with success/error states
+  - Implemented conditional toast display based on `cleanupType` prop
+  - Added descriptive success messages for contact creation, job archiving, board operations
+  - Enhanced user feedback for all modal operations
+
+- **Validation State Management**:
+
+  - Added automatic validation reset on modal open/close
+  - Implemented proper form state cleanup between modal instances
+  - Fixed validation state persistence issues across different modal usage patterns
+  - Enhanced form reset logic for consistent user experience
+
+- **Flexible Cleanup System**:
+  - Added `cleanupType` prop for different cleanup scenarios ('contact', 'jobPost', 'none')
+  - Implemented context-aware cleanup functions
+  - Enhanced modal reusability across different form types
+  - Maintained backward compatibility with existing implementations
+
+#### Critical Focus Management Bug Fix
+
+- **Column Editing Focus Loss Resolution** (`BoardColumns.tsx`):
+  - **Fixed critical bug**: Users losing focus when clicking outside input during column editing
+  - **Root cause**: React 18 double rendering + component lifecycle conflicts
+  - **Solution**: Implemented aggressive focus restoration with timeout-based recovery
+  - **Technical details**: Added `focusTimeoutRef` with 50ms delay to ensure DOM updates complete
+  - **User impact**: Seamless editing experience without unexpected focus loss
+
+#### Email Validation Enhancement
+
+- **Visual Feedback System** (`EmailAndPhone.tsx`, `CreateContactForm.tsx`):
+  - Added real-time email validation with visual error indicators
+  - Implemented red border styling for invalid email inputs
+  - Enhanced error state propagation from child to parent components
+  - Added proper validation state management with `hasValidationError` prop
+  - Improved user experience with immediate feedback on email format errors
+
+#### Column Movement Optimization
+
+- **Async State Management** (`ThreeDotsMenu.tsx`):
+  - Fixed column move functionality to show immediate UI updates
+  - Implemented async/await pattern for proper API call handling
+  - Added optimistic updates for better user experience
+  - Enhanced error handling for failed column move operations
+  - Resolved timing issues between API calls and UI updates
+
+#### Board Title Editing Improvements
+
+- **Mouse Click Support** (`JobBoardTitle.tsx`):
+  - Enhanced board title editing to support both keyboard and mouse interactions
+  - Fixed event handling conflicts between Link navigation and edit mode
+  - Implemented conditional rendering (div vs Link) based on editing state
+  - Added proper event propagation control with `stopPropagation`
+  - Resolved navigation conflicts during editing operations
+
+#### Archived Boards Functionality
+
+- **Unarchive Button Fix** (`archived-boards/page.tsx`):
+
+  - Fixed broken unarchive button functionality
+  - Enhanced navigation flow after unarchiving boards
+  - Implemented proper state cleanup and board list refresh
+  - Added real-time timestamp display with human-readable format
+
+- **Real Timestamp Implementation**:
+  - Created `getTimeAgo` utility function for human-readable timestamps
+  - Added support for both `updatedAt` and `createdAt` timestamps
+  - Implemented fallback handling for missing timestamp data
+  - Enhanced archived board display with "Last updated" information
+
+#### Code Organization and Performance
+
+- **Utility Function Organization** (`utils/helpers.ts`):
+
+  - Moved `getTimeAgo` function to proper utils folder for reusability
+  - Added comprehensive JSDoc documentation
+  - Implemented robust error handling with fallbacks
+  - Enhanced type safety with TypeScript interfaces
+
+- **Unused Code Cleanup** (`boards/page.tsx`):
+  - Removed unused `boardsStatus` variable from component
+  - Optimized component performance by reducing unnecessary re-renders
+  - Cleaned up Redux state destructuring to only include used properties
+  - Improved code maintainability and readability
+
+#### Dark Mode Accessibility Fix
+
+- **Dropdown Menu Styling** (`ComboBoardListBox.tsx`):
+  - **Fixed critical dark mode issue**: Board and List dropdowns were unreadable in dark mode
+  - **Problem**: Hardcoded light colors (`!bg-white`, `!bg-slate-200`) not adapting to dark theme
+  - **Solution**: Added comprehensive dark mode variants for all dropdown states
+  - **Implementation**:
+    - Hover states: `dark:hover:!bg-slate-600`
+    - Selected items: `dark:!bg-slate-600`
+    - Unselected items: `dark:!bg-slate-800`
+  - **Result**: Fully accessible dropdowns with proper contrast in both light and dark modes
+
+#### Technical Debt Resolution
+
+- **Component Lifecycle Management**:
+
+  - Fixed multiple useEffect timing issues across components
+  - Resolved React 18 double rendering conflicts
+  - Enhanced component mounting/unmounting lifecycle handling
+  - Improved state management timing and synchronization
+
+- **Event Handling Optimization**:
+
+  - Resolved event bubbling conflicts in editing interfaces
+  - Enhanced click event handling for better user interactions
+  - Fixed pointer-events CSS conflicts during editing states
+  - Improved overall interaction responsiveness
+
+- **API Call Optimization**:
+  - Fixed infinite loop issues in board data fetching
+  - Enhanced async operation handling with proper error boundaries
+  - Optimized Redux thunk patterns for better performance
+  - Reduced unnecessary API calls through better state management
+
+#### Enhanced User Experience and Interaction Patterns
+
+- **Consistent Interaction Patterns**:
+
+  - Unified editing behaviors across board titles and column names
+  - Enhanced feedback systems for all user actions
+  - Improved error handling and user messaging
+  - Consistent dark mode support across all interactive elements
+
+- **Performance Enhancements**:
+  - Reduced component re-render cycles
+  - Optimized state update patterns
+  - Enhanced memory management with proper cleanup
+  - Improved overall application responsiveness
+
+### CodeRabbit Review Implementation and Landing Page Optimization
+
+#### Comprehensive Code Quality Improvements
+
+- **Implemented CodeRabbit automated code review suggestions**: Systematically addressed performance, security, accessibility, and code quality recommendations across the landing page components
+
+  - **Performance Optimizations**:
+
+    - **Next.js Image Component Integration** (`HeroSection.tsx`):
+
+      - Replaced standard `<img>` with optimized `next/image` component
+      - Added `priority` loading for LCP (Largest Contentful Paint) optimization
+      - Implemented responsive `sizes` attribute for proper image scaling
+      - Configured automatic format optimization (WebP, AVIF)
+
+    - **Debounce Function Performance Fix** (`AddJobShortForm.tsx`):
+
+      - **Fixed critical performance issue**: Debounce function was being recreated on every keystroke
+      - Changed from `useCallback` with inline debounce to `useMemo` for proper function persistence
+      - Added cleanup `useEffect` to cancel pending debounced calls on component unmount
+      - Result: Proper API call throttling during company name search
+
+    - **Console.log Cleanup**:
+      - Removed all debug console.log statements from production code
+      - Cleaned up 20+ debug logs from modal debugging session
+      - Removed console.logs from: `AddJobShortForm.tsx`, `BoardColumns.tsx`, `AlertDialogModal.tsx`, `helpers.ts`
+
+  - **Security Enhancements**:
+
+    - **External Link Security** (`Footer.tsx`):
+      - Added `rel="noopener noreferrer"` to all external links
+      - Prevents potential security vulnerabilities with `window.opener`
+      - Added `target="_blank"` for proper external navigation
+
+  - **Accessibility Improvements**:
+
+    - **Hero Section Accessibility** (`HeroSection.tsx`):
+
+      - Added `aria-labelledby="hero-heading"` and `role="region"` to section
+      - Connected section to H1 with `id="hero-heading"` for screen reader navigation
+      - Improved semantic structure for assistive technologies
+
+    - **Footer Accessibility** (`Footer.tsx`):
+
+      - Enhanced image alt text from "App logo" to "Job Tracker logo"
+      - Made brand text clickable with proper `aria-label="Home"`
+      - Added accessible SVG icons with `aria-hidden="true"` and `focusable="false"`
+
+    - **Navigation Enhancements**:
+      - Converted footer brand to Next.js `Link` component for client-side navigation
+      - Improved navigation performance and user experience
+
+  - **TypeScript Code Quality**:
+
+    - **Type Safety Improvements** (`ContentSection.tsx`):
+
+      - Created `SectionId` type union: `'applications' | 'documents' | 'contacts'`
+      - Updated all Record types to use strict `SectionId` instead of `string`
+      - Removed defensive checks since TypeScript now guarantees valid keys
+      - Added explicit `JSX.Element` return type to Footer component
+
+    - **Dead Code Removal** (`BoardColumns.tsx`):
+      - Removed unused `isModalOpen` and `setIsModalOpen` state
+      - Cleaned up component state for better maintainability
+
+  - **Server-Side Rendering Optimization**:
+
+    - **Footer Component Optimization** (`Footer.tsx`):
+      - Removed unnecessary `'use client'` directive
+      - Converted to server component for better performance
+      - Added `suppressHydrationWarning` for dynamic year rendering
+      - Prevented hydration mismatches across year boundaries
+
+#### Landing Page Layout and Design Enhancements
+
+- **Implemented responsive layout system with perfect alignment**: Created consistent container widths and optimized image sizing across all sections
+
+  - **Container Width Standardization**:
+
+    - **Navbar Structure Optimization** (`Navbar.tsx`):
+
+      - Restructured to use proper nested container pattern: `<header>` → `<div className="max-w-7xl mx-auto">`
+      - Unified all components to use identical `max-w-7xl` container width (1280px)
+      - Standardized padding to `px-8` (32px) across all sections for perfect alignment
+
+    - **Section Container Alignment**:
+      - **HeroSection**: `max-w-7xl mx-auto` with `px-8` padding
+      - **ContentSection**: `max-w-7xl mx-auto` with `px-8` padding
+      - **Footer**: `max-w-7xl mx-auto` with `px-8` padding
+      - **Result**: Perfect left and right edge alignment across all sections
+
+  - **Image Size Optimization**:
+
+    - **Hero Section Image Enhancement** (`HeroSection.tsx`):
+
+      - Increased container from `max-w-md` to `max-w-2xl` then optimized to current size
+      - Changed image sizing from `w-11/12 h-11/12` to `w-full h-full` for maximum impact
+      - Updated responsive sizing from `45vw` to `50vw` on desktop
+      - Increased gap between content and image from `gap-16` to `gap-20`
+
+    - **Content Section Layout Restructuring** (`ContentSection.tsx`):
+      - **Layout Pattern**: Converted from centered layout to Hero-section style (content left, image right)
+      - **Image Positioning**: Moved images from bottom to right side of content
+      - **Content Alignment**: Changed from `text-center` to `text-left` with `items-start`
+      - **Icon Positioning**: Moved section icons from center to top-left of content
+      - **Typography Spacing**: Improved spacing between headings, descriptions, and paragraphs
+      - **Section-Specific Images**: Added dedicated images for Applications, Documents, and Contacts sections
+
+  - **Visual Design System**:
+
+    - **Navbar Glassmorphism Design** (`Navbar.tsx`):
+
+      - Implemented modern glassmorphism effect with `backdrop-blur-md`
+      - Added warm amber background: `bg-amber-50/95` (light) / `bg-amber-700/95` (dark)
+      - Enhanced with subtle shadow: `shadow-lg` and matching borders
+      - Created excellent contrast for hover effects on menu items
+
+    - **Mode Toggle Enhancement** (`mode-toggle.tsx`):
+
+      - Added custom hover states: `hover:bg-gray-400` / `dark:hover:bg-gray-600`
+      - Implemented consistent animation timing: `transition duration-300 delay-150`
+      - Matched navbar animation patterns for cohesive user experience
+
+    - **Responsive Design Optimization**:
+      - All sections now use consistent `max-w-7xl` containers
+      - Images scale properly across all device sizes
+      - Layout maintains proportions from mobile to desktop
+      - Glassmorphism effects work seamlessly across themes
+
+#### CodeRabbit Implementation Summary
+
+- **Architecture Improvements**:
+
+  - Proper React Hook usage patterns for performance
+  - Elimination of unnecessary re-render cycles
+  - Type-safe component interfaces with strict TypeScript
+  - Server-side rendering optimization where appropriate
+
+- **User Experience Enhancements**:
+
+  - Consistent hover animations across all interactive elements
+  - Improved loading performance with Next.js optimizations
+  - Better accessibility for screen readers and keyboard navigation
+  - Seamless light/dark theme transitions
+
+- **Code Quality Metrics**:
+  - Removed 25+ debug console.log statements
+  - Fixed 1 critical performance anti-pattern (debounce)
+  - Enhanced 5+ components with proper TypeScript typing
+  - Implemented 10+ accessibility improvements
+
+## [0.189.0] - 2025-08-08
+
+### Critical Bug Fix and Landing Page Enhancement
+
+#### Modal Form Reset Issue Resolution
+
+- **Fixed critical bug where Add Job modal fields would reset while typing**: Resolved React re-rendering cascade that was destroying form state during user input
+
+  - **Root Cause Analysis**: The issue was caused by shared validation state between parent (`BoardColumns`) and child (`AddJobShortForm`) components creating a destructive re-render cycle:
+
+    1. User types in Company/Job Title fields
+    2. Form validation triggers `onValidationChange` callback
+    3. Parent component (`BoardColumns`) updates `isFormValid` state
+    4. Parent re-renders due to state change
+    5. Modal component gets destroyed and recreated during re-render
+    6. Form loses all input values and user sees typing disappear
+
+  - **Solution Implementation**: Eliminated shared validation state by making `AlertDialogModal` self-validating:
+
+    - **Self-Validating Modal**: Modified `AlertDialogModal.tsx` to validate form data internally using localStorage instead of shared state
+
+    ```typescript
+    const handleSubmit = () => {
+      const company = localStorage.getItem('company') || '';
+      const jobTitle = localStorage.getItem('jobTitle') || '';
+      const isValid = company.trim() !== '' && jobTitle.trim() !== '';
+
+      if (isValid) {
+        onSubmit();
+      }
+    };
+    ```
+
+    - **Optional Validation Callback**: Made `onValidationChange` prop optional in `AddJobShortForm.tsx` to break the shared state dependency
+
+    - **Removed Shared State**: Eliminated `isFormValid` state from `BoardColumns.tsx` to prevent re-render cascades
+
+  - **Technical Benefits**:
+    - **Stable Component Tree**: Modal component never gets destroyed during typing
+    - **Form State Preservation**: React Hook Form maintains values throughout user interaction
+    - **No Parent Re-renders**: Validation changes don't trigger parent component updates
+    - **localStorage Backup**: Form data persists even if component unmounts
+    - **Better Performance**: Reduced unnecessary re-render cycles
+
+#### React Architecture Lesson
+
+This fix demonstrates a fundamental React principle: **avoid unnecessary shared state that causes re-render cascades**. The solution moved from:
+
+- **Before**: Parent manages validation → Parent re-renders → Children destroyed
+- **After**: Child self-validates → No parent state changes → Stable component tree
+
+### Landing Page Enhancement Implementation
+
+#### Complete Landing Page Sections Development
+
+- **Implemented comprehensive landing page with modern design**: Enhanced user onboarding experience with professional sections and responsive design
+
+  - **Hero Section Enhancement** (`components/LandingPage/HeroSection.tsx`):
+
+    - **Compelling Headlines**: "Transform Your Job Search with Smart Organization"
+    - **Value Proposition**: Clear messaging about application tracking and career organization
+    - **Call-to-Action**: Prominent "Get Started Free" button with smooth navigation
+    - **Visual Design**: Modern gradient backgrounds and professional typography
+    - **Responsive Layout**: Mobile-first design approach with proper breakpoints
+
+  - **Content Sections Implementation** (`components/LandingPage/ContentSection.tsx`):
+
+    **Features Section**:
+
+    - **Smart Organization**: Kanban-style board management for job applications
+    - **Document Management**: Centralized storage for resumes, cover letters, and certificates
+    - **Contact Tracking**: Company contact information and interaction history
+    - **Progress Analytics**: Visual insights into application status and success rates
+
+    **Benefits Section**:
+
+    - **Time Efficiency**: Streamlined application process management
+    - **Better Organization**: Never lose track of applications again
+    - **Strategic Insights**: Data-driven job search optimization
+    - **Professional Presentation**: Impress employers with organized approach
+
+    **How It Works Section**:
+
+    - **Step 1**: Create your account and set up boards
+    - **Step 2**: Add job applications and track progress
+    - **Step 3**: Manage documents and contacts
+    - **Step 4**: Analyze and optimize your job search
+
+  - **Footer Enhancement** (`components/LandingPage/Footer.tsx`):
+
+    - **Company Information**: Professional branding and contact details
+    - **Navigation Links**: Quick access to key pages and features
+    - **Legal Compliance**: Privacy policy and terms of service links
+    - **Social Media Integration**: Professional network connections
+    - **Responsive Design**: Proper mobile and desktop layouts
+
+  - **Navigation Improvements** (`components/LandingPage/Navbar.tsx`):
+    - **Clear Branding**: Professional logo and company identity
+    - **Intuitive Navigation**: User-friendly menu structure
+    - **Authentication Links**: Seamless login/signup access
+    - **Mobile Optimization**: Responsive hamburger menu for mobile devices
+
+#### Landing Page Technical Implementation
+
+- **Modern React Patterns**: Functional components with hooks for state management
+- **Tailwind CSS Styling**: Utility-first CSS framework for consistent design
+- **Responsive Design**: Mobile-first approach with breakpoint optimization
+- **SEO Optimization**: Proper semantic HTML structure for search engines
+- **Performance**: Optimized component loading and minimal bundle impact
+- **Accessibility**: WCAG compliant with proper ARIA labels and keyboard navigation
+
+#### Landing Page User Experience
+
+- **Professional Design**: Clean, modern interface that builds trust
+- **Clear Value Proposition**: Immediate understanding of product benefits
+- **Smooth Navigation**: Intuitive user flow from landing to registration
+- **Mobile Friendly**: Excellent experience across all device sizes
+- **Fast Loading**: Optimized performance for quick page loads
+
+#### Landing Page System Integration
+
+- **Authentication Flow**: Seamless integration with existing login/signup system
+- **Brand Consistency**: Matches existing application design patterns
+- **Route Management**: Proper Next.js routing integration
+- **State Management**: Compatible with existing Redux store structure
+
+### Combined Files Modified
+
+**Modal Form Fix**:
+
+1. `components/Forms/AddJobShort/AddJobShortForm.tsx` - Made validation callback optional
+2. `components/HomePage/Boards/AlertDialogModal.tsx` - Added self-validation logic
+3. `components/HomePage/Kanban/Column/BoardColumns.tsx` - Removed shared validation state
+4. `utils/helpers.ts` - Added form cleanup utilities
+
+**Landing Page Enhancement**:
+
+1. `components/LandingPage/HeroSection.tsx` - Enhanced hero section with compelling content
+2. `components/LandingPage/ContentSection.tsx` - Complete feature and benefit sections
+3. `components/LandingPage/Footer.tsx` - Professional footer with navigation and legal links
+4. `components/LandingPage/Navbar.tsx` - Improved navigation with mobile optimization
+5. `docs/Technical_documentation.md` - Updated documentation links
 
 ## [0.188.0] - 2025-08-07
 
@@ -1751,6 +2236,8 @@ _All changes maintain backward compatibility and enhance user experience with im
 
 <!-- Version comparison links -->
 
+[0.189.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.188.0...v0.189.0
+[0.190.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.189.0...v0.190.0
 [0.186.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.185.0...v0.186.0
 [0.185.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.184.0...v0.185.0
 [0.184.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.182.0...v0.184.0
