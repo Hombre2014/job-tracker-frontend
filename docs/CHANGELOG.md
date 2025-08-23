@@ -3,6 +3,99 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.191.0] - 2025-08-23
+
+### CodeRabbit Implementation - Type Safety and Error Handling Improvements
+
+#### Redux Persist Optimization
+
+- **Removed notifications from persistence whitelist**: Enhanced performance and prevented stale notification data
+  - **Issue**: Persisting full notifications slice caused storage bloat and stale UX after deployments
+  - **Solution**: Removed `'notifications'` from Redux persist whitelist - notifications now load fresh on each app start
+  - **Benefits**: Reduced localStorage usage, eliminated stale notification states, improved app startup performance
+  - **Files**: `redux/store.ts`
+
+#### Import Consistency and Type Safety
+
+- **Standardized reducer import patterns**: Aligned all reducer imports to use consistent default import pattern
+  - **Issue**: Mixed import styles between named exports and default exports across reducers
+  - **Solution**: Changed `import { notificationsReducer }` to `import notificationsSlice` for consistency
+  - **Benefits**: Uniform codebase patterns, better maintainability, clearer import intentions
+  - **Files**: `redux/store.ts`
+
+#### Enhanced Error Handling with Axios Type Guards
+
+- **Implemented proper TypeScript error handling**: Replaced `any` types with type-safe error narrowing
+  - **Added `isAxiosError` import**: Enables safe error type checking without `any` types
+  - **Type-safe error handling**: Proper error narrowing prevents runtime errors when accessing `err.response`
+  - **Graceful fallbacks**: Non-Axios errors handled with appropriate fallback messages
+  - **Benefits**: Eliminated `any` types, prevented potential runtime crashes, improved error message consistency
+  - **Files**: `redux/notifications/notificationsThunk.ts`
+
+#### Advanced TypeScript Type Definitions
+
+- **Template literal types for time validation**: Enhanced compile-time validation for time format
+
+  - **Implemented `DayOfWeek` union type**: Reusable type definition for better maintainability
+  - **Template literal for time**: `${number}:${number}` provides compile-time HH:MM format validation
+  - **Benefits**: Stronger type safety, better IDE support, compile-time error detection
+  - **Files**: `redux/notifications/notificationsThunk.ts`
+
+- **Explicit payload interfaces**: Replaced complex `Omit` utility types with purpose-built interfaces
+  - **Created `WeeklyNotificationPayload`**: Explicit interface with required `dayOfWeek` field
+  - **Created `DailyNotificationPayload`**: Clean interface without day-of-week field
+  - **Benefits**: Crystal clear API contracts, prevented accidental field inclusion, better documentation
+  - **Files**: `redux/notifications/notificationsThunk.ts`
+
+#### Advanced Redux Toolkit Patterns
+
+- **Proper thunk typing with generics**: Enhanced type safety and eliminated type assertions
+
+  - **Added comprehensive generics**: `createAsyncThunk<ReturnType, ArgType, { rejectValue: ApiError }>`
+  - **Request cancellation support**: Added `signal` parameter for proper request cancellation
+  - **Input validation**: Added early validation for missing access tokens
+  - **Graceful 404 handling**: 404 responses return empty state instead of errors
+  - **Structured error handling**: `ApiError` type with status codes and structured data
+  - **Benefits**: Eliminated `as` type casts, enabled request cancellation, improved error handling
+  - **Files**: `redux/notifications/notificationsThunk.ts`
+
+- **Explicit PayloadAction typing**: Added explicit typing for Redux action payloads
+
+  - **Enhanced type safety**: `PayloadAction<NotificationsResponse>` for fulfilled actions
+  - **Better IDE support**: Improved autocomplete and type checking
+  - **Future-proof**: Prevents issues if thunk typing changes
+  - **Files**: `redux/notifications/notificationsSlice.ts`
+
+- **DRY principle with `isAnyOf` matchers**: Consolidated duplicate extraReducers logic
+  - **Eliminated code duplication**: Single handlers for pending/fulfilled/rejected states
+  - **Improved maintainability**: Single place to update shared logic across thunks
+  - **Type safety maintained**: All existing type safety preserved with cleaner code
+  - **Benefits**: Reduced code duplication, easier maintenance, less error-prone
+  - **Files**: `redux/notifications/notificationsSlice.ts`
+
+#### Template Literal Type Fixes
+
+- **Fixed type compatibility issues**: Resolved template literal type constraints in UI components
+  - **Issue**: String literals not assignable to `${number}:${number}` template type
+  - **Solution**: Added `as const` assertions for time values in notification settings
+  - **Benefits**: Maintained strict type safety while fixing compilation errors
+  - **Files**: `app/(loggedin)/home/settings/page.tsx`
+
+#### Technical Benefits Summary
+
+- **Enhanced Type Safety**: Eliminated all `any` types, added proper type guards and template literals
+- **Better Error Handling**: Structured error types, graceful fallbacks, request cancellation support
+- **Code Quality**: DRY principles, consistent import patterns, explicit interfaces over utility types
+- **Performance**: Removed unnecessary persistence, optimized Redux patterns
+- **Maintainability**: Cleaner code structure, better documentation through types, reduced duplication
+
+### Files Modified
+
+1. `redux/store.ts` - Removed notifications persistence, standardized imports
+2. `redux/notifications/notificationsThunk.ts` - Enhanced error handling, advanced typing, explicit interfaces
+3. `redux/notifications/notificationsSlice.ts` - Added explicit PayloadAction typing, isAnyOf matchers
+4. `app/(loggedin)/home/settings/page.tsx` - Fixed template literal type compatibility
+
 ## [0.191.0] - 2025-08-17
 
 ### Email Notifications System Implementation
@@ -604,7 +697,7 @@ The document CHANGELOG.md was update with tis implementation.
     - **Timestamp Tracking**: Automatic `statusChangedTime` update on every move
     - **Redux Integration**: Seamless integration with existing job post state management
 
-#### Technical Implementation Details
+#### Technical Implementation Details - 2025-08-02
 
 - **Event Handling Flow**:
 
@@ -627,7 +720,7 @@ The document CHANGELOG.md was update with tis implementation.
   - Efficient job lookup algorithms
   - Debounced state updates
 
-#### User Experience Features
+#### User Experience Features - 2025-08-02
 
 - **Visual Feedback**: Clear indication of draggable items and valid drop zones
 - **Smooth Animations**: CSS transforms provide fluid movement during drag
@@ -642,10 +735,13 @@ The document CHANGELOG.md was update with tis implementation.
 - **Authentication**: All drag operations respect user authentication and permissions
 - **Real-time Updates**: Changes are immediately reflected in the UI and persisted to backend
 
-### Files Modified
+### Files Modified - 2025-08-02
 
 1. `components/HomePage/Kanban/Column/BoardColumns.tsx` - Complete drag and drop implementation
 2. `app/(loggedin)/home/boards/[board_id]/layout.tsx` - Board layout structure for drag context
+3. `api/client.ts` - Enhanced token refresh flow and removed aggressive validation
+4. `components/Misc/Modal.tsx` - Added optional onDismiss prop and removed redundant checks
+5. `app/(loggedin)/home/boards/[board_id]/job/layout.tsx` - Integrated custom modal close behavior
 
 ## [0.186.0] - 2025-08-02
 
@@ -743,12 +839,6 @@ The document CHANGELOG.md was update with tis implementation.
 - **Consistent behavior**: Modal closing works predictably regardless of how page was accessed
 - **Intuitive navigation**: Direct URL access behaves as users expect
 - **No broken states**: Eliminates navigation to empty browser tabs
-
-### Files Modified - 2025-08-02
-
-1. `api/client.ts` - Enhanced token refresh flow and removed aggressive validation
-2. `components/Misc/Modal.tsx` - Added optional onDismiss prop and removed redundant checks
-3. `app/(loggedin)/home/boards/[board_id]/job/layout.tsx` - Integrated custom modal close behavior
 
 ## [0.185.0] - 2025-08-01
 

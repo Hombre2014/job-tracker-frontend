@@ -85,13 +85,13 @@ const Settings = () => {
       const notifications = {
         daily: dailyDigest
           ? {
-              time: '09:00',
+              time: '09:00' as const,
               timezoneOffset: timezoneOffset,
             }
           : null,
         weekly: weeklyDigest
           ? {
-              time: '09:00',
+              time: '09:00' as const,
               dayOfWeek: 'MONDAY' as const,
               timezoneOffset: timezoneOffset,
             }

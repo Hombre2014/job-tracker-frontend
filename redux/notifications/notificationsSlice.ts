@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, isAnyOf } from '@reduxjs/toolkit';
 import {
   getBothNotifications,
   createUpdateDeleteNotifications,
@@ -28,37 +28,33 @@ const notificationsSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // getBothNotifications
     builder
-      .addCase(getBothNotifications.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(getBothNotifications.fulfilled, (state, action) => {
-        state.loading = false;
-        state.daily = action.payload.daily;
-        state.weekly = action.payload.weekly;
-      })
-      .addCase(getBothNotifications.rejected, (state, action) => {
-        state.loading = false;
-        const fallback = (action as any)?.error?.message ?? 'Unknown error';
-        state.error = (action.payload as string | undefined) ?? fallback;
-      })
-      // createUpdateDeleteNotifications
-      .addCase(createUpdateDeleteNotifications.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(createUpdateDeleteNotifications.fulfilled, (state, action) => {
-        state.loading = false;
-        state.daily = action.payload.daily;
-        state.weekly = action.payload.weekly;
-      })
-      .addCase(createUpdateDeleteNotifications.rejected, (state, action) => {
-        state.loading = false;
-        const fallback = (action as any)?.error?.message ?? 'Unknown error';
-        state.error = (action.payload as string | undefined) ?? fallback;
-      });
+      // pending matcher
+      .addMatcher(
+        isAnyOf(getBothNotifications.pending, createUpdateDeleteNotifications.pending),
+        (state) => {
+          state.loading = true;
+          state.error = null;
+        }
+      )
+      // fulfilled matcher
+      .addMatcher(
+        isAnyOf(getBothNotifications.fulfilled, createUpdateDeleteNotifications.fulfilled),
+        (state, action: PayloadAction<NotificationsResponse>) => {
+          state.loading = false;
+          state.daily = action.payload.daily;
+          state.weekly = action.payload.weekly;
+        }
+      )
+      // rejected matcher
+      .addMatcher(
+        isAnyOf(getBothNotifications.rejected, createUpdateDeleteNotifications.rejected),
+        (state, action) => {
+          state.loading = false;
+          const fallback = (action as any)?.error?.message ?? 'Unknown error';
+          state.error = (action.payload as string | undefined) ?? fallback;
+        }
+      );
   },
 });
 
