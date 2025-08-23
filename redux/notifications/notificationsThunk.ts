@@ -4,7 +4,7 @@ import client from '@/api/client';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
 // Helper types and utilities
-type ApiError = { message: string; status?: number; data?: unknown };
+export type ApiError = { message: string; status?: number; data?: unknown };
 
 const toApiError = (err: unknown): ApiError => {
   if (isAxiosError(err)) {

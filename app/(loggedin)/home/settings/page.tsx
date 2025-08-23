@@ -34,6 +34,7 @@ const Settings = () => {
   );
   const [weeklyDigest, setWeeklyDigest] = useState(!!weekly);
   const [dailyDigest, setDailyDigest] = useState(!!daily);
+  const [notificationsDirty, setNotificationsDirty] = useState(false);
 
   // Removed automatic updateUser call - should only update when user explicitly saves
 
@@ -51,16 +52,20 @@ const Settings = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    setWeeklyDigest(!!weekly);
-    setDailyDigest(!!daily);
-  }, [weekly, daily]);
+    if (!notificationsDirty) {
+      setWeeklyDigest(!!weekly);
+      setDailyDigest(!!daily);
+    }
+  }, [weekly, daily, notificationsDirty]);
 
   const handleWeeklyDigest = () => {
-    setWeeklyDigest(!weeklyDigest);
+    setNotificationsDirty(true);
+    setWeeklyDigest((prev) => !prev);
   };
 
   const handleDailyDigest = () => {
-    setDailyDigest(!dailyDigest);
+    setNotificationsDirty(true);
+    setDailyDigest((prev) => !prev);
   };
 
   const handleDownloadData = () => {
@@ -86,14 +91,14 @@ const Settings = () => {
         daily: dailyDigest
           ? {
               time: '09:00' as const,
-              timezoneOffset: timezoneOffset,
+              timezoneOffset: -timezoneOffset,
             }
           : null,
         weekly: weeklyDigest
           ? {
               time: '09:00' as const,
               dayOfWeek: 'MONDAY' as const,
-              timezoneOffset: timezoneOffset,
+              timezoneOffset: -timezoneOffset,
             }
           : null,
       };
@@ -104,6 +109,8 @@ const Settings = () => {
           notifications,
         })
       ).unwrap();
+
+      setNotificationsDirty(false);
 
       toast.success('Notification preferences updated successfully!', {
         autoClose: 3000,
