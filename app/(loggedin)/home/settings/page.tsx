@@ -91,14 +91,14 @@ const Settings = () => {
         daily: dailyDigest
           ? {
               time: '09:00' as const,
-              timezoneOffset: -timezoneOffset,
+              timezoneOffset: timezoneOffset,
             }
           : null,
         weekly: weeklyDigest
           ? {
               time: '09:00' as const,
               dayOfWeek: 'MONDAY' as const,
-              timezoneOffset: -timezoneOffset,
+              timezoneOffset: timezoneOffset,
             }
           : null,
       };

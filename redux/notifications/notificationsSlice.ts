@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction, isAnyOf } from '@reduxjs/toolkit';
 import {
   getBothNotifications,
-  createUpdateDeleteNotifications,
   NotificationsResponse,
+  createUpdateDeleteNotifications,
 } from './notificationsThunk';
 
 interface NotificationsState {
@@ -14,9 +14,9 @@ interface NotificationsState {
 
 const initialState: NotificationsState = {
   daily: null,
+  error: null,
   weekly: null,
   loading: false,
-  error: null,
 };
 
 const notificationsSlice = createSlice({
@@ -31,7 +31,10 @@ const notificationsSlice = createSlice({
     builder
       // pending matcher
       .addMatcher(
-        isAnyOf(getBothNotifications.pending, createUpdateDeleteNotifications.pending),
+        isAnyOf(
+          getBothNotifications.pending,
+          createUpdateDeleteNotifications.pending
+        ),
         (state) => {
           state.loading = true;
           state.error = null;
@@ -39,7 +42,10 @@ const notificationsSlice = createSlice({
       )
       // fulfilled matcher
       .addMatcher(
-        isAnyOf(getBothNotifications.fulfilled, createUpdateDeleteNotifications.fulfilled),
+        isAnyOf(
+          getBothNotifications.fulfilled,
+          createUpdateDeleteNotifications.fulfilled
+        ),
         (state, action: PayloadAction<NotificationsResponse>) => {
           state.loading = false;
           state.daily = action.payload.daily;
@@ -48,11 +54,15 @@ const notificationsSlice = createSlice({
       )
       // rejected matcher
       .addMatcher(
-        isAnyOf(getBothNotifications.rejected, createUpdateDeleteNotifications.rejected),
+        isAnyOf(
+          getBothNotifications.rejected,
+          createUpdateDeleteNotifications.rejected
+        ),
         (state, action) => {
           state.loading = false;
-          const fallback = (action as any)?.error?.message ?? 'Unknown error';
-          state.error = (action.payload as string | undefined) ?? fallback;
+          const fallback = action.error?.message ?? 'Unknown error';
+          const payloadMsg = (action.payload as { message?: string } | undefined)?.message;
+          state.error = payloadMsg ?? fallback;
         }
       );
   },

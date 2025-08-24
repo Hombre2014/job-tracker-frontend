@@ -1,14 +1,13 @@
 'use client';
 
-import ContentSection from '@/components/LandingPage/ContentSection';
 import Footer from '@/components/LandingPage/Footer';
-import HeroSection from '@/components/LandingPage/HeroSection';
 import Navbar from '@/components/LandingPage/Navbar';
-import { Fragment } from 'react';
+import HeroSection from '@/components/LandingPage/HeroSection';
+import ContentSection from '@/components/LandingPage/ContentSection';
 
 const Home = () => {
   return (
-    <Fragment>
+    <>
       <Navbar />
       <HeroSection />
       <ContentSection
@@ -27,7 +26,7 @@ const Home = () => {
         description="Add your job search contacts."
       />
       <Footer />
-    </Fragment>
+    </>
   );
 };
 

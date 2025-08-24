@@ -3,6 +3,39 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.192.0] - 2025-08-24
+
+### Fixed - 2025-08-24
+
+- **Fixed critical error message display bug**: Resolved issue where ApiError objects were being cast to string, causing "[object Object]" error messages
+
+  - **Issue**: Redux rejected actions with `rejectWithValue(ApiError)` were being cast to string, resulting in unhelpful "[object Object]" error messages
+  - **Solution**: Properly extract `message` property from ApiError object using type-safe property access
+  - **Impact**: Users now see actual error messages like "Network error" instead of "[object Object]"
+  - **Files**: `redux/notifications/notificationsSlice.ts`
+
+- **Fixed timezone offset calculation**: Corrected timezone offset sign for proper notification scheduling
+
+  - **Issue**: `getTimezoneOffset()` was negated before sending, flipping the sign relative to backend expectations
+  - **Solution**: Send the raw `getTimezoneOffset()` value (no negation)
+  - **Impact**: Notifications are scheduled at the correct local time across all timezones
+  - **Files**: `app/(loggedin)/home/settings/page.tsx`
+
+- **Implemented dirty flag pattern for notification toggles**: Prevented initial API fetch from overwriting user changes
+
+  - **Issue**: Users could lose toggle changes if they interacted with UI before initial API call completed
+  - **Solution**: Added `notificationsDirty` flag to gate state synchronization and preserve user input
+  - **Impact**: User toggle changes are now preserved during API loading states
+  - **Files**: `app/(loggedin)/home/settings/page.tsx`
+
+- Removed a second scroll bar on the landing page.
+
+### Files Changed
+
+- app/(landing)/layout.tsx
+- app/(loggedin)/home/settings/page.tsx
+- redux/notifications/notificationsSlice.ts
+
 ## [0.191.0] - 2025-08-23
 
 ### CodeRabbit Implementation - Type Safety and Error Handling Improvements
@@ -2393,8 +2426,10 @@ _All changes maintain backward compatibility and enhance user experience with im
 
 <!-- Version comparison links -->
 
-[0.189.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.188.0...v0.189.0
+[0.192.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.191.0...v0.192.0
+[0.191.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.190.0...v0.191.0
 [0.190.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.189.0...v0.190.0
+[0.189.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.188.0...v0.189.0
 [0.186.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.185.0...v0.186.0
 [0.185.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.184.0...v0.185.0
 [0.184.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.182.0...v0.184.0

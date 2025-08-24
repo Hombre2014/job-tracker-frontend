@@ -11,20 +11,20 @@ interface ContentSectionProps {
   description: string;
 }
 
-const sectionColors: Record<SectionId, string> = {
+const sectionColors = {
   applications:
     'from-blue-100 via-blue-50 to-white dark:from-blue-900 dark:via-gray-900 dark:to-black',
-  documents:
-    'from-purple-100 via-pink-50 to-white dark:from-purple-900 dark:via-gray-900 dark:to-black',
   contacts:
     'from-green-100 via-green-50 to-white dark:from-green-900 dark:via-gray-900 dark:to-black',
-};
+  documents:
+    'from-purple-100 via-pink-50 to-white dark:from-purple-900 dark:via-gray-900 dark:to-black',
+} satisfies Record<SectionId, string>;
 
-const sectionImages: Record<SectionId, string> = {
-  applications: '/images/Add_Job.png',
-  documents: '/images/Documents.png',
+const sectionImages = {
   contacts: '/images/Contacts.png',
-};
+  documents: '/images/Documents.png',
+  applications: '/images/Add_Job.png',
+} satisfies Record<SectionId, string>;
 
 const sectionIcons: Record<SectionId, JSX.Element> = {
   applications: (
@@ -77,20 +77,20 @@ const sectionIcons: Record<SectionId, JSX.Element> = {
   ),
 };
 
-const sectionParagraphs: Record<SectionId, string> = {
+const sectionParagraphs = {
   applications:
     'Bring all your job search details together—no more scattered spreadsheets or sticky notes. Track every opportunity, from company data and job descriptions to interview dates, contacts, and more. Your entire job search, organized and accessible in one place.',
   documents:
     'Easily upload and manage your resumes, cover letters, and supporting documents. Attach them to jobs, activities, or contacts, so you always have the right file at your fingertips when you need it most.',
   contacts:
     'Keep track of everyone you meet along your journey—recruiters, interviewers, and networking connections. Store contact info, add notes, and never lose touch with the people who can help you land your next role.',
-};
+} satisfies Record<SectionId, string>;
 
 const ContentSection = ({ name, description, id }: ContentSectionProps) => {
-  const colorClass = id ? sectionColors[id] : 'from-gray-100 to-white';
   const icon = id ? sectionIcons[id] : null;
   const paragraph = id ? sectionParagraphs[id] : '';
   const imageSrc = id ? sectionImages[id] : '/images/JobsBoard.png';
+  const colorClass = id ? sectionColors[id] : 'from-gray-100 to-white';
 
   return (
     <section
