@@ -1,7 +1,5 @@
 'use client';
 
-import { Fragment } from 'react';
-
 import Footer from '@/components/LandingPage/Footer';
 import Navbar from '@/components/LandingPage/Navbar';
 import HeroSection from '@/components/LandingPage/HeroSection';
@@ -9,7 +7,7 @@ import ContentSection from '@/components/LandingPage/ContentSection';
 
 const Home = () => {
   return (
-    <Fragment>
+    <>
       <Navbar />
       <HeroSection />
       <ContentSection
@@ -28,7 +26,7 @@ const Home = () => {
         description="Add your job search contacts."
       />
       <Footer />
-    </Fragment>
+    </>
   );
 };
 

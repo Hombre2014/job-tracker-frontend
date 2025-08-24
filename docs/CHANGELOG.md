@@ -3,6 +3,39 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.192.0] - 2025-08-24
+
+### Bug Fixes - 2025-08-24
+
+- **Fixed critical error message display bug**: Resolved issue where ApiError objects were being cast to string, causing "[object Object]" error messages
+
+  - **Issue**: Redux rejected actions with `rejectWithValue(ApiError)` were being cast to string, resulting in unhelpful "[object Object]" error messages
+  - **Solution**: Properly extract `message` property from ApiError object using type-safe property access
+  - **Impact**: Users now see actual error messages like "Network error" instead of "[object Object]"
+  - **Files**: `redux/notifications/notificationsSlice.ts`
+
+- **Fixed timezone offset calculation**: Corrected timezone offset sign for proper notification scheduling
+
+  - **Issue**: `getTimezoneOffset()` returns minutes behind UTC, but backend expects minutes ahead of UTC
+  - **Solution**: Negate `getTimezoneOffset()` value before sending to backend
+  - **Impact**: Notifications now scheduled at correct local time across all timezones
+  - **Files**: `app/(loggedin)/home/settings/page.tsx`
+
+- **Implemented dirty flag pattern for notification toggles**: Prevented initial API fetch from overwriting user changes
+
+  - **Issue**: Users could lose toggle changes if they interacted with UI before initial API call completed
+  - **Solution**: Added `notificationsDirty` flag to gate state synchronization and preserve user input
+  - **Impact**: User toggle changes are now preserved during API loading states
+  - **Files**: `app/(loggedin)/home/settings/page.tsx`
+
+- Remove a second scroll bar on the landing page.
+
+### Files Changed
+
+- app/(landing)/layout.tsx
+- app/(loggedin)/home/settings/page.tsx
+- redux/notifications/notificationsSlice.ts
+
 ## [0.191.0] - 2025-08-23
 
 ### CodeRabbit Implementation - Type Safety and Error Handling Improvements
