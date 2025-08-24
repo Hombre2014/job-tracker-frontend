@@ -29,13 +29,13 @@ export type DayOfWeek =
 
 export interface NotificationSettings {
   id?: string;
-  time: `${number}:${number}`; // "HH:MM" format
   updatedAt?: string;
   createdAt?: string;
   timezoneOffset: number; // -840 to 720
   scheduledTime?: string;
   type: 'DAILY' | 'WEEKLY';
   deletedAt?: string | null;
+  time: `${number}:${number}`; // "HH:MM" format
   dayOfWeek?: DayOfWeek;
 }
 
@@ -71,10 +71,13 @@ export const getBothNotifications = createAsyncThunk<
       return rejectWithValue({ message: 'Missing access token' });
     }
     try {
-      const res = await client.get<NotificationsResponse>('/notifications/report', {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        signal,
-      });
+      const res = await client.get<NotificationsResponse>(
+        '/notifications/report',
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          signal,
+        }
+      );
       // Graceful fallback if backend returns empty/204
       return res?.data ?? { daily: null, weekly: null };
     } catch (err: unknown) {
