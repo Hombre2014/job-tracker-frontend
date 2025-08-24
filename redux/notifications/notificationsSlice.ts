@@ -60,8 +60,9 @@ const notificationsSlice = createSlice({
         ),
         (state, action) => {
           state.loading = false;
-          const fallback = (action as any)?.error?.message ?? 'Unknown error';
-          state.error = (action.payload as string | undefined) ?? fallback;
+          const fallback = action.error?.message ?? 'Unknown error';
+          const payloadMsg = (action.payload as { message?: string } | undefined)?.message;
+          state.error = payloadMsg ?? fallback;
         }
       );
   },
