@@ -14,16 +14,16 @@ interface ContentSectionProps {
 const sectionColors: Record<SectionId, string> = {
   applications:
     'from-blue-100 via-blue-50 to-white dark:from-blue-900 dark:via-gray-900 dark:to-black',
-  documents:
-    'from-purple-100 via-pink-50 to-white dark:from-purple-900 dark:via-gray-900 dark:to-black',
   contacts:
     'from-green-100 via-green-50 to-white dark:from-green-900 dark:via-gray-900 dark:to-black',
+  documents:
+    'from-purple-100 via-pink-50 to-white dark:from-purple-900 dark:via-gray-900 dark:to-black',
 };
 
 const sectionImages: Record<SectionId, string> = {
-  applications: '/images/Add_Job.png',
-  documents: '/images/Documents.png',
   contacts: '/images/Contacts.png',
+  documents: '/images/Documents.png',
+  applications: '/images/Add_Job.png',
 };
 
 const sectionIcons: Record<SectionId, JSX.Element> = {
