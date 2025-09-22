@@ -15,7 +15,7 @@ export const getBoards = createAsyncThunk(
       const data = res.data;
 
       if (data.length === 0) {
-        return thunkAPI.rejectWithValue('No boards found');
+        return [];
       }
 
       if (data.length > 0) {
@@ -45,7 +45,7 @@ export const getBoardsOnly = createAsyncThunk(
       const data = res.data;
 
       if (data.length === 0) {
-        return thunkAPI.rejectWithValue('No boards found');
+        return [];
       }
 
       if (data.length > 0) {
@@ -155,7 +155,7 @@ export const getArchivedBoards = createAsyncThunk(
       const data = res.data;
 
       if (data.length === 0) {
-        return thunkAPI.rejectWithValue('No boards found');
+        return [];
       }
 
       if (data.length > 0) {

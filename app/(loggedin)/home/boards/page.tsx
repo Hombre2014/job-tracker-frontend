@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { SlUser } from 'react-icons/sl';
 import { BsPencil } from 'react-icons/bs';
-import { ChangeEvent, useEffect, useState, useRef } from 'react';
+import { ChangeEvent, useEffect, useState, useRef, KeyboardEvent } from 'react';
 
 import { getTimeAgo } from '@/utils/helpers';
 import { Input } from '@/components/ui/input';
@@ -13,8 +13,15 @@ import CreateNewBoard from '@/components/HomePage/Boards/CreateNewBoard';
 
 const UserBoards = () => {
   const dispatch = useAppDispatch();
-  const user = localStorage.getItem('user');
-  const email = user ? JSON.parse(user).email : '';
+
+  let email = '';
+  try {
+    const raw = localStorage.getItem('user');
+    email = raw ? JSON.parse(raw)?.email ?? '' : '';
+  } catch {
+    email = '';
+  }
+
   const [isEditing, setIsEditing] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const [currentBoardId, setCurrentBoardId] = useState('');
@@ -27,8 +34,10 @@ const UserBoards = () => {
   const hasConfirmedRef = useRef(false);
 
   useEffect(() => {
-    // Only fetch boards on initial load, not on every status change
-    dispatch(getBoards(accessToken as string));
+    // Only fetch boards on mount if we have a token
+    if (accessToken) {
+      void dispatch(getBoards(accessToken));
+    }
   }, [dispatch, accessToken]);
 
   useEffect(() => {
@@ -91,7 +100,7 @@ const UserBoards = () => {
     }
   };
 
-  const checkForEnter = (e: any) => {
+  const checkForEnter = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       confirmBoardNameChange();

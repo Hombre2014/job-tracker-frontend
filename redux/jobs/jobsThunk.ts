@@ -70,6 +70,7 @@ export const updateJobPost = createAsyncThunk(
       salary,
       status,
       postUrl,
+      company,
       location,
       deadline,
       columnId,
@@ -77,9 +78,10 @@ export const updateJobPost = createAsyncThunk(
       accessToken,
       description,
       statusChangedAt,
-      company: { name: companyName },
     } = values;
-    const body = {
+    const companyName: string | undefined = company?.name;
+
+    const body: any = {
       title: title,
       color: color,
       salary: salary,
@@ -90,10 +92,11 @@ export const updateJobPost = createAsyncThunk(
       columnId: columnId,
       description: description,
       statusChangedAt: statusChangedAt,
-      company: {
-        name: companyName,
-      },
     };
+
+    if (companyName) {
+      body.company = { name: companyName };
+    }
     try {
       const res = await client.put(`/job-applications/${jobPostId}`, body, {
         headers: {
@@ -128,8 +131,10 @@ export const deleteJobPost = createAsyncThunk(
             accessToken
           );
 
-        // Log the results for debugging
-        console.log('Document processing results:', documentResults);
+        // Log the results for debugging in development only
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Document processing results:', documentResults);
+        }
       }
 
       // Step 2: Delete the job post itself

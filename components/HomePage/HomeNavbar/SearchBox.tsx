@@ -13,6 +13,14 @@ const SearchBox = () => {
   // Global keyboard shortcut (Ctrl/Cmd + K to focus search)
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      const isTyping =
+        !!t &&
+        (t.tagName === 'INPUT' ||
+          t.tagName === 'TEXTAREA' ||
+          t.isContentEditable);
+      if (isTyping) return;
+
       if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault();
         inputRef.current?.focus();
@@ -25,12 +33,13 @@ const SearchBox = () => {
 
   // Debounce search query updates
   useEffect(() => {
+    if (localQuery === query) return;
     const timeoutId = setTimeout(() => {
       dispatch(setSearchQuery(localQuery));
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [localQuery, dispatch]);
+  }, [localQuery, query, dispatch]);
 
   // Sync with Redux state on mount/external changes
   useEffect(() => {
@@ -55,12 +64,17 @@ const SearchBox = () => {
 
   return (
     <div className="flex items-center relative">
-      <RiSearchLine className="absolute left-1 text-gray-500" />
+      <RiSearchLine
+        aria-hidden="true"
+        focusable="false"
+        className="absolute left-1 text-gray-500"
+      />
       <div className="w-40">
         <input
           type="text"
           ref={inputRef}
           value={localQuery}
+          aria-label="Search jobs"
           onKeyDown={handleKeyDown}
           onChange={handleInputChange}
           placeholder="Filter (2+ chars)"
@@ -79,10 +93,15 @@ const SearchBox = () => {
         <button
           type="button"
           title="Clear search"
+          aria-label="Clear search"
           onClick={handleClearSearch}
           className="absolute right-1 p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
         >
-          <RiCloseLine className="text-gray-500 text-sm" />
+          <RiCloseLine
+            aria-hidden="true"
+            focusable="false"
+            className="text-gray-500 text-sm"
+          />
         </button>
       )}
     </div>

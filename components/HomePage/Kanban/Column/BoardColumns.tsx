@@ -41,7 +41,7 @@ const BoardColumns = () => {
   const [currentColumnId, setCurrentColumnId] = useState('');
   const { boards } = useAppSelector((state) => state.boards);
   const { jobPosts } = useAppSelector((state) => state.jobs);
-  const focusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const focusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [renamedColumnName, setRenamedColumnName] = useState('');
   const { query, isActive } = useAppSelector((state) => state.search);
@@ -339,7 +339,7 @@ const BoardColumns = () => {
                     {searchSummary.filteredJobs} of {searchSummary.totalJobs}{' '}
                     jobs
                   </span>{' '}
-                  match{searchSummary.filteredJobs !== 1 ? '' : 'es'}{' '}
+                  match{searchSummary.filteredJobs === 1 ? '' : 'es'}{' '}
                   <span className="font-mono text-xs bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">
                     &ldquo;{query}&rdquo;
                   </span>

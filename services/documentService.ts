@@ -55,7 +55,7 @@ export class DocumentService {
     );
 
     const otherJobApplications = jobApplications.filter(
-      (jobApp: any) => jobApp.id !== excludeJobId
+      (jobApp: DocumentJobApplication) => jobApp.id !== excludeJobId
     );
 
     return otherJobApplications.length > 0;
@@ -114,7 +114,7 @@ export class DocumentService {
         );
 
         const stillAttached = jobApplications.some(
-          (jobApp: any) => jobApp.id === jobId
+          (jobApp: DocumentJobApplication) => jobApp.id === jobId
         );
 
         if (!stillAttached) {

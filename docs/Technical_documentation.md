@@ -449,6 +449,176 @@ const toApiError = (err: unknown): ApiError => {
 - Provided structured error information for better debugging
 - Enabled graceful fallbacks for different error types
 
+### Advanced Error Handling and CodeRabbit Security Enhancements (22/09/2025)
+
+#### Critical Nested Destructuring Safety Fix
+
+**Problem**: Unsafe nested destructuring in `updateJobPost` thunk causing runtime crashes
+
+```typescript
+// BEFORE: Dangerous nested destructuring
+const {
+  company: { name: companyName }, // Crashes if company is undefined
+} = values;
+
+const body = {
+  // Always includes company even if undefined
+  company: { name: companyName },
+};
+```
+
+**Solution**: Safe destructuring with optional chaining and conditional inclusion
+
+```typescript
+// AFTER: Safe destructuring pattern
+const {
+  company, // Safe destructuring
+} = values;
+const companyName: string | undefined = company?.name; // Safe property access
+
+const body: any = {
+  title: title,
+  color: color,
+  // ... other properties
+};
+
+// Conditional inclusion - only add company if it exists
+if (companyName) {
+  body.company = { name: companyName };
+}
+```
+
+**Benefits**:
+
+- **Runtime Safety**: Prevents `TypeError` crashes when company is undefined
+- **Flexible API**: Backend only receives company data when it exists
+- **Better UX**: Users won't encounter unexpected errors during job updates
+- **Defensive Programming**: Handles edge cases gracefully
+
+#### Document Service AxiosError Preservation
+
+**Problem**: AxiosError type information lost in service layer, breaking 404 detection
+
+```typescript
+// BEFORE: Wrapping AxiosErrors in generic Error objects
+catch (error) {
+  throw new Error(`Failed to fetch document ${documentId}: ${error}`); // Loses type info
+}
+
+// LATER: isAxiosError check fails because error was wrapped
+catch (error: unknown) {
+  if (isAxiosError(error) && error.response?.status === 404) {
+    return; // Never reached - isAxiosError fails
+  }
+}
+```
+
+**Solution**: Preserve AxiosErrors while safely handling other error types
+
+```typescript
+// AFTER: Type-preserving error handling
+catch (err: unknown) {
+  if (isAxiosError(err)) {
+    // Preserve AxiosError so callers can inspect status codes
+    throw err;
+  }
+  const msg =
+    err instanceof Error ? err.message : typeof err === 'string' ? err : JSON.stringify(err);
+  throw new Error(`Failed to fetch document ${documentId}: ${msg}`);
+}
+```
+
+**Critical Business Logic Fix**:
+
+- `waitForDetachmentComplete` relies on 404 errors to detect successful document deletion
+- Without AxiosError preservation, document cleanup operations would timeout instead of completing
+- This fix ensures document deletion workflows complete gracefully
+
+#### Production Security: Development-Only Logging
+
+**Problem**: Sensitive document processing results logged in production
+
+```typescript
+// BEFORE: Always logs potentially sensitive data
+console.log('Document processing results:', documentResults); // PII risk in production
+```
+
+**Solution**: Environment-aware logging with security considerations
+
+```typescript
+// AFTER: Development-only logging
+if (process.env.NODE_ENV === 'development') {
+  console.log('Document processing results:', documentResults);
+}
+```
+
+**Security Benefits**:
+
+- **PII Protection**: Document processing results may contain sensitive filenames, IDs
+- **Clean Production**: No debug output in production console
+- **Performance**: Reduced logging overhead in production
+- **Consistency**: Follows established logging patterns throughout codebase
+
+#### File Extension Consistency
+
+**Problem**: `moveColumn.tsx` contained pure TypeScript functions without JSX
+
+**Solution**: Proper file extension conventions
+
+```typescript
+// moveColumn.ts (renamed from .tsx)
+const range = (from: number, to: number) => {
+  return from > to
+    ? []
+    : Array.from({ length: to - from + 1 }, (value, idx) => idx + from);
+};
+
+export const moveColumn = (numCols: number, from: number, to: number) => {
+  // Pure TypeScript functions - no JSX
+};
+```
+
+**Architecture Benefits**:
+
+- **Clear Intent**: File extensions accurately reflect content type
+- **Better Tooling**: IDEs provide appropriate syntax highlighting and features
+- **Maintainability**: Developers immediately understand file purpose
+- **Best Practices**: Follows TypeScript/React community conventions
+
+#### TypeScript Compilation Verification
+
+**Quality Assurance Process**:
+
+```bash
+# Verified after each fix
+npx tsc --noEmit
+# Result: No errors found across entire codebase
+```
+
+**Integration Testing**:
+
+- All fixes verified with zero TypeScript compilation errors
+- Maintained backward compatibility with existing code
+- No breaking changes to API contracts
+- Preserved all existing functionality
+
+#### CodeRabbit Analysis Integration
+
+**Development Workflow Enhancement**:
+
+1. **Static Analysis**: CodeRabbit identifies potential security and type safety issues
+2. **Impact Assessment**: Evaluate suggestions for business logic implications
+3. **Implementation**: Apply fixes following established codebase patterns
+4. **Verification**: TypeScript compilation + manual testing
+5. **Documentation**: Update technical documentation with fixes and rationale
+
+**Benefits of CodeRabbit Integration**:
+
+- **Proactive Security**: Identifies potential PII leaks and production issues
+- **Type Safety**: Catches unsafe destructuring and type handling patterns
+- **Code Quality**: Enforces consistent patterns and best practices
+- **Risk Mitigation**: Prevents runtime crashes and security vulnerabilities
+
 ### Comprehensive Error Handling Type Safety (22/09/2025)
 
 #### Codebase-Wide Error Handling Modernization

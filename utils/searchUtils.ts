@@ -144,12 +144,16 @@ export const searchWithPerformanceTracking = (
   filteredColumns: Column[];
   performance: { duration: number; jobCount: number };
 } => {
-  const startTime = performance.now();
+  const now =
+    typeof performance !== 'undefined' && typeof performance.now === 'function'
+      ? () => performance.now()
+      : () => Date.now();
+  const startTime = now();
   const jobCount = countFilteredJobs(columns);
 
   const filteredColumns = filterBoardColumns(columns, query);
 
-  const duration = performance.now() - startTime;
+  const duration = now() - startTime;
 
   // Log warning for slow searches in development
   if (process.env.NODE_ENV === 'development' && duration > 50) {
