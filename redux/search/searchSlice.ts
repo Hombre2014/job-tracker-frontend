@@ -16,7 +16,8 @@ export const searchSlice = createSlice({
   reducers: {
     setSearchQuery: (state, action: PayloadAction<string>) => {
       state.query = action.payload.trim();
-      state.isActive = state.query.length > 0;
+      // Only activate search for queries with 2+ characters
+      state.isActive = state.query.length >= 2;
     },
     clearSearch: (state) => {
       state.query = '';

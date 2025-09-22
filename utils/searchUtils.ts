@@ -5,7 +5,7 @@
 /**
  * Filters job applications based on search query
  * Searches in job title and company name with case-insensitive OR logic
- * 
+ *
  * @param jobApplications - Array of job applications to filter
  * @param query - Search query string (space-separated keywords)
  * @returns Filtered array of job applications
@@ -14,7 +14,8 @@ export const filterJobApplications = (
   jobApplications: JobApplication[],
   query: string
 ): JobApplication[] => {
-  if (!query || query.trim().length === 0) {
+  // Early returns for edge cases
+  if (!query || query.trim().length < 2 || !Array.isArray(jobApplications)) {
     return jobApplications;
   }
 
@@ -23,30 +24,35 @@ export const filterJobApplications = (
     .toLowerCase()
     .trim()
     .split(/\s+/) // Split on any whitespace
-    .filter(keyword => keyword.length > 0);
+    .filter((keyword) => keyword.length > 0)
+    .slice(0, 10); // Limit to 10 keywords for performance
 
   if (keywords.length === 0) {
     return jobApplications;
   }
 
-  return jobApplications.filter(job => {
-    const title = job.title?.toLowerCase() || '';
-    const companyName = job.company?.name?.toLowerCase() || '';
-    
+  return jobApplications.filter((job) => {
+    // Safely extract searchable text with null checks
+    const title = job?.title?.toLowerCase() || '';
+    const companyName = job?.company?.name?.toLowerCase() || '';
+
+    // Skip jobs with missing essential data
+    if (!title && !companyName) {
+      return false;
+    }
+
     // Combine searchable text
     const searchableText = `${title} ${companyName}`;
 
     // OR logic: job matches if ANY keyword is found
-    return keywords.some(keyword => 
-      searchableText.includes(keyword)
-    );
+    return keywords.some((keyword) => searchableText.includes(keyword));
   });
 };
 
 /**
  * Filters board columns' job applications based on search query
  * Maintains column structure while filtering job applications within each column
- * 
+ *
  * @param columns - Array of board columns
  * @param query - Search query string
  * @returns Columns with filtered job applications
@@ -55,19 +61,19 @@ export const filterBoardColumns = (
   columns: Column[],
   query: string
 ): Column[] => {
-  if (!query || query.trim().length === 0) {
+  if (!query || query.trim().length < 2 || !Array.isArray(columns)) {
     return columns;
   }
 
-  return columns.map(column => ({
+  return columns.map((column) => ({
     ...column,
-    jobApplications: filterJobApplications(column.jobApplications || [], query)
+    jobApplications: filterJobApplications(column.jobApplications || [], query),
   }));
 };
 
 /**
  * Counts total filtered job applications across all columns
- * 
+ *
  * @param columns - Array of board columns (potentially filtered)
  * @returns Total count of job applications
  */
@@ -79,7 +85,7 @@ export const countFilteredJobs = (columns: Column[]): number => {
 
 /**
  * Gets search result summary
- * 
+ *
  * @param originalColumns - Original unfiltered columns
  * @param filteredColumns - Filtered columns
  * @param query - Search query
@@ -92,13 +98,49 @@ export const getSearchSummary = (
 ) => {
   const totalJobs = countFilteredJobs(originalColumns);
   const filteredJobs = countFilteredJobs(filteredColumns);
-  const isFiltering = query.trim().length > 0;
+  const isFiltering = query.trim().length >= 2;
 
   return {
     totalJobs,
     filteredJobs,
     isFiltering,
     hasResults: filteredJobs > 0,
-    keywords: query.toLowerCase().trim().split(/\s+/).filter(k => k.length > 0)
+    keywords: query
+      .toLowerCase()
+      .trim()
+      .split(/\s+/)
+      .filter((k) => k.length > 0),
+  };
+};
+
+/**
+ * Performance-aware search function for development
+ */
+export const searchWithPerformanceTracking = (
+  columns: Column[],
+  query: string
+): {
+  filteredColumns: Column[];
+  performance: { duration: number; jobCount: number };
+} => {
+  const startTime = performance.now();
+  const jobCount = countFilteredJobs(columns);
+
+  const filteredColumns = filterBoardColumns(columns, query);
+
+  const duration = performance.now() - startTime;
+
+  // Log warning for slow searches in development
+  if (process.env.NODE_ENV === 'development' && duration > 50) {
+    console.warn(
+      `Search took ${duration.toFixed(
+        2
+      )}ms for ${jobCount} jobs. Consider optimizing for better performance.`
+    );
+  }
+
+  return {
+    filteredColumns,
+    performance: { duration, jobCount },
   };
 };
