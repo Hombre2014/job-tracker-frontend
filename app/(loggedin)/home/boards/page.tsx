@@ -80,7 +80,7 @@ const UserBoards = () => {
         await dispatch(getBoards(accessToken)).unwrap();
       }
       // Toasts removed per request
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Rename failed', err);
       // Restore previous name visually
       setRenamedBoardName(current?.name || '');

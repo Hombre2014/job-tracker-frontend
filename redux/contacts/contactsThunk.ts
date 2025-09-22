@@ -1,3 +1,5 @@
+﻿import { isAxiosError } from 'axios';
+
 import client from '@/api/client';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
@@ -47,11 +49,14 @@ export const createContact = createAsyncThunk(
       });
       const data = res.data;
       return { id: data.id, ...data }; // Return the contact ID along with other data
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error creating contact:', err);
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error creating contact'
-      );
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error creating contact'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error creating contact');
     }
   }
 );
@@ -98,10 +103,13 @@ export const updateContact = createAsyncThunk(
       });
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error updating contact'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error updating contact'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error updating contact');
     }
   }
 );
@@ -118,10 +126,13 @@ export const deleteContact = createAsyncThunk(
       });
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error deleting contact'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error deleting contact'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error deleting contact');
     }
   }
 );
@@ -140,10 +151,13 @@ export const getContact = createAsyncThunk(
       );
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error getting contacts'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error getting contacts'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error getting contacts');
     }
   }
 );
@@ -160,10 +174,13 @@ export const getAllContactsPerBoard = createAsyncThunk(
       });
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error getting contacts'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error getting contacts'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error getting contacts');
     }
   }
 );
@@ -184,9 +201,14 @@ export const assignContactToJobPost = createAsyncThunk(
       });
       const data = res.data;
       return data;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error assigning contact to job application'
+        );
+      }
       return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error assigning contact to job application'
+        'Error assigning contact to job application'
       );
     }
   }
@@ -210,9 +232,14 @@ export const unassignContactFromJobPost = createAsyncThunk(
       });
       const data = res.data;
       return data;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error removing contact from job application'
+        );
+      }
       return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error removing contact from job application'
+        'Error removing contact from job application'
       );
     }
   }
@@ -240,11 +267,14 @@ export const uploadContactImage = createAsyncThunk(
       });
       const data = res.data;
       return { contactId, imageUrl: data.url };
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error in uploadContactImage thunk:', err);
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error uploading contact image'
-      );
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error uploading contact image'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error uploading contact image');
     }
   }
 );
@@ -266,10 +296,13 @@ export const createContactEmail = createAsyncThunk(
       });
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error creating contact email'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error creating contact email'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error creating contact email');
     }
   }
 );
@@ -291,10 +324,13 @@ export const createContactPhone = createAsyncThunk(
       });
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error creating contact phone'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error creating contact phone'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error creating contact phone');
     }
   }
 );
@@ -316,10 +352,13 @@ export const updateContactEmail = createAsyncThunk(
       });
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error updating contact email'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error updating contact email'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error updating contact email');
     }
   }
 );
@@ -341,10 +380,13 @@ export const updateContactPhone = createAsyncThunk(
       });
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error updating contact phone'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error updating contact phone'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error updating contact phone');
     }
   }
 );
@@ -361,10 +403,13 @@ export const deleteContactEmail = createAsyncThunk(
       });
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error deleting contact email'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error deleting contact email'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error deleting contact email');
     }
   }
 );
@@ -381,10 +426,13 @@ export const deleteContactPhone = createAsyncThunk(
       });
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error deleting contact phone'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error deleting contact phone'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error deleting contact phone');
     }
   }
 );
@@ -404,10 +452,13 @@ export const getContactEmails = createAsyncThunk(
       );
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error getting contact emails'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error getting contact emails'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error getting contact emails');
     }
   }
 );
@@ -427,10 +478,13 @@ export const getContactPhones = createAsyncThunk(
       );
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error getting contact phones'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error getting contact phones'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error getting contact phones');
     }
   }
 );
