@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { RiSearchLine, RiCloseLine } from 'react-icons/ri';
+
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { setSearchQuery, clearSearch } from '@/redux/search/searchSlice';
 

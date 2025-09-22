@@ -302,9 +302,40 @@ const BoardColumns = () => {
       onDragStart={handleDragStart}
       collisionDetection={closestCorners}
     >
-      <div className="w-full flex h-full">
-        {filteredColumns &&
-          filteredColumns.map((column) => (
+      <div className="w-full h-full flex flex-col">
+        {/* Search Results Header */}
+        {isActive && (
+          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-blue-50 dark:bg-blue-900/10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="text-sm text-gray-700 dark:text-gray-300">
+                  <span className="font-medium">
+                    {searchSummary.filteredJobs} of {searchSummary.totalJobs} jobs
+                  </span>
+                  {' '}match{searchSummary.filteredJobs !== 1 ? '' : 'es'}{' '}
+                  <span className="font-mono text-xs bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">
+                    &ldquo;{query}&rdquo;
+                  </span>
+                </div>
+                {searchSummary.keywords.length > 1 && (
+                  <div className="text-xs text-gray-500">
+                    ({searchSummary.keywords.length} keywords)
+                  </div>
+                )}
+              </div>
+              {!searchSummary.hasResults && (
+                <div className="text-sm text-amber-600 dark:text-amber-400">
+                  No matching jobs found
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Board Columns */}
+        <div className="w-full flex h-full flex-1">
+          {filteredColumns &&
+            filteredColumns.map((column) => (
             <DroppableColumn key={column.id} column={column}>
               <div className="flex items-center justify-between px-4 pt-8">
                 {returnBoardIcon(column.order + 1)}
@@ -379,6 +410,32 @@ const BoardColumns = () => {
                 )}
             </DroppableColumn>
           ))}
+        </div>
+
+        {/* Empty Search Results Message */}
+        {isActive && !searchSummary.hasResults && (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center py-12">
+              <div className="text-gray-500 dark:text-gray-400 mb-4">
+                <svg className="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                No jobs found
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                No job applications match your search for{' '}
+                <span className="font-mono text-sm bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">
+                  &ldquo;{query}&rdquo;
+                </span>
+              </p>
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
+                Try adjusting your search terms or clearing the filter.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
       <DragOverlay>
         {activeId ? (
