@@ -35,7 +35,7 @@ export interface NotificationSettings {
   scheduledTime?: string;
   type: 'DAILY' | 'WEEKLY';
   deletedAt?: string | null;
-  time: `${number}:${number}`; // "HH:MM" format
+  time: TimeString; // Validated HH:MM format (00:00-23:59)
   dayOfWeek?: DayOfWeek;
 }
 
@@ -45,13 +45,13 @@ export interface NotificationsResponse {
 }
 
 export interface WeeklyNotificationPayload {
-  time: `${number}:${number}`;
+  time: TimeString; // Validated HH:MM format
   timezoneOffset: number;
   dayOfWeek: DayOfWeek;
 }
 
 export interface DailyNotificationPayload {
-  time: `${number}:${number}`;
+  time: TimeString; // Validated HH:MM format
   timezoneOffset: number;
 }
 

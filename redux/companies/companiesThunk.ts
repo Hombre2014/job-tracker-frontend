@@ -1,3 +1,5 @@
+import { isAxiosError } from 'axios';
+
 import client from '@/api/client';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
@@ -18,10 +20,13 @@ export const getCompanyThatStartsWith = createAsyncThunk(
         }
       );
       return res.data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error fetching companies'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error fetching companies'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error fetching companies');
     }
   }
 );
@@ -42,10 +47,13 @@ export const createCompany = createAsyncThunk(
         },
       });
       return res.data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error creating company'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error creating company'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error creating company');
     }
   }
 );
@@ -62,10 +70,13 @@ export const getCompany = createAsyncThunk(
         },
       });
       return res.data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error fetching company'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error fetching company'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error fetching company');
     }
   }
 );
@@ -82,10 +93,13 @@ export const updateCompany = createAsyncThunk(
         },
       });
       return res.data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error updating company'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error updating company'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error updating company');
     }
   }
 );

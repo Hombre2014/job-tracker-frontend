@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { isAxiosError } from 'axios';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
 import client from '@/api/client';
@@ -29,8 +30,11 @@ export const login = createAsyncThunk(
       } else {
         return thunkAPI.rejectWithValue(data);
       }
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(err.response?.data || 'Login failed');
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(err.response?.data || 'Login failed');
+      }
+      return thunkAPI.rejectWithValue('Login failed');
     }
   }
 );
@@ -100,10 +104,13 @@ export const updateUser = createAsyncThunk(
       } else {
         return thunkAPI.rejectWithValue('Error updating user');
       }
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error updating user'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error updating user'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error updating user');
     }
   }
 );

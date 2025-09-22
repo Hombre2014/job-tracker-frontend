@@ -1,3 +1,5 @@
+﻿import { isAxiosError } from 'axios';
+
 import client from '@/api/client';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
@@ -13,10 +15,13 @@ export const getDocument = createAsyncThunk(
       });
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error getting document'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error getting document'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error getting document');
     }
   }
 );
@@ -46,10 +51,13 @@ export const uploadDocument = createAsyncThunk(
       });
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error uploading document'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error uploading document'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error uploading document');
     }
   }
 );
@@ -70,9 +78,14 @@ export const attachDocumentToJobApplication = createAsyncThunk(
       );
       const data = res.data;
       return data;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error attaching document to job application'
+        );
+      }
       return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error attaching document to job application'
+        'Error attaching document to job application'
       );
     }
   }
@@ -94,9 +107,14 @@ export const detachDocumentFromJobApplication = createAsyncThunk(
       );
       const data = res.data;
       return data;
-    } catch (err: any) {
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error detaching document from job application'
+        );
+      }
       return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error detaching document from job application'
+        'Error detaching document from job application'
       );
     }
   }
@@ -114,10 +132,13 @@ export const deleteDocument = createAsyncThunk(
       });
       // Return the documentId for filtering in the slice
       return documentId;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error deleting document'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error deleting document'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error deleting document');
     }
   }
 );
@@ -133,10 +154,13 @@ export const getDocumentsPerUser = createAsyncThunk(
       });
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error getting user documents'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error getting user documents'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error getting user documents');
     }
   }
 );
@@ -153,10 +177,13 @@ export const getDocumentsPerBoard = createAsyncThunk(
       });
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error getting board documents'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error getting board documents'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error getting board documents');
     }
   }
 );
@@ -190,10 +217,13 @@ export const updateDocument = createAsyncThunk(
       });
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error updating document'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error updating document'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error updating document');
     }
   }
 );

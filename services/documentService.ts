@@ -1,3 +1,5 @@
+import { isAxiosError } from 'axios';
+
 import client from '@/api/client';
 
 // Define DocumentJobApplication interface locally to avoid import issues
@@ -23,8 +25,18 @@ export class DocumentService {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       return response.data.jobApplications || [];
-    } catch (error) {
-      throw new Error(`Failed to fetch document ${documentId}: ${error}`);
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        // Preserve AxiosError so callers (e.g., waitForDetachmentComplete) can inspect status codes
+        throw err;
+      }
+      const msg =
+        err instanceof Error
+          ? err.message
+          : typeof err === 'string'
+          ? err
+          : JSON.stringify(err);
+      throw new Error(`Failed to fetch document ${documentId}: ${msg}`);
     }
   }
 
@@ -43,7 +55,7 @@ export class DocumentService {
     );
 
     const otherJobApplications = jobApplications.filter(
-      (jobApp: any) => jobApp.id !== excludeJobId
+      (jobApp: DocumentJobApplication) => jobApp.id !== excludeJobId
     );
 
     return otherJobApplications.length > 0;
@@ -102,15 +114,15 @@ export class DocumentService {
         );
 
         const stillAttached = jobApplications.some(
-          (jobApp: any) => jobApp.id === jobId
+          (jobApp: DocumentJobApplication) => jobApp.id === jobId
         );
 
         if (!stillAttached) {
           return; // Detachment complete
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Only treat 404 errors as completion, re-throw others
-        if (error.response?.status === 404) {
+        if (isAxiosError(error) && error.response?.status === 404) {
           return; // Document doesn't exist, detachment is complete
         }
         throw error;
