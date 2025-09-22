@@ -1,5 +1,227 @@
 # Technical Documentation
 
+## Search and Filter System Implementation (22/09/2025)
+
+### Advanced Real-Time Search Architecture
+
+#### System Overview
+
+Implemented a comprehensive search and filter system for job applications with performance optimization, accessibility, and user experience focus. The system uses Redux state management, debounced input handling, and memoized filtering for optimal performance.
+
+#### Core Components Architecture
+
+**Redux Search State Management**:
+
+```typescript
+// redux/search/searchSlice.ts
+interface SearchState {
+  query: string;
+  isActive: boolean; // Activates only for 2+ character queries
+}
+
+const searchSlice = createSlice({
+  reducers: {
+    setSearchQuery: (state, action: PayloadAction<string>) => {
+      state.query = action.payload.trim();
+      state.isActive = state.query.length >= 2; // Smart activation threshold
+    },
+    clearSearch: (state) => {
+      state.query = '';
+      state.isActive = false;
+    },
+  },
+});
+```
+
+**Filtering Logic with Performance Optimization**:
+
+```typescript
+// utils/searchUtils.ts
+export const filterJobApplications = (
+  jobApplications: JobApplication[],
+  query: string
+): JobApplication[] => {
+  // Performance: Early return for invalid queries
+  if (!query || query.trim().length < 2) {
+    return jobApplications;
+  }
+
+  // Split into keywords for OR-logic search
+  const keywords = query
+    .toLowerCase()
+    .trim()
+    .split(/\s+/)
+    .filter((keyword) => keyword.length > 0)
+    .slice(0, 10); // Performance limit: max 10 keywords
+
+  return jobApplications.filter((job) => {
+    const searchableText = `${job?.title?.toLowerCase() || ''} ${
+      job?.company?.name?.toLowerCase() || ''
+    }`;
+    // OR logic: match if ANY keyword is found
+    return keywords.some((keyword) => searchableText.includes(keyword));
+  });
+};
+```
+
+#### UX and Accessibility Features
+
+**Visual Feedback States**:
+
+```typescript
+// components/HomePage/HomeNavbar/SearchBox.tsx
+const getInputClassName = () => {
+  if (isActive) {
+    return 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'; // Active search
+  }
+  if (localQuery.length === 1) {
+    return 'border-amber-400 bg-amber-50 dark:bg-amber-900/20'; // Single char warning
+  }
+  return 'border-slate-500'; // Default state
+};
+```
+
+**Global Keyboard Shortcuts**:
+
+```typescript
+// Global keyboard event handling
+useEffect(() => {
+  const handleGlobalKeyDown = (e: KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      inputRef.current?.focus(); // Focus search from anywhere
+    }
+  };
+  document.addEventListener('keydown', handleGlobalKeyDown);
+  return () => document.removeEventListener('keydown', handleGlobalKeyDown);
+}, []);
+```
+
+#### Performance Optimization Strategies
+
+**Debounced Input Handling**:
+
+```typescript
+// 300ms debounce to prevent excessive API calls
+useEffect(() => {
+  const timeoutId = setTimeout(() => {
+    dispatch(setSearchQuery(localQuery));
+  }, 300);
+  return () => clearTimeout(timeoutId);
+}, [localQuery, dispatch]);
+```
+
+**Memoized Filtering**:
+
+```typescript
+// components/HomePage/Kanban/Column/BoardColumns.tsx
+const filteredColumns = useMemo(() => {
+  if (!query.trim()) return boardColumns;
+  if (!isActive) return boardColumns; // No filtering for <2 chars
+  return filterBoardColumns(boardColumns, query);
+}, [boardColumns, query, isActive]);
+```
+
+**Development Performance Monitoring**:
+
+```typescript
+// utils/searchUtils.ts
+export const searchWithPerformanceTracking = (columns, query) => {
+  const startTime = performance.now();
+  const result = filterBoardColumns(columns, query);
+  const endTime = performance.now();
+
+  if (process.env.NODE_ENV === 'development' && endTime - startTime > 50) {
+    console.warn(
+      `Slow search detected: ${endTime - startTime}ms for query "${query}"`
+    );
+  }
+
+  return result;
+};
+```
+
+#### Advanced State Management Patterns
+
+**Smart Search Activation Logic**:
+
+The system implements a two-tier activation pattern:
+
+- **Query Present**: User has typed something (enables clear button, visual feedback)
+- **Search Active**: Query meets 2+ character threshold (enables filtering, results display)
+
+```typescript
+// Prevents false positive "search results" for single characters
+const searchSummary = useMemo(() => {
+  if (!isActive || !query.trim() || query.trim().length < 2) {
+    return {
+      totalJobs: countFilteredJobs(boardColumns),
+      filteredJobs: countFilteredJobs(boardColumns),
+      isFiltering: false,
+      hasResults: true,
+      keywords: [],
+    };
+  }
+  return getSearchSummary(boardColumns, filteredColumns, query);
+}, [boardColumns, filteredColumns, query, isActive]);
+```
+
+#### Error Handling and Edge Cases
+
+**Comprehensive Input Validation**:
+
+```typescript
+export const filterJobApplications = (jobApplications, query) => {
+  // Handle edge cases gracefully
+  if (!query || query.trim().length < 2 || !Array.isArray(jobApplications)) {
+    return jobApplications;
+  }
+
+  // Prevent performance issues with excessive keywords
+  const keywords = query
+    .toLowerCase()
+    .trim()
+    .split(/\s+/)
+    .filter((keyword) => keyword.length > 0)
+    .slice(0, 10); // Performance safeguard
+
+  if (keywords.length === 0) {
+    return jobApplications;
+  }
+
+  return jobApplications.filter((job) => {
+    // Null safety for job properties
+    const title = job?.title?.toLowerCase() || '';
+    const companyName = job?.company?.name?.toLowerCase() || '';
+
+    if (!title && !companyName) {
+      return false; // Skip jobs with missing essential data
+    }
+
+    const searchableText = `${title} ${companyName}`;
+    return keywords.some((keyword) => searchableText.includes(keyword));
+  });
+};
+```
+
+#### Technical Benefits
+
+1. **Type Safety**: Full TypeScript coverage with proper interface definitions
+2. **Performance**: Debounced input, memoized calculations, early returns
+3. **Accessibility**: ARIA attributes, keyboard navigation, screen reader support
+4. **User Experience**: Visual feedback states, global shortcuts, contextual messaging
+5. **Maintainability**: Modular architecture, comprehensive error handling
+6. **Developer Experience**: Performance monitoring, debug logging, clear separation of concerns
+
+### Integration with Existing Architecture
+
+The search system integrates seamlessly with:
+
+- **Redux Toolkit**: Uses existing patterns and store configuration
+- **Drag-and-Drop**: Maintains @dnd-kit functionality during filtered views
+- **Persistence**: Search state intentionally excluded from Redux persistence for fresh sessions
+- **Theme System**: Full dark mode support with consistent styling
+
 ## CodeRabbit Implementation - Advanced TypeScript and Redux Patterns (23/08/2025)
 
 ### Redux Persist Optimization Strategy (23/08/2025)
@@ -7,6 +229,7 @@
 #### Problem Analysis
 
 The notifications slice was being persisted to localStorage, causing several issues:
+
 - **Storage Bloat**: Accumulating notification data over time
 - **Stale UX**: Outdated notification states after app deployments
 - **Security Concerns**: Potential sensitive notification content in localStorage
@@ -30,13 +253,20 @@ const notificationsTransform = createTransform(
 // OPTION B: Complete removal from persistence (CHOSEN)
 const persistConfig = {
   whitelist: [
-    'user', 'boards', 'jobs', 'notes', 'contacts', 'companies', 'documents'
+    'user',
+    'boards',
+    'jobs',
+    'notes',
+    'contacts',
+    'companies',
+    'documents',
     // 'notifications' removed
   ],
 };
 ```
 
 **Decision Rationale**: Option B chosen because notifications contain:
+
 - Daily/weekly preference settings (should be fetched fresh)
 - Loading/error states (never should be persisted)
 - No user-specific metadata requiring persistence
@@ -56,7 +286,7 @@ const persistConfig = {
 
 ```typescript
 // INCONSISTENT PATTERNS:
-import userSlice from './user/userSlice';           // Default import
+import userSlice from './user/userSlice'; // Default import
 import { notificationsReducer } from './notifications'; // Named import
 ```
 
@@ -69,6 +299,7 @@ import notificationsSlice from './notifications/notificationsSlice';
 ```
 
 **Benefits**:
+
 - Uniform codebase patterns across all reducers
 - Clearer import intentions and better maintainability
 - Consistent with Redux Toolkit best practices
@@ -111,10 +342,10 @@ catch (err: unknown) {
 
 ```typescript
 // Structured error type
-type ApiError = { 
-  message: string; 
-  status?: number; 
-  data?: unknown 
+type ApiError = {
+  message: string;
+  status?: number;
+  data?: unknown;
 };
 
 // Error transformation utility
@@ -131,6 +362,7 @@ const toApiError = (err: unknown): ApiError => {
 ```
 
 **Benefits**:
+
 - Eliminated all `any` types from error handling
 - Prevented runtime errors when accessing `err.response`
 - Provided structured error information for better debugging
@@ -159,8 +391,13 @@ interface NotificationSettings {
 ```typescript
 // Extracted reusable type
 export type DayOfWeek =
-  | 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY'
-  | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+  | 'MONDAY'
+  | 'TUESDAY'
+  | 'WEDNESDAY'
+  | 'THURSDAY'
+  | 'FRIDAY'
+  | 'SATURDAY'
+  | 'SUNDAY';
 
 // Usage in interface
 interface NotificationSettings {
@@ -181,7 +418,13 @@ export interface CreateUpdateNotificationRequest {
   > | null;
   daily: Omit<
     NotificationSettings,
-    'id' | 'type' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'dayOfWeek' | 'scheduledTime'
+    | 'id'
+    | 'type'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'deletedAt'
+    | 'dayOfWeek'
+    | 'scheduledTime'
   > | null;
 }
 ```
@@ -209,6 +452,7 @@ export interface CreateUpdateNotificationRequest {
 ```
 
 **Benefits**:
+
 - Crystal clear API contracts
 - Required `dayOfWeek` for weekly notifications (no more optional)
 - Prevention of accidental field inclusion
@@ -224,8 +468,8 @@ export interface CreateUpdateNotificationRequest {
 ```typescript
 // Complete type safety
 export const getBothNotifications = createAsyncThunk<
-  NotificationsResponse,    // Return type
-  string,                   // Argument type (accessToken)
+  NotificationsResponse, // Return type
+  string, // Argument type (accessToken)
   { rejectValue: ApiError } // ThunkAPI config
 >(
   'notifications/getBothNotifications',
@@ -234,7 +478,7 @@ export const getBothNotifications = createAsyncThunk<
     if (!accessToken) {
       return rejectWithValue({ message: 'Missing access token' });
     }
-    
+
     try {
       const res = await client.get<NotificationsResponse>(
         '/notifications/report',
@@ -243,7 +487,7 @@ export const getBothNotifications = createAsyncThunk<
           signal, // Request cancellation support
         }
       );
-      
+
       // Graceful fallback for empty responses
       return res?.data ?? { daily: null, weekly: null };
     } catch (err: unknown) {
@@ -258,6 +502,7 @@ export const getBothNotifications = createAsyncThunk<
 ```
 
 **Key Features**:
+
 - **Type Safety**: No `as` type assertions needed
 - **Cancellation**: Request cancellation via `signal` parameter
 - **Input Validation**: Early validation prevents unnecessary API calls
@@ -283,6 +528,7 @@ import { createSlice, PayloadAction, isAnyOf } from '@reduxjs/toolkit';
 ```
 
 **Benefits**:
+
 - No reliance on type inference
 - Better IDE autocomplete and error detection
 - Future-proof against thunk typing changes
@@ -302,29 +548,36 @@ builder
   .addCase(createUpdateDeleteNotifications.pending, (state) => {
     state.loading = true;
     state.error = null;
-  })
-  // ... more duplication
+  });
+// ... more duplication
 
 // AFTER: Consolidated with isAnyOf
 builder
   .addMatcher(
-    isAnyOf(getBothNotifications.pending, createUpdateDeleteNotifications.pending),
+    isAnyOf(
+      getBothNotifications.pending,
+      createUpdateDeleteNotifications.pending
+    ),
     (state) => {
       state.loading = true;
       state.error = null;
     }
   )
   .addMatcher(
-    isAnyOf(getBothNotifications.fulfilled, createUpdateDeleteNotifications.fulfilled),
+    isAnyOf(
+      getBothNotifications.fulfilled,
+      createUpdateDeleteNotifications.fulfilled
+    ),
     (state, action: PayloadAction<NotificationsResponse>) => {
       state.loading = false;
       state.daily = action.payload.daily;
       state.weekly = action.payload.weekly;
     }
-  )
+  );
 ```
 
 **Benefits**:
+
 - Eliminated code duplication across thunks
 - Single place to update shared logic
 - Maintained type safety with cleaner code
@@ -342,7 +595,7 @@ const notifications = {
   daily: {
     time: '09:00', // Error: string not assignable to template literal
     timezoneOffset: timezoneOffset,
-  }
+  },
 };
 ```
 
@@ -359,11 +612,12 @@ const notifications = {
     time: '09:00' as const,
     dayOfWeek: 'MONDAY' as const,
     timezoneOffset: timezoneOffset,
-  }
+  },
 };
 ```
 
 **Technical Explanation**:
+
 - `as const` makes TypeScript treat `'09:00'` as literal type `'09:00'`
 - Literal type `'09:00'` is assignable to template literal `${number}:${number}`
 - Maintains strict type safety while fixing compilation errors
@@ -403,11 +657,13 @@ const notifications = {
 #### Core Redux Architecture
 
 1. **`redux/store.ts`**:
+
    - Removed notifications from persistence whitelist
    - Standardized reducer import patterns
    - Improved store configuration consistency
 
 2. **`redux/notifications/notificationsThunk.ts`**:
+
    - Added `isAxiosError` import and type-safe error handling
    - Implemented template literal types and `DayOfWeek` union
    - Created explicit payload interfaces replacing complex `Omit` types
@@ -422,7 +678,7 @@ const notifications = {
 
 #### UI Component Integration
 
-4. **`app/(loggedin)/home/settings/page.tsx`**:
+1. **`app/(loggedin)/home/settings/page.tsx`**:
    - Fixed template literal type compatibility with `as const` assertions
    - Maintained strict type safety while resolving compilation errors
    - Ensured proper integration with enhanced notification types
@@ -451,7 +707,7 @@ This implementation represents a significant advancement in code quality, type s
 
 ## Email Notifications System Architecture (17/08/2025)
 
-### System Overview
+### System Overview (17/08/2025)
 
 The email notifications system provides users with automated job board status updates via daily and weekly digest emails. The system is built with a Redux-based state management architecture, integrated with a unified backend API endpoint, and seamlessly embedded into the existing settings modal interface.
 
@@ -844,7 +1100,7 @@ Restored simpler previous logic in `app/(loggedin)/home/boards/page.tsx`:
 
 ### Critical Modal Form Reset Bug Fix (08/08/2025)
 
-#### Problem Analysis
+#### Problem Analysis (08/08/2025)
 
 A critical bug was discovered where the Add Job modal form fields (Company and Job Title) would reset while users were typing. This issue emerged after implementing the dnd-kit drag-and-drop functionality and was caused by a React re-rendering cascade that destroyed form state during user input.
 
@@ -940,7 +1196,7 @@ useEffect(() => {
 // Modal now self-manages validation
 ```
 
-#### Architecture Benefits
+#### Architecture Benefits (08/08/2025)
 
 1. **Stable Component Tree**: Modal component never gets destroyed during typing
 2. **Form State Preservation**: React Hook Form maintains values throughout interaction
@@ -1056,7 +1312,7 @@ const sections = [
 }
 ```
 
-#### Performance Optimizations
+#### Performance Optimizations (08/08/2025)
 
 1. **Component Splitting**: Logical separation of concerns
 2. **CSS Optimization**: Tailwind utility classes for minimal bundle
@@ -1504,7 +1760,7 @@ The job details modal had inconsistent navigation behavior depending on how the 
 - **Normal navigation**: Modal close worked correctly using `router.back()`
 - **Direct URL access**: Modal close redirected to empty browser tab instead of board view
 
-#### Technical Solution
+#### Technical Solution (08/08/2025)
 
 ##### 1. Enhanced Modal Component
 

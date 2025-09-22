@@ -3,6 +3,59 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.193.0] - 2025-09-22
+
+### Added - 2025-09-22
+
+- **Comprehensive Search and Filter System**: Implemented real-time job application filtering with advanced UX features
+
+  - **Search Functionality**: Case-insensitive OR-logic search across job titles and company names
+  - **Smart Activation**: 2+ character minimum with visual feedback states (amber for single char, blue for active search)
+  - **Keyboard Shortcuts**: Global Ctrl+K to focus search input, Esc to clear search
+  - **Performance Optimization**: Debounced input (300ms), useMemo for filtering, performance monitoring for development
+  - **Status Indicators**: Real-time "X of Y jobs found" with keyword count display
+  - **Empty States**: Contextual messaging when no search results found
+  - **Accessibility**: ARIA attributes, keyboard navigation, screen reader support
+  - **Files**:
+    - `redux/search/searchSlice.ts` - Search state management
+    - `utils/searchUtils.ts` - Filtering logic and utilities
+    - `components/HomePage/HomeNavbar/SearchBox.tsx` - Search input component
+    - `components/HomePage/Kanban/Column/BoardColumns.tsx` - Integrated filtering display
+
+### Fixed - 2025-09-22
+
+- **Search Logic Edge Cases**: Resolved misleading search result display for single character inputs
+
+  - **Issue**: Single character queries (e.g., "Z") showed "14 of 14 jobs found" despite no actual filtering
+  - **Solution**: Implemented proper state management with `isActive` flag and conditional search summary
+  - **Impact**: Users no longer see false positive search results for incomplete queries
+  - **Files**: `components/HomePage/Kanban/Column/BoardColumns.tsx`, `utils/searchUtils.ts`
+
+- **Build Cache Issues**: Resolved Radix UI vendor chunk errors and missing build manifest issues
+
+  - **Issue**: "Cannot find module './vendor-chunks/@radix-ui.js'" and missing build-manifest.json errors
+  - **Solution**: Cleared Next.js build cache, reinstalled dependencies, proper development server restart
+  - **Impact**: Stable development environment with consistent build process
+  - **Files**: `.next/` directory cleanup, node_modules reinstallation
+
+### Enhanced - 2025-09-22
+
+- **Development Experience**: Added comprehensive debugging and monitoring tools
+
+  - **Performance Tracking**: Development-mode logging for search operations >50ms
+  - **State Debugging**: Console logging for search activation states
+  - **Error Handling**: Comprehensive error boundaries for search edge cases
+  - **Type Safety**: Full TypeScript coverage for search functionality
+  - **Files**: `utils/searchUtils.ts`, `components/HomePage/Kanban/Column/BoardColumns.tsx`
+
+### Files Changed
+
+- redux/search/searchSlice.ts (new)
+- utils/searchUtils.ts (new)
+- components/HomePage/HomeNavbar/SearchBox.tsx
+- components/HomePage/Kanban/Column/BoardColumns.tsx
+- redux/store.ts
+
 ## [0.192.0] - 2025-08-24
 
 ### Fixed - 2025-08-24
