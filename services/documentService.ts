@@ -25,8 +25,18 @@ export class DocumentService {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       return response.data.jobApplications || [];
-    } catch (error) {
-      throw new Error(`Failed to fetch document ${documentId}: ${error}`);
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        // Preserve AxiosError so callers (e.g., waitForDetachmentComplete) can inspect status codes
+        throw err;
+      }
+      const msg =
+        err instanceof Error
+          ? err.message
+          : typeof err === 'string'
+          ? err
+          : JSON.stringify(err);
+      throw new Error(`Failed to fetch document ${documentId}: ${msg}`);
     }
   }
 
