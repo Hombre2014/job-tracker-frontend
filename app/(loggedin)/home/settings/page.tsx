@@ -17,6 +17,7 @@ import {
   getBothNotifications,
   createUpdateDeleteNotifications,
 } from '@/redux/notifications/notificationsThunk';
+import { createTimeString } from '@/utils/timeValidation';
 
 const Settings = () => {
   const router = useRouter();
@@ -90,13 +91,13 @@ const Settings = () => {
       const notifications = {
         daily: dailyDigest
           ? {
-              time: '09:00' as const,
+              time: createTimeString('09:00'),
               timezoneOffset: timezoneOffset,
             }
           : null,
         weekly: weeklyDigest
           ? {
-              time: '09:00' as const,
+              time: createTimeString('09:00'),
               dayOfWeek: 'MONDAY' as const,
               timezoneOffset: timezoneOffset,
             }

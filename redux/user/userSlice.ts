@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 import jwt from 'jsonwebtoken';
 import PerformanceMonitor from '@/utils/PerformanceMonitor';
 import SecurityValidator from '@/utils/SecurityValidator';
@@ -18,8 +18,11 @@ export const getUser = createAsyncThunk('user/getUser', async (_, thunkAPI) => {
     } else {
       return thunkAPI.rejectWithValue('User not found');
     }
-  } catch (err: any) {
-    return thunkAPI.rejectWithValue(err.response?.data || 'User not found');
+  } catch (err: unknown) {
+    if (isAxiosError(err)) {
+      return thunkAPI.rejectWithValue(err.response?.data || 'User not found');
+    }
+    return thunkAPI.rejectWithValue('User not found');
   }
 });
 

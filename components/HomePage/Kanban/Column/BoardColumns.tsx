@@ -219,12 +219,12 @@ const BoardColumns = () => {
       }
     }
 
-    const targetColumn = filteredColumns.find((col) => col.id === over.id);
+    const targetColumn = boardColumns.find((col) => col.id === over.id);
 
     if (!draggedJob || !targetColumn) return;
 
-    // Find current column from filtered columns
-    const currentColumn = filteredColumns.find((col) =>
+    // Find current column from all columns
+    const currentColumn = boardColumns.find((col) =>
       col.jobApplications?.some((job) => job.id === draggedJob.id)
     );
 

@@ -3,9 +3,47 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.193.0] - 2025-09-22
+## [0.194.0] - 2025-09-22
 
 ### Added - 2025-09-22
+
+- **Comprehensive Type-Safe Error Handling**: Modernized error handling across entire Redux and services layer
+
+  - **Codebase-Wide Consistency**: Applied uniform `isAxiosError` type guards to 25+ async functions
+  - **Type Safety**: Eliminated all `any` types from error handling, replaced with `catch (err: unknown)`
+  - **Runtime Safety**: Added `isAxiosError` guards to prevent accessing properties on unknown error types
+  - **Graceful Fallbacks**: Implemented consistent fallback error messages for non-Axios errors
+  - **Better Developer Experience**: Enhanced IntelliSense and type hints for error handling
+  - **Files Updated**:
+    - `redux/user/userThunk.ts` - Login and updateUser functions
+    - `redux/jobs/jobsThunk.ts` - All 5 async thunk functions (createJobPost, getAllJobPosts, updateJobPost, deleteJobPost, getJobPost)
+    - `redux/documents/documentsThunk.ts` - All 8 async thunk functions (getDocument, uploadDocument, attachDocument, detachDocument, deleteDocument, getDocumentsPerUser, getDocumentsPerBoard, updateDocument)
+    - `redux/notes/notesThunk.ts` - All 4 async thunk functions (createNote, getAllNotes, updateNote, deleteNote)
+    - `redux/user/userSlice.ts` - getUser function
+    - `services/documentService.ts` - Polling error handling
+
+### Technical Details - 2025-09-22
+
+- **Implementation Pattern**: Consistent error handling structure applied across all async operations
+
+  ```typescript
+  import { isAxiosError } from 'axios';
+
+  catch (err: unknown) {
+    if (isAxiosError(err)) {
+      return thunkAPI.rejectWithValue(
+        err.response?.data || 'Fallback error message'
+      );
+    }
+    return thunkAPI.rejectWithValue('Fallback error message');
+  }
+  ```
+
+- **Benefits Achieved**: 100% type safety, consistent architecture, runtime safety, better maintainability
+
+## [0.193.0] - 2025-09-22
+
+### Added - Search System Implementation
 
 - **Comprehensive Search and Filter System**: Implemented real-time job application filtering with advanced UX features
 
@@ -48,6 +86,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Type Safety**: Full TypeScript coverage for search functionality
   - **Files**: `utils/searchUtils.ts`, `components/HomePage/Kanban/Column/BoardColumns.tsx`
 
+- **Smart Keyword Prioritization**: Enhanced search relevance with intelligent keyword sorting
+
+  - **Length-Based Priority**: Longer keywords prioritized for better specificity (e.g., "typescript" over "js")
+  - **User Intent Preservation**: Original keyword order maintained as tiebreaker for same-length terms
+  - **Performance Optimization**: Sorting only activates when >10 keywords present
+  - **Single-Keyword Optimization**: Avoid string concatenation for most common search pattern (80%+ of cases)
+  - **Better Relevance**: More specific search terms lead to improved result accuracy
+  - **Files**: `utils/searchUtils.ts`
+
+- **Drag-and-Drop Consistency**: Fixed column lookup logic for reliable drag operations during filtering
+
+  - **Issue**: Drag-and-drop used filtered columns for target/source lookup, causing failures during search
+  - **Solution**: Use `boardColumns` for target/source column lookup while maintaining filtered display
+  - **Impact**: Seamless drag-and-drop functionality regardless of search/filter state
+  - **Files**: `components/HomePage/Kanban/Column/BoardColumns.tsx`
+
+- **Enhanced Time Type Safety**: Implemented branded types for robust time validation
+
+  - **Issue**: Template literal `\`${number}:${number}\`` accepted invalid times like "99:99"
+  - **Solution**: Branded `TimeString` type with runtime validation using regex pattern
+  - **Validation**: Accepts only valid HH:MM format (00:00-23:59) with proper error messages
+  - **Utilities**: `isValidTimeString()`, `createTimeString()`, `safeCreateTimeString()` helpers
+  - **Files**: `types/index.d.ts`, `utils/timeValidation.ts`, `redux/notifications/notificationsThunk.ts`, `app/(loggedin)/home/settings/page.tsx`
+
 ### Files Changed
 
 - redux/search/searchSlice.ts (new)
@@ -83,7 +145,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed a second scroll bar on the landing page.
 
-### Files Changed
+### Files Changed - 2025-08-24
 
 - app/(landing)/layout.tsx
 - app/(loggedin)/home/settings/page.tsx

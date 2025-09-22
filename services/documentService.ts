@@ -1,3 +1,5 @@
+import { isAxiosError } from 'axios';
+
 import client from '@/api/client';
 
 // Define DocumentJobApplication interface locally to avoid import issues
@@ -108,9 +110,9 @@ export class DocumentService {
         if (!stillAttached) {
           return; // Detachment complete
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Only treat 404 errors as completion, re-throw others
-        if (error.response?.status === 404) {
+        if (isAxiosError(error) && error.response?.status === 404) {
           return; // Document doesn't exist, detachment is complete
         }
         throw error;

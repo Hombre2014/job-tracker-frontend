@@ -64,7 +64,7 @@ const SearchBox = () => {
           onKeyDown={handleKeyDown}
           onChange={handleInputChange}
           placeholder="Filter (2+ chars)"
-          className={`rounded-md border pl-6 w-20 h-9 border-dashed transition-all duration-300 ease-in-out focus:w-40 focus:pl-8 focus:outline-none focus:border-solid ${
+          className={`rounded-md border pl-6 w-40 h-9 border-dashed transition-all duration-300 ease-in-out focus:w-40 focus:pl-8 focus:outline-none focus:border-solid ${
             isActive
               ? 'border-blue-600 w-40 pl-8 border-solid bg-blue-50 dark:bg-blue-900/20'
               : localQuery.length === 1

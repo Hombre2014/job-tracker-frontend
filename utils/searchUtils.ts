@@ -19,13 +19,28 @@ export const filterJobApplications = (
     return jobApplications;
   }
 
-  // Split query into keywords and clean them
-  const keywords = query
+  // Split query into keywords and clean them with smart prioritization
+  let keywords = query
     .toLowerCase()
     .trim()
     .split(/\s+/) // Split on any whitespace
-    .filter((keyword) => keyword.length > 0)
-    .slice(0, 10); // Limit to 10 keywords for performance
+    .filter((keyword) => keyword.length > 0);
+
+  // Smart keyword prioritization for better search relevance
+  if (keywords.length > 10) {
+    keywords = keywords
+      .map((keyword, index) => ({ keyword, originalIndex: index }))
+      .sort((a, b) => {
+        // Priority 1: Longer keywords (more specific)
+        if (b.keyword.length !== a.keyword.length) {
+          return b.keyword.length - a.keyword.length;
+        }
+        // Priority 2: Original order (user intent)
+        return a.originalIndex - b.originalIndex;
+      })
+      .slice(0, 10) // Performance limit: max 10 keywords
+      .map((item) => item.keyword);
+  }
 
   if (keywords.length === 0) {
     return jobApplications;
@@ -41,7 +56,13 @@ export const filterJobApplications = (
       return false;
     }
 
-    // Combine searchable text
+    // Performance optimization: avoid string concatenation for single-keyword searches
+    if (keywords.length === 1) {
+      const keyword = keywords[0];
+      return title.includes(keyword) || companyName.includes(keyword);
+    }
+
+    // Combine searchable text for multi-keyword searches
     const searchableText = `${title} ${companyName}`;
 
     // OR logic: job matches if ANY keyword is found

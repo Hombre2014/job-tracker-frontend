@@ -3,6 +3,15 @@ type MenuItemProps = {
   icon: JSX.Element;
 };
 
+// Branded type for time validation (HH:MM format)
+type TimeString = string & { __brand: 'time' };
+
+// Time validation utility
+declare function isValidTimeString(str: string): str is TimeString;
+
+// Helper function to create validated time strings
+declare function createTimeString(str: string): TimeString;
+
 type Company = {
   id: string;
   url: string;
