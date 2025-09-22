@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useState, useRef } from 'react';
 import { RiSearchLine, RiCloseLine } from 'react-icons/ri';
 
