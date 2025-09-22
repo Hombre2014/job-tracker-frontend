@@ -24,6 +24,7 @@ import { updateJobPost } from '@/redux/jobs/jobsThunk';
 import AlertDialogModal from '../../Boards/AlertDialogModal';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getBoards, updateColumnName } from '@/redux/boards/boardsThunk';
+import { filterBoardColumns, getSearchSummary } from '@/utils/searchUtils';
 import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
 
 const BoardColumns = () => {
@@ -36,9 +37,10 @@ const BoardColumns = () => {
   const [currentColumnId, setCurrentColumnId] = useState('');
   const { boards } = useAppSelector((state) => state.boards);
   const { jobPosts } = useAppSelector((state) => state.jobs);
+  const focusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [renamedColumnName, setRenamedColumnName] = useState('');
-  const focusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { query, isActive } = useAppSelector((state) => state.search);
 
   // Memoize currentBoard to prevent unnecessary re-renders
   const currentBoard = useMemo(() => {
@@ -49,6 +51,19 @@ const BoardColumns = () => {
   const boardColumns = useMemo(() => {
     return currentBoard?.columns || [];
   }, [currentBoard?.columns]);
+
+  // Apply search filtering to columns
+  const filteredColumns = useMemo(() => {
+    if (!isActive || !query.trim()) {
+      return boardColumns;
+    }
+    return filterBoardColumns(boardColumns, query);
+  }, [boardColumns, query, isActive]);
+
+  // Get search summary for status indicators
+  const searchSummary = useMemo(() => {
+    return getSearchSummary(boardColumns, filteredColumns, query);
+  }, [boardColumns, filteredColumns, query]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -168,9 +183,9 @@ const BoardColumns = () => {
 
     if (!over) return;
 
-    // Find the dragged job
+    // Find the dragged job from filtered columns
     let draggedJob = null;
-    for (const column of boardColumns) {
+    for (const column of filteredColumns) {
       const job = column.jobApplications?.find((job) => job.id === active.id);
       if (job) {
         draggedJob = job;
@@ -178,12 +193,12 @@ const BoardColumns = () => {
       }
     }
 
-    const targetColumn = boardColumns.find((col) => col.id === over.id);
+    const targetColumn = filteredColumns.find((col) => col.id === over.id);
 
     if (!draggedJob || !targetColumn) return;
 
-    // Find current column
-    const currentColumn = boardColumns.find((col) =>
+    // Find current column from filtered columns
+    const currentColumn = filteredColumns.find((col) =>
       col.jobApplications?.some((job) => job.id === draggedJob.id)
     );
 
@@ -288,8 +303,8 @@ const BoardColumns = () => {
       collisionDetection={closestCorners}
     >
       <div className="w-full flex h-full">
-        {boardColumns &&
-          boardColumns.map((column) => (
+        {filteredColumns &&
+          filteredColumns.map((column) => (
             <DroppableColumn key={column.id} column={column}>
               <div className="flex items-center justify-between px-4 pt-8">
                 {returnBoardIcon(column.order + 1)}
@@ -319,6 +334,11 @@ const BoardColumns = () => {
                 <p className="mb-8 text-center dark:text-white">
                   {column.jobApplications?.length}{' '}
                   {column.jobApplications?.length === 1 ? 'JOB' : 'JOBS'}
+                  {isActive && (
+                    <span className="text-xs text-gray-500 block">
+                      {searchSummary.isFiltering ? 'filtered' : 'total'}
+                    </span>
+                  )}
                 </p>
               </div>
               <AlertDialogModal
@@ -327,8 +347,8 @@ const BoardColumns = () => {
                 dialogTitle="Add Job"
                 buttonCancel="Discard"
                 buttonVariant="outline"
-                buttonConfirm={isSubmittingJob ? 'Saving...' : 'Save Job'}
                 actionFunction={createJobApplication}
+                buttonConfirm={isSubmittingJob ? 'Saving...' : 'Save Job'}
                 stylings="w-11/12 flex justify-center text-2xl border py-3 mb-4 mx-auto rounded-md hover:border-blue-500 transition duration-300 delay-150 cursor-pointer"
               >
                 <AddJobShortForm
