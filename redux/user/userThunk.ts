@@ -73,48 +73,6 @@ export const isLoggedIn = createAsyncThunk(
   }
 );
 
-export const updateUser = createAsyncThunk(
-  'user/updateUser',
-  async (values: any, thunkAPI) => {
-    const { accessToken, firstName, lastName, email, profilePic, role } =
-      values;
-
-    // Create FormData object
-    const formData = new FormData();
-    formData.append('firstName', firstName);
-    formData.append('lastName', lastName);
-    formData.append('email', email);
-    formData.append('role', role);
-
-    // Check if profilePic is a valid File object
-    if (profilePic && profilePic instanceof File && profilePic.size > 0) {
-      formData.append('profilePic', profilePic);
-    }
-
-    try {
-      const res = await client.patch('/users', formData, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      if (res.status === 200) {
-        return res.data;
-      } else {
-        return thunkAPI.rejectWithValue('Error updating user');
-      }
-    } catch (err: unknown) {
-      if (isAxiosError(err)) {
-        return thunkAPI.rejectWithValue(
-          err.response?.data || 'Error updating user'
-        );
-      }
-      return thunkAPI.rejectWithValue('Error updating user');
-    }
-  }
-);
-
 export const createDeleteVerificationCode = createAsyncThunk(
   'user/createDeleteVerificationCode',
   async (values: { email: string }, thunkAPI) => {

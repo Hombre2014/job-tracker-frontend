@@ -233,8 +233,8 @@ const Settings = () => {
       try {
         await dispatch(
           updateUser({
-            email: newEmail,
             role: 'user',
+            email: newEmail,
             lastName: newLastName,
             firstName: newFirstName,
             profilePic: selectedFile,
