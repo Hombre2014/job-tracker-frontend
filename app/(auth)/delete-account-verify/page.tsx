@@ -7,12 +7,16 @@ import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState, startTransition } from 'react';
 
-import client from '@/api/client';
 import { VerifyEmailSchema } from '@/schemas';
 import { Input } from '@/components/ui/input';
+import { useAppDispatch } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
 import { FormError } from '@/components/Forms/form-error';
 import { FormSuccess } from '@/components/Forms/form-success';
+import {
+  deleteUserAccount,
+  createDeleteVerificationCode,
+} from '@/redux/user/userThunk';
 import {
   Form,
   FormItem,
@@ -34,6 +38,7 @@ import {
 
 const DeleteAccountVerify = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const [user, setUser] = useState<any>({});
   const [error, setError] = useState<string | undefined>('');
   const [success, setSuccess] = useState<string | undefined>('');
@@ -88,31 +93,21 @@ const DeleteAccountVerify = () => {
 
     startTransition(async () => {
       try {
-        const res = await client.delete('/users', {
-          data: {
-            code: pendingCode,
-          },
-        });
+        // Use Redux thunk to delete account
+        await dispatch(deleteUserAccount({ code: pendingCode })).unwrap();
 
-        if (res.status === 200) {
-          // Clear all user data
-          localStorage.removeItem('user');
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
+        setSuccess('Account deleted successfully. Redirecting...');
 
-          setSuccess('Account deleted successfully. Redirecting...');
-
-          // Redirect to home page after short delay
-          setTimeout(() => {
-            router.push('/');
-          }, 2000);
-        }
+        // Redirect to home page after short delay
+        setTimeout(() => {
+          router.push('/');
+        }, 2000);
       } catch (error: any) {
         setIsDeleting(false);
         const err =
-          error.response?.data?.userFriendlyMessage ||
-          error.response?.data?.message ||
-          'Failed to delete account. Please try again.';
+          typeof error === 'string'
+            ? error
+            : 'Failed to delete account. Please try again.';
         setError(err);
         form.reset();
         setPendingCode('');
@@ -133,19 +128,18 @@ const DeleteAccountVerify = () => {
     }
 
     try {
-      const res = await client.post('/users/delete/create-verification-code', {
-        email: user.email,
-      });
+      // Use Redux thunk to resend verification code
+      await dispatch(
+        createDeleteVerificationCode({ email: user.email })
+      ).unwrap();
 
-      if (res.status === 201 || res.status === 200) {
-        setSuccess('Verification code resent successfully');
-        setTimeout(() => setSuccess(''), 3000);
-      }
+      setSuccess('Verification code resent successfully');
+      setTimeout(() => setSuccess(''), 3000);
     } catch (error: any) {
       const err =
-        error.response?.data?.userFriendlyMessage ||
-        error.response?.data?.message ||
-        'Failed to resend code. Please try again.';
+        typeof error === 'string'
+          ? error
+          : 'Failed to resend code. Please try again.';
       setError(err);
       setTimeout(() => setError(''), 3000);
     }
@@ -209,8 +203,8 @@ const DeleteAccountVerify = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={handleCancel}
                   className="flex-1"
+                  onClick={handleCancel}
                 >
                   Cancel
                 </Button>

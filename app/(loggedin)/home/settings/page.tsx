@@ -7,7 +7,6 @@ import { useRouter } from 'next/navigation';
 import { IoMdContact } from 'react-icons/io';
 
 import { cn } from '@/lib/utils';
-import client from '@/api/client';
 import Modal from '@/components/Misc/Modal';
 import { Input } from '@/components/ui/input';
 import { useAppSelector } from '@/redux/hooks';
@@ -18,6 +17,7 @@ import {
   getBothNotifications,
   createUpdateDeleteNotifications,
 } from '@/redux/notifications/notificationsThunk';
+import { createDeleteVerificationCode } from '@/redux/user/userThunk';
 import { createTimeString } from '@/utils/timeValidation';
 
 const Settings = () => {
@@ -75,14 +75,6 @@ const Settings = () => {
   };
 
   const handleDeleteAccount = async () => {
-    if (!accessToken) {
-      toast.error('Access token not available. Please log in again.', {
-        autoClose: 3000,
-        position: 'top-right',
-      });
-      return;
-    }
-
     if (!email) {
       toast.error('Email not found. Please log in again.', {
         autoClose: 3000,
@@ -92,37 +84,33 @@ const Settings = () => {
     }
 
     try {
-      // Send request to create verification code for account deletion
-      const res = await client.post('/users/delete/create-verification-code', {
+      // Use Redux thunk to send verification code
+      await dispatch(createDeleteVerificationCode({ email })).unwrap();
+
+      toast.success(
+        'Verification code sent to your email. Please check your inbox.',
+        {
+          autoClose: 4000,
+          position: 'top-right',
+        }
+      );
+
+      // Store user data for verification page
+      const userData = {
         email: email,
-      });
+        firstName: firstName,
+        lastName: lastName,
+      };
+      localStorage.setItem('user', JSON.stringify(userData));
 
-      if (res.status === 201 || res.status === 200) {
-        toast.success(
-          'Verification code sent to your email. Please check your inbox.',
-          {
-            autoClose: 4000,
-            position: 'top-right',
-          }
-        );
-
-        // Store user data for verification page
-        const userData = {
-          email: email,
-          firstName: firstName,
-          lastName: lastName,
-        };
-        localStorage.setItem('user', JSON.stringify(userData));
-
-        // Redirect to verification page
-        router.push('/delete-account-verify');
-      }
+      // Redirect to verification page
+      router.push('/delete-account-verify');
     } catch (error: any) {
       console.error('Error requesting account deletion:', error);
       const err =
-        error.response?.data?.userFriendlyMessage ||
-        error.response?.data?.message ||
-        'Failed to send verification code. Please try again.';
+        typeof error === 'string'
+          ? error
+          : 'Failed to send verification code. Please try again.';
       toast.error(err, {
         autoClose: 4000,
         position: 'top-right',
@@ -400,8 +388,8 @@ const Settings = () => {
                         <label className="dark:text-white">Email Address</label>
                         <Input
                           type="email"
-                          placeholder="john.doe@example.com"
                           value={newEmail}
+                          placeholder="john.doe@example.com"
                           onChange={(e) => setNewEmail(e.target.value)}
                           className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-white"
                         />
@@ -432,10 +420,10 @@ const Settings = () => {
                       Weekly Digest
                     </span>
                     <input
-                      checked={weeklyDigest}
                       type="checkbox"
-                      className="checkbox border-slate-300 dark:border-slate-600"
+                      checked={weeklyDigest}
                       onChange={handleWeeklyDigest}
+                      className="checkbox border-slate-300 dark:border-slate-600"
                     />
                   </label>
                 </div>
@@ -445,10 +433,10 @@ const Settings = () => {
                       Daily Digest
                     </span>
                     <input
-                      checked={dailyDigest}
                       type="checkbox"
-                      className="checkbox border-slate-300 dark:border-slate-600"
+                      checked={dailyDigest}
                       onChange={handleDailyDigest}
+                      className="checkbox border-slate-300 dark:border-slate-600"
                     />
                   </label>
                 </div>
@@ -471,8 +459,8 @@ const Settings = () => {
                 <div className="flex justify-end mt-4">
                   <Button
                     type="button"
-                    onClick={handleSaveNotifications}
                     disabled={loading}
+                    onClick={handleSaveNotifications}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md disabled:opacity-50"
                   >
                     {loading ? 'Saving...' : 'Save Changes'}
