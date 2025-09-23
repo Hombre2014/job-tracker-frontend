@@ -7,7 +7,9 @@ import { RiDeleteBinLine } from 'react-icons/ri';
 import { format, toZonedTime } from 'date-fns-tz';
 import { useRouter, useParams } from 'next/navigation';
 
+
 import { cn } from '@/lib/utils';
+import { TokenManager } from '@/utils/TokenManager';
 import { deleteJobPost } from '@/redux/jobs/jobsThunk';
 import { returnJobPostIcon } from '@/utils/ReturnIcons';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
@@ -25,14 +27,14 @@ import {
 } from '@/components/ui/tooltip';
 import {
   AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
+  AlertDialogTitle,
   AlertDialogHeader,
   AlertDialogFooter,
-  AlertDialogTitle,
-  AlertDialogDescription,
   AlertDialogAction,
   AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogTrigger,
+  AlertDialogDescription,
 } from '@/components/ui/alert-dialog';
 
 const JobPostCard = ({
@@ -57,11 +59,8 @@ const JobPostCard = ({
   const boardColumns = boards.find((board) => board.id === board_id)?.columns;
 
   const formattedStatusChangedTime = format(
-    toZonedTime(new Date(statusChangedTime), 'UTC'),
-    'dd/MM/yyyy HH:mm, a',
-    {
-      timeZone: 'UTC',
-    }
+    new Date(statusChangedTime),
+    'dd/MM/yyyy HH:mm, a'
   );
 
   const iconsOn = () => {
@@ -122,7 +121,15 @@ const JobPostCard = ({
 
   const handleJobPostClick = (id: string) => {
     if (!isDialogOpen) {
+      // Check if user has valid tokens
+      if (!TokenManager.hasValidTokens()) {
+        console.log('JobPostCard: No valid tokens, redirecting to login');
+        router.push('/login');
+        return;
+      }
+
       router.push(`/home/boards/${board_id}/job/${id}/job-details`);
+      // Only set localStorage if user is authenticated
       localStorage.setItem('columnId', columnId);
       const chosenColumn = boardColumns?.find(
         (column) => column.id === columnId
@@ -132,10 +139,17 @@ const JobPostCard = ({
   };
 
   const handleDeleteJobPost = () => {
+    // Get the full job post data from Redux state to access documents
+    const fullJobData = boards
+      .find((board) => board.id === board_id)
+      ?.columns.flatMap((column) => column.jobApplications)
+      .find((job) => job.id === id);
+
     dispatch(
       deleteJobPost({
         accessToken,
         jobPostId: id,
+        jobPostData: fullJobData,
       })
     );
     setIsDialogOpen(false);
@@ -143,16 +157,14 @@ const JobPostCard = ({
 
   return (
     <Card
+      style={{ backgroundColor: color }}
       onMouseEnter={iconsOn}
       onMouseLeave={iconsOff}
-      style={{ backgroundColor: color }}
       className={cn(
         'w-11/12 mx-auto mt-2 rounded-sm text-white cursor-pointer',
         color === null ? 'bg-[#6a776b]' : `bg-[${color}]`
       )}
-      onClick={() => {
-        handleJobPostClick(id);
-      }}
+      onClick={() => handleJobPostClick(id)}
     >
       <div className="flex h-[90px]">
         <CardHeader className="w-3/4">
@@ -166,13 +178,15 @@ const JobPostCard = ({
             <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <AlertDialogTrigger asChild>
                 <div
-                  className="h-[24px] w-[24px] rounded-md border border-gray-200 p-[1px] hover:border-gray-400 hover:border flex items-center justify-center"
+                  className="h-[24px] w-[24px] rounded-md border border-gray-200 p-[1px] hover:border-gray-400 hover:border flex items-center justify-center cursor-pointer"
                   id={id}
                   onClick={(e) => {
-                    e.stopPropagation(); // Prevent triggering the card click event
+                    e.stopPropagation();
                     setIsDialogOpen(true);
                   }}
-                  style={{ backgroundColor: color }} // Ensure the background color matches the card color
+
+
+                  style={{ backgroundColor: color }}
                 >
                   <RiDeleteBinLine className="h-[20px] w-[20px]" />
                 </div>

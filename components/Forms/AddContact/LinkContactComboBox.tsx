@@ -82,14 +82,14 @@ const LinkContactComboBox: React.FC<LinkContactComboBoxProps> = ({
         type="button"
         variant="outline"
         onClick={handleToggleDropdown}
-        className="flex items-center gap-2 px-3 py-2 text-sm border-dashed border-2 hover:bg-gray-50"
+        className="flex items-center gap-2 px-3 py-2 text-sm border-dashed border-2 hover:bg-gray-50 dark:hover:bg-slate-700 dark:bg-slate-800 dark:text-white dark:border-slate-600"
       >
         <span className="text-lg">+</span>
         Link Contact
       </Button>
       {isOpen && (
-        <Card className="absolute top-full left-0 mt-2 w-80 max-h-96 overflow-hidden z-50 shadow-lg">
-          <div className="p-3 border-b">
+        <Card className="absolute top-full left-0 mt-2 w-80 max-h-96 overflow-hidden z-50 shadow-lg dark:bg-slate-800 dark:border-slate-600">
+          <div className="p-3 border-b dark:border-slate-600">
             <Input
               type="text"
               value={searchTerm}
@@ -101,7 +101,7 @@ const LinkContactComboBox: React.FC<LinkContactComboBoxProps> = ({
 
           <div className="max-h-64 overflow-y-auto">
             {filteredContacts.length === 0 ? (
-              <div className="p-4 text-center text-gray-500">
+              <div className="p-4 text-center text-gray-500 dark:text-slate-400">
                 {searchTerm
                   ? 'No contacts found matching your search.'
                   : 'No contacts available to link.'}
@@ -110,7 +110,7 @@ const LinkContactComboBox: React.FC<LinkContactComboBoxProps> = ({
               filteredContacts.map((contact) => (
                 <div
                   key={contact.id}
-                  className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0"
+                  className="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer border-b last:border-b-0 dark:border-slate-600"
                   onClick={() => handleSelectContact(contact)}
                 >
                   <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
@@ -129,16 +129,16 @@ const LinkContactComboBox: React.FC<LinkContactComboBoxProps> = ({
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900 truncate">
+                    <div className="font-medium text-gray-900 dark:text-white truncate">
                       {getContactName(contact)}
                     </div>
                     {getContactCompany(contact) && (
-                      <div className="text-sm text-gray-500 truncate">
+                      <div className="text-sm text-gray-500 dark:text-slate-300 truncate">
                         {getContactCompany(contact)}
                       </div>
                     )}
                     {contact.jobTitle && (
-                      <div className="text-xs text-gray-400 truncate">
+                      <div className="text-xs text-gray-400 dark:text-slate-400 truncate">
                         {contact.jobTitle}
                       </div>
                     )}

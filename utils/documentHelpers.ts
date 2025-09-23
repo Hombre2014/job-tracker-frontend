@@ -1,17 +1,17 @@
 import { DocumentCategory } from '@/enums';
 
-// Design system integrated document category colors  
+// Design system integrated document category colors
 // Using HSL values that align with our theme and ensure accessibility
 export const documentCategoryColors = {
-  [DocumentCategory.Other]: 'hsl(215.4 16.3% 46.9%)',        // Muted - neutral gray
-  [DocumentCategory.Resume]: 'hsl(221.2 83.2% 53.3%)',       // Primary blue - important documents
-  [DocumentCategory.JobPost]: 'hsl(84.2 80.5% 45.1%)',       // Success green - opportunities  
-  [DocumentCategory.Portfolio]: 'hsl(270.7 91% 65.1%)',      // Creative purple - showcase work
-  [DocumentCategory.Transcript]: 'hsl(0 84.2% 60.2%)',       // Alert red - official records
-  [DocumentCategory.OfferLetter]: 'hsl(173.4 80.4% 40%)',    // Celebratory cyan - good news
-  [DocumentCategory.CoverLetter]: 'hsl(142.1 76.2% 36.3%)',  // Professional green - applications
-  [DocumentCategory.Certification]: 'hsl(32.6 94.6% 43.7%)', // Achievement amber - credentials
-  [DocumentCategory.WritingSample]: 'hsl(24.6 95% 53.1%)',   // Creative orange - samples
+  [DocumentCategory.Other]: 'hsl(239 84% 67%)', // Indigo-500 - medium indigo
+  [DocumentCategory.OfferLetter]: 'hsl(26 100% 37%)', // Amber-700 - good news
+  [DocumentCategory.Resume]: 'hsl(221.2 83.2% 53.3%)', // Primary blue - important documents
+  [DocumentCategory.Transcript]: 'hsl(0 84.2% 60.2%)', // Alert red - official records
+  [DocumentCategory.JobPost]: 'hsl(84.2 80.5% 45.1%)', // Success green - opportunities
+  [DocumentCategory.Portfolio]: 'hsl(270.7 91% 65.1%)', // Creative purple - showcase work
+  [DocumentCategory.WritingSample]: 'hsl(24.6 95% 53.1%)', // Creative orange - samples
+  [DocumentCategory.CoverLetter]: 'hsl(142.1 76.2% 36.3%)', // Professional green - applications
+  [DocumentCategory.Certification]: 'hsl(166.2 76.5% 41.4%)', // Teal-500 - credentials
   [DocumentCategory.Recommendation]: 'hsl(316.7 75.8% 55.9%)', // Trust pink - endorsements
 };
 
@@ -57,23 +57,23 @@ export const getFileInfo = (filename: string, size?: number): string => {
 export const getTimeAgo = (dateString: string): string => {
   const now = Date.now(); // Use timestamp for better performance
   const uploadDate = new Date(dateString);
-  
+
   // Handle invalid dates
   if (isNaN(uploadDate.getTime()) || !dateString) {
     return 'unknown';
   }
-  
+
   const diffInMs = now - uploadDate.getTime();
-  
+
   // Handle future dates
   if (diffInMs < 0) {
     return 'just now';
   }
-  
+
   const minutes = Math.floor(diffInMs / (1000 * 60));
   const hours = Math.floor(diffInMs / (1000 * 60 * 60));
   const days = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-  
+
   if (minutes < 1) {
     return 'just now';
   } else if (minutes < 60) {

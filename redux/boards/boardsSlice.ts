@@ -16,16 +16,16 @@ import {
 
 interface BoardsState {
   boards: Board[];
+  error: string | null;
   archivedBoards: Board[];
   boardsStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
-  error: string | null;
 }
 
 const initialState: BoardsState = {
   boards: [],
+  error: null,
   archivedBoards: [],
   boardsStatus: 'idle',
-  error: null,
 };
 
 export const boardsSlice = createSlice({

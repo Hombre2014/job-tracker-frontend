@@ -466,6 +466,7 @@ const CreateContactModal = ({
           buttonCancel="Discard"
           open={showContactModal}
           isFormValid={isFormValid}
+          cleanupType="contact"
           contentWidth="!max-w-[910px]"
           actionFunction={handleContact}
           buttonConfirm={buttonConfirm || (contactToEdit ? 'Update' : 'Create')}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { BsThreeDots } from 'react-icons/bs';
 import { RiDragMove2Fill } from 'react-icons/ri';
@@ -21,10 +21,8 @@ import {
 const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
-  const [isEditing, setIsEditing] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const { boards } = useAppSelector((state) => state.boards);
-  const { boardsStatus } = useAppSelector((state) => state.boards);
   const currentBoard = boards.find((board) => board.id === board_id);
   const [selectedColumn, setSelectedColumn] = useState<number>(columnOrder);
   const currentBoardColumns = currentBoard?.columns;
@@ -33,29 +31,25 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
     (column) => column.order === columnOrder
   );
 
-  const handleMoveList = () => {
+  const handleMoveList = async () => {
     const columnsArray = moveColumn(5, columnOrder, selectedColumn);
     const columns = currentBoardColumns?.map((column) => column.id);
     const columnIds = columnsArray.map((v) => columns![v]);
 
     if (columnOrder === selectedColumn) return;
 
-    dispatch(
+    // Dispatch and wait for the API call to complete
+    await dispatch(
       rearrangeColumns({
         boardId: board_id,
         columns_id: columnIds,
         accessToken: accessToken,
       })
     );
-    setIsEditing(true);
+    
+    // Then refresh the boards data
+    dispatch(getBoards(accessToken as string));
   };
-
-  useEffect(() => {
-    if (boardsStatus === 'succeeded' && isEditing) {
-      dispatch(getBoards(accessToken as string));
-      setIsEditing(false);
-    }
-  }, [dispatch, accessToken, isEditing, boardsStatus]);
 
   return (
     <div className="dropdown">
@@ -63,13 +57,13 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
         tabIndex={0}
         role="button"
         title="trigger"
-        className="!px-3 !py-2 rounded-md hover:bg-gray-200"
+        className="!px-3 !py-2 rounded-md hover:bg-gray-200 dark:hover:bg-slate-700"
       >
-        <BsThreeDots className="cursor-pointer" />
+        <BsThreeDots className="cursor-pointer dark:text-white" />
       </div>
       <ul
         tabIndex={0}
-        className="dropdown-content !fixed menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
+        className="dropdown-content !fixed menu bg-base-100 dark:bg-slate-800 rounded-box z-[1] w-52 p-2 shadow border border-slate-200 dark:border-slate-600"
       >
         <li>
           <div className="flex !justify-between h-12 mb-1 p-4 w-full">
@@ -78,9 +72,10 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
               buttonVariant="ghost"
               buttonCancel="Discard"
               buttonLabel="Move List"
+              cleanupType="none"
               dialogTitle="Move List"
               actionFunction={handleMoveList}
-              stylings="bg-none hover:!bg-gray-200 py-4 !pl-0 pr-[72px] m-0 active:!bg-gray-800 active:text-gray-200"
+              stylings="bg-none hover:!bg-gray-200 dark:hover:!bg-slate-700 py-4 !pl-4 pr-[72px] m-0 active:!bg-gray-800 dark:active:!bg-slate-600 active:text-gray-200 dark:text-white"
             >
               <Select onValueChange={(e) => setSelectedColumn(parseInt(e))}>
                 <SelectTrigger className="w-[264px] mx-auto">
@@ -110,7 +105,7 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
                 </SelectContent>
               </Select>
             </AlertDialogModal>
-            <RiDragMove2Fill className="w-4 h-4" />
+            <RiDragMove2Fill className="w-4 h-4 dark:text-white" />
           </div>
         </li>
       </ul>

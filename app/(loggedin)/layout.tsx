@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import { getUser } from '@/redux/user/userThunk';
+import { getUser } from '@/redux/user/userSlice';
 import { getBoards } from '@/redux/boards/boardsThunk';
 import Sidebar from '@/components/HomePage/SideBar/Sidebar';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
@@ -23,7 +23,7 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
       router.push('/login');
     } else {
       dispatch(getBoards(accessToken));
-      dispatch(getUser(accessToken as string));
+      dispatch(getUser());
     }
   }, [accessToken, router, dispatch]);
   return (

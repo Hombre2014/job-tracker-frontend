@@ -1,16 +1,15 @@
 'use client';
 
-import { toast } from 'react-toastify';
 import { useEffect, useState } from 'react';
 
-import { getUser } from '@/redux/user/userThunk';
+import { getUser } from '@/redux/user/userSlice';
+import { TITLE_MAX_LENGTH } from '@/data/constants';
+import useDocumentActions from '@/hooks/useDocumentActions';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { TITLE_MAX_LENGTH, FIXED_GRID_STYLES } from '@/data/constants';
-import DocumentCard from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/DocumentCard';
-import {
-  deleteDocument,
-  getDocumentsPerUser,
-} from '@/redux/documents/documentsThunk';
+import DocumentGrid from '@/components/Documents/DocumentGrid';
+import { getDocumentsPerUser } from '@/redux/documents/documentsThunk';
+import DocumentFilterBar from '@/components/Documents/DocumentFilterBar';
+import EditDocumentModal from '@/components/Forms/AddDocument/EditDocumentModal';
 import {
   selectUserDocuments,
   selectUserDocumentsStatus,
@@ -19,6 +18,15 @@ import {
 const UserDocuments = () => {
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.user);
+
+  const userDocuments = useAppSelector(selectUserDocuments);
+  const userDocumentsStatus = useAppSelector(selectUserDocumentsStatus);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // null = All
+  const [uploaderInfo, setUploaderInfo] = useState<{
+    lastName: string;
+    firstName: string;
+    profilePicUrl?: string;
+  } | null>(null);
   const accessToken = (() => {
     try {
       return localStorage.getItem('accessToken');
@@ -27,19 +35,13 @@ const UserDocuments = () => {
       return null;
     }
   })();
-  const userDocuments = useAppSelector(selectUserDocuments);
-  const userDocumentsStatus = useAppSelector(selectUserDocumentsStatus);
-  const [uploaderInfo, setUploaderInfo] = useState<{
-    lastName: string;
-    firstName: string;
-    profilePicUrl?: string;
-  } | null>(null);
 
   // Function to refresh user documents
   const handleDocumentsRefresh = async () => {
     if (accessToken) {
       try {
-        await dispatch(getDocumentsPerUser(accessToken)).unwrap();
+        // Directly dispatch the action without unwrapping to ensure Redux store is updated
+        await dispatch(getDocumentsPerUser(accessToken));
       } catch (error) {
         console.warn('Failed to refresh user documents:', error);
       }
@@ -56,7 +58,7 @@ const UserDocuments = () => {
           profilePicUrl: user.profilePicUrl,
         });
       } else {
-        dispatch(getUser(accessToken)).then((result) => {
+        dispatch(getUser()).then((result) => {
           if (result.payload) {
             setUploaderInfo({
               lastName: result.payload.lastName,
@@ -83,6 +85,21 @@ const UserDocuments = () => {
     }
   }, [dispatch, accessToken]);
 
+  // Count documents per category
+  const categoryCounts: CategoryCount[] = [];
+  const categoryMap: Record<string, number> = {};
+  userDocuments.forEach((doc) => {
+    const cat = doc.category || 'Uncategorized';
+    if (categoryMap[cat]) {
+      categoryMap[cat] += 1;
+    } else {
+      categoryMap[cat] = 1;
+    }
+  });
+  for (const [category, count] of Object.entries(categoryMap)) {
+    categoryCounts.push({ category, count });
+  }
+
   // Enhance documents with uploader information and truncated titles for user view
   const enhancedDocuments = userDocuments.map((doc) => {
     // Truncate title to ~20 characters for better layout
@@ -101,81 +118,29 @@ const UserDocuments = () => {
     };
   });
 
-  const handleEditDocument = (document: JobDocument) => {
-    // TODO: Implement edit functionality - Allow users to edit document metadata (title, category, description)
-    // This should open a modal similar to UploadDocumentModal but for editing existing documents
-    toast.info('Document editing functionality will be implemented soon');
-  };
+  // Filtered documents based on selected category
+  const filteredDocuments = selectedCategory
+    ? enhancedDocuments.filter(
+        (doc) => (doc.category || 'Uncategorized') === selectedCategory
+      )
+    : enhancedDocuments;
 
-  const handleDeleteDocument = async (documentId: string) => {
-    try {
-      if (!accessToken) {
-        toast.error('Authentication required');
-        return;
-      }
-
-      // For user documents, always delete the document entirely from the database
-      // This will automatically detach it from all job applications and remove it completely
-      await dispatch(
-        deleteDocument({
-          documentId,
-          accessToken: accessToken as string,
-        })
-      ).unwrap();
-
-      toast.success('Document deleted successfully!');
-      await handleDocumentsRefresh();
-    } catch (error) {
-      console.error('Error deleting document:', error);
-      toast.error('Failed to delete document. Please try again.');
-    }
-  };
-
-  const handleDownloadDocument = async (jobDocument: JobDocument) => {
-    try {
-      if (!jobDocument.url) {
-        toast.error('Document URL not available');
-        return;
-      }
-
-      const newTab = window.open(
-        jobDocument.url,
-        '_blank',
-        'noopener,noreferrer'
-      );
-
-      if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
-        // Fallback: Create a download link for popup blocker case
-        const link = document.createElement('a');
-        link.href = jobDocument.url;
-        link.download = jobDocument.title || 'document';
-        link.target = '_blank';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        toast.success('Document download initiated');
-        return;
-      }
-
-      // Use a more robust approach with proper error handling and longer timeout
-      const checkTabStatus = setTimeout(() => {
-        try {
-          if (newTab && !newTab.closed) {
-            toast.success('Document opened in new tab');
-          } else {
-            toast.success('Document has been downloaded');
-          }
-        } catch (error) {
-          // Tab may be closed, cross-origin, or inaccessible
-          console.warn('Could not check tab status:', error);
-          toast.success('Document has been processed');
-        }
-      }, 1000);
-    } catch (error) {
-      console.error('Error opening document:', error);
-      toast.error('Failed to open document. Please try again.');
-    }
-  };
+  // Use the shared document actions hook - MUST be called before any conditional returns
+  const {
+    documentToEdit,
+    isEditModalOpen,
+    setDocumentToEdit,
+    setIsEditModalOpen,
+    handleEditDocument,
+    handleDeleteDocument,
+    handleDocumentUpdate,
+    handleDownloadDocument,
+  } = useDocumentActions(
+    userDocuments,
+    accessToken,
+    handleDocumentsRefresh,
+    true
+  ); // Enable optimistic updates
 
   if (userDocumentsStatus === 'loading') {
     return (
@@ -187,20 +152,19 @@ const UserDocuments = () => {
 
   return (
     <div className="w-full h-full flex flex-col overflow-hidden">
-      <div className="w-full py-2 border-b flex justify-center items-center flex-shrink-0 bg-white">
+      <div className="w-full py-2 border-b border-slate-200 dark:border-slate-700 flex justify-center items-center flex-shrink-0 bg-white dark:bg-slate-900">
         <div className="h-9 flex items-center">
-          <h1 className="font-semibold text-center">Documents</h1>
+          <h1 className="font-semibold text-center dark:text-white">Documents</h1>
         </div>
       </div>
 
-      <div className="w-full flex justify-between items-center p-6 border-b flex-shrink-0 bg-white">
-        <div className="text-blue-500 font-medium bg-blue-200/40 rounded-md px-2">
-          All ({userDocuments.length})
-        </div>
-        <div className="text-sm text-gray-500">
-          To upload documents, visit a specific board&apos;s documents page
-        </div>
-      </div>
+      {/* Filter Bar using the shared component */}
+      <DocumentFilterBar
+        categoryCounts={categoryCounts}
+        allCount={userDocuments.length}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+      />
 
       {userDocuments.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">
@@ -208,20 +172,39 @@ const UserDocuments = () => {
             You have not created any documents yet
           </p>
         </div>
-      ) : (
-        <div className="flex-1 overflow-y-auto p-6">
-          <div style={FIXED_GRID_STYLES}>
-            {enhancedDocuments.map((document) => (
-              <DocumentCard
-                key={document.id}
-                document={document}
-                onEdit={handleEditDocument}
-                onDelete={handleDeleteDocument}
-                onDownload={handleDownloadDocument}
-              />
-            ))}
-          </div>
+      ) : filteredDocuments.length === 0 ? (
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-center text-xl text-slate-400">
+            No documents found for this category
+          </p>
         </div>
+      ) : (
+        <DocumentGrid
+          onEdit={handleEditDocument}
+          documents={filteredDocuments}
+          onDelete={handleDeleteDocument}
+          onDownload={handleDownloadDocument}
+          emptyMessage="No documents found for this category"
+        />
+      )}
+
+      {/* Edit Document Modal */}
+      {isEditModalOpen && documentToEdit && (
+        <EditDocumentModal
+          isOpen={isEditModalOpen}
+          documentToEdit={documentToEdit}
+          onEditSuccess={async (updatedDocument?: JobDocument) => {
+            setIsEditModalOpen(false);
+            setDocumentToEdit(null);
+            if (updatedDocument) {
+              await handleDocumentUpdate(updatedDocument);
+            }
+          }}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setDocumentToEdit(null);
+          }}
+        />
       )}
     </div>
   );

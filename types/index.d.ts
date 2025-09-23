@@ -3,6 +3,15 @@ type MenuItemProps = {
   icon: JSX.Element;
 };
 
+// Branded type for time validation (HH:MM format)
+type TimeString = string & { __brand: 'time' };
+
+// Time validation utility
+declare function isValidTimeString(str: string): str is TimeString;
+
+// Helper function to create validated time strings
+declare function createTimeString(str: string): TimeString;
+
 type Company = {
   id: string;
   url: string;
@@ -117,12 +126,12 @@ type JobDocument = WorkDocument & {
   createdAt?: string;
   updatedAt?: string;
   fileExtension?: string;
+  jobApplications?: JobApplication[];
   uploadedBy?: {
     lastName: string;
     firstName: string;
     profilePicUrl?: string;
   };
-  jobApplications?: JobApplication[];
 };
 
 interface ComboBoxProps {
@@ -139,12 +148,18 @@ interface LinkDocumentProps {
 }
 
 interface ComboBoardListBoxProps {
+  value?: string;
   searchItem: string;
-  items: Board[] | Column[];
   initialBoardString?: string;
   initialColumnString?: string;
   firstColumnOfTheBoard?: string;
-  itemsType?: 'boards' | 'columns';
+  itemsType: 'boards' | 'columns';
+  // Optional controlled value overrides
+  onSelectItem?: (item: { id: string; name: string }) => void;
+  items: Array<{
+    id: string;
+    name: string;
+  }>;
 }
 
 interface AlertDialogProps {
@@ -173,6 +188,7 @@ interface AlertDialogProps {
   destructiveVariant?: boolean;
   buttonLabel?: React.ReactNode;
   onOpenChange?: (open: boolean) => void;
+  cleanupType?: 'job' | 'contact' | 'none';
 }
 
 interface InputElementProps {
@@ -302,6 +318,8 @@ interface Board {
   userId: string;
   columns: Column[];
   isArchived: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface JobPostCardProps {
@@ -338,6 +356,42 @@ interface UploadDocumentModalProps {
 interface EditDocumentsProps {
   isOpen: boolean;
   onClose: () => void;
-  onEditSuccess: () => void;
   documentToEdit: JobDocument;
+  onEditSuccess: (updatedDocument?: JobDocument) => void;
+}
+
+interface DocumentGridProps {
+  emptyMessage?: string;
+  documents: JobDocument[];
+  onDelete: (documentId: string) => void;
+  onEdit: (document: JobDocument) => void;
+  onDownload: (document: JobDocument) => void;
+}
+
+type CategoryCount = {
+  count: number;
+  category: string;
+};
+
+interface DocumentFilterBarProps {
+  allCount: number;
+  categoryCounts: CategoryCount[];
+  selectedCategory: string | null;
+  setSelectedCategory: (category: string | null) => void;
+}
+
+interface EmailAndPhoneProps {
+  id: string;
+  value: string;
+  hasError?: boolean; // New prop for validation error
+  initialType: string;
+  errorMessage?: string; // New prop for error message
+  contact: 'email' | 'phone';
+  returnData: (contact: 'email' | 'phone', id: string) => void;
+  handleChange: (
+    id: string,
+    value: string,
+    type: string,
+    options?: { blur?: boolean }
+  ) => void;
 }

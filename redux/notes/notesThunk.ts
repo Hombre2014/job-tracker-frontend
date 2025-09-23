@@ -1,3 +1,5 @@
+﻿import { isAxiosError } from 'axios';
+
 import client from '@/api/client';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
@@ -17,10 +19,13 @@ export const createJobApplicationNote = createAsyncThunk(
       });
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error creating job application note'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error creating job application note'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error creating job application note');
     }
   }
 );
@@ -40,10 +45,13 @@ export const getAllJobApplicationNotes = createAsyncThunk(
       );
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error fetching job application notes'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error fetching job application notes'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error fetching job application notes');
     }
   }
 );
@@ -63,10 +71,13 @@ export const updateJobApplicationNote = createAsyncThunk(
       });
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error updating job application note'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error updating job application note'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error updating job application note');
     }
   }
 );
@@ -82,10 +93,13 @@ export const deleteJobApplicationNote = createAsyncThunk(
         },
       });
       return noteId;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error deleting job application note'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error deleting job application note'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error deleting job application note');
     }
   }
 );

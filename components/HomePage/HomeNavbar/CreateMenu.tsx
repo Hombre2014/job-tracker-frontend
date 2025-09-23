@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { GoPersonAdd } from 'react-icons/go';
 import { PiBriefcaseLight } from 'react-icons/pi';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -34,26 +34,46 @@ const CreateMenu = () => {
   const [isFormValid, setIsFormValid] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
   const [showJobModal, setShowJobModal] = useState(false);
+  const [isSubmittingJob, setIsSubmittingJob] = useState(false);
+  // In-memory draft (incremental refactor) populated by AddJobShortForm via onDraftChange
+  const jobDraftRef = useRef<{
+    company?: string;
+    jobTitle?: string;
+    companyId?: string;
+  } | null>(null);
   const isContactsPage = pathname?.includes('/home/contacts');
   const [showContactModal, setShowContactModal] = useState(false);
   const [pendingImage, setPendingImage] = useState<File | null>(null);
 
   const createJobApplication = () => {
-    if (!isFormValid) return;
-
+    if (isSubmittingJob) return; // guard against double click
+    setIsSubmittingJob(true);
     setShowJobModal(false);
-
+    const legacyTitle = localStorage.getItem('jobTitle');
+    const legacyCompanyId = localStorage.getItem('companyId');
+    const draft = jobDraftRef.current || {};
     const jobPost = {
-      jobPostStatus: 'Job Created',
+      status: 'Job Created',
       accessToken: accessToken as string,
-      title: localStorage.getItem('jobTitle'),
+      title: draft.jobTitle || legacyTitle,
       columnId: localStorage.getItem('columnId'),
-      companyId: localStorage.getItem('companyId'),
+      companyId: draft.companyId || legacyCompanyId,
     };
 
     dispatch(createJobPost(jobPost)).then((result) => {
       const newJobPostId = result.payload.id;
-      router.push(`/home/boards/${board_id}/job/${newJobPostId}/job-details`);
+      const selectedBoardId =
+        localStorage.getItem('chosenBoardId') || (board_id as string);
+      const targetBoardId = selectedBoardId || (board_id as string);
+      const currentBoardId = board_id as string;
+      const targetPath = `/home/boards/${targetBoardId}/job/${newJobPostId}/job-details`;
+      // Avoid redundant navigation if already on intended board
+      if (targetBoardId === currentBoardId) {
+        router.push(targetPath);
+      } else {
+        router.push(targetPath);
+      }
+      setIsSubmittingJob(false);
     });
     dispatch(getBoards(accessToken as string));
 
@@ -199,7 +219,6 @@ const CreateMenu = () => {
                     className="flex items-center px-4 mt-1 py-2 cursor-pointer hover:bg-blue-400 rounded-md text-white"
                     onClick={() => {
                       setShowJobModal(true);
-                      setIsFormValid(false);
                     }}
                   >
                     <PiBriefcaseLight />
@@ -226,12 +245,12 @@ const CreateMenu = () => {
 
       {showJobModal && (
         <AlertDialogModal
+          cleanupType="job"
           open={showJobModal}
           buttonVariant="none"
           dialogTitle="Add Job"
           buttonCancel="Discard"
-          buttonConfirm="Save Job"
-          isFormValid={isFormValid}
+          buttonConfirm={isSubmittingJob ? 'Saving...' : 'Save Job'}
           actionFunction={createJobApplication}
           onOpenChange={(open) => {
             setShowJobModal(open);
@@ -240,7 +259,9 @@ const CreateMenu = () => {
         >
           <AddJobShortForm
             columnOrder={0}
-            onValidationChange={setIsFormValid}
+            onDraftChange={(d) => {
+              jobDraftRef.current = { ...jobDraftRef.current, ...d };
+            }}
           />
         </AlertDialogModal>
       )}
@@ -248,6 +269,7 @@ const CreateMenu = () => {
       {showContactModal && (
         <AlertDialogModal
           buttonVariant="none"
+          cleanupType="contact"
           buttonCancel="Discard"
           buttonConfirm="Create"
           open={showContactModal}

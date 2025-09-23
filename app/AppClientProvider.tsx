@@ -1,11 +1,11 @@
 'use client';
 
-import TokenRefreshProvider from '@/utils/TokenRefreshProvider';
+import AuthProvider from '@/components/auth/AuthProvider';
 
 export default function AppClientProviders({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <TokenRefreshProvider>{children}</TokenRefreshProvider>;
+  return <AuthProvider>{children}</AuthProvider>;
 }

@@ -39,9 +39,10 @@ const DocumentCard = ({
     }
   };
 
-
   // Use fileExtension from backend, fallback to 'file' if missing
-  const ext = document.fileExtension ? document.fileExtension.toLowerCase() : 'file';
+  const ext = document.fileExtension
+    ? document.fileExtension.toLowerCase()
+    : 'file';
   let fileExtensionUpper = ext.toUpperCase();
   switch (ext) {
     case 'jpg':
@@ -102,21 +103,21 @@ const DocumentCard = ({
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-all duration-200">
+    <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg p-4 hover:shadow-lg dark:hover:shadow-slate-700/50 transition-all duration-200">
       {/* Document title */}
       <div className="text-center mb-2">
-        <h3 className="font-semibold text-gray-900 text-sm leading-tight truncate">
+        <h3 className="font-semibold text-gray-900 dark:text-white text-sm leading-tight truncate">
           {truncateFilename(document.title)}
         </h3>
         {/* File type and size */}
-        <p className="text-xs text-gray-500 mt-1">{getFileSizeDisplay()}</p>
+        <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">{getFileSizeDisplay()}</p>
       </div>
 
       {/* File type display with pill-shaped badge */}
       <div className="flex justify-center mb-4">
         <div className="relative">
           <div
-            className="w-16 h-20 rounded-lg flex items-center justify-center border-2 bg-gray-50"
+            className="w-16 h-20 rounded-lg flex items-center justify-center border-2 bg-gray-50 dark:bg-slate-700"
             style={{
               borderColor: '#E5E7EB',
             }}
@@ -149,7 +150,7 @@ const DocumentCard = ({
             </span>
           </div>
         )}
-        <span className="text-xs text-gray-700 font-medium">
+        <span className="text-xs text-gray-700 dark:text-slate-300 font-medium">
           {document.uploadedBy
             ? `${document.uploadedBy.firstName} ${document.uploadedBy.lastName}`
             : 'Unknown'}
@@ -158,11 +159,11 @@ const DocumentCard = ({
 
       {/* Upload time - centered */}
       <div className="mb-4 text-center">
-        <span className="text-xs text-gray-500">uploaded {timeAgo}</span>
+        <span className="text-xs text-gray-500 dark:text-slate-400">uploaded {timeAgo}</span>
       </div>
 
       {/* Separator */}
-      <hr className="border-gray-200 mb-3" />
+      <hr className="border-gray-200 dark:border-slate-600 mb-3" />
 
       {/* Category badge and menu */}
       <div className="flex items-center justify-between">
@@ -178,9 +179,9 @@ const DocumentCard = ({
             <button
               type="button"
               aria-label={`Options for ${document.title}`}
-              className="border border-gray-300 rounded-md p-1.5 hover:bg-gray-50 transition-colors"
+              className="border border-gray-300 dark:border-slate-500 rounded-md p-1.5 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
             >
-              <BsThreeDots className="w-4 h-4 text-gray-600" />
+              <BsThreeDots className="w-4 h-4 text-gray-600 dark:text-slate-300" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -201,6 +202,7 @@ const DocumentCard = ({
                   buttonVariant="ghost"
                   buttonConfirm="Delete"
                   destructiveVariant={true}
+                  cleanupType="none"
                   dialogTitle="Delete Document"
                   buttonLabel="Delete Document"
                   open={showDeleteConfirmation}

@@ -52,25 +52,26 @@ const JobBoardTitle = (board: Board) => {
       onMouseLeave={toggleTrashIcon}
       className={cn(
         board_id === board.id
-          ? 'bg-blue-100 hover:bg-blue-100 font-semibold'
-          : 'hover:bg-slate-100',
-        'flex justify-between items-center mx-2 my-1 rounded-md cursor-pointer'
+          ? 'bg-blue-100 dark:bg-blue-900/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 font-semibold'
+          : 'hover:bg-slate-100 dark:hover:bg-slate-700',
+        'flex justify-between items-center mx-2 my-1 rounded-md cursor-pointer dark:text-white'
       )}
     >
       <Link
         href={`/home/boards/${board.id}/board`}
         className="flex items-center gap-1 p-2 w-full"
       >
-        <RiAccountPinBoxLine className="h-5 w-5" />
+        <RiAccountPinBoxLine className="h-5 w-5 dark:text-white" />
         <p className="pr-20px">{board.name}</p>
       </Link>
       <div>
         {showTrash ? (
-          <RiDeleteBinLine className="h-5 w-5 absolute m-2" />
+          <RiDeleteBinLine className="h-5 w-5 absolute m-2 dark:text-white" />
         ) : null}
         <AlertDialogModal
           buttonCancel="Cancel"
           buttonConfirm="Archive"
+          cleanupType="none"
           stylings={cn('opacity-0')}
           dialogTitle="Archive Board"
           dialogText="Are you sure you want to archive this board?"

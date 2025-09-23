@@ -2,8 +2,8 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { RiAccountPinBoxLine, RiSettings2Line } from 'react-icons/ri';
 
-import { logout } from '@/redux/user/userThunk';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { useAuth } from '@/components/auth/AuthProvider';
+import { useAppSelector } from '@/redux/hooks';
 import {
   DropdownMenu,
   DropdownMenuItem,
@@ -13,14 +13,13 @@ import {
 
 const UserPanel = () => {
   const router = useRouter();
-  const dispatch = useAppDispatch();
+  const { logout } = useAuth();
   const { firstName, lastName, profilePicUrl } = useAppSelector(
     (state) => state.user
   );
 
-  const userLogout = () => {
-    dispatch(logout());
-    router.push('/login');
+  const userLogout = async () => {
+    await logout(); // AuthProvider handles cleanup and redirect
   };
 
   const userSettings = () => {

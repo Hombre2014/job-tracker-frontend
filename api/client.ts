@@ -1,112 +1,168 @@
 import axios from 'axios';
+import { TokenManager } from '@/utils/TokenManager';
+import { RequestQueue } from '@/utils/RequestQueue';
 
-const client = axios.create({ baseURL: process.env.NEXT_PUBLIC_API_URL });
+const client = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  timeout: 30000, // 30 second timeout
+});
 
-// Storage key constants for maintainability
-const STORAGE_KEYS = {
-  USER: 'user',
-  ACCESS_TOKEN: 'accessToken',
-  REFRESH_TOKEN: 'refreshToken',
-} as const;
+/**
+ * Perform token refresh using TokenManager
+ */
+async function performTokenRefresh(): Promise<string> {
+  const refreshToken = TokenManager.getRefreshToken();
 
-// Refresh token synchronization to prevent race conditions
-let refreshPromise: Promise<string> | null = null;
+  if (!refreshToken) {
+    throw new Error('No refresh token available');
+  }
 
-// Global error interceptor for 401 responses
+  try {
+    const refreshResponse = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
+      null,
+      {
+        headers: { Authorization: `Bearer ${refreshToken}` },
+        timeout: 10000, // 10 second timeout for refresh
+      }
+    );
+
+    if (refreshResponse.status === 200 || refreshResponse.status === 201) {
+      const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+        refreshResponse.data;
+
+      // Update tokens in localStorage only (avoid circular dependency)
+      TokenManager.setTokens({
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+      });
+
+      // Dispatch custom event for Redux updates
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('tokensUpdated', {
+            detail: {
+              accessToken: newAccessToken,
+              refreshToken: newRefreshToken,
+            },
+          })
+        );
+      }
+
+      return newAccessToken;
+    } else {
+      throw new Error('Refresh failed');
+    }
+  } catch (refreshError) {
+    // Clear tokens and redirect to login
+    TokenManager.clearTokens();
+
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
+
+    throw refreshError;
+  }
+}
+
+// Request interceptor - Add Authorization header (simplified to fix CORS)
+client.interceptors.request.use(
+  (config) => {
+    // Add Authorization header if token exists
+    const authHeader = TokenManager.getAuthHeader();
+    if (authHeader) {
+      config.headers.Authorization = authHeader;
+    }
+
+    return config;
+  },
+  (error) => {
+    console.error('Request interceptor error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor - Handle 401 errors with token refresh
 client.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Log response time in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log(
+        `API Request: ${response.config.method?.toUpperCase()} ${
+          response.config.url
+        } - ${response.status}`
+      );
+    }
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
 
+    // Log error details in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('API Error:', {
+        url: originalRequest?.url,
+        method: originalRequest?.method,
+        status: error.response?.status,
+        message: error.message,
+      });
+    }
+
+    // Always log 401 errors for debugging
+    if (error.response?.status === 401) {
+      console.log('API Client: 401 Unauthorized detected:', {
+        url: originalRequest?.url,
+        hasValidTokens: TokenManager.hasValidTokens(),
+        isRetry: originalRequest._retry,
+        isLoginRequest: originalRequest.url?.includes('/auth/login'),
+      });
+    }
+
+    // Only handle 401 errors on client side, skip login requests
     if (
       typeof window !== 'undefined' &&
       error.response?.status === 401 &&
       !originalRequest._retry &&
       !originalRequest.url?.includes('/auth/login')
     ) {
+      console.log('API Client: 401 error detected, checking tokens...', {
+        url: originalRequest?.url,
+        hasValidTokens: TokenManager.hasValidTokens(),
+      });
+
       originalRequest._retry = true;
 
-      // If a refresh is already in progress, wait for it
-      if (refreshPromise) {
-        await refreshPromise;
-        // After refresh completes, retry with updated token
-        const newAccessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-        if (newAccessToken) {
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          return client(originalRequest);
-        } else {
-          // Refresh failed, proceed to logout
-          throw error;
-        }
+      // Check if we have valid tokens before attempting refresh
+      if (!TokenManager.hasValidTokens()) {
+        console.log('API Client: No valid tokens found, redirecting to login');
+        TokenManager.clearTokens();
+        window.location.href = '/login';
+        return Promise.reject(error);
       }
 
-      // Start new refresh
-      const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
-      if (refreshToken) {
-        refreshPromise = (async () => {
-          try {
-            const refreshResponse = await axios.get(
-              `${process.env.NEXT_PUBLIC_API_URL}/auth/refresh`,
-              {
-                headers: { Authorization: `Bearer ${refreshToken}` },
-              }
-            );
-
-            if (refreshResponse.status === 200) {
-              const {
-                accessToken: newAccessToken,
-                refreshToken: newRefreshToken,
-              } = refreshResponse.data;
-
-              // Update localStorage
-              localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, newAccessToken);
-              localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, newRefreshToken);
-
-              // Update default headers for future requests
-              client.defaults.headers.common[
-                'Authorization'
-              ] = `Bearer ${newAccessToken}`;
-
-              return newAccessToken;
-            } else {
-              throw new Error('Refresh failed');
-            }
-          } catch (refreshError) {
-            // Clear tokens and redirect to login
-            if (typeof Storage !== 'undefined') {
-              localStorage.removeItem(STORAGE_KEYS.USER);
-              localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-              localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-            }
-            client.defaults.headers.common['Authorization'] = undefined;
-            window.location.href = '/login';
-            throw refreshError;
-          } finally {
-            refreshPromise = null;
-          }
-        })();
+      try {
+        // Start refresh if not already in progress
+        if (!RequestQueue.isCurrentlyRefreshing()) {
+          RequestQueue.setRefreshPromise(performTokenRefresh());
+        }
 
         try {
-          const newAccessToken = await refreshPromise;
-          // Update the original request with new token
+          const newAccessToken = await RequestQueue.waitForRefresh();
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          // Retry the original request
           return client(originalRequest);
-        } catch (refreshError) {
-          // Refresh failed, error handling already done in the promise
+        } catch {
           return Promise.reject(error);
         }
+      } catch (refreshError) {
+        // Refresh failed, clear tokens and redirect
+        TokenManager.clearTokens();
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+        return Promise.reject(error);
       }
-
-      // No refresh token available, proceed to logout
-      if (typeof Storage !== 'undefined') {
-        localStorage.removeItem(STORAGE_KEYS.USER);
-        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-      }
-      client.defaults.headers.common['Authorization'] = undefined;
-      window.location.href = '/login';
     }
+
     return Promise.reject(error);
   }
 );

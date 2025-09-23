@@ -16,10 +16,11 @@ import userSlice from './user/userSlice';
 import jobsSlice from './jobs/jobsSlice';
 import notesSlice from './notes/notesSlice';
 import boardsSlice from './boards/boardsSlice';
+import searchSlice from './search/searchSlice';
 import contactsSlice from './contacts/contactsSlice';
 import companiesSlice from './companies/companiesSlice';
 import documentsSlice from './documents/documentsSlice';
-import refreshAccessTokenReducer from './auth/refreshAccessTokenSlice';
+import notificationsSlice from './notifications/notificationsSlice';
 
 export function createPersistStorage(): WebStorage {
   const isServer = typeof window === 'undefined';
@@ -48,13 +49,13 @@ const persistConfig = {
   storage: createPersistStorage(),
   whitelist: [
     'user',
-    'boards',
     'jobs',
     'notes',
+    'boards',
+    'search',
     'contacts',
     'companies',
     'documents',
-    'refreshAccessToken',
   ],
 };
 
@@ -63,10 +64,11 @@ const rootReducer = combineReducers({
   jobs: jobsSlice,
   notes: notesSlice,
   boards: boardsSlice,
+  search: searchSlice,
   contacts: contactsSlice,
   companies: companiesSlice,
   documents: documentsSlice,
-  refreshAccessToken: refreshAccessTokenReducer,
+  notifications: notificationsSlice,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

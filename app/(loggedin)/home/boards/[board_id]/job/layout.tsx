@@ -56,14 +56,18 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   // Defensive programming: Ensure jobPosts is always an array
   const safeJobPosts = Array.isArray(jobPosts) ? jobPosts : [];
   const currentJobPost = safeJobPosts.find((jobPost) => jobPost.id === job_id);
-  if (currentJobPost) {
+  if (currentJobPost && accessToken) {
+    // Only set localStorage if user is authenticated
     localStorage.setItem('currentJobPost', JSON.stringify(currentJobPost));
   }
 
   const handleSelectList = (value: string) => {
     setSelectedListName(value);
     setTemporaryMessage(`Moved to ${value}`);
-    localStorage.setItem('chosenColumn', value);
+    // Only set localStorage if user is authenticated
+    if (accessToken) {
+      localStorage.setItem('chosenColumn', value);
+    }
 
     const currentColumnOrder = boardColumns?.find(
       (column) => column.name === chosenColumn
@@ -140,7 +144,7 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   }, [temporaryMessage]);
 
   return (
-    <Modal stylings="sm:w-11/12 md:w-3/4 lg:w-2/3 xl:w-[960px]">
+    <Modal stylings="sm:w-11/12 md:w-3/4 lg:w-2/3 xl:w-[960px]" onDismiss={closeModal}>
       <Card className="w-full min-h-[840px]">
         <div className="flex justify-between items-center">
           <CardHeader>

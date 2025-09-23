@@ -1,6 +1,9 @@
+import { isAxiosError } from 'axios';
+
 import client from '@/api/client';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { defaultJobPostColor } from '@/data/constants';
+import { DocumentService } from '@/services/documentService';
 
 export const createJobPost = createAsyncThunk(
   'jobs/createJobPost',
@@ -23,10 +26,13 @@ export const createJobPost = createAsyncThunk(
 
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error creating job post'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error creating job post'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error creating job post');
     }
   }
 );
@@ -44,10 +50,13 @@ export const getAllJobPostsPerColumn = createAsyncThunk(
 
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error fetching job posts'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error fetching job posts'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error fetching job posts');
     }
   }
 );
@@ -61,6 +70,7 @@ export const updateJobPost = createAsyncThunk(
       salary,
       status,
       postUrl,
+      company,
       location,
       deadline,
       columnId,
@@ -68,9 +78,10 @@ export const updateJobPost = createAsyncThunk(
       accessToken,
       description,
       statusChangedAt,
-      company: { name: companyName },
     } = values;
-    const body = {
+    const companyName: string | undefined = company?.name;
+
+    const body: any = {
       title: title,
       color: color,
       salary: salary,
@@ -81,10 +92,11 @@ export const updateJobPost = createAsyncThunk(
       columnId: columnId,
       description: description,
       statusChangedAt: statusChangedAt,
-      company: {
-        name: companyName,
-      },
     };
+
+    if (companyName) {
+      body.company = { name: companyName };
+    }
     try {
       const res = await client.put(`/job-applications/${jobPostId}`, body, {
         headers: {
@@ -94,10 +106,13 @@ export const updateJobPost = createAsyncThunk(
 
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error updating job post'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error updating job post'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error updating job post');
     }
   }
 );
@@ -105,8 +120,24 @@ export const updateJobPost = createAsyncThunk(
 export const deleteJobPost = createAsyncThunk(
   'jobs/deleteJobPost',
   async (values: any, thunkAPI) => {
-    const { accessToken, jobPostId } = values;
+    const { accessToken, jobPostId, jobPostData } = values;
     try {
+      // Step 1: Handle documents attached to this job post using DocumentService
+      if (jobPostData?.documents && jobPostData.documents.length > 0) {
+        const documentResults =
+          await DocumentService.handleDocumentsForJobDeletion(
+            jobPostData.documents,
+            jobPostId,
+            accessToken
+          );
+
+        // Log the results for debugging in development only
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Document processing results:', documentResults);
+        }
+      }
+
+      // Step 2: Delete the job post itself
       await client.delete(`/job-applications/${jobPostId}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -114,10 +145,13 @@ export const deleteJobPost = createAsyncThunk(
       });
 
       return jobPostId;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error deleting job post'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error deleting job post'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error deleting job post');
     }
   }
 );
@@ -135,10 +169,13 @@ export const getJobPost = createAsyncThunk(
 
       const data = res.data;
       return data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error fetching job post'
-      );
+    } catch (err: unknown) {
+      if (isAxiosError(err)) {
+        return thunkAPI.rejectWithValue(
+          err.response?.data || 'Error fetching job post'
+        );
+      }
+      return thunkAPI.rejectWithValue('Error fetching job post');
     }
   }
 );

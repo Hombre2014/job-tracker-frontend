@@ -1,3 +1,5 @@
+// A master piece of code that helps in moving columns around by Bohdan Shcherbak
+
 const range = (from: number, to: number) => {
   return from > to
     ? []

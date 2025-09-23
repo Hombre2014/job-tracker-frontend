@@ -12,8 +12,9 @@ import { LoginSchema } from '@/schemas';
 import Loader from '@/components/Misc/Loader';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { cleanupAfterLogout } from '@/utils/helpers';
 import { getBoards } from '@/redux/boards/boardsThunk';
-import { login, logout } from '@/redux/user/userThunk';
+import { login, logout } from '@/redux/user/userSlice';
 import { FormError } from '@/components/Forms/form-error';
 import { FormSuccess } from '@/components/Forms/form-success';
 import {
@@ -44,6 +45,8 @@ const Login = () => {
   });
 
   useEffect(() => {
+    // Ensure clean state when visiting login page
+    cleanupAfterLogout();
     dispatch(logout());
   }, [dispatch]);
 

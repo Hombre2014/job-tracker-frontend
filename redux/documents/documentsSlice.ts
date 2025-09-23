@@ -35,7 +35,35 @@ const initialState: DocumentState = {
 const documentsSlice = createSlice({
   name: 'documents',
   initialState,
-  reducers: {},
+  reducers: {
+    updateDocumentInState: (state, action: { payload: JobDocument }) => {
+      const updatedDoc = action.payload;
+
+      // Update in documents
+      const docIndex = state.documents.findIndex(
+        (doc) => doc.id === updatedDoc.id
+      );
+      if (docIndex !== -1) {
+        state.documents[docIndex] = updatedDoc;
+      }
+
+      // Update in userDocuments
+      const userIndex = state.userDocuments.findIndex(
+        (doc) => doc.id === updatedDoc.id
+      );
+      if (userIndex !== -1) {
+        state.userDocuments[userIndex] = updatedDoc;
+      }
+
+      // Update in boardDocuments
+      const boardIndex = state.boardDocuments.findIndex(
+        (doc) => doc.id === updatedDoc.id
+      );
+      if (boardIndex !== -1) {
+        state.boardDocuments[boardIndex] = updatedDoc;
+      }
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(getDocument.pending, (state) => {
@@ -174,3 +202,4 @@ export const selectBoardDocuments = (state: RootState) =>
   state.documents.boardDocuments;
 export const selectBoardDocumentsStatus = (state: RootState) =>
   state.documents.boardDocumentsStatus;
+export const { updateDocumentInState } = documentsSlice.actions;

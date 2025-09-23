@@ -7,9 +7,11 @@ import { useRef, useEffect, useCallback, MouseEventHandler } from 'react';
 const Modal = ({
   children,
   stylings,
+  onDismiss,
 }: {
   children: React.ReactNode;
   stylings: string;
+  onDismiss?: () => void;
 }) => {
   const router = useRouter();
   const mouseDownInside = useRef(false);
@@ -17,9 +19,13 @@ const Modal = ({
   const wrapper = useRef<HTMLDivElement>(null);
   // Track if mousedown started inside modal
 
-  const onDismiss = useCallback(() => {
-    router.back();
-  }, [router]);
+  const handleDismiss = useCallback(() => {
+    if (onDismiss) {
+      onDismiss();
+    } else {
+      router.back();
+    }
+  }, [onDismiss, router]);
 
   // On mousedown, track if it started inside the modal content
   const onMouseDown: MouseEventHandler = useCallback((e) => {
@@ -37,19 +43,19 @@ const Modal = ({
         (e.target === overlay.current || e.target === wrapper.current) &&
         !mouseDownInside.current
       ) {
-        if (onDismiss) onDismiss();
+        handleDismiss();
       }
       // Always reset after click
       mouseDownInside.current = false;
     },
-    [onDismiss, overlay, wrapper]
+    [handleDismiss, overlay, wrapper]
   );
 
   const onKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onDismiss();
+      if (e.key === 'Escape') handleDismiss();
     },
-    [onDismiss]
+    [handleDismiss]
   );
 
   useEffect(() => {

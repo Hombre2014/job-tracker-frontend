@@ -1,3 +1,19 @@
+// Category color mapping for both filter bar and document card pills
+// These match the Document Card pill colors as seen in your UI
+export const categoryColors: Record<string, string> = {
+  Resume: 'bg-blue-600', // blue
+  Other: 'bg-indigo-500', // indigo
+  Transcript: 'bg-red-500', // red
+  'Job Post': 'bg-lime-500', // lime
+  Portfolio: 'bg-purple-500', // purple (darker for distinction)
+  Certification: 'bg-teal-500', // teal (distinct from Writing Sample)
+  Uncategorized: 'bg-gray-500', // gray
+  Recommendation: 'bg-pink-500', // pink (darker for distinction)
+  'Offer Letter': 'bg-amber-700', // amber (darker for distinction)
+  'Cover Letter': 'bg-green-600', // green
+  'Writing Sample': 'bg-orange-400', // orange (lighter for distinction)
+};
+
 export const defaultJobPostColor = 'rgb(147 51 234)'; // theme.colors.purple[600] from Tailwind
 
 // Design system integrated file type colors
@@ -38,3 +54,6 @@ export const FIXED_GRID_STYLES = {
 
 // Max file size for uploads
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+export const MS_PER_MINUTE = 60000;
+export const MS_PER_SECOND = 1000;

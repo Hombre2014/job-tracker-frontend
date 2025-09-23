@@ -5,10 +5,10 @@ import { PiBriefcaseLight, PiUsers } from 'react-icons/pi';
 import { GoTrophy, GoInbox, GoPersonAdd } from 'react-icons/go';
 import { SlEnvolopeLetter, SlMagicWand, SlBriefcase } from 'react-icons/sl';
 import {
-  HiOutlineThumbDown,
-  HiOutlinePlusCircle,
   HiOutlineClock,
   HiOutlineFolder,
+  HiOutlineThumbDown,
+  HiOutlinePlusCircle,
 } from 'react-icons/hi';
 
 import { BoardIcons, MenuIcons, JobPostIcons, JobPostMenuItems } from '@/enums';

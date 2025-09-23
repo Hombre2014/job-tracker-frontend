@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { toast } from 'react-toastify';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { IoMdContact } from 'react-icons/io';
 
 import { cn } from '@/lib/utils';
@@ -11,54 +12,235 @@ import { Input } from '@/components/ui/input';
 import { useAppSelector } from '@/redux/hooks';
 import { useAppDispatch } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
-import { updateUser } from '@/redux/user/userThunk';
+import { updateUser } from '@/redux/user/userSlice';
+import {
+  getBothNotifications,
+  createUpdateDeleteNotifications,
+} from '@/redux/notifications/notificationsThunk';
+import { createDeleteVerificationCode } from '@/redux/user/userThunk';
+import { createTimeString } from '@/utils/timeValidation';
 
 const Settings = () => {
+  const router = useRouter();
   const dispatch = useAppDispatch();
-  const [open, setOpen] = useState(true);
-  const accessToken = localStorage.getItem('accessToken');
   const { lastName } = useAppSelector((state) => state.user);
   const [newLastName, setNewLastName] = useState(lastName);
   const { firstName } = useAppSelector((state) => state.user);
   const [newFirstName, setNewFirstName] = useState(firstName);
   const { email, profilePicUrl } = useAppSelector((state) => state.user);
+  const [newEmail, setNewEmail] = useState(email);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+  const { daily, weekly, loading } = useAppSelector(
+    (state) => state.notifications
+  );
+  const [weeklyDigest, setWeeklyDigest] = useState(!!weekly);
+  const [dailyDigest, setDailyDigest] = useState(!!daily);
+  const [notificationsDirty, setNotificationsDirty] = useState(false);
+
+  // Removed automatic updateUser call - should only update when user explicitly saves
 
   useEffect(() => {
-    dispatch(
-      updateUser({
-        email,
-        accessToken,
-        role: 'user',
-        lastName: newLastName,
-        firstName: newFirstName,
-      })
-    );
-  }, [newFirstName, newLastName, dispatch, accessToken, email]);
+    try {
+      const token = localStorage.getItem('accessToken');
+      setAccessToken(token);
+      if (token) {
+        dispatch(getBothNotifications(token));
+      }
+    } catch (error) {
+      console.error('Failed to access localStorage:', error);
+      setAccessToken(null);
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (!notificationsDirty) {
+      setWeeklyDigest(!!weekly);
+      setDailyDigest(!!daily);
+    }
+  }, [weekly, daily, notificationsDirty]);
 
   const handleWeeklyDigest = () => {
-    // TODO: Implement weekly digest functionality
+    setNotificationsDirty(true);
+    setWeeklyDigest((prev) => !prev);
   };
 
   const handleDailyDigest = () => {
-    // TODO: Implement daily digest functionality
+    setNotificationsDirty(true);
+    setDailyDigest((prev) => !prev);
+  };
+
+  const handleDownloadData = () => {
+    // TODO: Implement data download functionality
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!email) {
+      toast.error('Email not found. Please log in again.', {
+        autoClose: 3000,
+        position: 'top-right',
+      });
+      return;
+    }
+
+    try {
+      // Use Redux thunk to send verification code
+      await dispatch(createDeleteVerificationCode({ email })).unwrap();
+
+      // Store deletion context for verification page
+      try {
+        localStorage.setItem('userDeletionContext', JSON.stringify({ email }));
+      } catch {
+        // non-fatal; verification page will redirect if context is missing
+      }
+
+      toast.success(
+        'Verification code sent to your email. Please check your inbox.',
+        {
+          autoClose: 4000,
+          position: 'top-right',
+        }
+      );
+
+      // Redirect to verification page
+      router.push('/delete-account-verify');
+    } catch (error: any) {
+      console.error('Error requesting account deletion:', error);
+      const err =
+        typeof error === 'string'
+          ? error
+          : 'Failed to send verification code. Please try again.';
+      toast.error(err, {
+        autoClose: 4000,
+        position: 'top-right',
+      });
+    }
+  };
+
+  const handleSaveNotifications = async () => {
+    if (!accessToken) {
+      toast.error('Access token not available. Please log in again.', {
+        autoClose: 3000,
+        position: 'top-right',
+      });
+      return;
+    }
+
+    try {
+      const timezoneOffset = new Date().getTimezoneOffset();
+      const notifications = {
+        daily: dailyDigest
+          ? {
+              time: createTimeString('09:00'),
+              timezoneOffset: timezoneOffset,
+            }
+          : null,
+        weekly: weeklyDigest
+          ? {
+              time: createTimeString('09:00'),
+              dayOfWeek: 'MONDAY' as const,
+              timezoneOffset: timezoneOffset,
+            }
+          : null,
+      };
+
+      await dispatch(
+        createUpdateDeleteNotifications({
+          accessToken,
+          notifications,
+        })
+      ).unwrap();
+
+      setNotificationsDirty(false);
+
+      toast.success('Notification preferences updated successfully!', {
+        autoClose: 3000,
+        position: 'top-right',
+      });
+
+      router.back();
+    } catch (error) {
+      console.error('Error updating notifications:', error);
+      toast.error(
+        'Failed to update notification preferences. Please try again.',
+        {
+          autoClose: 3000,
+          position: 'top-right',
+        }
+      );
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!accessToken) {
+      toast.error('Access token not available. Please log in again.', {
+        autoClose: 3000,
+        position: 'top-right',
+      });
+      return;
+    }
+
+    try {
+      await dispatch(
+        updateUser({
+          role: 'user',
+          email: newEmail,
+          lastName: newLastName,
+          firstName: newFirstName,
+          accessToken: accessToken,
+        })
+      ).unwrap();
+
+      toast.success('Profile updated successfully!', {
+        autoClose: 3000,
+        draggable: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        position: 'top-right',
+        hideProgressBar: false,
+      });
+
+      // Close the modal by navigating back to the previous page
+      router.back();
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error('Failed to update profile. Please try again.', {
+        autoClose: 3000,
+        draggable: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        position: 'top-right',
+        hideProgressBar: false,
+      });
+    }
   };
 
   const handleFileInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
       const selectedFile = files[0];
+      if (previewImageUrl) {
+        URL.revokeObjectURL(previewImageUrl);
+      }
       setPreviewImageUrl(URL.createObjectURL(selectedFile));
+
+      if (!accessToken) {
+        toast.error('Access token not available. Please log in again.', {
+          position: 'top-right',
+          autoClose: 3000,
+        });
+        return;
+      }
 
       try {
         await dispatch(
           updateUser({
-            email,
             role: 'user',
+            email: newEmail,
             lastName: newLastName,
             firstName: newFirstName,
             profilePic: selectedFile,
-            accessToken: accessToken as string,
+            accessToken: accessToken,
           })
         ).unwrap();
 
@@ -82,9 +264,13 @@ const Settings = () => {
     };
   }, [previewImageUrl]);
 
+  const [activeTab, setActiveTab] = useState<'account' | 'notifications'>(
+    'account'
+  );
+
   return (
     <Modal stylings="sm:w-5/6 md:w-2/3 lg:w-1/2 xl:w-5/12">
-      <div className="flex mx-auto bg-white w-full h-auto rounded-md">
+      <div className="flex mx-auto bg-white dark:bg-slate-800 w-full h-auto rounded-md">
         <section className="w-full">
           <div className="flex flex-col items-start p-6">
             <label htmlFor="file-input">
@@ -105,34 +291,46 @@ const Settings = () => {
                   alt="User profile picture"
                 />
               ) : (
-                <IoMdContact size={50} /> // Show the default icon if no photo is available
+                <IoMdContact size={50} className="dark:text-slate-300" /> // Show the default icon if no photo is available
               )}
             </label>
-            <p className="text-xl font-bold pt-2">
+            <p className="text-xl font-bold pt-2 dark:text-white">
               {newFirstName} {newLastName}
             </p>
-            <span className="pl-0">{email}</span>
+            <span className="pl-0 dark:text-slate-300">{email}</span>
           </div>
-          <div className="tabs tabs-lifted flex flex-col justify-start items-start w-full">
-            <div className="w-full pt-40">
-              <input
-                type="radio"
-                defaultChecked
-                name="my_tabs_2"
-                id="tab-account"
-                aria-label="My Account"
+          <div className="flex w-full">
+            <div className="flex flex-col gap-2 p-4 min-w-fit">
+              <button
+                type="button"
+                onClick={() => setActiveTab('account')}
                 className={cn(
-                  'tab focus:!bg-blue-500 !rounded-md ml-2 focus:!text-white',
-                  open ? 'bg-blue-500 text-white' : 'bg-white text-black',
-                  open ? 'text-white' : 'text-black'
+                  'flex items-center gap-2 py-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 pl-2 mr-2 rounded-md dark:text-white',
+                  activeTab === 'account'
+                    ? 'border border-blue-500 bg-blue-300/30 dark:bg-blue-600/40 hover:bg-blue-300/30 dark:hover:bg-blue-600/40'
+                    : ''
                 )}
-              />
-              <div
-                role="tabpanel"
-                aria-labelledby="tab-account"
-                className="tab-content bg-base-100 rounded-box p-6 w-auto min-h-[600px] ml-64 mt-[-340px] border-b"
               >
-                <div className="w-full border-b pb-2">General Info</div>
+                My Account
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('notifications')}
+                className={cn(
+                  'flex items-center gap-2 py-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 pl-2 mr-2 rounded-md dark:text-white',
+                  activeTab === 'notifications'
+                    ? 'border border-blue-500 bg-blue-300/30 dark:bg-blue-600/40 hover:bg-blue-300/30 dark:hover:bg-blue-600/40'
+                    : ''
+                )}
+              >
+                Notes & Notifications
+              </button>
+            </div>
+            {activeTab === 'account' && (
+              <div className="bg-base-100 dark:bg-slate-800 rounded-box p-6 w-full min-h-[460px] border border-slate-200 dark:border-slate-600 mr-4 mb-4">
+                <div className="w-full border-b border-slate-200 dark:border-slate-600 pb-2 dark:text-white">
+                  General Info
+                </div>
                 <div className="flex gap-6">
                   <div className="w-1/4">
                     <label htmlFor="file-input">
@@ -155,7 +353,7 @@ const Settings = () => {
                       ) : (
                         <IoMdContact
                           size={50}
-                          className="mt-4 mb-2 cursor-pointer"
+                          className="mt-4 mb-2 cursor-pointer dark:text-slate-300"
                         />
                       )}
                       <input
@@ -168,84 +366,110 @@ const Settings = () => {
                         className="file-input file-input-ghost max-w-xs opacity-0 absolute top-[100px] h-[62px] w-[50px]"
                       />
                     </label>
-                    <p>Profile photo</p>
+                    <p className="dark:text-slate-300">Profile photo</p>
                   </div>
                   <div className="w-3/4">
                     <form className="space-y-6">
-                      <div className="flex flex-col gap-4">
-                        <label>First Name</label>
+                      <div className="flex flex-col gap-4 mt-4">
+                        <label className="dark:text-white">First Name</label>
                         <Input
                           type="text"
                           placeholder="John"
                           value={newFirstName}
                           onChange={(e) => setNewFirstName(e.target.value)}
+                          className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-white"
                         />
-                        <label>Last Name</label>
+                        <label className="dark:text-white">Last Name</label>
                         <Input
                           type="text"
                           placeholder="Doe"
                           value={newLastName}
                           onChange={(e) => setNewLastName(e.target.value)}
+                          className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-white"
                         />
+                        <label className="dark:text-white">Email Address</label>
+                        <Input
+                          type="email"
+                          value={newEmail}
+                          placeholder="john.doe@example.com"
+                          onChange={(e) => setNewEmail(e.target.value)}
+                          className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-white"
+                        />
+                      </div>
+                      <div className="flex justify-end mt-4">
+                        <Button
+                          type="button"
+                          onClick={handleSaveProfile}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md"
+                        >
+                          Save Changes
+                        </Button>
                       </div>
                     </form>
                   </div>
                 </div>
               </div>
-            </div>
-            <div className="w-full">
-              <input
-                type="radio"
-                name="my_tabs_2"
-                id="tab-notifications"
-                onClick={() => setOpen(false)}
-                aria-label="Notes & Notifications"
-                className="tab focus:bg-blue-500 !rounded-md ml-2 absolute top-[400px] focus:text-white"
-              />
-              <div
-                role="tabpanel"
-                aria-labelledby="tab-notifications"
-                className="tab-content bg-base-100 rounded-box p-6 w-auto min-h-[600px] ml-64 mt-[-340px]"
-              >
-                <div className="w-full border-b pb-2">Email Subscriptions</div>
+            )}
+
+            {activeTab === 'notifications' && (
+              <div className="bg-base-100 dark:bg-slate-800 rounded-box p-6 w-full min-h-[460px] border border-slate-200 dark:border-slate-600 mb-4 mr-4">
+                <div className="w-full border-b border-slate-200 dark:border-slate-600 pb-2 dark:text-white">
+                  Email Subscriptions
+                </div>
                 <div className="form-control">
                   <label className="label cursor-pointer">
-                    <span className="label-text">Weekly Digest</span>
+                    <span className="label-text dark:text-slate-300">
+                      Weekly Digest
+                    </span>
                     <input
-                      defaultChecked
                       type="checkbox"
-                      className="checkbox"
-                      onClick={handleWeeklyDigest}
+                      checked={weeklyDigest}
+                      onChange={handleWeeklyDigest}
+                      className="checkbox border-slate-300 dark:border-slate-600"
                     />
                   </label>
                 </div>
                 <div className="form-control">
                   <label className="label cursor-pointer">
-                    <span className="label-text">Daily Digest</span>
+                    <span className="label-text dark:text-slate-300">
+                      Daily Digest
+                    </span>
                     <input
-                      defaultChecked
                       type="checkbox"
-                      className="checkbox"
-                      onClick={handleDailyDigest}
+                      checked={dailyDigest}
+                      onChange={handleDailyDigest}
+                      className="checkbox border-slate-300 dark:border-slate-600"
                     />
                   </label>
                 </div>
+                <div className="flex flex-col w-fit mt-6">
+                  <Button
+                    variant="ghost"
+                    onClick={handleDownloadData}
+                    className="justify-start text-gray-600 dark:text-slate-400"
+                  >
+                    Download my data
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={handleDeleteAccount}
+                    className="justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  >
+                    Delete my account
+                  </Button>
+                </div>
+                <div className="flex justify-end mt-4">
+                  <Button
+                    type="button"
+                    disabled={loading}
+                    onClick={handleSaveNotifications}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md disabled:opacity-50"
+                  >
+                    {loading ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                </div>
               </div>
-              <div className="flex flex-col w-fit">
-                <Button
-                  variant="none"
-                  className="relative bottom-20 ml-2 text-gray-600 hover:!bg-none"
-                >
-                  Download my data
-                </Button>
-                <Button
-                  variant="none"
-                  className="relative bottom-20 ml-2 text-red-600 hover:!bg-none"
-                >
-                  Delete my account
-                </Button>
-              </div>
-            </div>
+            )}
           </div>
         </section>
       </div>

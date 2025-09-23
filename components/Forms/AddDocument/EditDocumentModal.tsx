@@ -46,7 +46,7 @@ const EditDocumentModal = ({
     }
     setIsSaving(true);
     try {
-      await dispatch(
+      const result = await dispatch(
         updateDocument({
           category,
           description,
@@ -55,8 +55,9 @@ const EditDocumentModal = ({
           documentId: documentToEdit.id,
         })
       ).unwrap();
-      toast.success('Document updated successfully!');
-      onEditSuccess();
+
+      // Pass the updated document to the success callback
+      onEditSuccess(result);
     } catch (error) {
       console.error('Error updating document:', error);
       toast.error('Failed to update document. Please try again.');
@@ -72,6 +73,7 @@ const EditDocumentModal = ({
       open={isOpen}
       buttonCancel="Cancel"
       onOpenChange={onClose}
+      cleanupType="none"
       dialogTitle="Edit Document"
       actionFunction={handleEdit}
       buttonConfirm={isSaving ? 'Saving...' : 'Save Changes'}

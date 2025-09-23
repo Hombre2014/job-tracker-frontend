@@ -42,7 +42,8 @@ const ContactSideBar = ({
       }
     };
     fetchBoardJobs();
-  }, [board_id, dispatch, accessToken]);  useEffect(() => {
+  }, [board_id, dispatch, accessToken]);
+  useEffect(() => {
     // Only auto-assign job when coming from job post modal (job_id exists)
     if (job_id) {
       const currentJob = jobs.jobPosts.find(
@@ -90,7 +91,9 @@ const ContactSideBar = ({
             <div
               key={jobPost.id}
               className="flex flex-row justify-between items-center border border-gray-300 rounded-lg p-[5px]"
-            >              <p
+            >
+              {' '}
+              <p
                 style={{ color: `${jobPost.color}` }}
                 className="text-left text-sm"
               >
