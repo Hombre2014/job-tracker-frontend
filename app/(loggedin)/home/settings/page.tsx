@@ -3,10 +3,11 @@
 import Image from 'next/image';
 import { toast } from 'react-toastify';
 import { useEffect, useState } from 'react';
-import { IoMdContact } from 'react-icons/io';
 import { useRouter } from 'next/navigation';
+import { IoMdContact } from 'react-icons/io';
 
 import { cn } from '@/lib/utils';
+import client from '@/api/client';
 import Modal from '@/components/Misc/Modal';
 import { Input } from '@/components/ui/input';
 import { useAppSelector } from '@/redux/hooks';
@@ -73,8 +74,60 @@ const Settings = () => {
     // TODO: Implement data download functionality
   };
 
-  const handleDeleteAccount = () => {
-    // TODO: Implement account deletion with confirmation modal
+  const handleDeleteAccount = async () => {
+    if (!accessToken) {
+      toast.error('Access token not available. Please log in again.', {
+        autoClose: 3000,
+        position: 'top-right',
+      });
+      return;
+    }
+
+    if (!email) {
+      toast.error('Email not found. Please log in again.', {
+        autoClose: 3000,
+        position: 'top-right',
+      });
+      return;
+    }
+
+    try {
+      // Send request to create verification code for account deletion
+      const res = await client.post('/users/delete/create-verification-code', {
+        email: email,
+      });
+
+      if (res.status === 201 || res.status === 200) {
+        toast.success(
+          'Verification code sent to your email. Please check your inbox.',
+          {
+            autoClose: 4000,
+            position: 'top-right',
+          }
+        );
+
+        // Store user data for verification page
+        const userData = {
+          email: email,
+          firstName: firstName,
+          lastName: lastName,
+        };
+        localStorage.setItem('user', JSON.stringify(userData));
+
+        // Redirect to verification page
+        router.push('/delete-account-verify');
+      }
+    } catch (error: any) {
+      console.error('Error requesting account deletion:', error);
+      const err =
+        error.response?.data?.userFriendlyMessage ||
+        error.response?.data?.message ||
+        'Failed to send verification code. Please try again.';
+      toast.error(err, {
+        autoClose: 4000,
+        position: 'top-right',
+      });
+    }
   };
 
   const handleSaveNotifications = async () => {
