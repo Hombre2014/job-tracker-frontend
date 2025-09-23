@@ -87,6 +87,13 @@ const Settings = () => {
       // Use Redux thunk to send verification code
       await dispatch(createDeleteVerificationCode({ email })).unwrap();
 
+      // Store deletion context for verification page
+      try {
+        localStorage.setItem('userDeletionContext', JSON.stringify({ email }));
+      } catch {
+        // non-fatal; verification page will redirect if context is missing
+      }
+
       toast.success(
         'Verification code sent to your email. Please check your inbox.',
         {
@@ -94,14 +101,6 @@ const Settings = () => {
           position: 'top-right',
         }
       );
-
-      // Store user data for verification page
-      const userData = {
-        email: email,
-        firstName: firstName,
-        lastName: lastName,
-      };
-      localStorage.setItem('user', JSON.stringify(userData));
 
       // Redirect to verification page
       router.push('/delete-account-verify');
@@ -220,6 +219,9 @@ const Settings = () => {
     const files = e.target.files;
     if (files) {
       const selectedFile = files[0];
+      if (previewImageUrl) {
+        URL.revokeObjectURL(previewImageUrl);
+      }
       setPreviewImageUrl(URL.createObjectURL(selectedFile));
 
       if (!accessToken) {

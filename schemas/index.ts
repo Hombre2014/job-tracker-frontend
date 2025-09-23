@@ -42,9 +42,14 @@ export const ResetPasswordSchema = z.object({
 });
 
 export const VerifyEmailSchema = z.object({
-  code: z.string().regex(/^\d{6}$/, {
-    message: 'Invalid verification code',
-  }),
+  code: z.preprocess(
+    (val) => (typeof val === 'string' ? val.trim() : val),
+    z
+      .string()
+      .min(6, 'Verification code must be at least 6 characters')
+      .max(10, 'Verification code must be at most 10 characters')
+      .regex(/^\d+$/, 'Verification code must contain only numbers')
+  ),
 });
 
 export const AddJobSchemaShort = z.object({

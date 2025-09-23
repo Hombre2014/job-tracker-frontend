@@ -79,9 +79,11 @@ export const createDeleteVerificationCode = createAsyncThunk(
     const { email } = values;
 
     try {
-      const res = await client.post('/users/delete/create-verification-code', {
-        email,
-      });
+      const res = await client.post(
+        '/users/delete/create-verification-code',
+        { email },
+        { signal: thunkAPI.signal }
+      );
 
       if (res.status === 201 || res.status === 200) {
         return {
@@ -93,12 +95,13 @@ export const createDeleteVerificationCode = createAsyncThunk(
       }
     } catch (err: unknown) {
       if (isAxiosError(err)) {
-        return thunkAPI.rejectWithValue(
-          err.response?.data?.userFriendlyMessage ||
-            err.response?.data?.message ||
-            err.response?.data ||
-            'Failed to send verification code'
-        );
+        const raw = err.response?.data;
+        const message =
+          (typeof raw === 'string' && raw) ||
+          raw?.userFriendlyMessage ||
+          raw?.message ||
+          'Failed to send verification code';
+        return thunkAPI.rejectWithValue(message);
       }
       return thunkAPI.rejectWithValue('Failed to send verification code');
     }
@@ -113,6 +116,7 @@ export const deleteUserAccount = createAsyncThunk(
     try {
       const res = await client.delete('/users', {
         data: { code },
+        signal: thunkAPI.signal,
       });
 
       if (res.status === 200) {
@@ -128,12 +132,13 @@ export const deleteUserAccount = createAsyncThunk(
       }
     } catch (err: unknown) {
       if (isAxiosError(err)) {
-        return thunkAPI.rejectWithValue(
-          err.response?.data?.userFriendlyMessage ||
-            err.response?.data?.message ||
-            err.response?.data ||
-            'Failed to delete account'
-        );
+        const raw = err.response?.data;
+        const message =
+          (typeof raw === 'string' && raw) ||
+          raw?.userFriendlyMessage ||
+          raw?.message ||
+          'Failed to delete account';
+        return thunkAPI.rejectWithValue(message);
       }
       return thunkAPI.rejectWithValue('Failed to delete account');
     }

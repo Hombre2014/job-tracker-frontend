@@ -1,5 +1,236 @@
 # Technical Documentation
 
+## CodeRabbit Security and Performance Enhancements (23/09/2025)
+
+### Advanced Error Handling and Request Management
+
+#### Request Cancellation with AbortSignal
+
+Implemented comprehensive request cancellation support for all delete account operations to prevent memory leaks and improve performance during navigation changes.
+
+**Enhanced Thunk Implementation**:
+
+```typescript
+// redux/user/userThunk.ts
+export const createDeleteVerificationCode = createAsyncThunk(
+  'user/createDeleteVerificationCode',
+  async ({ email }: { email: string }, { rejectWithValue, signal }) => {
+    try {
+      const res = await client.post(
+        '/users/delete/create-verification-code',
+        { email },
+        { signal: thunkAPI.signal } // ✅ Cancellation support
+      );
+
+      // ... success handling
+    } catch (err: unknown) {
+      // Enhanced error normalization
+      if (isAxiosError(err)) {
+        const raw = err.response?.data;
+        const message =
+          (typeof raw === 'string' && raw) ||
+          raw?.userFriendlyMessage ||
+          raw?.message ||
+          'Failed to send verification code';
+        return rejectWithValue(message); // ✅ Always returns string
+      }
+      return rejectWithValue('Failed to send verification code');
+    }
+  }
+);
+```
+
+#### Memory Management and Resource Cleanup
+
+**Object URL Lifecycle Management**:
+
+```typescript
+// app/(loggedin)/home/settings/page.tsx
+const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const files = e.target.files;
+  if (files) {
+    const selectedFile = files[0];
+
+    // ✅ Clean up previous URL before creating new one
+    if (previewImageUrl) {
+      URL.revokeObjectURL(previewImageUrl);
+    }
+
+    setPreviewImageUrl(URL.createObjectURL(selectedFile));
+  }
+};
+
+// Automatic cleanup on component unmount
+useEffect(() => {
+  return () => {
+    if (previewImageUrl) {
+      URL.revokeObjectURL(previewImageUrl);
+    }
+  };
+}, [previewImageUrl]);
+```
+
+**Enhanced System Cleanup**:
+
+```typescript
+// utils/helpers.ts
+export const cleanupAfterLogout = () => {
+  // Standard cleanup
+  cleanupAfterContact();
+  cleanupAfterJobPost();
+
+  // Authentication tokens
+  localStorage.removeItem('user');
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+  localStorage.removeItem('userDeletionContext');
+
+  // ✅ Enhanced cleanup for comprehensive state clearing
+  localStorage.removeItem('persist:root'); // Redux Persist
+
+  // ✅ Defensive sessionStorage clearing
+  try {
+    sessionStorage.clear();
+  } catch {}
+
+  // ✅ Remove auth headers from API client
+  try {
+    const client = require('@/api/client').default;
+    if (client?.defaults?.headers) {
+      delete client.defaults.headers.Authorization;
+    }
+  } catch {}
+
+  // Application state cleanup
+  localStorage.removeItem('columnId');
+  localStorage.removeItem('chosenBoard');
+  // ... other state cleanup
+};
+```
+
+#### Rate Limiting and User Experience
+
+**Resend Cooldown Implementation**:
+
+```typescript
+// app/(auth)/delete-account-verify/page.tsx
+const [resendCooldown, setResendCooldown] = useState(0);
+
+// Auto-decrementing timer
+useEffect(() => {
+  if (resendCooldown <= 0) return;
+  const t = setInterval(() => setResendCooldown((s) => s - 1), 1000);
+  return () => clearInterval(t);
+}, [resendCooldown]);
+
+const handleResendCode = async () => {
+  // ... resend logic
+  setResendCooldown(30); // ✅ 30-second protection
+};
+
+// Smart button with visual feedback
+<Button
+  onClick={handleResendCode}
+  disabled={resendCooldown > 0}
+  className="disabled:opacity-50"
+>
+  {resendCooldown > 0
+    ? `Resend in ${resendCooldown}s`
+    : 'Resend verification code'}
+</Button>;
+```
+
+#### Data Isolation and Security
+
+**Dedicated Context Management**:
+
+```typescript
+// app/(loggedin)/home/settings/page.tsx
+const handleDeleteAccount = async () => {
+  try {
+    await dispatch(createDeleteVerificationCode({ email })).unwrap();
+
+    // ✅ Isolated context - no global user pollution
+    try {
+      localStorage.setItem('userDeletionContext', JSON.stringify({ email }));
+    } catch {
+      // non-fatal; verification page will redirect if context is missing
+    }
+
+    // ✅ No longer overwrites global user object
+    router.push('/delete-account-verify');
+  } catch (error) {
+    // Error handling
+  }
+};
+```
+
+**Enhanced Form Validation**:
+
+```typescript
+// schemas/index.ts
+export const VerifyEmailSchema = z.object({
+  code: z.preprocess(
+    (val) => (typeof val === 'string' ? val.trim() : val), // ✅ Schema-level trimming
+    z
+      .string()
+      .min(6, 'Verification code must be at least 6 characters')
+      .max(10, 'Verification code must be at most 10 characters')
+      .regex(/^\d+$/, 'Verification code must contain only numbers')
+  ),
+});
+
+// Component - no dual trimming needed
+const onSubmit = (values: z.infer<typeof VerifyEmailSchema>) => {
+  setPendingCode(values.code); // ✅ Already trimmed by schema
+  setShowConfirmDialog(true);
+};
+```
+
+#### Mobile UX Enhancements
+
+**Optimized Input Experience**:
+
+```typescript
+// app/(auth)/delete-account-verify/page.tsx
+<Input
+  {...field}
+  type="text"
+  inputMode="numeric" // ✅ Shows numeric keyboard on mobile
+  autoComplete="one-time-code" // ✅ Enables SMS autofill
+  pattern="[0-9]*" // ✅ Restricts to numeric input
+  maxLength={6} // ✅ Prevents over-entry
+  placeholder="Enter 6-digit code"
+  className="border-red-300 focus:border-red-500 focus:ring-red-500"
+/>
+```
+
+### Performance and Security Benefits
+
+#### Request Management
+
+- ✅ **Automatic Cancellation**: Prevents stale requests during navigation
+- ✅ **Memory Efficiency**: Proper cleanup of blob URLs and intervals
+- ✅ **Rate Protection**: 30-second cooldown prevents endpoint abuse
+
+#### Error Handling
+
+- ✅ **User-Friendly Messages**: No more `[object Object]` in UI
+- ✅ **Graceful Degradation**: Comprehensive fallback strategies
+- ✅ **Type Safety**: All error payloads properly normalized
+
+#### Data Security
+
+- ✅ **Context Isolation**: Deletion flow doesn't affect global state
+- ✅ **Comprehensive Cleanup**: All traces removed on completion/cancellation
+- ✅ **Safe Cancellation**: Users can abort without breaking other views
+
+#### Mobile Experience
+
+- ✅ **Native Keyboards**: Proper input modes for verification codes
+- ✅ **SMS Integration**: Automatic OTP detection and filling
+- ✅ **Input Validation**: Schema-level preprocessing eliminates redundancy
+
 ## User Account Deletion System Implementation (23/09/2025)
 
 ### Secure Account Deletion Architecture
@@ -39,18 +270,23 @@ const handleDeleteAccount = async () => {
 // redux/user/userThunk.ts
 export const createDeleteVerificationCode = createAsyncThunk(
   'user/createDeleteVerificationCode',
-  async ({ email }: { email: string }, { rejectWithValue }) => {
+  async ({ email }: { email: string }, { rejectWithValue, signal }) => {
     try {
       const response = await apiClient.post(
         '/users/delete/create-verification-code',
-        { email }
+        { email },
+        { signal }
       );
       return response.data;
     } catch (error) {
       if (isAxiosError(error)) {
-        return rejectWithValue(
-          error.response?.data?.message || 'Failed to create verification code'
-        );
+        const raw = error.response?.data;
+        const message =
+          (typeof raw === 'string' && raw) ||
+          raw?.userFriendlyMessage ||
+          raw?.message ||
+          'Failed to create verification code';
+        return rejectWithValue(message);
       }
       return rejectWithValue('An unexpected error occurred');
     }
@@ -59,10 +295,11 @@ export const createDeleteVerificationCode = createAsyncThunk(
 
 export const deleteUserAccount = createAsyncThunk(
   'user/deleteUserAccount',
-  async ({ code }: { code: string }, { dispatch, rejectWithValue }) => {
+  async ({ code }: { code: string }, { rejectWithValue, signal }) => {
     try {
       const response = await apiClient.delete('/users', {
         data: { code },
+        signal,
       });
 
       // Perform complete cleanup after successful deletion
@@ -71,9 +308,13 @@ export const deleteUserAccount = createAsyncThunk(
       return response.data;
     } catch (error) {
       if (isAxiosError(error)) {
-        return rejectWithValue(
-          error.response?.data?.message || 'Failed to delete account'
-        );
+        const raw = error.response?.data;
+        const message =
+          (typeof raw === 'string' && raw) ||
+          raw?.userFriendlyMessage ||
+          raw?.message ||
+          'Failed to delete account';
+        return rejectWithValue(message);
       }
       return rejectWithValue('An unexpected error occurred');
     }
@@ -127,20 +368,22 @@ const handleConfirmDeletion = async () => {
 **Form Validation and Security**:
 
 ```typescript
-// Zod schema validation for verification code
+// Zod schema validation with preprocessing
 const formSchema = z.object({
-  code: z
-    .string()
-    .min(6, 'Verification code must be at least 6 characters')
-    .max(10, 'Verification code must be at most 10 characters')
-    .regex(/^\d+$/, 'Verification code must contain only numbers'),
+  code: z.preprocess(
+    (val) => (typeof val === 'string' ? val.trim() : val),
+    z
+      .string()
+      .min(6, 'Verification code must be at least 6 characters')
+      .max(10, 'Verification code must be at most 10 characters')
+      .regex(/^\d+$/, 'Verification code must contain only numbers')
+  ),
 });
 
-// Input sanitization and validation
+// Input sanitization handled by schema preprocessing
 const onSubmit = (values: z.infer<typeof formSchema>) => {
-  const sanitizedCode = values.code.trim();
-  setCode(sanitizedCode);
-  setIsConfirmOpen(true);
+  setPendingCode(values.code);
+  setShowConfirmDialog(true);
 };
 ```
 
@@ -159,10 +402,25 @@ extraReducers: (builder) => {
 };
 
 // Session cleanup utility
-const cleanupAfterLogout = async () => {
+const cleanupAfterLogout = () => {
   // Clear localStorage
   localStorage.removeItem('accessToken');
   localStorage.removeItem('userData');
+  localStorage.removeItem('userDeletionContext');
+  localStorage.removeItem('persist:root'); // Redux Persist (if used)
+
+  // Clear sessionStorage (defensive)
+  try {
+    sessionStorage.clear();
+  } catch {}
+
+  // Drop default auth header on API client (if set globally)
+  try {
+    const client = require('@/api/client').default;
+    if (client?.defaults?.headers) {
+      delete client.defaults.headers.Authorization;
+    }
+  } catch {}
 
   // Clear Redux store (handled by fulfilled action)
   // Redirect handled in component

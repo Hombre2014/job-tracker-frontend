@@ -40,6 +40,10 @@ export const cleanupAfterLogout = () => {
   localStorage.removeItem('user');
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
+  localStorage.removeItem('userDeletionContext');
+
+  // Clear Redux Persist (if used)
+  localStorage.removeItem('persist:root');
 
   // Clear application state
   localStorage.removeItem('columnId');
@@ -48,6 +52,19 @@ export const cleanupAfterLogout = () => {
   localStorage.removeItem('chosenBoardId');
   localStorage.removeItem('currentJobPost');
   localStorage.removeItem('boardValueChanged');
+
+  // Clear sessionStorage (defensive)
+  try {
+    sessionStorage.clear();
+  } catch {}
+
+  // Drop default auth header on API client (if set globally)
+  try {
+    const client = require('@/api/client').default;
+    if (client?.defaults?.headers) {
+      delete client.defaults.headers.Authorization;
+    }
+  } catch {}
   localStorage.removeItem('firstColumnOfTheBoard');
 
   // Clear Redux persist data

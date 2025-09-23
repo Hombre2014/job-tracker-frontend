@@ -40,11 +40,12 @@ const DeleteAccountVerify = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [user, setUser] = useState<any>({});
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const [error, setError] = useState<string | undefined>('');
+  const [pendingCode, setPendingCode] = useState<string>('');
   const [success, setSuccess] = useState<string | undefined>('');
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [pendingCode, setPendingCode] = useState<string>('');
-  const [isDeleting, setIsDeleting] = useState(false);
 
   const form = useForm<z.infer<typeof VerifyEmailSchema>>({
     resolver: zodResolver(VerifyEmailSchema),
@@ -55,7 +56,9 @@ const DeleteAccountVerify = () => {
 
   useEffect(() => {
     try {
-      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      const userData = JSON.parse(
+        localStorage.getItem('userDeletionContext') || '{}'
+      );
       setUser(userData);
 
       // If no user data, redirect to login
@@ -67,6 +70,12 @@ const DeleteAccountVerify = () => {
       router.push('/login');
     }
   }, [router]);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setInterval(() => setResendCooldown((s) => s - 1), 1000);
+    return () => clearInterval(t);
+  }, [resendCooldown]);
 
   const onSubmit = async (values: z.infer<typeof VerifyEmailSchema>) => {
     setError('');
@@ -97,6 +106,9 @@ const DeleteAccountVerify = () => {
         await dispatch(deleteUserAccount({ code: pendingCode })).unwrap();
 
         setSuccess('Account deleted successfully. Redirecting...');
+
+        // Clean up deletion context
+        localStorage.removeItem('userDeletionContext');
 
         // Redirect to home page after short delay
         setTimeout(() => {
@@ -134,6 +146,7 @@ const DeleteAccountVerify = () => {
       ).unwrap();
 
       setSuccess('Verification code resent successfully');
+      setResendCooldown(30);
       setTimeout(() => setSuccess(''), 3000);
     } catch (error: any) {
       const err =
@@ -146,6 +159,8 @@ const DeleteAccountVerify = () => {
   };
 
   const handleCancel = () => {
+    // Clean up deletion context when canceling
+    localStorage.removeItem('userDeletionContext');
     router.push('/home/settings');
   };
 
@@ -179,8 +194,8 @@ const DeleteAccountVerify = () => {
             <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="space-y-4">
                 <FormField
-                  control={form.control}
                   name="code"
+                  control={form.control}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Verification code</FormLabel>
@@ -188,7 +203,11 @@ const DeleteAccountVerify = () => {
                         <Input
                           {...field}
                           type="text"
-                          placeholder="Enter 6 digits code"
+                          maxLength={6}
+                          pattern="[0-9]*"
+                          inputMode="numeric"
+                          autoComplete="one-time-code"
+                          placeholder="Enter 6-digit code"
                           className="border-red-300 focus:border-red-500 focus:ring-red-500"
                         />
                       </FormControl>
@@ -218,13 +237,16 @@ const DeleteAccountVerify = () => {
             </form>
           </Form>
           <div className="text-slate-500 text-sm mt-4 w-full flex justify-center">
-            <button
+            <Button
               type="button"
               onClick={handleResendCode}
-              className="text-blue-500 mx-auto text-sm underline hover:text-blue-600"
+              disabled={resendCooldown > 0}
+              className="text-blue-500 mx-auto text-sm underline hover:text-blue-600 disabled:opacity-50"
             >
-              Resend verification code
-            </button>
+              {resendCooldown > 0
+                ? `Resend in ${resendCooldown}s`
+                : 'Resend verification code'}
+            </Button>
           </div>
         </div>
 

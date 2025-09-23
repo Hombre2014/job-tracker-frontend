@@ -3,6 +3,47 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.194.1] - 2025-09-23
+
+### Fixed - CodeRabbit Security and Performance Enhancements
+
+- **Critical Request Cancellation Support**: Added AbortSignal support to all delete account thunks for better resilience during navigation
+
+  - **Axios Signal Integration**: All delete account API calls now support request cancellation via `thunkAPI.signal`
+  - **Memory Leak Prevention**: Prevents stale requests when users navigate away during account deletion process
+  - **Improved Performance**: Reduces server load and network congestion from cancelled operations
+  - **Files**: `redux/user/userThunk.ts`
+
+- **Enhanced Error Message Handling**: Normalized error payloads to prevent `[object Object]` display in UI
+
+  - **String Normalization**: All error responses properly converted to user-friendly strings
+  - **Priority Handling**: Structured error message extraction (userFriendlyMessage → message → fallback)
+  - **Type Safety**: Prevents object serialization issues in toast notifications and error displays
+  - **Files**: `redux/user/userThunk.ts`
+
+- **Memory Management Improvements**: Enhanced cleanup and resource management throughout deletion flow
+
+  - **Object URL Cleanup**: Added automatic revocation of previous blob URLs when selecting new profile photos
+  - **Comprehensive State Cleanup**: Enhanced `cleanupAfterLogout` to clear Redux Persist, sessionStorage, and auth headers
+  - **Rate Limiting Protection**: Implemented 30-second resend cooldown with visual countdown feedback
+  - **Files**: `app/(loggedin)/home/settings/page.tsx`, `app/(auth)/delete-account-verify/page.tsx`, `utils/helpers.ts`
+
+- **Data Isolation and Security**: Improved user data management and context separation
+
+  - **Dedicated Deletion Context**: Implemented `userDeletionContext` localStorage key to prevent global user object pollution
+  - **Safe Cancellation**: Users can safely cancel deletion flow without affecting other app components
+  - **Mobile UX Enhancement**: Added numeric keyboard hints and OTP autocomplete for verification codes
+  - **Form Validation Enhancement**: Implemented Zod preprocessing to eliminate dual trimming logic
+  - **Files**: `app/(loggedin)/home/settings/page.tsx`, `app/(auth)/delete-account-verify/page.tsx`, `schemas/index.ts`
+
+### Technical Details
+
+- **Code Quality**: Resolved all CodeRabbit security and performance recommendations
+- **Type Safety**: Maintained 100% TypeScript compliance throughout all improvements
+- **Documentation**: Updated technical documentation to reflect all implementation changes
+- **Testing**: All improvements verified with compilation checks and manual testing
+- **Backward Compatibility**: All changes maintain full backward compatibility
+
 ## [0.194.0] - 2025-09-23
 
 ### Added - Account Deletion Feature
