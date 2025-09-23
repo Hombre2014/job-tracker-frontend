@@ -3,6 +3,10 @@ import axios, { isAxiosError } from 'axios';
 import jwt from 'jsonwebtoken';
 import PerformanceMonitor from '@/utils/PerformanceMonitor';
 import SecurityValidator from '@/utils/SecurityValidator';
+import { 
+  createDeleteVerificationCode, 
+  deleteUserAccount 
+} from './userThunk';
 
 // Get user thunk - moved here to avoid circular dependency
 export const getUser = createAsyncThunk('user/getUser', async (_, thunkAPI) => {
@@ -444,6 +448,37 @@ export const userSlice = createSlice({
       .addCase(getUser.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message || 'Failed to get user';
+      })
+      .addCase(createDeleteVerificationCode.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(createDeleteVerificationCode.fulfilled, (state) => {
+        state.status = 'succeeded';
+        state.error = null;
+      })
+      .addCase(createDeleteVerificationCode.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload as string || 'Failed to send verification code';
+      })
+      .addCase(deleteUserAccount.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(deleteUserAccount.fulfilled, (state) => {
+        // Reset all user data after successful account deletion
+        state.email = '';
+        state.error = null;
+        state.userId = null;
+        state.lastName = '';
+        state.firstName = '';
+        state.status = 'idle';
+        state.accessToken = '';
+        state.refreshToken = '';
+        state.profilePicUrl = '';
+        state.role = 'user';
+      })
+      .addCase(deleteUserAccount.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload as string || 'Failed to delete account';
       });
   },
 });

@@ -73,44 +73,76 @@ export const isLoggedIn = createAsyncThunk(
   }
 );
 
-export const updateUser = createAsyncThunk(
-  'user/updateUser',
-  async (values: any, thunkAPI) => {
-    const { accessToken, firstName, lastName, email, profilePic, role } =
-      values;
+export const createDeleteVerificationCode = createAsyncThunk<
+  { message: string; email: string },
+  { email: string },
+  { rejectValue: string }
+>('user/createDeleteVerificationCode', async (values, thunkAPI) => {
+  const { email } = values;
 
-    // Create FormData object
-    const formData = new FormData();
-    formData.append('firstName', firstName);
-    formData.append('lastName', lastName);
-    formData.append('email', email);
-    formData.append('role', role);
+  try {
+    const res = await client.post(
+      '/users/delete/create-verification-code',
+      { email },
+      { signal: thunkAPI.signal }
+    );
 
-    // Check if profilePic is a valid File object
-    if (profilePic && profilePic instanceof File && profilePic.size > 0) {
-      formData.append('profilePic', profilePic);
+    if (res.status === 201 || res.status === 200) {
+      return {
+        message: 'Verification code sent successfully',
+        email,
+      };
+    } else {
+      return thunkAPI.rejectWithValue('Failed to send verification code');
     }
-
-    try {
-      const res = await client.patch('/users', formData, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      if (res.status === 200) {
-        return res.data;
-      } else {
-        return thunkAPI.rejectWithValue('Error updating user');
-      }
-    } catch (err: unknown) {
-      if (isAxiosError(err)) {
-        return thunkAPI.rejectWithValue(
-          err.response?.data || 'Error updating user'
-        );
-      }
-      return thunkAPI.rejectWithValue('Error updating user');
+  } catch (err: unknown) {
+    if (isAxiosError(err)) {
+      const raw = err.response?.data;
+      const message =
+        (typeof raw === 'string' && raw) ||
+        raw?.userFriendlyMessage ||
+        raw?.message ||
+        'Failed to send verification code';
+      return thunkAPI.rejectWithValue(message);
     }
+    return thunkAPI.rejectWithValue('Failed to send verification code');
   }
-);
+});
+
+export const deleteUserAccount = createAsyncThunk<
+  { message: string; deleted: true },
+  { code: string },
+  { rejectValue: string }
+>('user/deleteUserAccount', async (values, thunkAPI) => {
+  const { code } = values;
+
+  try {
+    const res = await client.delete('/users', {
+      data: { code },
+      signal: thunkAPI.signal,
+    });
+
+    if (res.status === 200) {
+      // Clear all user data after successful deletion
+      cleanupAfterLogout();
+
+      return {
+        message: 'Account deleted successfully',
+        deleted: true,
+      };
+    } else {
+      return thunkAPI.rejectWithValue('Failed to delete account');
+    }
+  } catch (err: unknown) {
+    if (isAxiosError(err)) {
+      const raw = err.response?.data;
+      const message =
+        (typeof raw === 'string' && raw) ||
+        raw?.userFriendlyMessage ||
+        raw?.message ||
+        'Failed to delete account';
+      return thunkAPI.rejectWithValue(message);
+    }
+    return thunkAPI.rejectWithValue('Failed to delete account');
+  }
+});

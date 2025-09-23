@@ -1,11 +1,11 @@
 export const cleanupAfterContact = () => {
   // Contact personal info
-  localStorage.removeItem('firstName');
+  localStorage.removeItem('comment');
   localStorage.removeItem('lastName');
   localStorage.removeItem('jobTitle');
   localStorage.removeItem('location');
-  localStorage.removeItem('comment');
   localStorage.removeItem('photoUrl');
+  localStorage.removeItem('firstName');
   localStorage.removeItem('contactId');
 
   // Contact communication
@@ -33,6 +33,7 @@ export const cleanupAfterJobPost = () => {
 };
 
 export const cleanupAfterLogout = () => {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') return;
   cleanupAfterContact();
   cleanupAfterJobPost();
 
@@ -40,18 +41,36 @@ export const cleanupAfterLogout = () => {
   localStorage.removeItem('user');
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
+  localStorage.removeItem('userDeletionContext');
+
+  // Clear Redux Persist (if used)
+  localStorage.removeItem('persist:root');
 
   // Clear application state
   localStorage.removeItem('columnId');
   localStorage.removeItem('chosenBoard');
-  localStorage.removeItem('chosenColumn');
   localStorage.removeItem('chosenBoardId');
   localStorage.removeItem('currentJobPost');
-  localStorage.removeItem('boardValueChanged');
   localStorage.removeItem('firstColumnOfTheBoard');
 
-  // Clear Redux persist data
-  localStorage.removeItem('persist:root');
+  // Clear sessionStorage (defensive)
+  try {
+    sessionStorage.clear();
+  } catch {}
+
+  // Drop default auth header on API client (if set globally)
+  try {
+    const client = require('@/api/client').default;
+    const headers = client?.defaults?.headers as any;
+    if (headers) {
+      // Axios keeps defaults under `common` and per-method buckets
+      if (headers.common) delete headers.common.Authorization;
+      delete headers.Authorization;
+      ['get', 'post', 'put', 'patch', 'delete'].forEach((m) => {
+        if (headers[m]) delete headers[m].Authorization;
+      });
+    }
+  } catch {}
 
   // Clear any debug data
   localStorage.removeItem('debug');

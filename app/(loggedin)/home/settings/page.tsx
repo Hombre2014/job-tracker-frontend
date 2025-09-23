@@ -3,8 +3,8 @@
 import Image from 'next/image';
 import { toast } from 'react-toastify';
 import { useEffect, useState } from 'react';
-import { IoMdContact } from 'react-icons/io';
 import { useRouter } from 'next/navigation';
+import { IoMdContact } from 'react-icons/io';
 
 import { cn } from '@/lib/utils';
 import Modal from '@/components/Misc/Modal';
@@ -17,6 +17,7 @@ import {
   getBothNotifications,
   createUpdateDeleteNotifications,
 } from '@/redux/notifications/notificationsThunk';
+import { createDeleteVerificationCode } from '@/redux/user/userThunk';
 import { createTimeString } from '@/utils/timeValidation';
 
 const Settings = () => {
@@ -73,8 +74,47 @@ const Settings = () => {
     // TODO: Implement data download functionality
   };
 
-  const handleDeleteAccount = () => {
-    // TODO: Implement account deletion with confirmation modal
+  const handleDeleteAccount = async () => {
+    if (!email) {
+      toast.error('Email not found. Please log in again.', {
+        autoClose: 3000,
+        position: 'top-right',
+      });
+      return;
+    }
+
+    try {
+      // Use Redux thunk to send verification code
+      await dispatch(createDeleteVerificationCode({ email })).unwrap();
+
+      // Store deletion context for verification page
+      try {
+        localStorage.setItem('userDeletionContext', JSON.stringify({ email }));
+      } catch {
+        // non-fatal; verification page will redirect if context is missing
+      }
+
+      toast.success(
+        'Verification code sent to your email. Please check your inbox.',
+        {
+          autoClose: 4000,
+          position: 'top-right',
+        }
+      );
+
+      // Redirect to verification page
+      router.push('/delete-account-verify');
+    } catch (error: any) {
+      console.error('Error requesting account deletion:', error);
+      const err =
+        typeof error === 'string'
+          ? error
+          : 'Failed to send verification code. Please try again.';
+      toast.error(err, {
+        autoClose: 4000,
+        position: 'top-right',
+      });
+    }
   };
 
   const handleSaveNotifications = async () => {
@@ -179,6 +219,9 @@ const Settings = () => {
     const files = e.target.files;
     if (files) {
       const selectedFile = files[0];
+      if (previewImageUrl) {
+        URL.revokeObjectURL(previewImageUrl);
+      }
       setPreviewImageUrl(URL.createObjectURL(selectedFile));
 
       if (!accessToken) {
@@ -192,8 +235,8 @@ const Settings = () => {
       try {
         await dispatch(
           updateUser({
-            email: newEmail,
             role: 'user',
+            email: newEmail,
             lastName: newLastName,
             firstName: newFirstName,
             profilePic: selectedFile,
@@ -347,8 +390,8 @@ const Settings = () => {
                         <label className="dark:text-white">Email Address</label>
                         <Input
                           type="email"
-                          placeholder="john.doe@example.com"
                           value={newEmail}
+                          placeholder="john.doe@example.com"
                           onChange={(e) => setNewEmail(e.target.value)}
                           className="border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 dark:text-white"
                         />
@@ -379,10 +422,10 @@ const Settings = () => {
                       Weekly Digest
                     </span>
                     <input
-                      checked={weeklyDigest}
                       type="checkbox"
-                      className="checkbox border-slate-300 dark:border-slate-600"
+                      checked={weeklyDigest}
                       onChange={handleWeeklyDigest}
+                      className="checkbox border-slate-300 dark:border-slate-600"
                     />
                   </label>
                 </div>
@@ -392,10 +435,10 @@ const Settings = () => {
                       Daily Digest
                     </span>
                     <input
-                      checked={dailyDigest}
                       type="checkbox"
-                      className="checkbox border-slate-300 dark:border-slate-600"
+                      checked={dailyDigest}
                       onChange={handleDailyDigest}
+                      className="checkbox border-slate-300 dark:border-slate-600"
                     />
                   </label>
                 </div>
@@ -418,8 +461,8 @@ const Settings = () => {
                 <div className="flex justify-end mt-4">
                   <Button
                     type="button"
-                    onClick={handleSaveNotifications}
                     disabled={loading}
+                    onClick={handleSaveNotifications}
                     className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md disabled:opacity-50"
                   >
                     {loading ? 'Saving...' : 'Save Changes'}
