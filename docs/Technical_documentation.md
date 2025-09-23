@@ -8,36 +8,54 @@
 
 Implemented comprehensive request cancellation support for all delete account operations to prevent memory leaks and improve performance during navigation changes.
 
-**Enhanced Thunk Implementation**:
+**Enhanced Thunk Implementation with TypeScript Generics**:
 
 ```typescript
 // redux/user/userThunk.ts
-export const createDeleteVerificationCode = createAsyncThunk(
-  'user/createDeleteVerificationCode',
-  async ({ email }: { email: string }, { rejectWithValue, signal }) => {
-    try {
-      const res = await client.post(
-        '/users/delete/create-verification-code',
-        { email },
-        { signal: thunkAPI.signal } // ✅ Cancellation support
-      );
+export const createDeleteVerificationCode = createAsyncThunk<
+  { message: string; email: string },  // Return type
+  { email: string },                   // Argument type
+  { rejectValue: string }              // Reject value type
+>('user/createDeleteVerificationCode', async (values, thunkAPI) => {
+  const { email } = values;
 
-      // ... success handling
-    } catch (err: unknown) {
-      // Enhanced error normalization
-      if (isAxiosError(err)) {
-        const raw = err.response?.data;
-        const message =
-          (typeof raw === 'string' && raw) ||
-          raw?.userFriendlyMessage ||
-          raw?.message ||
-          'Failed to send verification code';
-        return rejectWithValue(message); // ✅ Always returns string
-      }
-      return rejectWithValue('Failed to send verification code');
+  try {
+    const res = await client.post(
+      '/users/delete/create-verification-code',
+      { email },
+      { signal: thunkAPI.signal } // ✅ Cancellation support
+    );
+
+    if (res.status === 201 || res.status === 200) {
+      return {
+        message: 'Verification code sent successfully',
+        email,
+      };
+    } else {
+      return thunkAPI.rejectWithValue('Failed to send verification code');
     }
+  } catch (err: unknown) {
+    // Enhanced error normalization
+    if (isAxiosError(err)) {
+      const raw = err.response?.data;
+      const message =
+        (typeof raw === 'string' && raw) ||
+        raw?.userFriendlyMessage ||
+        raw?.message ||
+        'Failed to send verification code';
+      return thunkAPI.rejectWithValue(message); // ✅ Always returns string
+    }
+    return thunkAPI.rejectWithValue('Failed to send verification code');
   }
-);
+});
+
+export const deleteUserAccount = createAsyncThunk<
+  { message: string; deleted: true }, // Return type
+  { code: string },                   // Argument type
+  { rejectValue: string }             // Reject value type
+>('user/deleteUserAccount', async (values, thunkAPI) => {
+  // Implementation with same pattern...
+});
 ```
 
 #### Memory Management and Resource Cleanup
@@ -174,9 +192,7 @@ export const VerifyEmailSchema = z.object({
     (val) => (typeof val === 'string' ? val.trim() : val), // ✅ Schema-level trimming
     z
       .string()
-      .min(6, 'Verification code must be at least 6 characters')
-      .max(10, 'Verification code must be at most 10 characters')
-      .regex(/^\d+$/, 'Verification code must contain only numbers')
+      .regex(/^\d{6}$/, 'Verification code must be exactly 6 digits')
   ),
 });
 
@@ -230,6 +246,107 @@ const onSubmit = (values: z.infer<typeof VerifyEmailSchema>) => {
 - ✅ **Native Keyboards**: Proper input modes for verification codes
 - ✅ **SMS Integration**: Automatic OTP detection and filling
 - ✅ **Input Validation**: Schema-level preprocessing eliminates redundancy
+
+### Latest UX and TypeScript Enhancements (23/09/2025)
+
+#### TypeScript Generic Type Safety for Redux Thunks
+
+Enhanced async thunk definitions with comprehensive generics for better type safety across the entire Redux flow:
+
+```typescript
+// Before: Basic thunk with minimal typing
+export const createDeleteVerificationCode = createAsyncThunk(
+  'user/createDeleteVerificationCode',
+  async (values: { email: string }, thunkAPI) => { ... }
+);
+
+// After: Fully typed with generics
+export const createDeleteVerificationCode = createAsyncThunk<
+  { message: string; email: string },  // Return type - what success returns
+  { email: string },                   // Argument type - what we pass in
+  { rejectValue: string }              // Reject value type - guaranteed string errors
+>('user/createDeleteVerificationCode', async (values, thunkAPI) => { ... });
+```
+
+**Benefits**:
+
+- ✅ **Compile-time Safety**: IDE catches type mismatches before runtime
+- ✅ **Reducer Consistency**: All reducers receive properly typed payloads
+- ✅ **Error Guarantees**: All rejection values are guaranteed to be strings
+- ✅ **Better IntelliSense**: Accurate autocompletion and documentation
+
+#### Enhanced Navigation and User Flow
+
+Improved redirect logic for better authenticated user experience:
+
+```typescript
+// app/(auth)/delete-account-verify/page.tsx
+
+// Before: Jarring redirect to login for authenticated users
+if (!userData.email) {
+  router.push('/login'); // Bad UX - user is already authenticated
+}
+
+// After: Contextual redirect within authenticated flow
+if (!userData.email) {
+  router.push('/home/settings'); // Better UX - stay in authenticated space
+}
+```
+
+**Navigation Improvements**:
+
+- ✅ **Context-Aware Redirects**: Missing deletion context redirects to Settings, not Login
+- ✅ **Authenticated Flow Preservation**: Users stay within their authenticated session
+- ✅ **Logical User Journey**: Settings → Delete Request → Verification → Back to Settings if issues
+
+#### Simplified Component Logic
+
+Removed unnecessary React concurrent features where they don't provide value:
+
+```typescript
+// Before: Unnecessary startTransition wrapper
+startTransition(async () => {
+  await dispatch(deleteUserAccount({ code: pendingCode })).unwrap();
+  // ... rest of logic
+});
+
+// After: Clean async flow
+try {
+  await dispatch(deleteUserAccount({ code: pendingCode })).unwrap();
+  setSuccess('Account deleted successfully. Redirecting...');
+  localStorage.removeItem('userDeletionContext');
+  setTimeout(() => router.push('/'), 2000);
+} catch (error: any) {
+  // ... error handling
+}
+```
+
+**Code Quality Benefits**:
+
+- ✅ **Cleaner Code**: Removed unnecessary abstractions
+- ✅ **Direct Logic**: Straightforward async/await patterns
+- ✅ **Better Error Handling**: Simpler try/catch structure
+- ✅ **Performance**: No overhead from concurrent features where not needed
+
+#### Strict TypeScript Typing
+
+Replaced generic `any` types with specific interfaces for better type safety:
+
+```typescript
+// Before: Generic any type
+const [user, setUser] = useState<any>({});
+
+// After: Specific context type
+type DeletionContext = { email?: string };
+const [user, setUser] = useState<DeletionContext>({});
+```
+
+**Type Safety Benefits**:
+
+- ✅ **Intent Documentation**: Clear contracts for data structures
+- ✅ **Compile-time Checks**: Catch property access errors early
+- ✅ **Better Maintenance**: Changes to types propagate through codebase
+- ✅ **IDE Support**: Accurate autocompletion and refactoring
 
 ## User Account Deletion System Implementation (23/09/2025)
 
@@ -374,9 +491,7 @@ const formSchema = z.object({
     (val) => (typeof val === 'string' ? val.trim() : val),
     z
       .string()
-      .min(6, 'Verification code must be at least 6 characters')
-      .max(10, 'Verification code must be at most 10 characters')
-      .regex(/^\d+$/, 'Verification code must contain only numbers')
+      .regex(/^\d{6}$/, 'Verification code must be exactly 6 digits')
   ),
 });
 

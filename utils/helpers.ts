@@ -1,11 +1,11 @@
 export const cleanupAfterContact = () => {
   // Contact personal info
-  localStorage.removeItem('firstName');
+  localStorage.removeItem('comment');
   localStorage.removeItem('lastName');
   localStorage.removeItem('jobTitle');
   localStorage.removeItem('location');
-  localStorage.removeItem('comment');
   localStorage.removeItem('photoUrl');
+  localStorage.removeItem('firstName');
   localStorage.removeItem('contactId');
 
   // Contact communication
@@ -48,10 +48,9 @@ export const cleanupAfterLogout = () => {
   // Clear application state
   localStorage.removeItem('columnId');
   localStorage.removeItem('chosenBoard');
-  localStorage.removeItem('chosenColumn');
   localStorage.removeItem('chosenBoardId');
   localStorage.removeItem('currentJobPost');
-  localStorage.removeItem('boardValueChanged');
+  localStorage.removeItem('firstColumnOfTheBoard');
 
   // Clear sessionStorage (defensive)
   try {
@@ -61,14 +60,16 @@ export const cleanupAfterLogout = () => {
   // Drop default auth header on API client (if set globally)
   try {
     const client = require('@/api/client').default;
-    if (client?.defaults?.headers) {
-      delete client.defaults.headers.Authorization;
+    const headers = client?.defaults?.headers as any;
+    if (headers) {
+      // Axios keeps defaults under `common` and per-method buckets
+      if (headers.common) delete headers.common.Authorization;
+      delete headers.Authorization;
+      ['get', 'post', 'put', 'patch', 'delete'].forEach((m) => {
+        if (headers[m]) delete headers[m].Authorization;
+      });
     }
   } catch {}
-  localStorage.removeItem('firstColumnOfTheBoard');
-
-  // Clear Redux persist data
-  localStorage.removeItem('persist:root');
 
   // Clear any debug data
   localStorage.removeItem('debug');

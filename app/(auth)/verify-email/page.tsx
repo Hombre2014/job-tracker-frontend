@@ -112,7 +112,11 @@ const VerifyEmail = () => {
                       <Input
                         {...field}
                         type="text"
-                        placeholder="Enter 6 digits code"
+                        maxLength={6}
+                        pattern="[0-9]*"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        placeholder="Enter 6-digit code"
                       />
                     </FormControl>
                     <FormMessage />

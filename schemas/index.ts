@@ -46,9 +46,7 @@ export const VerifyEmailSchema = z.object({
     (val) => (typeof val === 'string' ? val.trim() : val),
     z
       .string()
-      .min(6, 'Verification code must be at least 6 characters')
-      .max(10, 'Verification code must be at most 10 characters')
-      .regex(/^\d+$/, 'Verification code must contain only numbers')
+      .regex(/^\d{6}$/, 'Verification code must be exactly 6 digits')
   ),
 });
 

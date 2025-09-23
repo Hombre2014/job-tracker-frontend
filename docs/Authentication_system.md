@@ -23,7 +23,8 @@ The Job Tracker Authentication System is an enterprise-grade, production-ready a
 
 - **🔒 Secure JWT Authentication** - Industry-standard token-based authentication
 - **🔄 Smart Token Refresh** - Automatic background token renewal
-- **📊 Performance Monitoring** - Real-time metrics and analytics
+- **�️ Secure Account Deletion** - Email-verified account deletion with comprehensive cleanup
+- **�📊 Performance Monitoring** - Real-time metrics and analytics
 - **🛡️ Advanced Security** - Rate limiting, brute force protection, and activity monitoring
 - **⚡ Request Optimization** - Deduplication and intelligent caching
 - **🎯 Seamless UX** - Persistent sessions and real-time updates
@@ -600,6 +601,55 @@ Redirect to Login Page
 4. Stop background refresh processes
 5. Clear any pending requests
 6. Log logout event for analytics
+
+### 3. Account Deletion Process (New in v0.194.0)
+
+```text
+User Navigates to Settings
+         ↓
+Clicks "Delete my account" button
+         ↓
+Redux Thunk: createDeleteVerificationCode
+         ↓
+API Request: POST /users/delete/create-verification-code
+         ↓
+Store deletion context in localStorage
+         ↓
+Redirect to /delete-account-verify
+         ↓
+User Enters Verification Code
+         ↓
+Confirmation Modal Display
+         ↓
+Redux Thunk: deleteUserAccount
+         ↓
+API Request: DELETE /users (with code)
+         ↓
+Complete Authentication Cleanup
+         ↓
+Remove all user data & tokens
+         ↓
+Redirect to Home Page (logged out)
+```
+
+**Security and UX Features**:
+
+1. **Email Verification Required**: Server sends verification code to user's email
+2. **Confirmation Modal**: Prevents accidental deletions with final confirmation step
+3. **Context Isolation**: Uses dedicated `userDeletionContext` storage to avoid conflicts
+4. **Complete Cleanup**: Comprehensive removal of all authentication state and user data
+5. **Safe Cancellation**: Users can abort the flow at any stage without affecting other components
+6. **TypeScript Safety**: Fully typed Redux thunks with generic type parameters
+7. **Request Cancellation**: AbortSignal support prevents memory leaks during navigation
+8. **Enhanced UX**: Context-aware redirects keep authenticated users in appropriate flows
+
+**Technical Implementation**:
+
+- **Redux Thunks**: `createDeleteVerificationCode` and `deleteUserAccount` with full TypeScript generics
+- **Form Validation**: Zod schema with 6-digit verification code validation
+- **Mobile Optimization**: Numeric keyboard hints and OTP autocomplete support
+- **Error Handling**: Comprehensive error normalization ensuring string error messages
+- **Rate Limiting**: 30-second cooldown on resend verification code functionality
 
 ---
 

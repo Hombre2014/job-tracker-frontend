@@ -4,8 +4,8 @@ import * as z from 'zod';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState, startTransition } from 'react';
 
 import { VerifyEmailSchema } from '@/schemas';
 import { Input } from '@/components/ui/input';
@@ -36,11 +36,13 @@ import {
   AlertDialogDescription,
 } from '@/components/ui/alert-dialog';
 
+type DeletionContext = { email?: string };
+
 const DeleteAccountVerify = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const [user, setUser] = useState<any>({});
   const [isDeleting, setIsDeleting] = useState(false);
+  const [user, setUser] = useState<DeletionContext>({});
   const [resendCooldown, setResendCooldown] = useState(0);
   const [error, setError] = useState<string | undefined>('');
   const [pendingCode, setPendingCode] = useState<string>('');
@@ -61,13 +63,13 @@ const DeleteAccountVerify = () => {
       );
       setUser(userData);
 
-      // If no user data, redirect to login
+      // If no user data, redirect to settings
       if (!userData.email) {
-        router.push('/login');
+        router.push('/home/settings');
       }
     } catch (error) {
       console.error('Failed to parse user data:', error);
-      router.push('/login');
+      router.push('/home/settings');
     }
   }, [router]);
 
@@ -100,32 +102,24 @@ const DeleteAccountVerify = () => {
     setIsDeleting(true);
     setShowConfirmDialog(false);
 
-    startTransition(async () => {
-      try {
-        // Use Redux thunk to delete account
-        await dispatch(deleteUserAccount({ code: pendingCode })).unwrap();
-
-        setSuccess('Account deleted successfully. Redirecting...');
-
-        // Clean up deletion context
-        localStorage.removeItem('userDeletionContext');
-
-        // Redirect to home page after short delay
-        setTimeout(() => {
-          router.push('/');
-        }, 2000);
-      } catch (error: any) {
-        setIsDeleting(false);
-        const err =
-          typeof error === 'string'
-            ? error
-            : 'Failed to delete account. Please try again.';
-        setError(err);
-        form.reset();
-        setPendingCode('');
-        setTimeout(() => setError(''), 5000);
-      }
-    });
+    try {
+      await dispatch(deleteUserAccount({ code: pendingCode })).unwrap();
+      setSuccess('Account deleted successfully. Redirecting...');
+      localStorage.removeItem('userDeletionContext');
+      setTimeout(() => {
+        router.push('/');
+      }, 2000);
+    } catch (error: any) {
+      setIsDeleting(false);
+      const err =
+        typeof error === 'string'
+          ? error
+          : 'Failed to delete account. Please try again.';
+      setError(err);
+      form.reset();
+      setPendingCode('');
+      setTimeout(() => setError(''), 5000);
+    }
   };
 
   const handleCancelDeletion = () => {
