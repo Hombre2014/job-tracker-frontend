@@ -2776,6 +2776,14 @@ _All changes maintain backward compatibility and enhance user experience with im
 
 <!-- Version comparison links -->
 
+[0.194.2]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.194.1...v0.194.2
+[0.194.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.194.0...v0.194.1
+[0.194.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.193.4...v0.194.0
+[0.193.4]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.193.3...v0.193.4
+[0.193.3]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.193.2...v0.193.3
+[0.193.2]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.193.1...v0.193.2
+[0.193.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.193.0...v0.193.1
+[0.193.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.192.0...v0.193.0
 [0.192.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.191.0...v0.192.0
 [0.191.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.190.0...v0.191.0
 [0.190.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.189.0...v0.190.0

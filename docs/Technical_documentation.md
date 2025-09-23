@@ -111,11 +111,16 @@ export const cleanupAfterLogout = () => {
     sessionStorage.clear();
   } catch {}
 
-  // ✅ Remove auth headers from API client
+  // ✅ Remove auth headers from API client (defaults.common + per-method)
   try {
     const client = require('@/api/client').default;
-    if (client?.defaults?.headers) {
-      delete client.defaults.headers.Authorization;
+    const headers = client?.defaults?.headers as any;
+    if (headers) {
+      if (headers.common) delete headers.common.Authorization;
+      delete headers.Authorization;
+      ['get', 'post', 'put', 'patch', 'delete'].forEach((m) => {
+        if (headers[m]) delete headers[m].Authorization;
+      });
     }
   } catch {}
 
@@ -420,7 +425,7 @@ export const deleteUserAccount = createAsyncThunk(
       });
 
       // Perform complete cleanup after successful deletion
-      await cleanupAfterLogout();
+      cleanupAfterLogout();
 
       return response.data;
     } catch (error) {

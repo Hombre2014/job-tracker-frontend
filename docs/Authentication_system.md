@@ -23,8 +23,8 @@ The Job Tracker Authentication System is an enterprise-grade, production-ready a
 
 - **🔒 Secure JWT Authentication** - Industry-standard token-based authentication
 - **🔄 Smart Token Refresh** - Automatic background token renewal
-- **�️ Secure Account Deletion** - Email-verified account deletion with comprehensive cleanup
-- **�📊 Performance Monitoring** - Real-time metrics and analytics
+- **🗑️ Secure Account Deletion** - Email-verified account deletion with comprehensive cleanup
+- **📊 Performance Monitoring** - Real-time metrics and analytics
 - **🛡️ Advanced Security** - Rate limiting, brute force protection, and activity monitoring
 - **⚡ Request Optimization** - Deduplication and intelligent caching
 - **🎯 Seamless UX** - Persistent sessions and real-time updates

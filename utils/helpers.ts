@@ -33,6 +33,7 @@ export const cleanupAfterJobPost = () => {
 };
 
 export const cleanupAfterLogout = () => {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') return;
   cleanupAfterContact();
   cleanupAfterJobPost();
 
