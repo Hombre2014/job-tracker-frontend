@@ -3,6 +3,46 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.194.0] - 2025-09-23
+
+### Added - Account Deletion Feature
+
+- **Complete User Account Deletion Flow**: Implemented secure account deletion with email verification
+
+  - **Settings Integration**: Added "Delete my account" button in user settings page with Redux thunk integration
+  - **Verification Page**: Created dedicated delete account verification page at `/delete-account-verify` following existing UI patterns
+  - **Email Verification**: POST request to `/users/delete/create-verification-code` endpoint triggers verification email
+  - **Confirmation Modal**: AlertDialog component prevents accidental deletions with final confirmation step
+  - **Secure Deletion**: DELETE request to `/users` endpoint with verification code for account removal
+  - **Complete Cleanup**: Automatic logout, Redux state cleanup, localStorage clearing, and redirect to home page
+  - **Files**: `app/(loggedin)/home/settings/page.tsx`, `app/(auth)/delete-account-verify/page.tsx`, `redux/user/userThunk.ts`, `redux/user/userSlice.ts`
+
+- **Redux State Management**: Enhanced user management with comprehensive deletion workflow
+
+  - **New Thunk Actions**: Added `createDeleteVerificationCode` and `deleteUserAccount` thunks with proper error handling
+  - **Loading States**: Implemented proper loading states for all deletion steps
+  - **Error Handling**: Uses `isAxiosError` pattern consistent with existing codebase
+  - **State Cleanup**: Complete Redux store reset and session cleanup after successful deletion
+  - **Files**: `redux/user/userThunk.ts`, `redux/user/userSlice.ts`
+
+- **Security and UX Features**: Implemented comprehensive safety measures and user experience enhancements
+
+  - **Form Validation**: Zod schema validation for verification code input
+  - **Input Sanitization**: Proper validation and security measures
+  - **Visual Feedback**: Loading states, toast notifications, and error handling
+  - **Accessibility**: Proper ARIA labels and keyboard navigation support
+  - **Responsive Design**: Consistent styling with existing auth components
+  - **Rate Limiting**: Resend code functionality with proper debouncing
+  - **Files**: `app/(auth)/delete-account-verify/page.tsx`
+
+### Technical Details - 2025-09-23
+
+- **Route Configuration**: Proper Next.js App Router integration in auth layout
+- **TypeScript Safety**: Full type safety with zero compilation errors
+- **API Integration**: Ready for backend endpoints with proper request/response handling
+- **Component Consistency**: Follows existing patterns for auth components and forms
+- **Performance**: Optimized loading states and efficient state management
+
 ## [0.193.4] - 2025-09-22
 
 ### Fixed - CodeRabbit Critical and High-Value Enhancements
