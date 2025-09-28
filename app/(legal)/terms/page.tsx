@@ -12,12 +12,12 @@ const Terms = () => {
         of JobsTracker&#39;s Website, located at{' '}
         <Link
           target="_blank"
-          rel="external nofollow noopener"
+          rel="external nofollow noopener noreferrer"
           href="https://online-job-trackr.vercel.app"
         >
           <span className="text-blue-500">
             https://online-job-trackr.vercel.app
-          </span>
+          </span>{' '}
         </Link>
       </p>
       <p className="mb-8 mt-2">

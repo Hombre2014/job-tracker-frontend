@@ -3,6 +3,35 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.194.3] - 2025-09-28
+
+### Fixed - Footer Component Layout and Visibility Issues
+
+- **Enhanced Footer Navigation Structure**: Fixed layout and visibility issues for better user interaction
+
+  - **Improved GitHub Link**: Replaced custom SVG with `FaGithub` icon for consistency and better visual alignment
+  - **Fixed Icon Visibility**: Removed problematic `<p>` tag wrappers around icons that were preventing proper rendering
+  - **Simplified Layout Structure**: Eliminated unnecessary nested divs that were causing layout conflicts and alignment issues
+  - **Enhanced "Give us a star" Display**: Fixed text visibility by changing from `<p className="">` to proper `<span>` element
+  - **Consistent Link Styling**: Unified all footer links with proper `flex gap-2 items-center` layout for visual consistency
+  - **Better Accessibility**: Improved semantic HTML structure with proper link grouping and icon associations
+  - **Files**: `components/LandingPage/Footer.tsx`
+
+- **Visual Improvements**: Enhanced footer appearance and user experience
+
+  - **Icon Alignment**: All icons now properly align with their corresponding text labels
+  - **Hover Effects**: Consistent hover transitions across all footer links and elements
+  - **Typography**: Improved text rendering by removing empty className attributes that were interfering with styling
+  - **Responsive Design**: Maintained responsive layout while fixing visibility issues
+  - **Files**: `components/LandingPage/Footer.tsx`
+
+### Footer Enhancement Summary
+
+- **Zero Breaking Changes**: All improvements maintain existing functionality while fixing display issues
+- **Semantic HTML**: Better use of appropriate HTML elements for content structure
+- **Icon Consistency**: Unified approach to React Icons usage throughout the component
+- **Layout Optimization**: Streamlined component structure for better performance and maintainability
+
 ## [0.194.2] - 2025-09-23
 
 ### Enhanced - Final CodeRabbit UX and TypeScript Improvements
