@@ -11,11 +11,13 @@ const Terms = () => {
         These terms and conditions outline the rules and regulations for the use
         of JobsTracker&#39;s Website, located at{' '}
         <Link
-          href="https://jobstracker.pro"
-          rel="external nofollow noopener"
           target="_blank"
+          rel="external nofollow noopener"
+          href="https://online-job-trackr.vercel.app"
         >
-          <span className="text-blue-500">https://jobstracker.pro</span>
+          <span className="text-blue-500">
+            https://online-job-trackr.vercel.app
+          </span>
         </Link>
       </p>
       <p className="mb-8 mt-2">
