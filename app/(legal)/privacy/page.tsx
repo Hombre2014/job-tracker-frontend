@@ -89,11 +89,13 @@ const Privacy = () => {
         <li className="mb-2">
           <strong>Website</strong> refers to JobsTracker, accessible from{' '}
           <Link
-            href="https://jobstracker.pro"
-            rel="external nofollow noopener"
             target="_blank"
+            rel="external nofollow noopener"
+            href="https://online-job-trackr.vercel.app"
           >
-            <span className="text-blue-500">https://jobstracker.pro</span>
+            <span className="text-blue-500">
+              https://online-job-trackr.vercel.app
+            </span>
           </Link>
         </li>
         <li className="mb-2">
@@ -176,9 +178,9 @@ const Privacy = () => {
         when You go offline, while Session Cookies are deleted as soon as You
         close Your web browser. You can learn more about cookies on{' '}
         <Link
-          href="https://www.termsfeed.com/blog/cookies/#What_Are_Cookies"
           target="_blank"
           rel="external nofollow noopener"
+          href="https://www.termsfeed.com/blog/cookies/#What_Are_Cookies"
         >
           <span className="text-blue-500">TermsFeed website</span>
         </Link>{' '}
@@ -484,12 +486,12 @@ const Privacy = () => {
         If you have any questions about this Privacy Policy, You can contact us
         by visiting this page on our website:{' '}
         <Link
-          href="https://jobstracker.pro/contact-us"
-          rel="external nofollow noopener"
           target="_blank"
+          rel="external nofollow noopener"
+          href="https://online-job-trackr.vercel.app/contact-us"
         >
           <span className="text-blue-500">
-            https://jobstracker.pro/contact-us
+            https://online-job-trackr.vercel.app/contact-us
           </span>
         </Link>
       </p>
