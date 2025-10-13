@@ -443,13 +443,13 @@ const Settings = () => {
                   </label>
                 </div>
                 <div className="flex flex-col w-fit mt-6">
-                  <Button
+                  {/* <Button
                     variant="ghost"
                     onClick={handleDownloadData}
                     className="justify-start text-gray-600 dark:text-slate-400"
                   >
                     Download my data
-                  </Button>
+                  </Button> */}
                   <Button
                     variant="ghost"
                     onClick={handleDeleteAccount}
