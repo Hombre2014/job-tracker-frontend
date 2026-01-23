@@ -197,9 +197,12 @@ const Terms = () => {
       </h2>
       <p className="mb-8 mt-2">
         If you find any link on our Website that is offensive for any reason,
-        you are free to contact and inform us any moment. We will consider
-        requests to remove links but we are not obligated to or so or to respond
-        to you directly.
+        you are free to{' '}
+        <Link href="/contact-us" className="text-blue-500 hover:underline">
+          contact and inform us
+        </Link>{' '}
+        any moment. We will consider requests to remove links but we are not
+        obligated to or so or to respond to you directly.
       </p>
       <p className="mb-8 mt-2">
         We do not ensure that the information on this website is correct, we do
