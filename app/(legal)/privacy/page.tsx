@@ -484,16 +484,11 @@ const Privacy = () => {
       <h2 className="text-2xl font-bold mt-8">Contact Us</h2>
       <p className="mb-8 mt-2">
         If you have any questions about this Privacy Policy, You can contact us
-        by visiting this page on our website:{' '}
-        <Link
-          target="_blank"
-          rel="external nofollow noopener"
-          href="https://online-job-trackr.vercel.app/contact-us"
-        >
-          <span className="text-blue-500">
-            https://online-job-trackr.vercel.app/contact-us
-          </span>
-        </Link>
+        by visiting our{' '}
+        <Link href="/contact-us" className="text-blue-500 hover:underline">
+          Contact Us
+        </Link>{' '}
+        page.
       </p>
     </div>
   );

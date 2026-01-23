@@ -3,12 +3,49 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.195.0] - 2026-01-23
+
+### Added - Contact Us Page with Formspree Integration
+
+- **Functional Contact Form**: Implemented fully functional contact page with email submission capability
+  - **Formspree Integration**: Added `@formspree/react` package for reliable form handling and email delivery
+  - **Three-Field Form**: Name, Email, and Message fields with proper validation and required field indicators
+  - **Success State Handling**: User-friendly success message with checkmark icon after successful submission
+  - **Navigation Button**: Added "Back to Home" button in success state for improved user flow
+  - **Required Field Indicators**: Red asterisks (\*) on all required fields for clear visual communication
+  - **Files**: `app/(landing)/contact-us/page.tsx`
+
+- **Responsive Design and Dark Mode Support**: Contact form styled consistently with application theme
+  - **Tailwind CSS Styling**: Form inputs and buttons styled to match existing design system
+  - **Dark Mode Compatibility**: Full dark mode support for all form elements and states
+  - **Mobile Responsive**: Optimized layout for all screen sizes (mobile, tablet, desktop)
+  - **Hover Effects**: Interactive button states with scale transforms and color transitions
+  - **Focus States**: Proper focus ring styling for accessibility and keyboard navigation
+  - **Files**: `app/(landing)/contact-us/page.tsx`
+
+### Changed - Privacy Policy and Terms of Service Updates
+
+- **Improved Contact Links**: Updated legal pages with relative links to Contact Us page
+  - **Privacy Policy Contact Section**: Changed from absolute URL to relative `/contact-us` link for better maintainability
+  - **Terms of Service Contact Link**: Added inline link to Contact Us page in "Removal of links" section
+  - **Environment Agnostic**: Relative links work seamlessly in both development and production environments
+  - **Cleaner Presentation**: Simplified link text from full URL to user-friendly "Contact Us" and "contact" links
+  - **Consistent Styling**: Blue hover underline styling consistent across all legal page links
+  - **Files**: `app/(legal)/privacy/page.tsx`, `app/(legal)/terms/page.tsx`
+
+### Technical Implementation Summary
+
+- **Zero Breaking Changes**: All additions enhance existing functionality without disrupting current features
+- **Form Validation**: Client-side HTML5 validation with server-side Formspree processing
+- **Accessibility Compliance**: Proper labels, focus management, and semantic HTML structure
+- **Package Dependencies**: Added `@formspree/react` (4 additional packages in dependency tree)
+- **Performance**: Optimized form submission with loading states and proper error handling
+
 ## [0.194.3] - 2025-09-28
 
 ### Fixed - Footer Component Layout and Visibility Issues
 
 - **Enhanced Footer Navigation Structure**: Fixed layout and visibility issues for better user interaction
-
   - **Improved GitHub Link**: Replaced custom SVG with `FaGithub` icon for consistency and better visual alignment
   - **Fixed Icon Visibility**: Removed problematic `<p>` tag wrappers around icons that were preventing proper rendering
   - **Simplified Layout Structure**: Eliminated unnecessary nested divs that were causing layout conflicts and alignment issues
@@ -18,7 +55,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Files**: `components/LandingPage/Footer.tsx`
 
 - **Visual Improvements**: Enhanced footer appearance and user experience
-
   - **Icon Alignment**: All icons now properly align with their corresponding text labels
   - **Hover Effects**: Consistent hover transitions across all footer links and elements
   - **Typography**: Improved text rendering by removing empty className attributes that were interfering with styling
@@ -37,7 +73,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Enhanced - Final CodeRabbit UX and TypeScript Improvements
 
 - **Advanced TypeScript Generics for Redux Thunks**: Enhanced async thunk definitions with comprehensive type safety
-
   - **Fully Typed Thunks**: Added generics for return types, argument types, and reject value types to `createDeleteVerificationCode` and `deleteUserAccount`
   - **Compile-time Safety**: IDE now catches type mismatches before runtime with accurate IntelliSense and autocompletion
   - **Reducer Consistency**: All reducers handling these thunks now receive properly typed payloads with guaranteed string error types
@@ -45,7 +80,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Files**: `redux/user/userThunk.ts`
 
 - **Enhanced User Navigation and Flow**: Improved redirect logic for better authenticated user experience
-
   - **Context-Aware Redirects**: Missing deletion context now redirects to `/home/settings` instead of `/login` for better UX
   - **Authenticated Flow Preservation**: Users stay within their authenticated session rather than being kicked to login
   - **Logical User Journey**: Settings → Delete Request → Verification → Back to Settings if issues arise
@@ -53,7 +87,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Files**: `app/(auth)/delete-account-verify/page.tsx`
 
 - **Simplified Component Logic and Performance**: Removed unnecessary React concurrent features where they don't provide value
-
   - **Removed startTransition Wrapper**: Eliminated unnecessary `startTransition` around account deletion logic for cleaner code
   - **Direct Async Flow**: Simplified to straightforward async/await patterns with better error handling structure
   - **Performance Optimization**: Removed overhead from concurrent features where not needed for this use case
@@ -61,14 +94,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Files**: `app/(auth)/delete-account-verify/page.tsx`
 
 - **Strict TypeScript Typing**: Replaced generic `any` types with specific interfaces for better type safety
-
   - **Deletion Context Type**: Added `type DeletionContext = { email?: string }` to replace generic `any` typing
   - **Intent Documentation**: Clear contracts for data structures with compile-time validation
   - **IDE Support Improvements**: Accurate autocompletion, refactoring, and property access validation
   - **Better Maintenance**: Type changes now propagate through codebase with compile-time checks
   - **Files**: `app/(auth)/delete-account-verify/page.tsx`
 
-### Technical Implementation Summary
+### Technical Implementation Summary - 2025-09-23
 
 - **Zero Breaking Changes**: All improvements maintain full backward compatibility
 - **TypeScript Compliance**: 100% type safety maintained throughout all enhancements
@@ -81,28 +113,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed - CodeRabbit Security and Performance Enhancements
 
 - **Critical Request Cancellation Support**: Added AbortSignal support to all delete account thunks for better resilience during navigation
-
   - **Axios Signal Integration**: All delete account API calls now support request cancellation via `thunkAPI.signal`
   - **Memory Leak Prevention**: Prevents stale requests when users navigate away during account deletion process
   - **Improved Performance**: Reduces server load and network congestion from cancelled operations
   - **Files**: `redux/user/userThunk.ts`
 
 - **Enhanced Error Message Handling**: Normalized error payloads to prevent `[object Object]` display in UI
-
   - **String Normalization**: All error responses properly converted to user-friendly strings
   - **Priority Handling**: Structured error message extraction (userFriendlyMessage → message → fallback)
   - **Type Safety**: Prevents object serialization issues in toast notifications and error displays
   - **Files**: `redux/user/userThunk.ts`
 
 - **Memory Management Improvements**: Enhanced cleanup and resource management throughout deletion flow
-
   - **Object URL Cleanup**: Added automatic revocation of previous blob URLs when selecting new profile photos
   - **Comprehensive State Cleanup**: Enhanced `cleanupAfterLogout` to clear Redux Persist, sessionStorage, and auth headers
   - **Rate Limiting Protection**: Implemented 30-second resend cooldown with visual countdown feedback
   - **Files**: `app/(loggedin)/home/settings/page.tsx`, `app/(auth)/delete-account-verify/page.tsx`, `utils/helpers.ts`
 
 - **Data Isolation and Security**: Improved user data management and context separation
-
   - **Dedicated Deletion Context**: Implemented `userDeletionContext` localStorage key to prevent global user object pollution
   - **Safe Cancellation**: Users can safely cancel deletion flow without affecting other app components
   - **Mobile UX Enhancement**: Added numeric keyboard hints and OTP autocomplete for verification codes
@@ -122,7 +150,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added - Account Deletion Feature
 
 - **Complete User Account Deletion Flow**: Implemented secure account deletion with email verification
-
   - **Settings Integration**: Added "Delete my account" button in user settings page with Redux thunk integration
   - **Verification Page**: Created dedicated delete account verification page at `/delete-account-verify` following existing UI patterns
   - **Email Verification**: POST request to `/users/delete/create-verification-code` endpoint triggers verification email
@@ -132,7 +159,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Files**: `app/(loggedin)/home/settings/page.tsx`, `app/(auth)/delete-account-verify/page.tsx`, `redux/user/userThunk.ts`, `redux/user/userSlice.ts`
 
 - **Redux State Management**: Enhanced user management with comprehensive deletion workflow
-
   - **New Thunk Actions**: Added `createDeleteVerificationCode` and `deleteUserAccount` thunks with proper error handling
   - **Loading States**: Implemented proper loading states for all deletion steps
   - **Error Handling**: Uses `isAxiosError` pattern consistent with existing codebase
@@ -140,7 +166,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Files**: `redux/user/userThunk.ts`, `redux/user/userSlice.ts`
 
 - **Security and UX Features**: Implemented comprehensive safety measures and user experience enhancements
-
   - **Form Validation**: Zod schema validation for verification code input
   - **Input Sanitization**: Proper validation and security measures
   - **Visual Feedback**: Loading states, toast notifications, and error handling
@@ -162,7 +187,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed - CodeRabbit Critical and High-Value Enhancements
 
 - **Critical Type Safety Improvements**: Implemented comprehensive type safety fixes across multiple files
-
   - **DocumentService Type Safety**: Replaced `(jobApp: any)` with `(jobApp: DocumentJobApplication)` in filtering and polling functions
   - **localStorage JSON.parse Safety**: Added try-catch to prevent crashes from malformed JSON in user data parsing
   - **Access Token Validation**: Added null check before dispatching API calls to prevent "Bearer null" requests
@@ -170,7 +194,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Files**: `services/documentService.ts`, `app/(loggedin)/home/boards/page.tsx`
 
 - **User Experience and Accessibility Enhancements**: Improved application usability and WCAG compliance
-
   - **Empty Boards as Success State**: Changed empty board arrays to return `[]` instead of error state for better UX
   - **Search Dispatch Loop Prevention**: Added `localQuery === query` check to prevent redundant dispatches
   - **Global Ctrl+K Scoping**: Added logic to prevent hijacking when user is typing in inputs/textareas
@@ -179,7 +202,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Files**: `redux/boards/boardsThunk.ts`, `components/HomePage/HomeNavbar/SearchBox.tsx`, `components/HomePage/Kanban/Column/BoardColumns.tsx`
 
 - **Technical Quality and Performance**: Enhanced cross-platform compatibility and performance monitoring
-
   - **Performance Timer Safety**: Added SSR-safe performance timing for Node.js environments
   - **Timeout Type Fix**: Used `ReturnType<typeof setTimeout>` instead of `NodeJS.Timeout` for browser compatibility
   - **Files**: `utils/searchUtils.ts`, `components/HomePage/Kanban/Column/BoardColumns.tsx`
@@ -196,28 +218,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed - CodeRabbit Security and Type Safety Enhancements
 
 - **Critical Nested Destructuring Safety**: Fixed unsafe nested destructuring in `updateJobPost` thunk that could cause runtime crashes
-
   - **Issue**: `company: { name: companyName }` destructuring would throw `TypeError` if company was undefined
   - **Solution**: Safe destructuring with optional chaining and conditional inclusion: `const companyName = company?.name; if (companyName) body.company = { name: companyName };`
   - **Impact**: Prevents runtime crashes during job post updates when company data is missing
   - **Files**: `redux/jobs/jobsThunk.ts`
 
 - **Document Service AxiosError Preservation**: Fixed critical business logic issue where 404 detection was broken
-
   - **Issue**: `getDocumentJobApplications` wrapped AxiosErrors in generic Error objects, breaking `isAxiosError` checks in `waitForDetachmentComplete`
   - **Solution**: Preserve AxiosErrors for status code inspection while safely handling other error types
   - **Impact**: Document deletion workflows now complete gracefully instead of timing out
   - **Files**: `services/documentService.ts`
 
 - **Production Security Enhancement**: Removed potentially sensitive logging from production builds
-
   - **Issue**: Document processing results logged in production, potentially exposing PII (filenames, document IDs)
   - **Solution**: Wrapped console.log in `process.env.NODE_ENV === 'development'` check
   - **Impact**: No sensitive data logged in production, following established security patterns
   - **Files**: `redux/jobs/jobsThunk.ts`
 
 - **File Extension Consistency**: Corrected file extension for pure TypeScript utility
-
   - **Issue**: `moveColumn.tsx` contained no JSX but used .tsx extension
   - **Solution**: Renamed to `moveColumn.ts` for accurate content representation
   - **Impact**: Better developer experience and proper tooling support
@@ -226,7 +244,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Enhanced - CodeRabbit Integration - 2025-09-22
 
 - **CodeRabbit Integration Workflow**: Established systematic approach to static analysis integration
-
   - **Process**: CodeRabbit analysis → Impact assessment → Pattern-consistent implementation → TypeScript verification → Documentation
   - **Benefits**: Proactive security issue identification, type safety enforcement, consistent code quality
   - **Result**: Zero TypeScript compilation errors across entire codebase after all fixes
@@ -236,7 +253,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added - Comprehensive Type-Safe Error Handling
 
 - **Complete Codebase Error Handling Modernization**: Applied uniform `isAxiosError` type guards to 50+ async functions
-
   - **Complete Coverage**: Updated ALL Redux thunks and service functions across entire codebase
   - **Type Safety**: Eliminated ALL `any` types from error handling, replaced with `catch (err: unknown)`
   - **Runtime Safety**: Added `isAxiosError` guards to prevent accessing properties on unknown error types
@@ -282,7 +298,6 @@ catch (err: unknown) {
 ### Enhanced - Advanced Search and Filter System
 
 - **Smart Keyword Prioritization**: Enhanced search relevance with intelligent keyword sorting
-
   - **Length-Based Priority**: Longer keywords prioritized for better specificity (e.g., "typescript" over "js")
   - **User Intent Preservation**: Original keyword order maintained as tiebreaker for same-length terms
   - **Performance Optimization**: Sorting only activates when >10 keywords present
@@ -291,14 +306,12 @@ catch (err: unknown) {
   - **Files**: `utils/searchUtils.ts`
 
 - **Drag-and-Drop Consistency**: Fixed column lookup logic for reliable drag operations during filtering
-
   - **Issue**: Drag-and-drop used filtered columns for target/source lookup, causing failures during search
   - **Solution**: Use `boardColumns` for target/source column lookup while maintaining filtered display
   - **Impact**: Seamless drag-and-drop functionality regardless of search/filter state
   - **Files**: `components/HomePage/Kanban/Column/BoardColumns.tsx`
 
 - **Enhanced Time Type Safety**: Implemented branded types for robust time validation
-
   - **Issue**: Template literal `\`${number}:${number}\`` accepted invalid times like "99:99"
   - **Solution**: Branded `TimeString` type with runtime validation using regex pattern
   - **Validation**: Accepts only valid HH:MM format (00:00-23:59) with proper error messages
@@ -308,14 +321,12 @@ catch (err: unknown) {
 ### Fixed - Search Logic Edge Cases - 2025-09-22
 
 - **Search Result Display**: Resolved misleading search result display for single character inputs
-
   - **Issue**: Single character queries (e.g., "Z") showed "14 of 14 jobs found" despite no actual filtering
   - **Solution**: Implemented proper state management with `isActive` flag and conditional search summary
   - **Impact**: Users no longer see false positive search results for incomplete queries
   - **Files**: `components/HomePage/Kanban/Column/BoardColumns.tsx`, `utils/searchUtils.ts`
 
 - **Build Cache Issues**: Resolved Radix UI vendor chunk errors and missing build manifest issues
-
   - **Issue**: "Cannot find module './vendor-chunks/@radix-ui.js'" and missing build-manifest.json errors
   - **Solution**: Cleared Next.js build cache, reinstalled dependencies, proper development server restart
   - **Impact**: Stable development environment with consistent build process
@@ -326,7 +337,6 @@ catch (err: unknown) {
 ### Added - Search System Implementation
 
 - **Comprehensive Search and Filter System**: Implemented real-time job application filtering with advanced UX features
-
   - **Search Functionality**: Case-insensitive OR-logic search across job titles and company names
   - **Smart Activation**: 2+ character minimum with visual feedback states (amber for single char, blue for active search)
   - **Keyboard Shortcuts**: Global Ctrl+K to focus search input, Esc to clear search
@@ -343,7 +353,6 @@ catch (err: unknown) {
 ### Enhanced - Search System and Type Safety - 2025-09-22
 
 - **Smart Keyword Prioritization**: Enhanced search relevance with intelligent keyword sorting
-
   - **Length-Based Priority**: Longer keywords prioritized for better specificity (e.g., "typescript" over "js")
   - **User Intent Preservation**: Original keyword order maintained as tiebreaker for same-length terms
   - **Performance Optimization**: Sorting only activates when >10 keywords present
@@ -352,14 +361,12 @@ catch (err: unknown) {
   - **Files**: `utils/searchUtils.ts`
 
 - **Drag-and-Drop Consistency**: Fixed column lookup logic for reliable drag operations during filtering
-
   - **Issue**: Drag-and-drop used filtered columns for target/source lookup, causing failures during search
   - **Solution**: Use `boardColumns` for target/source column lookup while maintaining filtered display
   - **Impact**: Seamless drag-and-drop functionality regardless of search/filter state
   - **Files**: `components/HomePage/Kanban/Column/BoardColumns.tsx`
 
 - **Enhanced Time Type Safety**: Implemented branded types for robust time validation
-
   - **Issue**: Template literal `\`${number}:${number}\`` accepted invalid times like "99:99"
   - **Solution**: Branded `TimeString` type with runtime validation using regex pattern
   - **Validation**: Accepts only valid HH:MM format (00:00-23:59) with proper error messages
@@ -369,14 +376,12 @@ catch (err: unknown) {
 ### Fixed - Search and Build Issues - 2025-09-22
 
 - **Search Logic Edge Cases**: Resolved misleading search result display for single character inputs
-
   - **Issue**: Single character queries (e.g., "Z") showed "14 of 14 jobs found" despite no actual filtering
   - **Solution**: Implemented proper state management with `isActive` flag and conditional search summary
   - **Impact**: Users no longer see false positive search results for incomplete queries
   - **Files**: `components/HomePage/Kanban/Column/BoardColumns.tsx`, `utils/searchUtils.ts`
 
 - **Build Cache Issues**: Resolved Radix UI vendor chunk errors and missing build manifest issues
-
   - **Issue**: "Cannot find module './vendor-chunks/@radix-ui.js'" and missing build-manifest.json errors
   - **Solution**: Cleared Next.js build cache, reinstalled dependencies, proper development server restart
   - **Impact**: Stable development environment with consistent build process
@@ -387,21 +392,18 @@ catch (err: unknown) {
 ### Fixed - 2025-08-24
 
 - **Fixed critical error message display bug**: Resolved issue where ApiError objects were being cast to string, causing "[object Object]" error messages
-
   - **Issue**: Redux rejected actions with `rejectWithValue(ApiError)` were being cast to string, resulting in unhelpful "[object Object]" error messages
   - **Solution**: Properly extract `message` property from ApiError object using type-safe property access
   - **Impact**: Users now see actual error messages like "Network error" instead of "[object Object]"
   - **Files**: `redux/notifications/notificationsSlice.ts`
 
 - **Fixed timezone offset calculation**: Corrected timezone offset sign for proper notification scheduling
-
   - **Issue**: `getTimezoneOffset()` was negated before sending, flipping the sign relative to backend expectations
   - **Solution**: Send the raw `getTimezoneOffset()` value (no negation)
   - **Impact**: Notifications are scheduled at the correct local time across all timezones
   - **Files**: `app/(loggedin)/home/settings/page.tsx`
 
 - **Implemented dirty flag pattern for notification toggles**: Prevented initial API fetch from overwriting user changes
-
   - **Issue**: Users could lose toggle changes if they interacted with UI before initial API call completed
   - **Solution**: Added `notificationsDirty` flag to gate state synchronization and preserve user input
   - **Impact**: User toggle changes are now preserved during API loading states
@@ -447,7 +449,6 @@ catch (err: unknown) {
 #### Advanced TypeScript Type Definitions
 
 - **Template literal types for time validation**: Enhanced compile-time validation for time format
-
   - **Implemented `DayOfWeek` union type**: Reusable type definition for better maintainability
   - **Template literal for time**: `${number}:${number}` provides compile-time HH:MM format validation
   - **Benefits**: Stronger type safety, better IDE support, compile-time error detection
@@ -462,7 +463,6 @@ catch (err: unknown) {
 #### Advanced Redux Toolkit Patterns
 
 - **Proper thunk typing with generics**: Enhanced type safety and eliminated type assertions
-
   - **Added comprehensive generics**: `createAsyncThunk<ReturnType, ArgType, { rejectValue: ApiError }>`
   - **Request cancellation support**: Added `signal` parameter for proper request cancellation
   - **Input validation**: Added early validation for missing access tokens
@@ -472,7 +472,6 @@ catch (err: unknown) {
   - **Files**: `redux/notifications/notificationsThunk.ts`
 
 - **Explicit PayloadAction typing**: Added explicit typing for Redux action payloads
-
   - **Enhanced type safety**: `PayloadAction<NotificationsResponse>` for fulfilled actions
   - **Better IDE support**: Improved autocomplete and type checking
   - **Future-proof**: Prevents issues if thunk typing changes
@@ -530,7 +529,6 @@ catch (err: unknown) {
 #### Technical Implementation Details
 
 - **State Management Architecture**: Comprehensive Redux integration with proper TypeScript interfaces
-
   - **NotificationSettings Interface**: Strongly typed with time, timezone offset, day of week, and type fields
   - **API Response Handling**: Proper handling of null values representing "OFF" state for notifications
   - **Loading States**: Comprehensive loading and error state management for better UX
@@ -545,7 +543,6 @@ catch (err: unknown) {
 #### User Experience Features
 
 - **Settings Modal Enhancement**: Seamless integration with existing settings interface
-
   - **Tab-Based Navigation**: Notification preferences accessible via "Notes & Notifications" tab
   - **Toggle Interface**: Simple checkbox toggles for daily and weekly digest preferences
   - **Save Functionality**: Dedicated save button with loading states and success/error feedback
@@ -634,14 +631,12 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 #### AlertDialogModal Enhanced Functionality
 
 - **Toast Notification Integration** (`AlertDialogModal.tsx`):
-
   - Added comprehensive toast notification system with success/error states
   - Implemented conditional toast display based on `cleanupType` prop
   - Added descriptive success messages for contact creation, job archiving, board operations
   - Enhanced user feedback for all modal operations
 
 - **Validation State Management**:
-
   - Added automatic validation reset on modal open/close
   - Implemented proper form state cleanup between modal instances
   - Fixed validation state persistence issues across different modal usage patterns
@@ -692,7 +687,6 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 #### Archived Boards Functionality
 
 - **Unarchive Button Fix** (`archived-boards/page.tsx`):
-
   - Fixed broken unarchive button functionality
   - Enhanced navigation flow after unarchiving boards
   - Implemented proper state cleanup and board list refresh
@@ -707,7 +701,6 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 #### Code Organization and Performance
 
 - **Utility Function Organization** (`utils/helpers.ts`):
-
   - Moved `getTimeAgo` function to proper utils folder for reusability
   - Added comprehensive JSDoc documentation
   - Implemented robust error handling with fallbacks
@@ -734,14 +727,12 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 #### Technical Debt Resolution
 
 - **Component Lifecycle Management**:
-
   - Fixed multiple useEffect timing issues across components
   - Resolved React 18 double rendering conflicts
   - Enhanced component mounting/unmounting lifecycle handling
   - Improved state management timing and synchronization
 
 - **Event Handling Optimization**:
-
   - Resolved event bubbling conflicts in editing interfaces
   - Enhanced click event handling for better user interactions
   - Fixed pointer-events CSS conflicts during editing states
@@ -756,7 +747,6 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 #### Enhanced User Experience and Interaction Patterns
 
 - **Consistent Interaction Patterns**:
-
   - Unified editing behaviors across board titles and column names
   - Enhanced feedback systems for all user actions
   - Improved error handling and user messaging
@@ -773,18 +763,14 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 #### Comprehensive Code Quality Improvements
 
 - **Implemented CodeRabbit automated code review suggestions**: Systematically addressed performance, security, accessibility, and code quality recommendations across the landing page components
-
   - **Performance Optimizations**:
-
     - **Next.js Image Component Integration** (`HeroSection.tsx`):
-
       - Replaced standard `<img>` with optimized `next/image` component
       - Added `priority` loading for LCP (Largest Contentful Paint) optimization
       - Implemented responsive `sizes` attribute for proper image scaling
       - Configured automatic format optimization (WebP, AVIF)
 
     - **Debounce Function Performance Fix** (`AddJobShortForm.tsx`):
-
       - **Fixed critical performance issue**: Debounce function was being recreated on every keystroke
       - Changed from `useCallback` with inline debounce to `useMemo` for proper function persistence
       - Added cleanup `useEffect` to cancel pending debounced calls on component unmount
@@ -796,22 +782,18 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
       - Removed console.logs from: `AddJobShortForm.tsx`, `BoardColumns.tsx`, `AlertDialogModal.tsx`, `helpers.ts`
 
   - **Security Enhancements**:
-
     - **External Link Security** (`Footer.tsx`):
       - Added `rel="noopener noreferrer"` to all external links
       - Prevents potential security vulnerabilities with `window.opener`
       - Added `target="_blank"` for proper external navigation
 
   - **Accessibility Improvements**:
-
     - **Hero Section Accessibility** (`HeroSection.tsx`):
-
       - Added `aria-labelledby="hero-heading"` and `role="region"` to section
       - Connected section to H1 with `id="hero-heading"` for screen reader navigation
       - Improved semantic structure for assistive technologies
 
     - **Footer Accessibility** (`Footer.tsx`):
-
       - Enhanced image alt text from "App logo" to "Job Tracker logo"
       - Made brand text clickable with proper `aria-label="Home"`
       - Added accessible SVG icons with `aria-hidden="true"` and `focusable="false"`
@@ -821,9 +803,7 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
       - Improved navigation performance and user experience
 
   - **TypeScript Code Quality**:
-
     - **Type Safety Improvements** (`ContentSection.tsx`):
-
       - Created `SectionId` type union: `'applications' | 'documents' | 'contacts'`
       - Updated all Record types to use strict `SectionId` instead of `string`
       - Removed defensive checks since TypeScript now guarantees valid keys
@@ -834,7 +814,6 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
       - Cleaned up component state for better maintainability
 
   - **Server-Side Rendering Optimization**:
-
     - **Footer Component Optimization** (`Footer.tsx`):
       - Removed unnecessary `'use client'` directive
       - Converted to server component for better performance
@@ -844,11 +823,8 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 #### Landing Page Layout and Design Enhancements
 
 - **Implemented responsive layout system with perfect alignment**: Created consistent container widths and optimized image sizing across all sections
-
   - **Container Width Standardization**:
-
     - **Navbar Structure Optimization** (`Navbar.tsx`):
-
       - Restructured to use proper nested container pattern: `<header>` → `<div className="max-w-7xl mx-auto">`
       - Unified all components to use identical `max-w-7xl` container width (1280px)
       - Standardized padding to `px-8` (32px) across all sections for perfect alignment
@@ -860,9 +836,7 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
       - **Result**: Perfect left and right edge alignment across all sections
 
   - **Image Size Optimization**:
-
     - **Hero Section Image Enhancement** (`HeroSection.tsx`):
-
       - Increased container from `max-w-md` to `max-w-2xl` then optimized to current size
       - Changed image sizing from `w-11/12 h-11/12` to `w-full h-full` for maximum impact
       - Updated responsive sizing from `45vw` to `50vw` on desktop
@@ -877,16 +851,13 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
       - **Section-Specific Images**: Added dedicated images for Applications, Documents, and Contacts sections
 
   - **Visual Design System**:
-
     - **Navbar Glassmorphism Design** (`Navbar.tsx`):
-
       - Implemented modern glassmorphism effect with `backdrop-blur-md`
       - Added warm amber background: `bg-amber-50/95` (light) / `bg-amber-700/95` (dark)
       - Enhanced with subtle shadow: `shadow-lg` and matching borders
       - Created excellent contrast for hover effects on menu items
 
     - **Mode Toggle Enhancement** (`mode-toggle.tsx`):
-
       - Added custom hover states: `hover:bg-gray-400` / `dark:hover:bg-gray-600`
       - Implemented consistent animation timing: `transition duration-300 delay-150`
       - Matched navbar animation patterns for cohesive user experience
@@ -900,14 +871,12 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 #### CodeRabbit Implementation Summary
 
 - **Architecture Improvements**:
-
   - Proper React Hook usage patterns for performance
   - Elimination of unnecessary re-render cycles
   - Type-safe component interfaces with strict TypeScript
   - Server-side rendering optimization where appropriate
 
 - **User Experience Enhancements**:
-
   - Consistent hover animations across all interactive elements
   - Improved loading performance with Next.js optimizations
   - Better accessibility for screen readers and keyboard navigation
@@ -926,9 +895,7 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
 #### Modal Form Reset Issue Resolution
 
 - **Fixed critical bug where Add Job modal fields would reset while typing**: Resolved React re-rendering cascade that was destroying form state during user input
-
   - **Root Cause Analysis**: The issue was caused by shared validation state between parent (`BoardColumns`) and child (`AddJobShortForm`) components creating a destructive re-render cycle:
-
     1. User types in Company/Job Title fields
     2. Form validation triggers `onValidationChange` callback
     3. Parent component (`BoardColumns`) updates `isFormValid` state
@@ -937,7 +904,6 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
     6. Form loses all input values and user sees typing disappear
 
   - **Solution Implementation**: Eliminated shared validation state by making `AlertDialogModal` self-validating:
-
     - **Self-Validating Modal**: Modified `AlertDialogModal.tsx` to validate form data internally using localStorage instead of shared state
 
     ```typescript
@@ -975,9 +941,7 @@ This fix demonstrates a fundamental React principle: **avoid unnecessary shared 
 #### Complete Landing Page Sections Development
 
 - **Implemented comprehensive landing page with modern design**: Enhanced user onboarding experience with professional sections and responsive design
-
   - **Hero Section Enhancement** (`components/LandingPage/HeroSection.tsx`):
-
     - **Compelling Headlines**: "Transform Your Job Search with Smart Organization"
     - **Value Proposition**: Clear messaging about application tracking and career organization
     - **Call-to-Action**: Prominent "Get Started Free" button with smooth navigation
@@ -987,28 +951,24 @@ This fix demonstrates a fundamental React principle: **avoid unnecessary shared 
   - **Content Sections Implementation** (`components/LandingPage/ContentSection.tsx`):
 
     **Features Section**:
-
     - **Smart Organization**: Kanban-style board management for job applications
     - **Document Management**: Centralized storage for resumes, cover letters, and certificates
     - **Contact Tracking**: Company contact information and interaction history
     - **Progress Analytics**: Visual insights into application status and success rates
 
     **Benefits Section**:
-
     - **Time Efficiency**: Streamlined application process management
     - **Better Organization**: Never lose track of applications again
     - **Strategic Insights**: Data-driven job search optimization
     - **Professional Presentation**: Impress employers with organized approach
 
     **How It Works Section**:
-
     - **Step 1**: Create your account and set up boards
     - **Step 2**: Add job applications and track progress
     - **Step 3**: Manage documents and contacts
     - **Step 4**: Analyze and optimize your job search
 
   - **Footer Enhancement** (`components/LandingPage/Footer.tsx`):
-
     - **Company Information**: Professional branding and contact details
     - **Navigation Links**: Quick access to key pages and features
     - **Legal Compliance**: Privacy policy and terms of service links
@@ -1077,23 +1037,19 @@ The document CHANGELOG.md was update with tis implementation.
 #### Basic dnd-kit Integration for Kanban Board
 
 - **Implemented drag and drop functionality for job post cards**: Enhanced user experience with intuitive job status management through visual drag and drop interface
-
   - **Core Implementation**: Integrated `@dnd-kit/core` library for basic drag and drop functionality
-
     - **DndContext**: Main context provider with `closestCorners` collision detection for optimal drop zone detection
     - **PointerSensor**: Configured with 8px activation distance to prevent accidental drags during scrolling
     - **DragOverlay**: Custom overlay with rotation and opacity effects during drag operations
     - **Files**: `components/HomePage/Kanban/Column/BoardColumns.tsx`
 
   - **Draggable Job Cards**: Each job post card is wrapped in draggable functionality
-
     - **useDraggable Hook**: Provides drag handles, transform properties, and drag state
     - **Visual Feedback**: 50% opacity during drag, smooth CSS transforms for movement
     - **Touch Support**: Works on both desktop and mobile devices
     - **Component**: `DraggableJobPostCard` wrapper component
 
   - **Droppable Columns**: Each board column accepts dropped job cards
-
     - **useDroppable Hook**: Handles drop zone detection and visual feedback
     - **Visual Indicators**: Blue background highlight when hovering over valid drop zones
     - **Dark Mode Support**: Proper styling for both light and dark themes
@@ -1112,7 +1068,6 @@ The document CHANGELOG.md was update with tis implementation.
 #### Technical Implementation Details - 2025-08-02
 
 - **Event Handling Flow**:
-
   1. **handleDragStart**: Sets active item ID for overlay rendering
   2. **handleDragOver**: Tracks hover state for visual feedback
   3. **handleDragEnd**: Processes drop logic and updates job status
@@ -1120,7 +1075,6 @@ The document CHANGELOG.md was update with tis implementation.
 - **Collision Detection**: Uses `closestCorners` algorithm for accurate drop zone detection
 
 - **State Management**:
-
   - Local state for drag operations (`activeId`, `overId`)
   - Redux integration for persistent job updates
   - Automatic board refresh after successful moves
@@ -1162,7 +1116,6 @@ The document CHANGELOG.md was update with tis implementation.
 #### Enhanced Token Refresh Flow
 
 - **Optimized token refresh mechanism**: Improved authentication flow to prevent unnecessary logouts while maintaining security
-
   - **Issue**: Aggressive token validation in request interceptor was bypassing sophisticated refresh logic, causing unnecessary redirects to login
   - **Solution**: Removed pre-flight token check from request interceptor to allow response interceptor's refresh mechanism to handle expired tokens properly
   - **Flow**: Request interceptor now only adds Authorization header → Response interceptor handles 401 errors with token refresh → Only redirects to login when refresh fails
@@ -1178,7 +1131,6 @@ The document CHANGELOG.md was update with tis implementation.
 #### Modal Navigation Enhancement
 
 - **Fixed job details modal navigation**: Resolved issue where direct URL access to job details caused incorrect navigation behavior
-
   - **Issue**: Opening job details URL directly in new tab and clicking overlay redirected to empty browser tab instead of board view
   - **Root Cause**: Modal component used `router.back()` which goes to previous page in history - empty for direct URL access
   - **Solution**: Enhanced Modal component to accept optional `onDismiss` prop for custom close behavior, updated JobDetailsLayout to provide proper board redirect
@@ -1507,7 +1459,6 @@ The document CHANGELOG.md was update with tis implementation.
 #### Performance and Code Quality Optimizations
 
 - **Optimized React useEffect dependencies**: Reduced re-render frequency through dependency array optimization
-
   - **Issue**: Complex dependency arrays in AuthProvider and ComboBoardListBox causing frequent re-renders
   - **Solution**: Simplified dependency arrays with strategic optimizations
   - **Improvements**:
@@ -1518,7 +1469,6 @@ The document CHANGELOG.md was update with tis implementation.
   - **Files**: `components/auth/AuthProvider.tsx`, `components/Forms/AddJobShort/ComboBoardListBox.tsx`
 
 - **Centralized token management**: Replaced direct localStorage access with TokenManager utility
-
   - **Issue**: Inconsistent token access patterns across codebase
   - **Solution**: Updated components to use centralized TokenManager instead of direct localStorage
   - **Benefits**:
@@ -2155,20 +2105,17 @@ if (!boardId) {
 #### Document Pages Enhanced - 2025-07-14
 
 1. **User Documents Page** (`app/(loggedin)/home/documents/page.tsx`)
-
    - Security: Secure localStorage access
    - Reliability: Enhanced popup blocker handling
    - Quality: Constants extraction
 
 2. **Board Documents Page** (`app/(loggedin)/home/boards/[board_id]/documents/page.tsx`)
-
    - Security: Secure localStorage access
    - Type Safety: Dynamic route parameter validation
    - Reliability: Enhanced popup blocker handling
    - Quality: Constants extraction
 
 3. **Job Documents Component** (`components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/Documents.tsx`)
-
    - Security: Secure localStorage access
    - Quality: Constants extraction, enhanced error handling
 
@@ -2199,7 +2146,6 @@ if (!boardId) {
 #### Document Pages Implementation - 2025-07-14
 
 - **Board Documents Page**: `/home/boards/[board_id]/documents`
-
   - Full CRUD operations for board-specific documents
   - Responsive unlimited grid layout (auto-fit design)
   - Upload functionality with automatic board detection
@@ -2506,7 +2452,6 @@ if (!boardId) {
 #### Document Management System
 
 - **Implemented comprehensive document management**: Added full CRUD operations for document handling in job applications
-
   - **Document Upload**: File upload with metadata (title, category, description) using multipart/form-data
   - **Document Retrieval**: Fetch individual documents by ID with proper authorization
   - **Document Deletion**: Remove documents from the system with cascade handling
@@ -2544,7 +2489,6 @@ if (!boardId) {
 #### Link Contact Dropdown State Management
 
 - **Fixed dropdown not updating after contact linking**: Resolved issue where linked contacts remained visible in dropdown
-
   - **Issue**: After linking a contact to a job, the contact would disappear from the Contacts tab but remain in the "+ Link Contact" dropdown list
   - **Root cause**: `refreshContacts()` function was using stale Redux state instead of fresh API response data for filtering
   - **Solution**: Modified `refreshContacts()` to use fresh API response from `getAllJobPostsPerColumn()` for immediate filtering
@@ -2562,7 +2506,6 @@ if (!boardId) {
 #### Toast Notification Refinements - 2025-06-19
 
 - **Streamlined toast notifications for contact linking**: Simplified notification strategy based on user feedback
-
   - **Change**: Removed success toasts for contact linking operations (only show error toasts)
   - **Rationale**: UI already provides immediate visual feedback when contacts are linked, success toasts were redundant
   - **Implementation**: Added comprehensive error handling with informative error messages for failed operations
@@ -2661,32 +2604,26 @@ if (!boardId) {
 #### Dead Code Removal - 2025-06-19
 
 - **Removed unused state variable**: Cleaned up `contacts` state that was not being used for rendering
-
   - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/ContactCard.tsx`, `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/Contacts.tsx`
 
 - **Removed `hasChanges` tracking system**: Eliminated unused state and functions that were not being used
-
   - **Files**: `components/Forms/AddContact/CreateContactForm.tsx`
 
 - **Removed undefined function calls**: Cleaned up calls to `markFieldChanged` and `markContactMethodChanged` functions that were never defined
-
   - **Issue**: Functions were being called but never implemented, causing potential runtime errors
   - **Solution**: Removed all calls to these undefined functions since they served no purpose
   - **Files**: `components/Forms/AddContact/CreateContactForm.tsx`
 
 - **Removed unused `jobs` variable**: Cleaned up variable that was fetched but never used
-
   - **Files**: `components/Misc/CreateContactModal.tsx`
 
 - **Cleaned up function parameters in CompaniesInput**: Removed unused `company` parameter from `handleRemoveCompany` function
-
   - **Issue**: Function received two parameters (`company`, `index`) but only used `index` for filtering
   - **Solution**: Removed unused `company` parameter and updated function call to only pass `index`
   - **Benefit**: Cleaner code with no unused parameters, maintains same functionality
   - **Files**: `components/Forms/AddContact/CompaniesInput.tsx`
 
 - **Removed redundant variable and unused parameters in ContactCard**: Eliminated unnecessary `contactId` variable and unused function parameters
-
   - **Issue**: `const contactId = contact.id;` was created but `contact.id` was used directly in most places; `handleEditContact` had unused `contactId` parameter
   - **Solution**: Removed `contactId` variable entirely, removed unused parameters from handler functions, used `contact.id` directly
   - **Benefit**: Cleaner code, better maintainability, removed potential confusion from unused parameters
@@ -2700,7 +2637,6 @@ if (!boardId) {
 #### TypeScript Interface Standardization
 
 - **Standardized Redux thunk parameter typing**: Replaced inconsistent `any` types with proper TypeScript interfaces
-
   - **Issue**: Document thunks used `any` parameter types with inline type annotations, reducing type safety
   - **Solution**: Created dedicated interfaces for all document operations (`GetDocumentParams`, `UploadDocumentParams`, etc.)
   - **Benefits**: Improved IntelliSense, compile-time error checking, better refactoring support
@@ -2805,6 +2741,7 @@ _All changes maintain backward compatibility and enhance user experience with im
 
 <!-- Version comparison links -->
 
+[0.195.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.194.3...v0.195.0
 [0.194.2]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.194.1...v0.194.2
 [0.194.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.194.0...v0.194.1
 [0.194.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.193.4...v0.194.0
