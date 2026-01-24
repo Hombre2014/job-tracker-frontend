@@ -54,6 +54,12 @@ const Navbar = () => {
               <li className="font-semibold p-2 rounded-md hover:bg-gray-300 transition duration-300 delay-150 dark:hover:bg-slate-800">
                 <Link href="/#contacts">Contacts</Link>
               </li>
+              <li className="font-semibold p-2 rounded-md hover:bg-gray-300 transition duration-300 delay-150 dark:hover:bg-slate-800">
+                <Link href="/#notes">Notes</Link>
+              </li>
+              <li className="font-semibold p-2 rounded-md hover:bg-gray-300 transition duration-300 delay-150 dark:hover:bg-slate-800">
+                <Link href="/#companies">Companies</Link>
+              </li>
             </ul>
           </nav>
           <nav className="flex items-center gap-x-2">
