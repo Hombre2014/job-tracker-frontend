@@ -46,13 +46,13 @@ const Navbar = () => {
           <nav className="flex items-center ml-4 gap-x-2">
             <ul className="flex gap-x-2">
               <li className="font-semibold p-2 rounded-md hover:bg-gray-300 transition duration-300 delay-150 dark:hover:bg-slate-800">
-                <Link href="#applications">Applications </Link>
+                <Link href="/#applications">Applications </Link>
               </li>
               <li className="font-semibold p-2 rounded-md hover:bg-gray-300 transition duration-300 delay-150 dark:hover:bg-slate-800">
-                <Link href="#documents">Documents</Link>
+                <Link href="/#documents">Documents</Link>
               </li>
               <li className="font-semibold p-2 rounded-md hover:bg-gray-300 transition duration-300 delay-150 dark:hover:bg-slate-800">
-                <Link href="#contacts">Contacts</Link>
+                <Link href="/#contacts">Contacts</Link>
               </li>
             </ul>
           </nav>

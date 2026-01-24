@@ -27,12 +27,12 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
     }
   }, [accessToken, router, dispatch]);
   return (
-    <div className="flex h-full">
+    <div className="flex h-full bg-white dark:bg-slate-900">
       <aside className="min-w-60">
         <Sidebar />
       </aside>
       {accessToken && (
-        <div className="mx-auto w-full h-full text-slate-700 dark:text-slate-300">
+        <div className="mx-auto w-full h-full text-slate-700 dark:text-slate-300 overflow-auto">
           {children}
         </div>
       )}
