@@ -3,6 +3,138 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.196.0] - 2026-01-24
+
+### Added - Help Menu System and Comprehensive Documentation Pages
+
+- **Help Dropdown Menu in Navbar**: Implemented accessible dropdown navigation for help resources
+  - **Desktop Dropdown**: Added "Help" button with animated dropdown menu displaying About, Contact Us, and How to? links
+  - **Click-Outside Detection**: Dropdown automatically closes when clicking outside using useEffect and useRef hooks
+  - **Smooth Animations**: Chevron icon rotates 180° when dropdown is open/closed for visual feedback
+  - **Mobile Integration**: Added all Help menu items to HamburgerMenu for mobile device access
+  - **Dark Mode Support**: Full dark mode styling for dropdown background, borders, and hover states
+  - **Positioning**: Dropdown positioned after Light/Dark mode toggle with proper z-index layering
+  - **Files**: `components/LandingPage/Navbar.tsx`, `data/navbar-links.ts`
+
+- **About Page**: Created comprehensive About page with mission, features, and technology information
+  - **Mission Statement**: Clear explanation of JobTracker's purpose and value proposition
+  - **Feature Cards Grid**: 2x2 responsive grid showcasing Applications, Documents, Contacts, and Smart Organization features
+  - **Technology Stack Section**: Detailed list of technologies used (Next.js 14, TypeScript, Redux Toolkit, Tailwind CSS)
+  - **Call-to-Action Section**: Sign up and contact buttons with proper routing to authentication pages
+  - **Full Dark Mode**: Complete dark mode support with fixed background extending behind navbar
+  - **Accessible from Any Route**: Located outside route groups at `app/about/` for universal access
+  - **Files**: `app/about/page.tsx`
+
+- **How-to Page**: Created detailed user guide and tutorial page for JobTracker features
+  - **Getting Started Section**: Step-by-step numbered guide for account creation and initial setup
+  - **Application Management Guide**: Comprehensive instructions for adding, editing, and tracking applications
+  - **Kanban Board Tutorial**: Detailed explanation of board columns (Wishlist, Applied, Interview, Offer, Rejected)
+  - **Document Management Section**: Instructions for uploading, categorizing, and linking documents to applications
+  - **Contact Management Guide**: How to add and manage professional contacts, recruiters, and hiring managers
+  - **Tips & Best Practices**: Curated list of recommendations for effective job search management
+  - **Help Resources**: Contact support button for users needing additional assistance
+  - **Files**: `app/how-to/page.tsx`
+
+- **Contact Us Page Relocation**: Moved Contact Us page to universal location accessible from all routes
+  - **New Location**: Moved from `app/(landing)/contact-us/` to `app/contact-us/` at root level
+  - **Route Group Independence**: No longer restricted to landing route group, accessible everywhere
+  - **Consistent Dark Mode**: Added fixed background layer to ensure proper dark mode display
+  - **Scroll Position Fix**: Added scroll-to-top effect to ensure page starts at proper position
+  - **Form Border Enhancement**: Added subtle gray border around form for better visual definition
+  - **Files**: `app/contact-us/page.tsx` (moved and enhanced)
+
+### Changed - Enhanced Dark Mode Support and Page Layouts
+
+- **Legal Pages Dark Mode Fix**: Fixed dark mode background issues in Privacy and Terms pages
+  - **Full-Height Background**: Added fixed background layer extending behind navbar area
+  - **Consistent Styling**: Dark background now covers entire viewport including navbar space
+  - **No White Flash**: Eliminated white stripe at top of page when scrolling in dark mode
+  - **Files**: `app/(legal)/layout.tsx`
+
+- **Navbar Links Update**: Added Help menu items to mobile hamburger menu
+  - **New Items**: Added "About", "Contact Us", and "How to?" links to navbar-links data
+  - **Mobile Accessibility**: Help resources now accessible from hamburger menu on mobile devices
+  - **Consistent Ordering**: Maintained logical flow of navigation items across desktop and mobile
+  - **Files**: `data/navbar-links.ts`
+
+### Fixed - Page Rendering and User Experience Issues
+
+- **Contact Us Page Scroll Position**: Fixed incorrect initial scroll position on page load
+  - **Root Cause**: Formspree useForm hook initialization causing scroll jump during component mount
+  - **Solution**: Added useEffect with `window.scrollTo({ top: 0, left: 0, behavior: 'instant' })` to reset position
+  - **Instant Behavior**: Used 'instant' behavior to snap immediately without animation for better UX
+  - **Consistent Experience**: Contact Us page now starts at top like About and How-to pages
+  - **Files**: `app/contact-us/page.tsx`
+
+- **Duplicate Route Error**: Resolved Next.js routing conflict for Contact Us page
+  - **Issue**: Two parallel pages at `/(landing)/contact-us/page` and `/contact-us/page` causing build error
+  - **Solution**: Deleted old `app/(landing)/contact-us/page.tsx` file to keep only root-level version
+  - **Routing Clarity**: Single source of truth for Contact Us page route
+  - **Files**: Deleted `app/(landing)/contact-us/page.tsx`
+
+- **Contact Form Visual Definition**: Enhanced form boundaries for better user experience
+  - **Border Addition**: Added `border border-slate-200 dark:border-slate-700` to form container
+  - **Improved Visibility**: Form top edge now clearly visible with subtle gray border
+  - **Dark Mode Consistency**: Border adapts to dark mode with appropriate slate color
+  - **Professional Appearance**: Form stands out better against page background
+  - **Files**: `app/contact-us/page.tsx`
+
+### Added - Email Domain Configuration for Resend Integration (2026-01-23/24)
+
+- **Custom Email Domain Setup**: Configured custom domain for transactional emails via Resend
+  - **Domain**: Added `chervencova.top` domain to Resend account for professional email sending
+  - **Email Address**: Configured `jobtracker@chervencova.top` as sender address for application emails
+  - **DNS Records Configuration**: Added SPF, DKIM, and MX records for email authentication
+  - **Dual SPF Support**: Combined Hostinger and Amazon SES in single SPF record to maintain existing email functionality
+  - **Return-Path Setup**: Configured `send.chervencova.top` subdomain for bounce handling
+  - **Documentation**: Comprehensive email setup documentation for production deployment
+
+- **DNS Records Implemented**: Complete email authentication and deliverability setup
+  - **SPF TXT Record** (on `@`): `v=spf1 include:_spf.mail.hostinger.com include:amazonses.com ~all`
+    - Authorizes both Hostinger (existing email) and Amazon SES (Resend) to send emails
+    - Maintains admin@chervencova.top functionality while enabling jobtracker@chervencova.top
+  - **DKIM TXT Record**: Verified cryptographic email signature for authenticity
+  - **SPF TXT Record** (on `send` subdomain): `v=spf1 include:amazonses.com ~all` for return-path authentication
+  - **MX Record** (on `send` subdomain): `feedback-smtp.eu-west-1.amazonses.com` with priority 10 for bounce feedback
+  - **Verification**: All DNS records verified and passing in Resend dashboard (green status)
+
+- **Email Deliverability Improvements**: Enhanced email reputation and security
+  - **SPF Authentication**: Prevents email spoofing by verifying sender IP addresses
+  - **DKIM Signing**: Cryptographic signatures ensure email integrity and authenticity
+  - **Bounce Handling**: Dedicated MX record routes bounce notifications to Resend infrastructure
+  - **Spam Prevention**: Proper authentication reduces likelihood of emails being marked as spam
+  - **Domain Reputation**: Using custom domain instead of generic domain improves sender reputation
+  - **Separation of Concerns**: Existing admin@chervencova.top email unaffected by new configuration
+
+### Technical Implementation Details
+
+- **Folder Structure Strategy**: Created accessible page structure outside route groups
+  - **Rationale**: Pages needed to be accessible from both landing pages and logged-in user routes
+  - **Location**: `app/about/`, `app/contact-us/`, `app/how-to/` at root level
+  - **Benefits**: No duplication, single source of truth, works across all authentication states
+  - **Consistency**: All three pages follow identical layout patterns and styling
+
+- **Dark Mode Architecture**: Implemented fixed background layer pattern for proper dark mode
+  - **Implementation**: `<div className="fixed inset-0 bg-white dark:bg-slate-900 -z-10" />`
+  - **Purpose**: Ensures dark background extends behind fixed navbar area
+  - **Z-Index**: Layer sits behind all content (-10) but above page default background
+  - **Consistency**: Applied to About, How-to, Contact Us, and Legal pages
+
+- **Component State Management**: Enhanced Navbar with React hooks for dropdown functionality
+  - **useState**: Manages dropdown open/closed state
+  - **useRef**: References dropdown container for click-outside detection
+  - **useEffect**: Event listener cleanup on component unmount
+  - **Event Delegation**: Global mousedown listener attached to document for efficient detection
+
+### Email Configuration Summary
+
+- **Zero Breaking Changes**: New email domain adds capability without disrupting existing functionality
+- **Production Ready**: All DNS records verified and fully functional
+- **Email Isolation**: Application emails (jobtracker@) separate from admin emails (admin@)
+- **Security Compliance**: Implements industry-standard email authentication (SPF, DKIM)
+- **Deliverability Optimized**: Proper configuration maximizes inbox delivery rates
+- **Infrastructure**: Uses Amazon SES backbone via Resend for reliable email delivery
+
 ## [0.195.0] - 2026-01-23
 
 ### Added - Contact Us Page with Formspree Integration

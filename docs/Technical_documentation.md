@@ -1,5 +1,244 @@
 # Technical Documentation
 
+## Help Menu System and Universal Documentation Pages (24/01/2026)
+
+### Navigation Enhancement Architecture
+
+#### Help Dropdown Menu Implementation
+
+Implemented a comprehensive Help menu system with dropdown navigation accessible from both desktop and mobile interfaces.
+
+**Component Architecture**:
+
+```typescript
+// components/LandingPage/Navbar.tsx
+const Navbar = () => {
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const helpDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        helpDropdownRef.current &&
+        !helpDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsHelpOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <header>
+      {/* Help Dropdown */}
+      <div className="relative hidden md:block" ref={helpDropdownRef}>
+        <button
+          onClick={() => setIsHelpOpen(!isHelpOpen)}
+          className="font-semibold p-2 rounded-md hover:bg-gray-300 transition duration-300 delay-150 dark:hover:bg-slate-800 flex items-center gap-1"
+        >
+          Help
+          <svg
+            className={`w-4 h-4 transition-transform ${isHelpOpen ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
+        {isHelpOpen && (
+          <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-slate-700">
+            <Link href="/about" onClick={() => setIsHelpOpen(false)}>About</Link>
+            <Link href="/contact-us" onClick={() => setIsHelpOpen(false)}>Contact Us</Link>
+            <Link href="/how-to" onClick={() => setIsHelpOpen(false)}>How to?</Link>
+          </div>
+        )}
+      </div>
+    </header>
+  );
+};
+```
+
+**Key Features**:
+
+- **Click-Outside Detection**: Uses useRef and useEffect for DOM event handling
+- **Animated Chevron**: Smooth 180° rotation using CSS transitions
+- **Z-Index Management**: Dropdown properly layered above other content (z-50)
+- **Dark Mode Support**: Consistent theming across all states
+- **Mobile Integration**: All items added to HamburgerMenu for responsive access
+
+#### Universal Page Architecture
+
+**Folder Structure Strategy**:
+
+```text
+app/
+  ├── about/page.tsx       - Universal About page
+  ├── contact-us/page.tsx  - Universal Contact page
+  └── how-to/page.tsx      - Universal How-to guide
+```
+
+**Rationale**: Pages located outside route groups (`(landing)`, `(loggedin)`) for universal accessibility from both authenticated and unauthenticated states.
+
+**Dark Mode Pattern**:
+
+```typescript
+// Consistent pattern across all universal pages
+const PageComponent = () => {
+  return (
+    <div className="min-h-screen bg-white dark:bg-slate-900">
+      <div className="fixed inset-0 bg-white dark:bg-slate-900 -z-10" />
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 mt-36 pb-36">
+        {/* Page content */}
+      </div>
+    </div>
+  );
+};
+```
+
+**Background Layer Architecture**:
+
+- **Fixed Positioning**: `fixed inset-0` ensures background covers entire viewport
+- **Z-Index Strategy**: `-z-10` places background behind all content
+- **Navbar Coverage**: Extends behind fixed navbar for seamless dark mode
+- **Scroll Independence**: Background remains stationary while content scrolls
+
+### Page-Specific Implementations
+
+#### About Page Architecture
+
+```typescript
+// app/about/page.tsx
+- Mission statement section with amber background
+- 2x2 responsive grid of feature cards
+- Technology stack section with detailed list
+- Call-to-action section with dual buttons
+- Full responsive design (mobile, tablet, desktop)
+```
+
+**Content Structure**:
+
+1. **Hero Section**: Large title with descriptive subtitle
+2. **Mission Section**: Highlighted amber card with mission statement
+3. **Features Grid**: Applications, Documents, Contacts, Smart Organization
+4. **Technology Section**: Next.js, TypeScript, Redux Toolkit, Tailwind CSS
+5. **CTA Section**: Sign Up and Contact Us buttons
+
+#### How-to Page Architecture
+
+```typescript
+// app/how-to/page.tsx
+- Step-by-step getting started guide (numbered 1-3)
+- Application management detailed guide
+- Kanban board column explanations
+- Document management instructions
+- Contact management guide
+- Tips and best practices section
+- Help resources with contact support button
+```
+
+**Content Hierarchy**:
+
+1. **Getting Started**: 3-step numbered onboarding process
+2. **Application Management**: Adding, Kanban usage, editing
+3. **Document Management**: Upload, categorize, link, download
+4. **Contact Management**: Add contacts, link to applications, follow-ups
+5. **Best Practices**: 5 curated tips with checkmarks
+6. **Support**: Direct link to Contact Us page
+
+#### Contact Us Page Enhancements
+
+**Scroll Position Fix**:
+
+```typescript
+// app/contact-us/page.tsx
+const ContactUs = () => {
+  const [state, handleSubmit] = useForm('mjgywqon');
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, []);
+
+  return (/* form */);
+};
+```
+
+**Root Cause Analysis**: Formspree `useForm` hook initialization causes scroll jump during component mount. Solution uses `useEffect` with instant scroll behavior to reset position after mount.
+
+**Visual Enhancement**:
+
+```typescript
+<form className="bg-white dark:bg-slate-800 shadow-lg rounded-lg p-6 sm:p-8 space-y-6 border border-slate-200 dark:border-slate-700">
+```
+
+- Added subtle border for form definition
+- Improves visual boundaries, especially at top edge
+- Maintains shadow for depth while adding clear edges
+
+### Email Domain Configuration (23-24/01/2026)
+
+#### Resend Custom Domain Setup
+
+**DNS Configuration Architecture**:
+
+```text
+Domain: chervencova.top
+Email Address: jobtracker@chervencova.top
+Provider: Resend (Amazon SES backbone)
+
+DNS Records:
+├── TXT @ (SPF root domain)
+│   └── "v=spf1 include:_spf.mail.hostinger.com include:amazonses.com ~all"
+├── TXT send (SPF subdomain)
+│   └── "v=spf1 include:amazonses.com ~all"
+├── TXT resend._domainkey (DKIM)
+│   └── [Resend-provided DKIM key]
+└── MX send
+    └── feedback-smtp.eu-west-1.amazonses.com (priority 10)
+```
+
+**SPF Strategy**: Dual authorization pattern
+
+- **Root Domain**: Allows both Hostinger (existing admin@) and Amazon SES (new jobtracker@)
+- **Subdomain**: Dedicated return-path authentication for bounce handling
+- **Isolation**: Application emails separate from admin emails
+
+**Architecture Benefits**:
+
+1. **Email Segregation**: jobtracker@ and admin@ emails use separate infrastructure
+2. **Deliverability**: Proper SPF/DKIM authentication improves inbox placement
+3. **Bounce Handling**: Dedicated subdomain MX record for feedback routing
+4. **Zero Impact**: Existing Hostinger email (admin@) continues functioning normally
+5. **Production Ready**: All records verified and passing in Resend dashboard
+
+### Integration with Existing Systems
+
+**State Management**: Help menu items integrated with Redux-aware navigation
+
+**Route Configuration**: Pages work seamlessly with Next.js App Router file-based routing
+
+**Authentication Flow**: Pages accessible without authentication but integrate with auth state when present
+
+**Performance**: No additional bundle impact - pages lazy-loaded via Next.js automatic code splitting
+
+### Technical Benefits
+
+1. **Universal Access**: Help resources available in all application states
+2. **Consistent UX**: Same dark mode patterns across all new pages
+3. **Maintainable**: Single source of truth for each page (no duplication)
+4. **SEO Optimized**: Semantic HTML structure with proper heading hierarchy
+5. **Type Safe**: Full TypeScript coverage with proper event typing
+6. **Accessible**: ARIA attributes, keyboard navigation, click-outside handling
+7. **Professional Email**: Custom domain enhances brand perception and deliverability
+
 ## CodeRabbit Security and Performance Enhancements (23/09/2025)
 
 ### Advanced Error Handling and Request Management

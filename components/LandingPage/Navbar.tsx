@@ -43,7 +43,7 @@ const Navbar = () => {
           </div>
         </Link>
         <div className="items-center justify-between gap-x-2 w-full hidden md:flex">
-          <nav className="flex items-center gap-x-2">
+          <nav className="flex items-center ml-4 gap-x-2">
             <ul className="flex gap-x-2">
               <li className="font-semibold p-2 rounded-md hover:bg-gray-300 transition duration-300 delay-150 dark:hover:bg-slate-800">
                 <Link href="#applications">Applications </Link>
@@ -100,18 +100,18 @@ const Navbar = () => {
                   About
                 </Link>
                 <Link
-                  href="/contact-us"
-                  onClick={() => setIsHelpOpen(false)}
-                  className="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition duration-150"
-                >
-                  Contact Us
-                </Link>
-                <Link
                   href="/how-to"
                   onClick={() => setIsHelpOpen(false)}
                   className="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition duration-150"
                 >
                   How to?
+                </Link>
+                <Link
+                  href="/contact-us"
+                  onClick={() => setIsHelpOpen(false)}
+                  className="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition duration-150"
+                >
+                  Contact Us
                 </Link>
               </div>
             )}
