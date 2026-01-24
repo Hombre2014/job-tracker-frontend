@@ -1,28 +1,30 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, ValidationError } from '@formspree/react';
+
 import { useAppSelector } from '@/redux/hooks';
 
 const ContactUs = () => {
   const [state, handleSubmit] = useForm('mjgywqon');
+
+  // Check authentication state for adaptive styling
+  const { accessToken: reduxAccessToken } = useAppSelector(
+    (state) => state.user,
+  );
+  const [isAuthenticated, setIsAuthenticated] = useState(!!reduxAccessToken);
 
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Check authentication state for adaptive styling
-  const { accessToken: reduxAccessToken } = useAppSelector(
-    (state) => state.user,
-  );
-  const accessToken =
-    reduxAccessToken ||
-    (typeof window !== 'undefined'
-      ? localStorage.getItem('accessToken')
-      : null);
-  const isAuthenticated = !!accessToken;
+  // Check localStorage after hydration to avoid mismatch
+  useEffect(() => {
+    const token = reduxAccessToken || localStorage.getItem('accessToken');
+    setIsAuthenticated(!!token);
+  }, [reduxAccessToken]);
 
   // Logged-in users: padding for sidebar layout, not logged-in: mt-36 for navbar
   const topSpacing = isAuthenticated ? 'pt-20' : 'mt-36';

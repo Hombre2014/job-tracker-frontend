@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
 
 import { getUser } from '@/redux/user/userSlice';
 import { getBoards } from '@/redux/boards/boardsThunk';
@@ -14,16 +14,16 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { accessToken: reduxAccessToken } = useAppSelector(
-    (state) => state.user
+    (state) => state.user,
   );
   const accessToken = reduxAccessToken || localStorage.getItem('accessToken');
 
   useEffect(() => {
-    if (!accessToken) {
-      router.push('/login');
-    } else {
+    if (accessToken) {
       dispatch(getBoards(accessToken));
       dispatch(getUser());
+    } else {
+      router.push('/login');
     }
   }, [accessToken, router, dispatch]);
   return (

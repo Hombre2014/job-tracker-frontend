@@ -3,6 +3,101 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.197.0] - 2026-01-24
+
+### Added - Help Menu System in Logged-In Mode
+
+- **Help Section in Sidebar**: Implemented dedicated Help section in logged-in user sidebar
+  - **Location**: Positioned between Job Board section and Theme toggle for optimal accessibility
+  - **Three Menu Items**: About, Contact Us, and How to? links accessible to logged-in users
+  - **Custom HelpMenuItem Component**: Created specialized component for root-level navigation (unlike SideBarMenuItem which prefixes with `/home/`)
+  - **Active State Detection**: Uses usePathname to highlight currently active Help page
+  - **Consistent Styling**: Matches existing sidebar styling with hover states, active borders, and dark mode support
+  - **Icon Style**: Uses outline icons (HiOutlineInformationCircle, HiOutlineMail, HiOutlineQuestionMarkCircle) matching sidebar aesthetic
+  - **Icon Sizing**: Standardized all sidebar icons to 20x20 pixels for visual consistency
+  - **Files**: `components/HomePage/SideBar/Sidebar.tsx`
+
+- **Adaptive Help Page Layouts**: Created (help) route group with intelligent layout detection
+  - **Route Group Structure**: New `app/(help)/` directory containing About, Contact Us, and How-to pages
+  - **Adaptive Layout Component**: Custom layout that detects authentication state and renders appropriate navigation
+  - **Authentication Detection**: Checks Redux store and localStorage for accessToken to determine user login status
+  - **Conditional Rendering**: Shows Navbar for non-authenticated users, Sidebar for authenticated users
+  - **Seamless Integration**: Help pages work identically whether accessed from landing navbar or logged-in sidebar
+  - **Background Management**: Proper dark mode backgrounds across all authentication states
+  - **Files**: `app/(help)/layout.tsx`, `app/(help)/about/page.tsx`, `app/(help)/contact-us/page.tsx`, `app/(help)/how-to/page.tsx`
+
+- **Scroll-to-Top Behavior**: Added automatic scroll reset for all Help pages
+  - **useEffect Hooks**: Implemented `window.scrollTo(0, 0)` on component mount for all three Help pages
+  - **Consistent Experience**: Users always start at top of page regardless of navigation method
+  - **No Scroll Jump**: Prevents mid-page rendering issues, especially on Contact Us form page
+  - **Files**: Updated all three Help pages with scroll reset logic
+
+### Changed - Navigation and Icon Consistency
+
+- **Sidebar Icon Standardization**: Unified all sidebar icon sizes to 20x20 pixels
+  - **SideBarMenuItem Icons**: Updated Contacts and Documents icons from 14px to 20px (added `text-[20px]` class)
+  - **HelpMenuItem Icons**: Set to 20x20 pixels to match other sidebar items
+  - **Theme Toggle Icons**: Updated ModeToggle Sun and Moon icons from `h-[1.2rem] w-[1.2rem]` to `h-5 w-5` (20px)
+  - **Visual Consistency**: All sidebar icons now have uniform size matching Job Board item icons
+  - **Files**: `components/HomePage/SideBar/Sidebar.tsx`, `components/HomePage/SideBar/SideBarMenuItem.tsx`, `components/Themes/mode-toggle.tsx`
+
+- **Help Page Icon Style**: Changed from solid to outline icons
+  - **Original Icons**: HiInformationCircle, HiMail, HiQuestionMarkCircle (solid/filled)
+  - **Updated Icons**: HiOutlineInformationCircle, HiOutlineMail, HiOutlineQuestionMarkCircle (outline)
+  - **Style Consistency**: Matches existing sidebar icons like GoPersonAdd and RiFolder2Line
+  - **Visual Coherence**: Line-style icons instead of filled icons for professional appearance
+  - **Files**: `components/HomePage/SideBar/Sidebar.tsx`
+
+- **Navbar Absolute Link Paths**: Fixed navigation from Help pages back to landing page
+  - **Issue**: Relative hash anchors (#applications, #documents, #contacts) only worked on landing page
+  - **Solution**: Changed to absolute paths (/#applications, /#documents, /#contacts)
+  - **Cross-Page Navigation**: Links now work correctly from any Help page back to landing page sections
+  - **User Experience**: Users can navigate from About/Contact/How-to pages back to landing features seamlessly
+  - **Files**: `components/LandingPage/Navbar.tsx`
+
+- **Help Page Top Spacing**: Adaptive spacing based on authentication state
+  - **Logged-In Users**: `pt-20` (padding-top) for sidebar layout compatibility
+  - **Non-Authenticated Users**: `mt-36` (margin-top) for navbar layout with proper spacing
+  - **Consistent Rendering**: Content positioned correctly regardless of navigation component shown
+  - **Files**: All three Help pages in `app/(help)/` directory
+
+### Fixed - Component Errors and User Experience Issues
+
+- **Textarea Syntax Error**: Fixed JSX syntax error in Contact Us form
+  - **Issue**: Self-closing `<textarea />` tag causing "Expected jsx identifier" error
+  - **Solution**: Changed to proper opening/closing tags `<textarea></textarea>`
+  - **Validation**: Textarea is not a void element in HTML/JSX and requires closing tag
+  - **Files**: `app/(help)/contact-us/page.tsx`
+
+- **Extra Closing Div Tags**: Removed duplicate closing tags causing TypeScript errors
+  - **Issue**: Extra `</div>` tags in both Contact Us and How-to pages causing "Cannot find name 'div'" errors
+  - **Solution**: Removed extra closing tags to match proper JSX structure
+  - **Validation**: Fixed TypeScript compilation errors and component rendering
+  - **Files**: `app/(help)/contact-us/page.tsx`, `app/(help)/how-to/page.tsx`
+
+- **Logged-In Layout Scrolling**: Fixed sidebar content overflow and scroll behavior
+  - **Background Management**: Added `bg-white dark:bg-slate-900` to logged-in layout wrapper
+  - **Overflow Control**: Added `overflow-auto` to content div while keeping sidebar fixed
+  - **Proper Scrolling**: Content area scrolls independently while sidebar remains fixed in position
+  - **Dark Mode Consistency**: Background remains consistent when scrolling through content
+  - **Files**: `app/(loggedin)/layout.tsx`
+
+### Technical Implementation
+
+- **HelpMenuItem Component**: Custom navigation component for Help section
+  - **Props Interface**: `{ href: string; icon: React.ReactNode; label: string }`
+  - **Root-Level Routing**: Direct href without `/home/` prefix (unlike SideBarMenuItem)
+  - **Active State Logic**: `const isActive = pathname === href` for highlight detection
+  - **Styling**: Matches SideBarMenuItem with hover states, active borders, and transitions
+  - **Integration**: Inline component definition in Sidebar.tsx for localized scope
+
+- **Route Group Architecture**: Leveraged Next.js route groups for flexible layouts
+  - **Directory Structure**: `app/(help)/` with custom layout.tsx
+  - **Layout Detection**: Uses useAppSelector and localStorage to check authentication
+  - **Conditional Rendering**: if (isAuthenticated) return Sidebar layout, else return Navbar layout
+  - **URL Preservation**: Route group doesn't affect URL structure (/about, /contact-us, /how-to remain simple)
+  - **Component Reusability**: Same page components work with either navigation system
+
 ## [0.196.0] - 2026-01-24
 
 ### Added - Help Menu System and Comprehensive Documentation Pages
@@ -79,32 +174,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Professional Appearance**: Form stands out better against page background
   - **Files**: `app/contact-us/page.tsx`
 
-### Added - Email Domain Configuration for Resend Integration (2026-01-23/24)
+### Added - Email Infrastructure
 
-- **Custom Email Domain Setup**: Configured custom domain for transactional emails via Resend
-  - **Domain**: Added `chervencova.top` domain to Resend account for professional email sending
-  - **Email Address**: Configured `jobtracker@chervencova.top` as sender address for application emails
-  - **DNS Records Configuration**: Added SPF, DKIM, and MX records for email authentication
-  - **Dual SPF Support**: Combined Hostinger and Amazon SES in single SPF record to maintain existing email functionality
-  - **Return-Path Setup**: Configured `send.chervencova.top` subdomain for bounce handling
-  - **Documentation**: Comprehensive email setup documentation for production deployment
-
-- **DNS Records Implemented**: Complete email authentication and deliverability setup
-  - **SPF TXT Record** (on `@`): `v=spf1 include:_spf.mail.hostinger.com include:amazonses.com ~all`
-    - Authorizes both Hostinger (existing email) and Amazon SES (Resend) to send emails
-    - Maintains admin@chervencova.top functionality while enabling jobtracker@chervencova.top
-  - **DKIM TXT Record**: Verified cryptographic email signature for authenticity
-  - **SPF TXT Record** (on `send` subdomain): `v=spf1 include:amazonses.com ~all` for return-path authentication
-  - **MX Record** (on `send` subdomain): `feedback-smtp.eu-west-1.amazonses.com` with priority 10 for bounce feedback
-  - **Verification**: All DNS records verified and passing in Resend dashboard (green status)
-
-- **Email Deliverability Improvements**: Enhanced email reputation and security
-  - **SPF Authentication**: Prevents email spoofing by verifying sender IP addresses
-  - **DKIM Signing**: Cryptographic signatures ensure email integrity and authenticity
-  - **Bounce Handling**: Dedicated MX record routes bounce notifications to Resend infrastructure
-  - **Spam Prevention**: Proper authentication reduces likelihood of emails being marked as spam
-  - **Domain Reputation**: Using custom domain instead of generic domain improves sender reputation
-  - **Separation of Concerns**: Existing admin@chervencova.top email unaffected by new configuration
+- **Custom Email Domain**: Configured custom domain for professional transactional emails
+  - **Domain**: `chervencova.top` integrated with Resend email service
+  - **Sender Email**: `jobtracker@chervencova.top` for application notifications and communications
+  - **Email Authentication**: Implemented SPF, DKIM, and MX records for email deliverability
+  - **Bounce Handling**: Configured return-path subdomain for delivery feedback
+  - **Documentation**: Detailed setup instructions in `docs/EMAIL_SETUP.md` (internal use only)
 
 ### Technical Implementation Details
 
@@ -2366,7 +2443,7 @@ if (!boardId) {
 - **Graceful fallback**: Redirects to login only when refresh fails
 - **Production optimized**: Uses existing `/auth/refresh` endpoint with proper error handling
 
-#### Technical Implementation
+#### Technical Implementation 2025-07-13
 
 - **Enhanced axios response interceptor**: Added comprehensive token refresh logic
   - **Race condition protection**: `refreshPromise` ensures only one refresh at a time
@@ -2873,6 +2950,8 @@ _All changes maintain backward compatibility and enhance user experience with im
 
 <!-- Version comparison links -->
 
+[0.197.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.196.0...v0.197.0
+[0.196.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.195.0...v0.196.0
 [0.195.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.194.3...v0.195.0
 [0.194.2]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.194.1...v0.194.2
 [0.194.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.194.0...v0.194.1

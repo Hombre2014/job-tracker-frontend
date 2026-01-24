@@ -1,5 +1,364 @@
 # Technical Documentation
 
+## Help Menu System - Logged-In Mode Integration (24/01/2026)
+
+### Adaptive Layout Architecture for Help Pages
+
+#### Route Group Implementation with Authentication Detection
+
+Implemented `(help)` route group with intelligent layout that adapts based on user authentication state.
+
+**Directory Structure**:
+
+```text
+app/
+  └── (help)/
+      ├── layout.tsx          - Adaptive layout (Navbar OR Sidebar)
+      ├── about/page.tsx      - About page with adaptive spacing
+      ├── contact-us/page.tsx - Contact form with adaptive spacing
+      └── how-to/page.tsx     - User guide with adaptive spacing
+```
+
+**Adaptive Layout Component**:
+
+```typescript
+// app/(help)/layout.tsx
+'use client';
+
+import { useAppSelector } from '@/redux/hooks';
+import Navbar from '@/components/LandingPage/Navbar';
+import Sidebar from '@/components/HomePage/SideBar/Sidebar';
+
+export default function HelpLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { accessToken: reduxAccessToken } = useAppSelector(
+    (state) => state.user
+  );
+  const accessToken =
+    reduxAccessToken ||
+    (typeof window !== 'undefined'
+      ? localStorage.getItem('accessToken')
+      : null);
+  const isAuthenticated = !!accessToken;
+
+  if (isAuthenticated) {
+    // Logged-in: Show sidebar layout
+    return (
+      <div className="flex h-screen bg-white dark:bg-slate-900">
+        <div className="w-60 flex-shrink-0">
+          <Sidebar />
+        </div>
+        <div className="flex-1 overflow-auto">{children}</div>
+      </div>
+    );
+  }
+
+  // Not logged in: Show navbar layout
+  return (
+    <div className="min-h-screen bg-white dark:bg-slate-900">
+      <Navbar />
+      {children}
+    </div>
+  );
+}
+```
+
+**Key Features**:
+
+- **Dual Source Authentication Check**: Checks both Redux store and localStorage
+- **Conditional Layout Rendering**: Shows appropriate navigation based on auth state
+- **Consistent Background**: Maintains dark mode styling across both states
+- **Proper Scroll Behavior**: Sidebar fixed, content scrollable in logged-in mode
+
+**Adaptive Spacing Pattern**:
+
+```typescript
+// Used in all Help pages
+const { accessToken: reduxAccessToken } = useAppSelector((state) => state.user);
+const accessToken =
+  reduxAccessToken ||
+  (typeof window !== 'undefined'
+    ? localStorage.getItem('accessToken')
+    : null);
+const isAuthenticated = !!accessToken;
+
+// Adaptive top spacing
+const topSpacing = isAuthenticated ? 'pt-20' : 'mt-36';
+
+return (
+  <div className={`mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 ${topSpacing} pb-36`}>
+    {/* Page content */}
+  </div>
+);
+```
+
+**Spacing Logic**:
+
+- **Logged In (`pt-20`)**: Padding for sidebar layout, no fixed navbar
+- **Logged Out (`mt-36`)**: Margin to clear fixed navbar positioning
+
+#### Sidebar Help Section Implementation
+
+**Custom HelpMenuItem Component**:
+
+```typescript
+// components/HomePage/SideBar/Sidebar.tsx
+const HelpMenuItem = ({
+  href,
+  icon,
+  label,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+}) => {
+  const pathname = usePathname();
+  const isActive = pathname === href;
+
+  return (
+    <Link
+      href={href}
+      className={cn(
+        'flex items-center gap-2 py-2 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 pl-2 mr-2 rounded-md dark:text-white',
+        isActive
+          ? 'border border-blue-500 bg-blue-300/30 dark:bg-blue-600/40 hover:bg-blue-300/30 dark:hover:bg-blue-600/40'
+          : ''
+      )}
+    >
+      <div
+        className={cn(
+          'h-5 w-5 flex items-center dark:text-white text-[20px]',
+          isActive ? 'text-blue-500 dark:text-blue-400' : ''
+        )}
+      >
+        {icon}
+      </div>
+      <p>{label}</p>
+    </Link>
+  );
+};
+```
+
+**Sidebar Integration**:
+
+```typescript
+<div className="border-b border-slate-200 dark:border-slate-700 h-auto py-6 pl-2">
+  <div className="flex flex-col gap-2">
+    <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 pl-2">
+      Help
+    </div>
+    <HelpMenuItem
+      href="/about"
+      icon={<HiOutlineInformationCircle />}
+      label="About"
+    />
+    <HelpMenuItem
+      href="/contact-us"
+      icon={<HiOutlineMail />}
+      label="Contact Us"
+    />
+    <HelpMenuItem href="/how-to" icon={<HiOutlineQuestionMarkCircle />} label="How to?" />
+  </div>
+</div>
+```
+
+**Design Rationale**:
+
+- **Custom Component**: HelpMenuItem routes to root-level paths, unlike SideBarMenuItem which prefixes with `/home/`
+- **Root-Level Routing**: Direct href without prefix (e.g., `/about` not `/home/about`)
+- **Active State Detection**: Uses Next.js usePathname for current route highlighting
+- **Consistent Styling**: Matches existing sidebar items with hover/active states
+- **Icon Positioning**: Positioned between Job Board section and Theme toggle
+
+#### Icon Standardization
+
+**Unified Icon Sizing Across Sidebar**:
+
+```typescript
+// All sidebar icons standardized to 20x20 pixels
+
+// SideBarMenuItem icons (Contacts, Documents)
+<div className="h-5 w-5 flex items-center dark:text-white text-[20px]">
+  {icon}
+</div>
+
+// HelpMenuItem icons (About, Contact Us, How to?)
+<div className="h-5 w-5 flex items-center dark:text-white text-[20px]">
+  {icon}
+</div>
+
+// ModeToggle icons (Theme)
+<SunIcon className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+<MoonIcon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+```
+
+**Icon Style Consistency**:
+
+```typescript
+// Outline icons matching existing sidebar aesthetic
+import {
+  HiOutlineInformationCircle,
+  HiOutlineMail,
+  HiOutlineQuestionMarkCircle,
+} from 'react-icons/hi';
+
+// Previously used solid icons (now replaced):
+// HiInformationCircle → HiOutlineInformationCircle
+// HiMail → HiOutlineMail
+// HiQuestionMarkCircle → HiOutlineQuestionMarkCircle
+```
+
+**Files Modified**:
+
+- `components/HomePage/SideBar/Sidebar.tsx` - HelpMenuItem and Help section
+- `components/HomePage/SideBar/SideBarMenuItem.tsx` - Icon size update
+- `components/Themes/mode-toggle.tsx` - Sun/Moon icon size update
+
+### Scroll-to-Top Implementation
+
+**Consistent Page Entry Point**:
+
+```typescript
+// Applied to all Help pages
+import { useEffect } from 'react';
+
+const PageComponent = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Page content...
+};
+```
+
+**Implementation Details**:
+
+- **Automatic Reset**: Page always starts at top on mount
+- **Empty Dependency Array**: Runs only once when component mounts
+- **No Animation**: Instant scroll (no smooth behavior) for immediate positioning
+- **Prevents Issues**: Avoids mid-page rendering, especially with forms
+
+**Files Updated**:
+
+- `app/(help)/about/page.tsx`
+- `app/(help)/contact-us/page.tsx`
+- `app/(help)/how-to/page.tsx`
+
+### Navigation Link Fixes
+
+**Absolute Path Resolution for Cross-Page Navigation**:
+
+```typescript
+// components/LandingPage/Navbar.tsx
+// Changed from relative to absolute paths
+
+// Before (only worked on landing page):
+<Link href="#applications">Applications</Link>
+<Link href="#documents">Documents</Link>
+<Link href="#contacts">Contacts</Link>
+
+// After (works from any page):
+<Link href="/#applications">Applications</Link>
+<Link href="/#documents">Documents</Link>
+<Link href="/#contacts">Contacts</Link>
+```
+
+**Navigation Flow**:
+
+1. User on `/about`, `/contact-us`, or `/how-to` page
+2. Clicks "Applications" in navbar
+3. Navigates to `/#applications` (landing page, applications section)
+4. Browser scrolls to #applications anchor
+
+### Bug Fixes and Improvements
+
+#### JSX Syntax Corrections
+
+**Textarea Self-Closing Tag Fix**:
+
+```typescript
+// app/(help)/contact-us/page.tsx
+
+// Incorrect (causing "Expected jsx identifier" error):
+<textarea
+  rows={6}
+  required
+  id="message"
+  name="message"
+  placeholder="Tell us how we can help you..."
+  className="w-full px-4 py-3 border..."
+/>
+
+// Correct (textarea requires closing tag):
+<textarea
+  rows={6}
+  required
+  id="message"
+  name="message"
+  placeholder="Tell us how we can help you..."
+  className="w-full px-4 py-3 border..."
+></textarea>
+```
+
+**Extra Closing Div Removal**:
+
+```typescript
+// Both contact-us and how-to pages had extra </div> causing TypeScript errors
+// Removed duplicate closing tags to match proper JSX structure
+```
+
+#### Logged-In Layout Scroll Behavior
+
+**Content Area Overflow Management**:
+
+```typescript
+// app/(loggedin)/layout.tsx
+
+return (
+  <div className="flex h-full bg-white dark:bg-slate-900">
+    <div className="w-60 flex-shrink-0">
+      <Sidebar />
+    </div>
+    <div className="flex-1 overflow-auto">
+      {children}
+    </div>
+  </div>
+);
+```
+
+**Layout Improvements**:
+
+- **Background Management**: Added `bg-white dark:bg-slate-900` to layout wrapper
+- **Sidebar Fixed**: Sidebar remains stationary with fixed position
+- **Content Scrollable**: Added `overflow-auto` to content div
+- **Independent Scrolling**: Content scrolls while sidebar stays fixed
+
+### Architecture Benefits
+
+**Seamless User Experience**:
+
+- Help pages accessible from both landing and logged-in states
+- Consistent look and feel regardless of authentication status
+- Same URLs work universally (/about, /contact-us, /how-to)
+- No duplicate code or content - single source of truth for each page
+
+**Technical Advantages**:
+
+- Route group isolation without affecting URLs
+- Conditional rendering at layout level (efficient)
+- Authentication state checked once per page load
+- Reusable adaptive spacing pattern across all Help pages
+
+**Maintenance Benefits**:
+
+- Single page component works with both navigation systems
+- Changes to Help content apply universally
+- Easy to add new Help pages following established pattern
+- Clear separation of concerns (layout vs content)
+
 ## Help Menu System and Universal Documentation Pages (24/01/2026)
 
 ### Navigation Enhancement Architecture
@@ -252,9 +611,9 @@ Implemented comprehensive request cancellation support for all delete account op
 ```typescript
 // redux/user/userThunk.ts
 export const createDeleteVerificationCode = createAsyncThunk<
-  { message: string; email: string },  // Return type
-  { email: string },                   // Argument type
-  { rejectValue: string }              // Reject value type
+  { message: string; email: string }, // Return type
+  { email: string }, // Argument type
+  { rejectValue: string } // Reject value type
 >('user/createDeleteVerificationCode', async (values, thunkAPI) => {
   const { email } = values;
 
@@ -262,7 +621,7 @@ export const createDeleteVerificationCode = createAsyncThunk<
     const res = await client.post(
       '/users/delete/create-verification-code',
       { email },
-      { signal: thunkAPI.signal } // ✅ Cancellation support
+      { signal: thunkAPI.signal }, // ✅ Cancellation support
     );
 
     if (res.status === 201 || res.status === 200) {
@@ -290,8 +649,8 @@ export const createDeleteVerificationCode = createAsyncThunk<
 
 export const deleteUserAccount = createAsyncThunk<
   { message: string; deleted: true }, // Return type
-  { code: string },                   // Argument type
-  { rejectValue: string }             // Reject value type
+  { code: string }, // Argument type
+  { rejectValue: string } // Reject value type
 >('user/deleteUserAccount', async (values, thunkAPI) => {
   // Implementation with same pattern...
 });
@@ -434,9 +793,7 @@ const handleDeleteAccount = async () => {
 export const VerifyEmailSchema = z.object({
   code: z.preprocess(
     (val) => (typeof val === 'string' ? val.trim() : val), // ✅ Schema-level trimming
-    z
-      .string()
-      .regex(/^\d{6}$/, 'Verification code must be exactly 6 digits')
+    z.string().regex(/^\d{6}$/, 'Verification code must be exactly 6 digits'),
   ),
 });
 
@@ -614,7 +971,7 @@ const handleDeleteAccount = async () => {
 
   try {
     await dispatch(
-      createDeleteVerificationCode({ email: user.email })
+      createDeleteVerificationCode({ email: user.email }),
     ).unwrap();
     toast.success('Verification code sent to your email');
     router.push('/delete-account-verify');
@@ -636,7 +993,7 @@ export const createDeleteVerificationCode = createAsyncThunk(
       const response = await apiClient.post(
         '/users/delete/create-verification-code',
         { email },
-        { signal }
+        { signal },
       );
       return response.data;
     } catch (error) {
@@ -651,7 +1008,7 @@ export const createDeleteVerificationCode = createAsyncThunk(
       }
       return rejectWithValue('An unexpected error occurred');
     }
-  }
+  },
 );
 
 export const deleteUserAccount = createAsyncThunk(
@@ -679,7 +1036,7 @@ export const deleteUserAccount = createAsyncThunk(
       }
       return rejectWithValue('An unexpected error occurred');
     }
-  }
+  },
 );
 ```
 
@@ -733,9 +1090,7 @@ const handleConfirmDeletion = async () => {
 const formSchema = z.object({
   code: z.preprocess(
     (val) => (typeof val === 'string' ? val.trim() : val),
-    z
-      .string()
-      .regex(/^\d{6}$/, 'Verification code must be exactly 6 digits')
+    z.string().regex(/^\d{6}$/, 'Verification code must be exactly 6 digits'),
   ),
 });
 
@@ -823,7 +1178,6 @@ const cleanupAfterLogout = () => {
 **Backend Endpoints**:
 
 1. **POST** `/users/delete/create-verification-code`
-
    - Body: `{ "email": "user@example.com" }`
    - Response: Verification code sent to email
 
@@ -923,7 +1277,7 @@ const searchSlice = createSlice({
 // utils/searchUtils.ts
 export const filterJobApplications = (
   jobApplications: JobApplication[],
-  query: string
+  query: string,
 ): JobApplication[] => {
   // Performance: Early return for invalid queries
   if (!query || query.trim().length < 2) {
@@ -1047,7 +1401,7 @@ export const searchWithPerformanceTracking = (columns, query) => {
 
   if (process.env.NODE_ENV === 'development' && endTime - startTime > 50) {
     console.warn(
-      `Slow search detected: ${endTime - startTime}ms for query "${query}"`
+      `Slow search detected: ${endTime - startTime}ms for query "${query}"`,
     );
   }
 
@@ -1169,7 +1523,7 @@ export const filterJobApplications = (jobApplications, query) => {
 };
 ```
 
-#### Technical Benefits
+#### Technical Benefits Summary
 
 1. **Type Safety**: Full TypeScript coverage with proper interface definitions
 2. **Performance**: Debounced input, memoized calculations, early returns
@@ -1212,7 +1566,7 @@ const notificationsTransform = createTransform(
     lastSeen: inboundState?.lastSeen ?? null,
   }),
   (outboundState: any) => outboundState,
-  { whitelist: ['notifications'] }
+  { whitelist: ['notifications'] },
 );
 
 // OPTION B: Complete removal from persistence (CHOSEN)
@@ -1236,7 +1590,7 @@ const persistConfig = {
 - Loading/error states (never should be persisted)
 - No user-specific metadata requiring persistence
 
-#### Architecture Benefits
+#### Architecture Benefits Summary
 
 1. **Fresh Data Guarantee**: Notifications always load current server state
 2. **Reduced Storage Footprint**: Eliminated unnecessary localStorage usage
@@ -1605,7 +1959,7 @@ function isValidTimeString(str: string): str is TimeString {
 function createTimeString(str: string): TimeString {
   if (!isValidTimeString(str)) {
     throw new Error(
-      `Invalid time format: "${str}". Expected HH:MM format (00:00-23:59)`
+      `Invalid time format: "${str}". Expected HH:MM format (00:00-23:59)`,
     );
   }
   return str;
@@ -1711,7 +2065,7 @@ export const getBothNotifications = createAsyncThunk<
         {
           headers: { Authorization: `Bearer ${accessToken}` },
           signal, // Request cancellation support
-        }
+        },
       );
 
       // Graceful fallback for empty responses
@@ -1723,7 +2077,7 @@ export const getBothNotifications = createAsyncThunk<
       }
       return rejectWithValue(toApiError(err));
     }
-  }
+  },
 );
 ```
 
@@ -1782,23 +2136,23 @@ builder
   .addMatcher(
     isAnyOf(
       getBothNotifications.pending,
-      createUpdateDeleteNotifications.pending
+      createUpdateDeleteNotifications.pending,
     ),
     (state) => {
       state.loading = true;
       state.error = null;
-    }
+    },
   )
   .addMatcher(
     isAnyOf(
       getBothNotifications.fulfilled,
-      createUpdateDeleteNotifications.fulfilled
+      createUpdateDeleteNotifications.fulfilled,
     ),
     (state, action: PayloadAction<NotificationsResponse>) => {
       state.loading = false;
       state.daily = action.payload.daily;
       state.weekly = action.payload.weekly;
-    }
+    },
   );
 ```
 
@@ -1883,13 +2237,11 @@ const notifications = {
 #### Core Redux Architecture
 
 1. **`redux/store.ts`**:
-
    - Removed notifications from persistence whitelist
    - Standardized reducer import patterns
    - Improved store configuration consistency
 
 2. **`redux/notifications/notificationsThunk.ts`**:
-
    - Added `isAxiosError` import and type-safe error handling
    - Implemented template literal types and `DayOfWeek` union
    - Created explicit payload interfaces replacing complex `Omit` types
@@ -1995,7 +2347,7 @@ export const getBothNotifications = createAsyncThunk(
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     return response.data as NotificationsResponse;
-  }
+  },
 );
 
 // POST: Update notification preferences
@@ -2012,7 +2364,7 @@ export const createUpdateDeleteNotifications = createAsyncThunk(
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     return response.data as NotificationsResponse;
-  }
+  },
 );
 ```
 
@@ -2054,7 +2406,7 @@ interface NotificationsResponse {
 // app/(loggedin)/home/settings/page.tsx
 const Settings = () => {
   const { daily, weekly, loading } = useAppSelector(
-    (state) => state.notifications
+    (state) => state.notifications,
   );
   const [weeklyDigest, setWeeklyDigest] = useState(!!weekly);
   const [dailyDigest, setDailyDigest] = useState(!!daily);
@@ -2095,7 +2447,7 @@ const Settings = () => {
       createUpdateDeleteNotifications({
         accessToken,
         notifications,
-      })
+      }),
     );
   };
 };
@@ -2169,22 +2521,22 @@ export const createUpdateDeleteNotifications = createAsyncThunk(
         values.notifications,
         {
           headers: { Authorization: `Bearer ${values.accessToken}` },
-        }
+        },
       );
       return response.data;
     } catch (err: any) {
       return thunkAPI.rejectWithValue(
-        err.response?.data || 'Error updating notifications'
+        err.response?.data || 'Error updating notifications',
       );
     }
-  }
+  },
 );
 
 // UI-level error handling
 const handleSaveNotifications = async () => {
   try {
     await dispatch(
-      createUpdateDeleteNotifications({ accessToken, notifications })
+      createUpdateDeleteNotifications({ accessToken, notifications }),
     ).unwrap();
     toast.success('Notification preferences updated successfully!');
     router.back();
@@ -2921,7 +3273,7 @@ client.interceptors.request.use((config) => {
   // Check if we have valid tokens before making any request
   if (!TokenManager.hasValidTokens() && typeof window !== 'undefined') {
     console.log(
-      'API Client: No valid tokens found in request interceptor, redirecting to login'
+      'API Client: No valid tokens found in request interceptor, redirecting to login',
     );
     TokenManager.clearTokens();
     window.location.href = '/login';
