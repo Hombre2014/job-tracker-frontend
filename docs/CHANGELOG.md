@@ -3,6 +3,257 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.198.0] - 2026-01-24
+
+### Added - Notes and Companies Sections
+
+- **Notes Section on Landing Page**: Comprehensive note-taking feature showcase
+  - **Visual Design**: Orange/amber gradient color scheme (`from-orange-100 via-amber-50 to-white` with dark mode variants)
+  - **Section Icon**: Orange circular badge with note and pen SVG icon (20x20 pixels)
+  - **Feature Image**: `/images/Notes.png` displaying notes interface
+  - **Content**: Three descriptive paragraphs highlighting quick capture, organization, rich formatting, and task linking capabilities
+  - **Reverse Layout**: Content appears first (left), followed by image (right) for visual variety
+  - **Navigation**: Added "Notes" link to landing page navbar with smooth scroll to `#notes` anchor
+  - **Files**: `components/LandingPage/ContentSection.tsx`, `app/(landing)/page.tsx`, `components/LandingPage/Navbar.tsx`
+
+- **Companies Section on Landing Page**: Company tracking feature showcase
+  - **Visual Design**: Red/rose gradient color scheme (`from-red-100 via-rose-50 to-white` with dark mode variants)
+  - **Section Icon**: Red circular badge with building SVG icon (20x20 pixels)
+  - **Feature Image**: `/images/Company.png` displaying company management interface
+  - **Content**: Three descriptive paragraphs highlighting centralized tracking, research organization, and strategic insights
+  - **Standard Layout**: Image appears first (left), followed by content (right) matching Applications and Contacts sections
+  - **Navigation**: Added "Companies" link to landing page navbar with smooth scroll to `#companies` anchor
+  - **Color Refinement**: Evolved from teal (too similar to green Contacts) through indigo (too similar to blue/purple) to final red/rose for maximum visual distinction
+  - **Files**: `components/LandingPage/ContentSection.tsx`, `app/(landing)/page.tsx`, `components/LandingPage/Navbar.tsx`
+
+- **ContentSection Type Extension**: Enhanced component to support new feature sections
+  - **Extended SectionId Type**: Added `'notes' | 'companies'` to existing `'applications' | 'documents' | 'contacts'`
+  - **Color Mappings**: Defined gradient colors, icon backgrounds, and paragraph text colors for both sections
+  - **Icon Definitions**: Added custom SVG icons (note with pen for Notes, building for Companies)
+  - **Image Paths**: Configured image sources for both new sections
+  - **Content Management**: Added descriptive paragraphs highlighting key features and benefits
+  - **Complete Color Palette**: Blue (Applications), Purple/Pink (Documents), Green (Contacts), Orange/Amber (Notes), Red/Rose (Companies)
+  - **Files**: `components/LandingPage/ContentSection.tsx`
+
+### Changed - Landing Page Navigation
+
+- **Navbar Menu Expansion**: Increased landing page navigation from 3 to 5 items
+  - **Previous Items**: Applications, Documents, Contacts
+  - **New Items**: Notes, Companies
+  - **Consistent Styling**: New menu items match existing hover effects, smooth scrolling, and responsive behavior
+  - **Mobile Support**: New items integrated into hamburger menu for mobile devices
+  - **Anchor Links**: Proper hash-based navigation (`/#notes`, `/#companies`) for smooth scroll behavior
+  - **Files**: `components/LandingPage/Navbar.tsx`
+
+## [0.197.0] - 2026-01-24
+
+### Added - Help Menu System in Logged-In Mode
+
+- **Help Section in Sidebar**: Implemented dedicated Help section in logged-in user sidebar
+  - **Location**: Positioned between Job Board section and Theme toggle for optimal accessibility
+  - **Three Menu Items**: About, Contact Us, and How to? links accessible to logged-in users
+  - **Custom HelpMenuItem Component**: Created specialized component for root-level navigation (unlike SideBarMenuItem which prefixes with `/home/`)
+  - **Active State Detection**: Uses usePathname to highlight currently active Help page
+  - **Consistent Styling**: Matches existing sidebar styling with hover states, active borders, and dark mode support
+  - **Icon Style**: Uses outline icons (HiOutlineInformationCircle, HiOutlineMail, HiOutlineQuestionMarkCircle) matching sidebar aesthetic
+  - **Icon Sizing**: Standardized all sidebar icons to 20x20 pixels for visual consistency
+  - **Files**: `components/HomePage/SideBar/Sidebar.tsx`
+
+- **Adaptive Help Page Layouts**: Created (help) route group with intelligent layout detection
+  - **Route Group Structure**: New `app/(help)/` directory containing About, Contact Us, and How-to pages
+  - **Adaptive Layout Component**: Custom layout that detects authentication state and renders appropriate navigation
+  - **Authentication Detection**: Checks Redux store and localStorage for accessToken to determine user login status
+  - **Conditional Rendering**: Shows Navbar for non-authenticated users, Sidebar for authenticated users
+  - **Seamless Integration**: Help pages work identically whether accessed from landing navbar or logged-in sidebar
+  - **Background Management**: Proper dark mode backgrounds across all authentication states
+  - **Files**: `app/(help)/layout.tsx`, `app/(help)/about/page.tsx`, `app/(help)/contact-us/page.tsx`, `app/(help)/how-to/page.tsx`
+
+- **Scroll-to-Top Behavior**: Added automatic scroll reset for all Help pages
+  - **useEffect Hooks**: Implemented `window.scrollTo(0, 0)` on component mount for all three Help pages
+  - **Consistent Experience**: Users always start at top of page regardless of navigation method
+  - **No Scroll Jump**: Prevents mid-page rendering issues, especially on Contact Us form page
+  - **Files**: Updated all three Help pages with scroll reset logic
+
+### Changed - Navigation and Icon Consistency
+
+- **Sidebar Icon Standardization**: Unified all sidebar icon sizes to 20x20 pixels
+  - **SideBarMenuItem Icons**: Updated Contacts and Documents icons from 14px to 20px (added `text-[20px]` class)
+  - **HelpMenuItem Icons**: Set to 20x20 pixels to match other sidebar items
+  - **Theme Toggle Icons**: Updated ModeToggle Sun and Moon icons from `h-[1.2rem] w-[1.2rem]` to `h-5 w-5` (20px)
+  - **Visual Consistency**: All sidebar icons now have uniform size matching Job Board item icons
+  - **Files**: `components/HomePage/SideBar/Sidebar.tsx`, `components/HomePage/SideBar/SideBarMenuItem.tsx`, `components/Themes/mode-toggle.tsx`
+
+- **Help Page Icon Style**: Changed from solid to outline icons
+  - **Original Icons**: HiInformationCircle, HiMail, HiQuestionMarkCircle (solid/filled)
+  - **Updated Icons**: HiOutlineInformationCircle, HiOutlineMail, HiOutlineQuestionMarkCircle (outline)
+  - **Style Consistency**: Matches existing sidebar icons like GoPersonAdd and RiFolder2Line
+  - **Visual Coherence**: Line-style icons instead of filled icons for professional appearance
+  - **Files**: `components/HomePage/SideBar/Sidebar.tsx`
+
+- **Navbar Absolute Link Paths**: Fixed navigation from Help pages back to landing page
+  - **Issue**: Relative hash anchors (#applications, #documents, #contacts) only worked on landing page
+  - **Solution**: Changed to absolute paths (/#applications, /#documents, /#contacts)
+  - **Cross-Page Navigation**: Links now work correctly from any Help page back to landing page sections
+  - **User Experience**: Users can navigate from About/Contact/How-to pages back to landing features seamlessly
+  - **Files**: `components/LandingPage/Navbar.tsx`
+
+- **Help Page Top Spacing**: Adaptive spacing based on authentication state
+  - **Logged-In Users**: `pt-20` (padding-top) for sidebar layout compatibility
+  - **Non-Authenticated Users**: `mt-36` (margin-top) for navbar layout with proper spacing
+  - **Consistent Rendering**: Content positioned correctly regardless of navigation component shown
+  - **Files**: All three Help pages in `app/(help)/` directory
+
+### Fixed - Component Errors and User Experience Issues
+
+- **Textarea Syntax Error**: Fixed JSX syntax error in Contact Us form
+  - **Issue**: Self-closing `<textarea />` tag causing "Expected jsx identifier" error
+  - **Solution**: Changed to proper opening/closing tags `<textarea></textarea>`
+  - **Validation**: Textarea is not a void element in HTML/JSX and requires closing tag
+  - **Files**: `app/(help)/contact-us/page.tsx`
+
+- **Extra Closing Div Tags**: Removed duplicate closing tags causing TypeScript errors
+  - **Issue**: Extra `</div>` tags in both Contact Us and How-to pages causing "Cannot find name 'div'" errors
+  - **Solution**: Removed extra closing tags to match proper JSX structure
+  - **Validation**: Fixed TypeScript compilation errors and component rendering
+  - **Files**: `app/(help)/contact-us/page.tsx`, `app/(help)/how-to/page.tsx`
+
+- **Logged-In Layout Scrolling**: Fixed sidebar content overflow and scroll behavior
+  - **Background Management**: Added `bg-white dark:bg-slate-900` to logged-in layout wrapper
+  - **Overflow Control**: Added `overflow-auto` to content div while keeping sidebar fixed
+  - **Proper Scrolling**: Content area scrolls independently while sidebar remains fixed in position
+  - **Dark Mode Consistency**: Background remains consistent when scrolling through content
+  - **Files**: `app/(loggedin)/layout.tsx`
+
+### Technical Implementation
+
+- **HelpMenuItem Component**: Custom navigation component for Help section
+  - **Props Interface**: `{ href: string; icon: React.ReactNode; label: string }`
+  - **Root-Level Routing**: Direct href without `/home/` prefix (unlike SideBarMenuItem)
+  - **Active State Logic**: `const isActive = pathname === href` for highlight detection
+  - **Styling**: Matches SideBarMenuItem with hover states, active borders, and transitions
+  - **Integration**: Inline component definition in Sidebar.tsx for localized scope
+
+- **Route Group Architecture**: Leveraged Next.js route groups for flexible layouts
+  - **Directory Structure**: `app/(help)/` with custom layout.tsx
+  - **Layout Detection**: Uses useAppSelector and localStorage to check authentication
+  - **Conditional Rendering**: if (isAuthenticated) return Sidebar layout, else return Navbar layout
+  - **URL Preservation**: Route group doesn't affect URL structure (/about, /contact-us, /how-to remain simple)
+  - **Component Reusability**: Same page components work with either navigation system
+
+## [0.196.0] - 2026-01-24
+
+### Added - Help Menu System and Comprehensive Documentation Pages
+
+- **Help Dropdown Menu in Navbar**: Implemented accessible dropdown navigation for help resources
+  - **Desktop Dropdown**: Added "Help" button with animated dropdown menu displaying About, Contact Us, and How to? links
+  - **Click-Outside Detection**: Dropdown automatically closes when clicking outside using useEffect and useRef hooks
+  - **Smooth Animations**: Chevron icon rotates 180° when dropdown is open/closed for visual feedback
+  - **Mobile Integration**: Added all Help menu items to HamburgerMenu for mobile device access
+  - **Dark Mode Support**: Full dark mode styling for dropdown background, borders, and hover states
+  - **Positioning**: Dropdown positioned after Light/Dark mode toggle with proper z-index layering
+  - **Files**: `components/LandingPage/Navbar.tsx`, `data/navbar-links.ts`
+
+- **About Page**: Created comprehensive About page with mission, features, and technology information
+  - **Mission Statement**: Clear explanation of JobTracker's purpose and value proposition
+  - **Feature Cards Grid**: 2x2 responsive grid showcasing Applications, Documents, Contacts, and Smart Organization features
+  - **Technology Stack Section**: Detailed list of technologies used (Next.js 14, TypeScript, Redux Toolkit, Tailwind CSS)
+  - **Call-to-Action Section**: Sign up and contact buttons with proper routing to authentication pages
+  - **Full Dark Mode**: Complete dark mode support with fixed background extending behind navbar
+  - **Accessible from Any Route**: Located outside route groups at `app/about/` for universal access
+  - **Files**: `app/about/page.tsx`
+
+- **How-to Page**: Created detailed user guide and tutorial page for JobTracker features
+  - **Getting Started Section**: Step-by-step numbered guide for account creation and initial setup
+  - **Application Management Guide**: Comprehensive instructions for adding, editing, and tracking applications
+  - **Kanban Board Tutorial**: Detailed explanation of board columns (Wishlist, Applied, Interview, Offer, Rejected)
+  - **Document Management Section**: Instructions for uploading, categorizing, and linking documents to applications
+  - **Contact Management Guide**: How to add and manage professional contacts, recruiters, and hiring managers
+  - **Tips & Best Practices**: Curated list of recommendations for effective job search management
+  - **Help Resources**: Contact support button for users needing additional assistance
+  - **Files**: `app/how-to/page.tsx`
+
+- **Contact Us Page Relocation**: Moved Contact Us page to universal location accessible from all routes
+  - **New Location**: Moved from `app/(landing)/contact-us/` to `app/contact-us/` at root level
+  - **Route Group Independence**: No longer restricted to landing route group, accessible everywhere
+  - **Consistent Dark Mode**: Added fixed background layer to ensure proper dark mode display
+  - **Scroll Position Fix**: Added scroll-to-top effect to ensure page starts at proper position
+  - **Form Border Enhancement**: Added subtle gray border around form for better visual definition
+  - **Files**: `app/contact-us/page.tsx` (moved and enhanced)
+
+### Changed - Enhanced Dark Mode Support and Page Layouts
+
+- **Legal Pages Dark Mode Fix**: Fixed dark mode background issues in Privacy and Terms pages
+  - **Full-Height Background**: Added fixed background layer extending behind navbar area
+  - **Consistent Styling**: Dark background now covers entire viewport including navbar space
+  - **No White Flash**: Eliminated white stripe at top of page when scrolling in dark mode
+  - **Files**: `app/(legal)/layout.tsx`
+
+- **Navbar Links Update**: Added Help menu items to mobile hamburger menu
+  - **New Items**: Added "About", "Contact Us", and "How to?" links to navbar-links data
+  - **Mobile Accessibility**: Help resources now accessible from hamburger menu on mobile devices
+  - **Consistent Ordering**: Maintained logical flow of navigation items across desktop and mobile
+  - **Files**: `data/navbar-links.ts`
+
+### Fixed - Page Rendering and User Experience Issues
+
+- **Contact Us Page Scroll Position**: Fixed incorrect initial scroll position on page load
+  - **Root Cause**: Formspree useForm hook initialization causing scroll jump during component mount
+  - **Solution**: Added useEffect with `window.scrollTo({ top: 0, left: 0, behavior: 'instant' })` to reset position
+  - **Instant Behavior**: Used 'instant' behavior to snap immediately without animation for better UX
+  - **Consistent Experience**: Contact Us page now starts at top like About and How-to pages
+  - **Files**: `app/contact-us/page.tsx`
+
+- **Duplicate Route Error**: Resolved Next.js routing conflict for Contact Us page
+  - **Issue**: Two parallel pages at `/(landing)/contact-us/page` and `/contact-us/page` causing build error
+  - **Solution**: Deleted old `app/(landing)/contact-us/page.tsx` file to keep only root-level version
+  - **Routing Clarity**: Single source of truth for Contact Us page route
+  - **Files**: Deleted `app/(landing)/contact-us/page.tsx`
+
+- **Contact Form Visual Definition**: Enhanced form boundaries for better user experience
+  - **Border Addition**: Added `border border-slate-200 dark:border-slate-700` to form container
+  - **Improved Visibility**: Form top edge now clearly visible with subtle gray border
+  - **Dark Mode Consistency**: Border adapts to dark mode with appropriate slate color
+  - **Professional Appearance**: Form stands out better against page background
+  - **Files**: `app/contact-us/page.tsx`
+
+### Added - Email Infrastructure
+
+- **Custom Email Domain**: Configured custom domain for professional transactional emails
+  - **Domain**: `chervencova.top` integrated with Resend email service
+  - **Sender Email**: `jobtracker@chervencova.top` for application notifications and communications
+  - **Email Authentication**: Implemented SPF, DKIM, and MX records for email deliverability
+  - **Bounce Handling**: Configured return-path subdomain for delivery feedback
+  - **Documentation**: Detailed setup instructions in `docs/EMAIL_SETUP.md` (internal use only)
+
+### Technical Implementation Details
+
+- **Folder Structure Strategy**: Created accessible page structure outside route groups
+  - **Rationale**: Pages needed to be accessible from both landing pages and logged-in user routes
+  - **Location**: `app/about/`, `app/contact-us/`, `app/how-to/` at root level
+  - **Benefits**: No duplication, single source of truth, works across all authentication states
+  - **Consistency**: All three pages follow identical layout patterns and styling
+
+- **Dark Mode Architecture**: Implemented fixed background layer pattern for proper dark mode
+  - **Implementation**: `<div className="fixed inset-0 bg-white dark:bg-slate-900 -z-10" />`
+  - **Purpose**: Ensures dark background extends behind fixed navbar area
+  - **Z-Index**: Layer sits behind all content (-10) but above page default background
+  - **Consistency**: Applied to About, How-to, Contact Us, and Legal pages
+
+- **Component State Management**: Enhanced Navbar with React hooks for dropdown functionality
+  - **useState**: Manages dropdown open/closed state
+  - **useRef**: References dropdown container for click-outside detection
+  - **useEffect**: Event listener cleanup on component unmount
+  - **Event Delegation**: Global mousedown listener attached to document for efficient detection
+
+### Email Configuration Summary
+
+- **Zero Breaking Changes**: New email domain adds capability without disrupting existing functionality
+- **Production Ready**: All DNS records verified and fully functional
+- **Email Isolation**: Application emails (jobtracker@) separate from admin emails (admin@)
+- **Security Compliance**: Implements industry-standard email authentication (SPF, DKIM)
+- **Deliverability Optimized**: Proper configuration maximizes inbox delivery rates
+- **Infrastructure**: Uses Amazon SES backbone via Resend for reliable email delivery
+
 ## [0.195.0] - 2026-01-23
 
 ### Added - Contact Us Page with Formspree Integration
@@ -127,7 +378,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Memory Management Improvements**: Enhanced cleanup and resource management throughout deletion flow
   - **Object URL Cleanup**: Added automatic revocation of previous blob URLs when selecting new profile photos
   - **Comprehensive State Cleanup**: Enhanced `cleanupAfterLogout` to clear Redux Persist, sessionStorage, and auth headers
-  - **Rate Limiting Protection**: Implemented 30-second resend cooldown with visual countdown feedback
+  - **Rate Limiting Protection**: Implemented 30-second resend cool down with visual countdown feedback
   - **Files**: `app/(loggedin)/home/settings/page.tsx`, `app/(auth)/delete-account-verify/page.tsx`, `utils/helpers.ts`
 
 - **Data Isolation and Security**: Improved user data management and context separation
@@ -526,7 +777,7 @@ catch (err: unknown) {
     - `redux/store.ts` (enhanced with notifications reducer)
     - `app/(loggedin)/home/settings/page.tsx` (integrated notification management)
 
-#### Technical Implementation Details
+#### Technical Implementation Details 2025-08-17
 
 - **State Management Architecture**: Comprehensive Redux integration with proper TypeScript interfaces
   - **NotificationSettings Interface**: Strongly typed with time, timezone offset, day of week, and type fields
@@ -2234,7 +2485,7 @@ if (!boardId) {
 - **Graceful fallback**: Redirects to login only when refresh fails
 - **Production optimized**: Uses existing `/auth/refresh` endpoint with proper error handling
 
-#### Technical Implementation
+#### Technical Implementation 2025-07-13
 
 - **Enhanced axios response interceptor**: Added comprehensive token refresh logic
   - **Race condition protection**: `refreshPromise` ensures only one refresh at a time
@@ -2741,6 +2992,9 @@ _All changes maintain backward compatibility and enhance user experience with im
 
 <!-- Version comparison links -->
 
+[0.198.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.197.0...v0.198.0
+[0.197.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.196.0...v0.197.0
+[0.196.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.195.0...v0.196.0
 [0.195.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.194.3...v0.195.0
 [0.194.2]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.194.1...v0.194.2
 [0.194.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.194.0...v0.194.1

@@ -25,6 +25,16 @@ const Home = () => {
         name="Contacts"
         description="Add your job search contacts."
       />
+      <ContentSection
+        id="notes"
+        name="Notes"
+        description="Capture and organize important insights."
+      />
+      <ContentSection
+        id="companies"
+        name="Companies"
+        description="Build your target company database."
+      />
       <Footer />
     </>
   );

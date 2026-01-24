@@ -12,6 +12,18 @@ const navbarLinks = [
     url: '/#contacts',
   },
   {
+    title: 'About',
+    url: '/about',
+  },
+  {
+    title: 'Contact Us',
+    url: '/contact-us',
+  },
+  {
+    title: 'How to?',
+    url: '/how-to',
+  },
+  {
     title: 'Log in',
     url: '/login',
   },

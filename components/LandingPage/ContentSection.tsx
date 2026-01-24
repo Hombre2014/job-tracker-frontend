@@ -3,7 +3,12 @@
 import React from 'react';
 import Image from 'next/image';
 
-type SectionId = 'applications' | 'documents' | 'contacts';
+type SectionId =
+  | 'applications'
+  | 'documents'
+  | 'contacts'
+  | 'notes'
+  | 'companies';
 
 interface ContentSectionProps {
   name: string;
@@ -18,12 +23,18 @@ const sectionColors = {
     'from-green-100 via-green-50 to-white dark:from-green-900 dark:via-gray-900 dark:to-black',
   documents:
     'from-purple-100 via-pink-50 to-white dark:from-purple-900 dark:via-gray-900 dark:to-black',
+  notes:
+    'from-orange-100 via-amber-50 to-white dark:from-orange-900 dark:via-gray-900 dark:to-black',
+  companies:
+    'from-red-100 via-rose-50 to-white dark:from-red-900 dark:via-gray-900 dark:to-black',
 } satisfies Record<SectionId, string>;
 
 const sectionImages = {
   contacts: '/images/Contacts.png',
   documents: '/images/Documents.png',
   applications: '/images/Add_Job.png',
+  notes: '/images/Notes.png',
+  companies: '/images/Company.png',
 } satisfies Record<SectionId, string>;
 
 const sectionIcons: Record<SectionId, JSX.Element> = {
@@ -75,6 +86,43 @@ const sectionIcons: Record<SectionId, JSX.Element> = {
       </svg>
     </span>
   ),
+  notes: (
+    <span className="inline-block bg-orange-500 text-white rounded-full p-4 shadow-lg mb-4">
+      <svg
+        fill="none"
+        strokeWidth="2"
+        focusable="false"
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className="w-8 h-8"
+        stroke="currentColor"
+      >
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+      </svg>
+    </span>
+  ),
+  companies: (
+    <span className="inline-block bg-red-500 text-white rounded-full p-4 shadow-lg mb-4">
+      <svg
+        fill="none"
+        strokeWidth="2"
+        focusable="false"
+        aria-hidden="true"
+        viewBox="0 0 24 24"
+        className="w-8 h-8"
+        stroke="currentColor"
+      >
+        <path d="M3 21h18" />
+        <path d="M5 21V7l8-4v18" />
+        <path d="M19 21V11l-6-4" />
+        <path d="M9 9v.01" />
+        <path d="M9 12v.01" />
+        <path d="M9 15v.01" />
+        <path d="M9 18v.01" />
+      </svg>
+    </span>
+  ),
 };
 
 const sectionParagraphs = {
@@ -84,6 +132,10 @@ const sectionParagraphs = {
     'Easily upload and manage your resumes, cover letters, and supporting documents. Attach them to jobs, activities, or contacts, so you always have the right file at your fingertips when you need it most.',
   contacts:
     'Keep track of everyone you meet along your journey—recruiters, interviewers, and networking connections. Store contact info, add notes, and never lose touch with the people who can help you land your next role.',
+  notes:
+    'Capture important insights, meeting summaries, and interview feedback as they happen. Add notes to jobs, contacts, or activities to keep context at your fingertips and make informed decisions throughout your search.',
+  companies:
+    'Build a comprehensive database of target companies with detailed profiles, culture insights, and job openings. Track your interactions, save company research, and identify the best opportunities that align with your career goals.',
 } satisfies Record<SectionId, string>;
 
 const ContentSection = ({ name, description, id }: ContentSectionProps) => {
