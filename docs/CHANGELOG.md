@@ -3,6 +3,48 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.198.0] - 2026-01-24
+
+### Added - Notes and Companies Sections
+
+- **Notes Section on Landing Page**: Comprehensive note-taking feature showcase
+  - **Visual Design**: Orange/amber gradient color scheme (`from-orange-100 via-amber-50 to-white` with dark mode variants)
+  - **Section Icon**: Orange circular badge with note and pen SVG icon (20x20 pixels)
+  - **Feature Image**: `/images/Notes.png` displaying notes interface
+  - **Content**: Three descriptive paragraphs highlighting quick capture, organization, rich formatting, and task linking capabilities
+  - **Reverse Layout**: Content appears first (left), followed by image (right) for visual variety
+  - **Navigation**: Added "Notes" link to landing page navbar with smooth scroll to `#notes` anchor
+  - **Files**: `components/LandingPage/ContentSection.tsx`, `app/(landing)/page.tsx`, `components/LandingPage/Navbar.tsx`
+
+- **Companies Section on Landing Page**: Company tracking feature showcase
+  - **Visual Design**: Red/rose gradient color scheme (`from-red-100 via-rose-50 to-white` with dark mode variants)
+  - **Section Icon**: Red circular badge with building SVG icon (20x20 pixels)
+  - **Feature Image**: `/images/Company.png` displaying company management interface
+  - **Content**: Three descriptive paragraphs highlighting centralized tracking, research organization, and strategic insights
+  - **Standard Layout**: Image appears first (left), followed by content (right) matching Applications and Contacts sections
+  - **Navigation**: Added "Companies" link to landing page navbar with smooth scroll to `#companies` anchor
+  - **Color Refinement**: Evolved from teal (too similar to green Contacts) through indigo (too similar to blue/purple) to final red/rose for maximum visual distinction
+  - **Files**: `components/LandingPage/ContentSection.tsx`, `app/(landing)/page.tsx`, `components/LandingPage/Navbar.tsx`
+
+- **ContentSection Type Extension**: Enhanced component to support new feature sections
+  - **Extended SectionId Type**: Added `'notes' | 'companies'` to existing `'applications' | 'documents' | 'contacts'`
+  - **Color Mappings**: Defined gradient colors, icon backgrounds, and paragraph text colors for both sections
+  - **Icon Definitions**: Added custom SVG icons (note with pen for Notes, building for Companies)
+  - **Image Paths**: Configured image sources for both new sections
+  - **Content Management**: Added descriptive paragraphs highlighting key features and benefits
+  - **Complete Color Palette**: Blue (Applications), Purple/Pink (Documents), Green (Contacts), Orange/Amber (Notes), Red/Rose (Companies)
+  - **Files**: `components/LandingPage/ContentSection.tsx`
+
+### Changed - Landing Page Navigation
+
+- **Navbar Menu Expansion**: Increased landing page navigation from 3 to 5 items
+  - **Previous Items**: Applications, Documents, Contacts
+  - **New Items**: Notes, Companies
+  - **Consistent Styling**: New menu items match existing hover effects, smooth scrolling, and responsive behavior
+  - **Mobile Support**: New items integrated into hamburger menu for mobile devices
+  - **Anchor Links**: Proper hash-based navigation (`/#notes`, `/#companies`) for smooth scroll behavior
+  - **Files**: `components/LandingPage/Navbar.tsx`
+
 ## [0.197.0] - 2026-01-24
 
 ### Added - Help Menu System in Logged-In Mode
@@ -2950,6 +2992,7 @@ _All changes maintain backward compatibility and enhance user experience with im
 
 <!-- Version comparison links -->
 
+[0.198.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.197.0...v0.198.0
 [0.197.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.196.0...v0.197.0
 [0.196.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.195.0...v0.196.0
 [0.195.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.194.3...v0.195.0
