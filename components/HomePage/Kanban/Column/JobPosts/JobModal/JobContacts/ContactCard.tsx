@@ -70,7 +70,7 @@ const ContactCard = ({
       const joinedText = items.map((item) => item[propertyName]).join(', ');
       return formatTextWithEllipsis(joinedText);
     },
-    [formatTextWithEllipsis]
+    [formatTextWithEllipsis],
   );
 
   // Memoized company name display
@@ -90,7 +90,7 @@ const ContactCard = ({
         // Option 1: If companies data is already available in the contact, use it
         if (contact.companies && contact.companies.length > 0) {
           const names = contact.companies.map(
-            (company: { name: string }) => company.name
+            (company: { name: string }) => company.name,
           );
           setCompanyNames(names);
           setContactWithCompanies(contact);
@@ -113,14 +113,14 @@ const ContactCard = ({
           try {
             // Try to fetch the first board as default
             const boards = await dispatch(
-              getBoardsOnly(accessToken as string)
+              getBoardsOnly(accessToken as string),
             ).unwrap();
             if (boards && boards.length > 0) {
               // Sort by creation date to get the first created board
               const sortedBoards = [...boards].sort(
                 (a, b) =>
                   new Date(a.createdAt).getTime() -
-                  new Date(b.createdAt).getTime()
+                  new Date(b.createdAt).getTime(),
               );
               // Use the first board (likely "Job Search YYYY")
               effectiveBoardId = sortedBoards[0].id;
@@ -142,7 +142,7 @@ const ContactCard = ({
             const contactData = await dispatch(getContact(value)).unwrap();
             if (contactData[0]?.companies?.length > 0) {
               const names = contactData[0].companies.map(
-                (company: { name: string }) => company.name
+                (company: { name: string }) => company.name,
               );
               setCompanyNames(names);
               setContactWithCompanies(contactData[0]);
@@ -170,7 +170,7 @@ const ContactCard = ({
 
   const handleDeleteContact = () => {
     dispatch(
-      deleteContact({ id: contact.id, accessToken: accessToken as string })
+      deleteContact({ id: contact.id, accessToken: accessToken as string }),
     ).then(() => {
       onDelete(contact.id);
     });
@@ -203,25 +203,27 @@ const ContactCard = ({
   );
 
   return (
-    <div className="min-w-[268px]">
+    <div className="w-[268px]">
       <div className="flex flex-col gap-1 border border-gray-200 rounded-md">
         <div className="flex justify-between px-2 mt-2 items-start">
-          <div className="flex justify-start gap-4 items-center">
+          <div className="flex justify-start gap-4 items-center overflow-hidden">
             <Image
               width={50}
               height={50}
               alt="Contact photo"
-              className="rounded-lg object-cover"
+              className="rounded-lg object-cover flex-shrink-0"
               src={contact.photoUrl || '/images/Yuriy.jpg'}
             />
-            <div className="flex flex-col items-start justify-center text-sm">
-              <p className="font-bold">
-                {contact.firstName} {contact.lastName}
+            <div className="flex flex-col items-start justify-center text-sm overflow-hidden flex-1">
+              <p className="font-bold truncate w-full">
+                {formatTextWithEllipsis(
+                  `${contact.firstName} ${contact.lastName}`,
+                )}
               </p>
-              <p className="font-semibold text-muted-foreground">
-                {contact.jobTitle}
+              <p className="font-semibold text-muted-foreground truncate w-full">
+                {formatTextWithEllipsis(contact.jobTitle)}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground truncate w-full">
                 {displayedCompanyNames}
               </p>
             </div>
