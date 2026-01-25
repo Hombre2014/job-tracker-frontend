@@ -3,9 +3,9 @@
 import * as z from 'zod';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
-import { useRouter } from 'next/navigation';
 import { RiQuestionMark } from 'react-icons/ri';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, startTransition } from 'react';
 
 import client from '@/api/client';
@@ -13,36 +13,38 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { FormError } from '@/components/Forms/form-error';
 import { FormSuccess } from '@/components/Forms/form-success';
-import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { ForgotPasswordSchema, ResetPasswordSchema } from '@/schemas';
 import {
   Tooltip,
+  TooltipTrigger,
   TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
 } from '@/components/ui/tooltip';
 import {
   Form,
-  FormControl,
-  FormField,
   FormItem,
+  FormField,
   FormLabel,
+  FormControl,
   FormMessage,
 } from '@/components/ui/form';
 
 const ForgotPassword: React.FC = () => {
   const router = useRouter();
-  const dispatch = useAppDispatch();
+  const searchParams = useSearchParams();
   const [userEmail, setUserEmail] = useState<string>('');
-  const { status } = useAppSelector((state) => state.user);
   const [error, setError] = useState<string | undefined>('');
   const [success, setSuccess] = useState<string | undefined>('');
   const [buttonClicked, setButtonClicked] = useState<boolean>(false);
 
+  // Check if user came from weak password detection
+  const isWeakPasswordReset = searchParams.get('reason') === 'weak';
+  const prefilledEmail = searchParams.get('email') || '';
+
   const form = useForm<z.infer<typeof ForgotPasswordSchema>>({
     resolver: zodResolver(ForgotPasswordSchema),
     defaultValues: {
-      email: '',
+      email: prefilledEmail,
     },
   });
 
@@ -51,6 +53,7 @@ const ForgotPassword: React.FC = () => {
     defaultValues: {
       code: '',
       newPassword: '',
+      confirmPassword: '',
     },
   });
 
@@ -61,7 +64,7 @@ const ForgotPassword: React.FC = () => {
       try {
         const res = await client.post(
           '/users/reset-password/create-verification-code',
-          { email }
+          { email },
         );
 
         if (res.status === 200) {
@@ -87,6 +90,9 @@ const ForgotPassword: React.FC = () => {
   const resetPassword = (values: z.infer<typeof ResetPasswordSchema>) => {
     const { code, newPassword } = values;
 
+    setError('');
+    setSuccess('');
+
     if (!code || !newPassword) {
       setError('Code or password is missing');
       return;
@@ -111,44 +117,48 @@ const ForgotPassword: React.FC = () => {
         });
 
         if (res.status === 201) {
-          newForm.reset();
           setSuccess('Password reset successful');
-          router.push('/login');
+          newForm.reset();
+          setTimeout(() => {
+            router.push('/login');
+          }, 1500);
         }
       } catch (error: any) {
-        const err = error.response.data.userFriendlyMessage;
+        const err =
+          error.response.data.userFriendlyMessage ||
+          'Failed to reset password. Please try again.';
         setError(err);
-        form.reset();
         setTimeout(() => setError(''), 3000);
-        router.push('/forgot-password');
-        setButtonClicked(true);
       }
     });
   };
 
   useEffect(() => {
-    if (status === 'idle' || status === 'loading') {
-      setError('');
-      setSuccess('');
-    }
-
-    if (status === 'succeeded') {
-      setSuccess('Password reset successful');
-    }
-
-    if (status === 'failed') {
-      setError('Invalid code or password');
-      const timeout = setTimeout(() => setError(''), 2000);
-
-      return () => {
-        clearTimeout(timeout);
-      };
-    }
-  }, [status, dispatch]);
+    // Clear messages when component mounts
+    setError('');
+    setSuccess('');
+  }, []);
 
   return (
     <div className="flex flex-col items-left justify-center h-full min-w-[330px] mx-4">
-      <h1 className="text-4xl font-semibold">Forgot Password</h1>
+      {isWeakPasswordReset ? (
+        <>
+          <h1 className="text-4xl font-semibold">
+            🔒 Strengthen Your Password
+          </h1>
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-4 mt-4 mb-2">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200 font-semibold">
+              Security Update Required
+            </p>
+            <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-2">
+              Your current password doesn&apos;t meet our updated security
+              standards. Please reset it to a stronger one to continue.
+            </p>
+          </div>
+        </>
+      ) : (
+        <h1 className="text-4xl font-semibold">Forgot Password</h1>
+      )}
       {buttonClicked && (
         <Form {...newForm}>
           <form
@@ -177,7 +187,9 @@ const ForgotPassword: React.FC = () => {
                     <FormControl>
                       <Input
                         type="text"
-                        placeholder="Enter 6 digit code"
+                        placeholder="Enter the reset code here"
+                        maxLength={6}
+                        autoComplete="off"
                         {...field}
                       />
                     </FormControl>
@@ -194,7 +206,26 @@ const ForgotPassword: React.FC = () => {
                     <FormControl>
                       <Input
                         type="password"
-                        placeholder="Your new password"
+                        placeholder="Enter your new password"
+                        autoComplete="new-password"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={newForm.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Repeat New Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Re-enter your new password"
+                        autoComplete="new-password"
                         {...field}
                       />
                     </FormControl>
@@ -220,7 +251,11 @@ const ForgotPassword: React.FC = () => {
       )}
       {!buttonClicked && (
         <div>
-          <p className="text-slate-500 mt-2 mb-6">Enter your email</p>
+          <p className="text-slate-500 mt-2 mb-6">
+            {isWeakPasswordReset
+              ? "We'll send a verification code to your email"
+              : 'Enter your email'}
+          </p>
           <Form {...form}>
             <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="space-y-4">
@@ -243,7 +278,6 @@ const ForgotPassword: React.FC = () => {
                 />
               </div>
               <FormError message={error} />
-              <FormSuccess message={success} />
               <Button
                 type="submit"
                 className="w-full bg-blue-500 transition duration-300 delay-100 hover:bg-blue-600 dark:text-white"
