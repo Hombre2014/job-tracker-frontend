@@ -42,11 +42,6 @@ const ForgotPassword: React.FC = () => {
   const isWeakPasswordReset = searchParams.get('reason') === 'weak';
   const prefilledEmail = searchParams.get('email') || '';
 
-  console.log('🔍 Forgot Password Page - Initial state:', {
-    isWeakPasswordReset,
-    prefilledEmail,
-  });
-
   const form = useForm<z.infer<typeof ForgotPasswordSchema>>({
     resolver: zodResolver(ForgotPasswordSchema),
     defaultValues: {
@@ -64,24 +59,15 @@ const ForgotPassword: React.FC = () => {
   });
 
   const onSubmit = (values: z.infer<typeof ForgotPasswordSchema>) => {
-    console.log('🔥 onSubmit called with values:', values);
     const { email } = values;
     setUserEmail(email);
 
-    console.log('Submitting forgot password request for email:', email);
-
     startTransition(async () => {
       try {
-        console.log(
-          'Making API call to:',
-          '/users/reset-password/create-verification-code',
-        );
         const res = await client.post(
           '/users/reset-password/create-verification-code',
           { email },
         );
-
-        console.log('API Response:', res.status, res.data);
 
         if (res.status === 200 || res.status === 201 || res.status === 204) {
           newForm.reset();
@@ -310,9 +296,6 @@ const ForgotPassword: React.FC = () => {
               <FormError message={error} />
               <Button
                 type="submit"
-                onClick={() =>
-                  console.log('Button clicked! Form state:', form.formState)
-                }
                 className="w-full bg-blue-500 transition duration-300 delay-100 hover:bg-blue-600 dark:text-white"
               >
                 Send Password Reset Code
