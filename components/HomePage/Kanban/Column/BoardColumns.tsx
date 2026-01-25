@@ -19,17 +19,33 @@ import { Input } from '@/components/ui/input';
 import JobPostCard from './JobPosts/JobPostCard';
 import { cleanupAfterJobPost } from '@/utils/helpers';
 import { returnBoardIcon } from '@/utils/ReturnIcons';
-import { createJobPost } from '@/redux/jobs/jobsThunk';
-import { updateJobPost } from '@/redux/jobs/jobsThunk';
 import AlertDialogModal from '../../Boards/AlertDialogModal';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { createJobPost, updateJobPost } from '@/redux/jobs/jobsThunk';
 import { getBoards, updateColumnName } from '@/redux/boards/boardsThunk';
+import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
 import {
-  filterBoardColumns,
   getSearchSummary,
   countFilteredJobs,
+  filterBoardColumns,
 } from '@/utils/searchUtils';
-import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
+
+// Draggable wrapper component for job post cards
+const DraggableJobPostCard = (props: JobPostCardProps) => {
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({ id: props.id });
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    opacity: isDragging ? 0 : 1, // Make original invisible when dragging (DragOverlay shows preview)
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <JobPostCard {...props} />
+    </div>
+  );
+};
 
 const BoardColumns = () => {
   const router = useRouter();
@@ -37,10 +53,8 @@ const BoardColumns = () => {
   const dispatch = useAppDispatch();
   const [isEditing, setIsEditing] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
-  const [overId, setOverId] = useState<string | null>(null);
   const [currentColumnId, setCurrentColumnId] = useState('');
   const { boards } = useAppSelector((state) => state.boards);
-  const { jobPosts } = useAppSelector((state) => state.jobs);
   const focusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [renamedColumnName, setRenamedColumnName] = useState('');
@@ -198,14 +212,12 @@ const BoardColumns = () => {
   };
 
   const handleDragOver = (event: any) => {
-    const { over } = event;
-    setOverId(over?.id || null);
+    // DragOver tracking removed as overId was unused
   };
 
   const handleDragEnd = (event: any) => {
     const { active, over } = event;
     setActiveId(null);
-    setOverId(null);
 
     if (!over) return;
 
@@ -234,7 +246,7 @@ const BoardColumns = () => {
     const newColumnOrder = targetColumn.order;
 
     // Apply same status logic as handleSelectList from layout.tsx
-    let newStatus: jobPostStatus = draggedJob.status;
+    let newStatus: jobPostStatus;
 
     if (newColumnOrder === 4 || newColumnOrder < currentColumnOrder) {
       newStatus = 'Job Moved';
@@ -268,22 +280,6 @@ const BoardColumns = () => {
           name: draggedJob.company.name,
         },
       }),
-    );
-  };
-
-  const DraggableJobPostCard = (props: JobPostCardProps) => {
-    const { attributes, listeners, setNodeRef, transform, isDragging } =
-      useDraggable({ id: props.id });
-
-    const style = {
-      transform: CSS.Translate.toString(transform),
-      opacity: isDragging ? 0.5 : 1,
-    };
-
-    return (
-      <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-        <JobPostCard {...props} />
-      </div>
     );
   };
 
@@ -370,89 +366,87 @@ const BoardColumns = () => {
 
         {/* Board Columns */}
         <div className="w-full flex h-full flex-1">
-          {filteredColumns &&
-            filteredColumns.map((column) => (
-              <DroppableColumn key={column.id} column={column}>
-                {/* Fixed Header */}
-                <div className="flex-shrink-0">
-                  <div className="flex items-center justify-between px-4 pt-8">
-                    {returnBoardIcon(column.order + 1)}
-                    <p className="hover:bg-slate-200 dark:hover:bg-slate-700 px-2 py-1 rounded-md cursor-text transition duration-300 delay-150 mx-2">
-                      <Input
-                        id={column.id}
-                        value={
-                          column.id === currentColumnId
-                            ? renamedColumnName.toUpperCase()
-                            : column.name.toUpperCase()
-                        }
-                        className="text-lg font-semibold text-center w-full border-none outline-none shadow-none active:outline-none active:shadow-none active:border-none dark:text-white dark:bg-transparent focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setIsEditing(true);
-                          setCurrentColumnId(column.id);
-                          setRenamedColumnName(column.name);
-                        }}
-                        onBlur={confirmColumnNameChange}
-                        onKeyDown={(e) => checkForEnter(e)}
-                        onChange={(e) => handleColumnNameChange(e)}
-                      />
-                    </p>
-                    <ThreeDotsMenu columnOrder={column.order} />
-                  </div>
-                  <div className="w-full flex justify-center">
-                    <p className="mb-8 text-center dark:text-white">
-                      {column.jobApplications?.length}{' '}
-                      {column.jobApplications?.length === 1 ? 'JOB' : 'JOBS'}
-                      {isActive && (
-                        <span className="text-xs text-gray-500 block">
-                          {searchSummary.isFiltering ? 'filtered' : 'total'}
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                  <AlertDialogModal
-                    buttonLabel="+"
-                    cleanupType="job"
-                    dialogTitle="Add Job"
-                    buttonCancel="Discard"
-                    buttonVariant="outline"
-                    actionFunction={createJobApplication}
-                    buttonConfirm={isSubmittingJob ? 'Saving...' : 'Save Job'}
-                    stylings="w-11/12 flex justify-center text-2xl border py-3 mb-4 mx-auto rounded-md hover:border-blue-500 transition duration-300 delay-150 cursor-pointer"
-                  >
-                    <AddJobShortForm
-                      columnOrder={column.order}
-                      onDraftChange={(d) => {
-                        jobDraftRef.current = { ...jobDraftRef.current, ...d };
+          {filteredColumns?.map((column) => (
+            <DroppableColumn key={column.id} column={column}>
+              {/* Fixed Header */}
+              <div className="flex-shrink-0">
+                <div className="flex items-center justify-between px-4 pt-8">
+                  {returnBoardIcon(column.order + 1)}
+                  <p className="hover:bg-slate-200 dark:hover:bg-slate-700 px-2 py-1 rounded-md cursor-text transition duration-300 delay-150 mx-2">
+                    <Input
+                      id={column.id}
+                      value={
+                        column.id === currentColumnId
+                          ? renamedColumnName.toUpperCase()
+                          : column.name.toUpperCase()
+                      }
+                      className="text-lg font-semibold text-center w-full border-none outline-none shadow-none active:outline-none active:shadow-none active:border-none dark:text-white dark:bg-transparent focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setIsEditing(true);
+                        setCurrentColumnId(column.id);
+                        setRenamedColumnName(column.name);
                       }}
+                      onBlur={confirmColumnNameChange}
+                      onKeyDown={(e) => checkForEnter(e)}
+                      onChange={(e) => handleColumnNameChange(e)}
                     />
-                  </AlertDialogModal>
+                  </p>
+                  <ThreeDotsMenu columnOrder={column.order} />
                 </div>
-
-                {/* Scrollable Content */}
-                <div className="flex-1 overflow-y-auto min-h-0">
-                  {column.jobApplications &&
-                    column.jobApplications.map((job) =>
-                      job.company !== null ? (
-                        <DraggableJobPostCard
-                          id={job.id}
-                          key={job.id}
-                          notes={job.notes}
-                          title={job.title}
-                          color={job.color}
-                          status={job.status}
-                          columnId={column.id}
-                          postUrl={job.postUrl}
-                          deadline={job.deadline}
-                          timeStamp={job.createdAt}
-                          companyName={job.company.name}
-                          statusChangedTime={job.statusChangedAt}
-                        />
-                      ) : null,
+                <div className="w-full flex justify-center">
+                  <p className="mb-8 text-center dark:text-white">
+                    {column.jobApplications?.length}{' '}
+                    {column.jobApplications?.length === 1 ? 'JOB' : 'JOBS'}
+                    {isActive && (
+                      <span className="text-xs text-gray-500 block">
+                        {searchSummary.isFiltering ? 'filtered' : 'total'}
+                      </span>
                     )}
+                  </p>
                 </div>
-              </DroppableColumn>
-            ))}
+                <AlertDialogModal
+                  buttonLabel="+"
+                  cleanupType="job"
+                  dialogTitle="Add Job"
+                  buttonCancel="Discard"
+                  buttonVariant="outline"
+                  actionFunction={createJobApplication}
+                  buttonConfirm={isSubmittingJob ? 'Saving...' : 'Save Job'}
+                  stylings="w-11/12 flex justify-center text-2xl border py-3 mb-4 mx-auto rounded-md hover:border-blue-500 transition duration-300 delay-150 cursor-pointer"
+                >
+                  <AddJobShortForm
+                    columnOrder={column.order}
+                    onDraftChange={(d) => {
+                      jobDraftRef.current = { ...jobDraftRef.current, ...d };
+                    }}
+                  />
+                </AlertDialogModal>
+              </div>
+
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto min-h-0">
+                {column.jobApplications?.map((job) =>
+                  job.company !== null ? (
+                    <DraggableJobPostCard
+                      id={job.id}
+                      key={job.id}
+                      notes={job.notes}
+                      title={job.title}
+                      color={job.color}
+                      status={job.status}
+                      columnId={column.id}
+                      postUrl={job.postUrl}
+                      deadline={job.deadline}
+                      timeStamp={job.createdAt}
+                      companyName={job.company.name}
+                      statusChangedTime={job.statusChangedAt}
+                    />
+                  ) : null,
+                )}
+              </div>
+            </DroppableColumn>
+          ))}
         </div>
 
         {/* Empty Search Results Message */}

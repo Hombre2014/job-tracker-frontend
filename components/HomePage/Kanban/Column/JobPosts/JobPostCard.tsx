@@ -248,7 +248,7 @@ const JobPostCard = ({
                     </div>
                   </span>
                 </TooltipTrigger>
-                <TooltipContent className="bg-slate-300 !min-w-[250px] text-gray-900">
+                <TooltipContent className="bg-slate-300 text-gray-900">
                   <p>
                     <span>
                       {isDeadlinePassed ? (
