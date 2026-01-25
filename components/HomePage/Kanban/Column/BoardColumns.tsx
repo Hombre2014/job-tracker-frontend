@@ -19,17 +19,68 @@ import { Input } from '@/components/ui/input';
 import JobPostCard from './JobPosts/JobPostCard';
 import { cleanupAfterJobPost } from '@/utils/helpers';
 import { returnBoardIcon } from '@/utils/ReturnIcons';
-import { createJobPost } from '@/redux/jobs/jobsThunk';
-import { updateJobPost } from '@/redux/jobs/jobsThunk';
 import AlertDialogModal from '../../Boards/AlertDialogModal';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { createJobPost, updateJobPost } from '@/redux/jobs/jobsThunk';
 import { getBoards, updateColumnName } from '@/redux/boards/boardsThunk';
+import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
 import {
-  filterBoardColumns,
   getSearchSummary,
   countFilteredJobs,
+  filterBoardColumns,
 } from '@/utils/searchUtils';
-import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
+
+// Draggable wrapper component for job post cards
+const DraggableJobPostCard = (props: JobPostCardProps) => {
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({ id: props.id });
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    opacity: isDragging ? 0 : 1, // Make original invisible when dragging (DragOverlay shows preview)
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <JobPostCard {...props} />
+    </div>
+  );
+};
+
+// Column interface for type checking
+interface Column {
+  id: string;
+  order: number;
+  name: string;
+  jobApplications?: { id: string }[];
+}
+
+// Droppable wrapper component for columns
+const DroppableColumn = ({
+  column,
+  children,
+}: {
+  column: Column;
+  children: React.ReactNode;
+}) => {
+  const { setNodeRef, isOver } = useDroppable({
+    id: column.id,
+  });
+
+  return (
+    <section
+      ref={setNodeRef}
+      key={column.order + 1}
+      className={`flex flex-col border-r border-slate-200 w-1/5 transition-all duration-200 flex-1 ${
+        isOver
+          ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-600'
+          : ''
+      }`}
+    >
+      {children}
+    </section>
+  );
+};
 
 const BoardColumns = () => {
   const router = useRouter();
@@ -37,10 +88,8 @@ const BoardColumns = () => {
   const dispatch = useAppDispatch();
   const [isEditing, setIsEditing] = useState(false);
   const accessToken = localStorage.getItem('accessToken');
-  const [overId, setOverId] = useState<string | null>(null);
   const [currentColumnId, setCurrentColumnId] = useState('');
   const { boards } = useAppSelector((state) => state.boards);
-  const { jobPosts } = useAppSelector((state) => state.jobs);
   const focusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [renamedColumnName, setRenamedColumnName] = useState('');
@@ -67,7 +116,7 @@ const BoardColumns = () => {
       // For development: log when we have a query but it's not active
       if (process.env.NODE_ENV === 'development') {
         console.log(
-          `Search not active for query "${query}" (length: ${query.length})`
+          `Search not active for query "${query}" (length: ${query.length})`,
         );
       }
       return boardColumns;
@@ -96,13 +145,13 @@ const BoardColumns = () => {
       activationConstraint: {
         distance: 8,
       },
-    })
+    }),
   );
 
   useEffect(() => {
     if (isEditing) {
       const currentInputElement = document.getElementById(
-        currentColumnId
+        currentColumnId,
       ) as HTMLInputElement;
       if (currentInputElement) {
         currentInputElement.focus();
@@ -129,7 +178,7 @@ const BoardColumns = () => {
     if (focusTimeoutRef.current) clearTimeout(focusTimeoutRef.current);
     focusTimeoutRef.current = setTimeout(() => {
       const input = document.getElementById(
-        currentColumnId
+        currentColumnId,
       ) as HTMLInputElement;
       if (input && document.activeElement !== input) {
         input.focus();
@@ -156,7 +205,7 @@ const BoardColumns = () => {
         accessToken,
         id: currentColumnId,
         name: renamedColumnName,
-      })
+      }),
     );
     dispatch(getBoards(accessToken as string));
   };
@@ -181,31 +230,35 @@ const BoardColumns = () => {
       companyId: draft.companyId || legacyCompanyId,
     };
 
-    dispatch(createJobPost(jobPost)).then((result) => {
-      const newJobPostId = result.payload.id;
-      const selectedBoardId =
-        localStorage.getItem('chosenBoardId') || (board_id as string);
-      const targetPath = `/home/boards/${selectedBoardId}/job/${newJobPostId}/job-details`;
-      router.push(targetPath);
-      setIsSubmittingJob(false);
-    });
-    dispatch(getBoards(accessToken as string));
-    cleanupAfterJobPost();
+    dispatch(createJobPost(jobPost))
+      .then((result) => {
+        if (!result.payload?.id) {
+          console.error('Failed to create job post');
+          setIsSubmittingJob(false);
+          return;
+        }
+        const newJobPostId = result.payload.id;
+        const selectedBoardId =
+          localStorage.getItem('chosenBoardId') || (board_id as string);
+        const targetPath = `/home/boards/${selectedBoardId}/job/${newJobPostId}/job-details`;
+        router.push(targetPath);
+        setIsSubmittingJob(false);
+        dispatch(getBoards(accessToken as string));
+        cleanupAfterJobPost();
+      })
+      .catch((error) => {
+        console.error('Error creating job post:', error);
+        setIsSubmittingJob(false);
+      });
   };
 
   const handleDragStart = (event: any) => {
     setActiveId(event.active.id);
   };
 
-  const handleDragOver = (event: any) => {
-    const { over } = event;
-    setOverId(over?.id || null);
-  };
-
   const handleDragEnd = (event: any) => {
     const { active, over } = event;
     setActiveId(null);
-    setOverId(null);
 
     if (!over) return;
 
@@ -225,7 +278,7 @@ const BoardColumns = () => {
 
     // Find current column from all columns
     const currentColumn = boardColumns.find((col) =>
-      col.jobApplications?.some((job) => job.id === draggedJob.id)
+      col.jobApplications?.some((job) => job.id === draggedJob.id),
     );
 
     if (!currentColumn || currentColumn.id === targetColumn.id) return;
@@ -234,7 +287,7 @@ const BoardColumns = () => {
     const newColumnOrder = targetColumn.order;
 
     // Apply same status logic as handleSelectList from layout.tsx
-    let newStatus: jobPostStatus = draggedJob.status;
+    let newStatus: jobPostStatus;
 
     if (newColumnOrder === 4 || newColumnOrder < currentColumnOrder) {
       newStatus = 'Job Moved';
@@ -267,56 +320,7 @@ const BoardColumns = () => {
         company: {
           name: draggedJob.company.name,
         },
-      })
-    );
-  };
-
-  const DraggableJobPostCard = (props: JobPostCardProps) => {
-    const { attributes, listeners, setNodeRef, transform, isDragging } =
-      useDraggable({ id: props.id });
-
-    const style = {
-      transform: CSS.Translate.toString(transform),
-      opacity: isDragging ? 0.5 : 1,
-    };
-
-    return (
-      <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-        <JobPostCard {...props} />
-      </div>
-    );
-  };
-
-  interface Column {
-    id: string;
-    order: number;
-    name: string;
-    jobApplications?: { id: string }[];
-  }
-
-  const DroppableColumn = ({
-    column,
-    children,
-  }: {
-    column: Column;
-    children: React.ReactNode;
-  }) => {
-    const { setNodeRef, isOver } = useDroppable({
-      id: column.id,
-    });
-
-    return (
-      <section
-        ref={setNodeRef}
-        key={column.order + 1}
-        className={`flex flex-col border-r border-slate-200 w-1/5 transition-all duration-200 min-h-[600px] flex-1 ${
-          isOver
-            ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-600'
-            : ''
-        }`}
-      >
-        {children}
-      </section>
+      }),
     );
   };
 
@@ -324,7 +328,6 @@ const BoardColumns = () => {
     <DndContext
       sensors={sensors}
       onDragEnd={handleDragEnd}
-      onDragOver={handleDragOver}
       onDragStart={handleDragStart}
       collisionDetection={closestCorners}
     >
@@ -370,9 +373,10 @@ const BoardColumns = () => {
 
         {/* Board Columns */}
         <div className="w-full flex h-full flex-1">
-          {filteredColumns &&
-            filteredColumns.map((column) => (
-              <DroppableColumn key={column.id} column={column}>
+          {filteredColumns?.map((column) => (
+            <DroppableColumn key={column.id} column={column}>
+              {/* Fixed Header */}
+              <div className="flex-shrink-0">
                 <div className="flex items-center justify-between px-4 pt-8">
                   {returnBoardIcon(column.order + 1)}
                   <p className="hover:bg-slate-200 dark:hover:bg-slate-700 px-2 py-1 rounded-md cursor-text transition duration-300 delay-150 mx-2">
@@ -425,27 +429,31 @@ const BoardColumns = () => {
                     }}
                   />
                 </AlertDialogModal>
-                {column.jobApplications &&
-                  column.jobApplications.map((job) =>
-                    job.company !== null ? (
-                      <DraggableJobPostCard
-                        id={job.id}
-                        key={job.id}
-                        notes={job.notes}
-                        title={job.title}
-                        color={job.color}
-                        status={job.status}
-                        columnId={column.id}
-                        postUrl={job.postUrl}
-                        deadline={job.deadline}
-                        timeStamp={job.createdAt}
-                        companyName={job.company.name}
-                        statusChangedTime={job.statusChangedAt}
-                      />
-                    ) : null
-                  )}
-              </DroppableColumn>
-            ))}
+              </div>
+
+              {/* Scrollable Content */}
+              <div className="flex-1 overflow-y-auto min-h-0">
+                {column.jobApplications?.map((job) =>
+                  job.company === null ? null : (
+                    <DraggableJobPostCard
+                      id={job.id}
+                      key={job.id}
+                      notes={job.notes}
+                      title={job.title}
+                      color={job.color}
+                      status={job.status}
+                      columnId={column.id}
+                      postUrl={job.postUrl}
+                      deadline={job.deadline}
+                      timeStamp={job.createdAt}
+                      companyName={job.company.name}
+                      statusChangedTime={job.statusChangedAt}
+                    />
+                  ),
+                )}
+              </div>
+            </DroppableColumn>
+          ))}
         </div>
 
         {/* Empty Search Results Message */}
@@ -487,7 +495,17 @@ const BoardColumns = () => {
         {activeId ? (
           <div className="transform rotate-3 opacity-90">
             {(() => {
-              const draggedJob = jobPosts.find((job) => job.id === activeId);
+              // Find the job in boardColumns instead of jobPosts
+              let draggedJob = null;
+              for (const column of boardColumns) {
+                const job = column.jobApplications?.find(
+                  (job) => job.id === activeId,
+                );
+                if (job) {
+                  draggedJob = job;
+                  break;
+                }
+              }
               return draggedJob ? (
                 <JobPostCard
                   id={draggedJob.id}

@@ -6,12 +6,13 @@
 2. [Architecture](#architecture)
 3. [Core Components](#core-components)
 4. [Authentication Flow](#authentication-flow)
-5. [Security Features](#security-features)
-6. [Performance Optimizations](#performance-optimizations)
-7. [User Experience](#user-experience)
-8. [Development Tools](#development-tools)
-9. [Configuration](#configuration)
-10. [Troubleshooting](#troubleshooting)
+5. [Password Security Enforcement](#password-security-enforcement)
+6. [Security Features](#security-features)
+7. [Performance Optimizations](#performance-optimizations)
+8. [User Experience](#user-experience)
+9. [Development Tools](#development-tools)
+10. [Configuration](#configuration)
+11. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -457,7 +458,7 @@ interface DeduplicationConfig {
 const response = await RequestDeduplicator.deduplicateRequest(
   () => axios.get('/api/users'),
   'GET',
-  '/api/users'
+  '/api/users',
 );
 ```
 
@@ -499,31 +500,26 @@ UI Update (Redirect to Dashboard)
 **Detailed Steps**:
 
 1. **User Input Validation**
-
    - Client-side form validation
    - Email format verification
    - Password strength checking
 
 2. **Security Checks**
-
    - Rate limiting validation
    - Login attempt tracking
    - IP-based restrictions
 
 3. **API Authentication**
-
    - POST request to `/auth/login`
    - Credentials verification
    - JWT token generation
 
 4. **Token Processing**
-
    - JWT payload extraction
    - Token expiration calculation
    - Storage in localStorage and Redux
 
 5. **User Data Enrichment**
-
    - Check JWT for user information
    - Fetch additional data from `/users` if needed
    - Merge and store complete user profile
@@ -650,6 +646,1177 @@ Redirect to Home Page (logged out)
 - **Mobile Optimization**: Numeric keyboard hints and OTP autocomplete support
 - **Error Handling**: Comprehensive error normalization ensuring string error messages
 - **Rate Limiting**: 30-second cooldown on resend verification code functionality
+
+---
+
+## Password Security Enforcement
+
+### Overview
+
+The Job Tracker implements comprehensive password security enforcement to ensure all user accounts meet modern security standards. This system includes strong password validation for new registrations and a non-intrusive flow for guiding existing users with weak passwords to update their credentials.
+
+### Security Requirements
+
+All passwords must meet these criteria:
+
+- **Minimum 8 characters**
+- **At least 1 uppercase letter** (A-Z)
+- **At least 1 lowercase letter** (a-z)
+- **At least 1 number** (0-9)
+
+**Regex Pattern**: `/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/`
+
+---
+
+### Implementation Architecture
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│              Password Security System                       │
+├─────────────────────────────────────────────────────────────┤
+│  Registration    │    Login        │   Password Reset       │
+│  Validation      │    Detection    │   Enforcement          │
+├──────────────────┼─────────────────┼────────────────────────┤
+│ RegisterSchema   │ isStrongPassword│ ResetPasswordSchema    │
+│ (Zod validation) │ (Client check)  │ (Zod validation)       │
+├──────────────────┼─────────────────┼────────────────────────┤
+│ Blocks weak      │ Detects weak    │ Enforces strong        │
+│ passwords at     │ passwords after │ passwords during       │
+│ registration     │ successful login│ password reset         │
+└──────────────────┴─────────────────┴────────────────────────┘
+```
+
+---
+
+### Core Components Architecture
+
+#### 1. Password Validation Schema
+
+**Location**: `schemas/index.ts`
+
+**Strong Password Regex**:
+
+```typescript
+const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+```
+
+**RegisterSchema** (New User Registration):
+
+```typescript
+export const RegisterSchema = z.object({
+  email: z.string().email({
+    message: 'Email is required',
+  }),
+  password: z
+    .string()
+    .min(8, {
+      message: 'Minimum 8 characters required',
+    })
+    .regex(strongPasswordRegex, {
+      message:
+        'Password must contain at least 1 uppercase, 1 lowercase, and 1 number',
+    }),
+  // ... other fields
+});
+```
+
+**ResetPasswordSchema** (Password Reset with Confirmation):
+
+```typescript
+export const ResetPasswordSchema = z
+  .object({
+    code: z.string().regex(/^\d{6}$/, {
+      message: 'The code must be exactly 6 digits',
+    }),
+    newPassword: z
+      .string()
+      .min(8, {
+        message: 'Minimum 8 characters required',
+      })
+      .regex(strongPasswordRegex, {
+        message:
+          'Password must contain at least 1 uppercase, 1 lowercase, and 1 number',
+      }),
+    confirmPassword: z.string().min(1, {
+      message: 'Please confirm your password',
+    }),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+```
+
+**Key Features**:
+
+- Password and confirmation must match
+- Strong password validation on `newPassword`
+- Clear validation error messages
+- Browser autocomplete prevention
+
+#### 2. Password Strength Utility
+
+**Location**: `utils/passwordStrength.ts`
+
+```typescript
+/**
+ * Checks if a password meets strong password requirements
+ * @param password - The password string to validate
+ * @returns true if password is strong, false otherwise
+ */
+export const isStrongPassword = (password: string): boolean => {
+  const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+  return strongPasswordRegex.test(password);
+};
+```
+
+**Usage**: Client-side password strength checking after successful login to detect weak passwords.
+
+#### 3. Weak Password Modal
+
+**Location**: `components/auth/ForcePasswordChangeModal.tsx`
+
+**Component**: `WeakPasswordModal`
+
+**Purpose**: Informs users about weak passwords and guides them to password reset flow.
+
+**Features**:
+
+- **Non-dismissible**: No close button, no backdrop click
+- **Clear messaging**: Security requirements explained
+- **Step-by-step instructions**: Guides user through reset process
+- **Email pre-population**: Shows user's email in instructions
+- **Automatic logout**: Clears tokens before redirect
+
+**Component Structure**:
+
+```typescript
+interface WeakPasswordModalProps {
+  isOpen: boolean;
+  email: string;
+}
+
+export const WeakPasswordModal = ({ isOpen, email }: WeakPasswordModalProps) => {
+  const router = useRouter();
+
+  const handleUpdatePassword = () => {
+    // Logout user
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+
+    // Redirect to forgot-password with context
+    router.push(`/forgot-password?email=${encodeURIComponent(email)}&reason=weak`);
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={() => {}}>
+      <DialogContent className="sm:max-w-[500px]" hideCloseButton>
+        {/* Modal content */}
+      </DialogContent>
+    </Dialog>
+  );
+};
+```
+
+**Modal Content**:
+
+- **Title**: "🔒 Password Security Update Required"
+- **Yellow Security Banner**:
+  - Requirements list (8 chars, uppercase, lowercase, number)
+- **Blue Instructions Banner**:
+  - Step-by-step process
+  - User's email displayed
+  - Expected flow explained
+- **Action Button**: "Reset My Password"
+
+#### 4. Enhanced Dialog Component
+
+**Location**: `components/ui/dialog.tsx`
+
+**Enhancement**: Added `hideCloseButton` prop to `DialogContent`
+
+```typescript
+interface DialogContentProps {
+  hideCloseButton?: boolean;
+  // ... other props
+}
+
+const DialogContent = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { hideCloseButton?: boolean }
+>(({ children, hideCloseButton, ...props }, ref) => (
+  <DialogPortal>
+    <DialogOverlay />
+    <DialogPrimitive.Content ref={ref} {...props}>
+      {children}
+      {!hideCloseButton && (
+        <DialogPrimitive.Close className="...">
+          {/* Close button */}
+        </DialogPrimitive.Close>
+      )}
+    </DialogPrimitive.Content>
+  </DialogPortal>
+));
+```
+
+**Purpose**: Allows creating truly non-dismissible modals for critical security flows.
+
+---
+
+### Authentication Flows
+
+#### 1. New User Registration Flow
+
+```text
+User Fills Registration Form
+         ↓
+Password Validation (RegisterSchema)
+         ↓
+    Strong?
+    ↙     ↘
+  Yes      No
+   ↓        ↓
+Submit   Show Error
+Form     "Password must contain..."
+   ↓
+Account Created
+   ↓
+Email Verification
+```
+
+**Validation Points**:
+
+- Client-side: React Hook Form with Zod resolver
+- Real-time validation feedback
+- Clear error messages
+- Form submission blocked until valid
+
+#### 2. Existing User Login Flow (Weak Password Detection)
+
+> **✅ SECURITY UPDATE (25/01/2026)**: Password strength validation moved to backend for enhanced security.
+> Backend now validates password strength during authentication and returns `passwordStrength` flag in login response.
+> Frontend no longer stores passwords in state - security vulnerability eliminated!
+
+```text
+User Enters Credentials
+         ↓
+POST /auth/login
+         ↓
+Backend Authentication ✓
+         ↓
+Backend Password Strength Check (Server-Side) ✓
+         ↓
+Response: { accessToken, refreshToken, passwordStrength: "strong" | "weak" }
+         ↓
+Tokens Stored in localStorage
+         ↓
+Frontend Receives passwordStrength Flag
+         ↓
+    Strong?
+    ↙     ↘
+  Yes      No
+   ↓        ↓
+Load    Show Modal
+Boards  (WeakPasswordModal)
+         ↓
+    User Clicks
+    "Reset My Password"
+         ↓
+    Logout (Clear Storage)
+         ↓
+    Redirect to
+    /forgot-password?email=...&reason=weak
+         ↓
+    Enhanced Forgot Password Flow
+         ↓
+    Password Reset Complete
+         ↓
+    Login with New Password
+         ↓
+    Normal Flow (Boards Load)
+```
+
+**Key Points**:
+
+- ✅ **Backend validates password strength** (server-side using plain-text password before hashing)
+- ✅ **No client-side password storage** (security vulnerability fixed)
+- ✅ **Backend returns `passwordStrength` flag** in login response
+- Backend authentication always succeeds (non-breaking)
+- User-friendly guidance through reset process
+- Leverages existing password reset infrastructure
+
+**Backend Implementation**:
+
+- **File**: `backend/src/utils/password-strength.util.ts` - Password validation utility
+- **File**: `backend/src/modules/auth/auth.service.ts` - Modified `signIn()` method
+- **File**: `backend/src/modules/auth/dtos/jwt-tokens.dto.ts` - Added `passwordStrength` field
+- **Validation**: Server validates plain-text password before comparing with hash
+
+#### 3. Enhanced Forgot Password Flow
+
+```text
+┌────────────────────────────────────────────────────────┐
+│              Forgot Password Page Load                 │
+├────────────────────────────────────────────────────────┤
+│  Check URL Parameters:                                 │
+│  • reason=weak → From weak password detection          │
+│  • email=... → Pre-fill email field                    │
+└──────────────────┬─────────────────────────────────────┘
+                   │
+         ┌─────────┴──────────┐
+         │                    │
+         ▼                    ▼
+    Normal Flow        Weak Password Flow
+         │                    │
+    "Forgot Password"   "🔒 Strengthen Your Password"
+         │                    │
+    No banner          Yellow Security Banner
+         │              "Security Update Required"
+    Empty email              │
+         │              Email Pre-filled
+         │                    │
+         └─────────┬──────────┘
+                   │
+                   ▼
+         User Clicks "Send Password Reset Code"
+                   │
+                   ▼
+         POST /users/reset-password/create-verification-code
+                   │
+                   ▼
+         6-Digit Code Sent to Email
+                   │
+                   ▼
+         Form Shows:
+         • Reset Password Code (empty, max 6 chars)
+         • New Password (empty, autoComplete="new-password")
+         • Repeat New Password (empty, autoComplete="new-password")
+                   │
+                   ▼
+         User Enters Data
+                   │
+                   ▼
+         Client-Side Validation:
+         • Passwords match?
+         • Strong password?
+         • Code is 6 digits?
+                   │
+                   ▼
+         POST /users/reset-password
+                   │
+                   ▼
+         Backend Validates & Updates Password
+                   │
+                   ▼
+         Success Message: "Password reset successful"
+                   │
+                   ▼
+         Redirect to /login (after 1.5s delay)
+                   │
+                   ▼
+         User Logs In with New Strong Password
+                   │
+                   ▼
+         Password Check: PASS ✓
+                   │
+                   ▼
+         Normal Application Flow
+```
+
+**Conditional UI Elements**:
+
+| URL Parameters        | Title                         | Banner                                             | Email Field |
+| --------------------- | ----------------------------- | -------------------------------------------------- | ----------- |
+| None                  | "Forgot Password"             | None                                               | Empty       |
+| `reason=weak`         | "🔒 Strengthen Your Password" | Yellow "Security Update Required" with explanation | Empty       |
+| `email=user@test.com` | "Forgot Password"             | None                                               | Pre-filled  |
+| Both parameters       | "🔒 Strengthen Your Password" | Yellow "Security Update Required" with explanation | Pre-filled  |
+
+**Form Field Configuration**:
+
+```typescript
+// Reset Password Code
+<Input
+  type="text"
+  placeholder="Enter the reset code here"
+  maxLength={6}
+  autoComplete="off" // Prevent browser autofill
+  {...field}
+/>
+
+// New Password
+<Input
+  type="password"
+  placeholder="Enter your new password"
+  autoComplete="new-password" // Tell browser this is new password
+  {...field}
+/>
+
+// Repeat New Password
+<Input
+  type="password"
+  placeholder="Re-enter your new password"
+  autoComplete="new-password"
+  {...field}
+/>
+```
+
+**Validation Features**:
+
+1. **Password Matching**:
+   - Real-time validation as user types
+   - Error: "Passwords do not match"
+   - Blocks form submission
+
+2. **Password Strength**:
+   - Regex validation
+   - Error: "Password must contain at least 1 uppercase, 1 lowercase, and 1 number"
+   - Help text: "\*At least: 8 characters, 1 number, 1 upper, 1 lower."
+
+3. **Code Validation**:
+   - Must be exactly 6 digits
+   - Max length enforced in input
+   - Error: "The code must be exactly 6 digits"
+
+4. **Success Handling**:
+   - Success message appears ONLY after successful password reset
+   - 1.5 second delay before redirect
+   - Form resets on success
+
+---
+
+### Backend Endpoints
+
+The password security system uses existing backend endpoints - no new endpoints required:
+
+#### 1. POST `/auth/login`
+
+**Purpose**: User authentication
+
+**Request**:
+
+```json
+{
+  "email": "user@example.com",
+  "password": "userPassword"
+}
+```
+
+**Response**:
+
+```json
+{
+  "accessToken": "jwt_access_token",
+  "refreshToken": "jwt_refresh_token",
+  "user": {
+    "id": "user_id",
+    "email": "user@example.com",
+    "firstName": "John",
+    "lastName": "Doe"
+  }
+}
+```
+
+**Note**: Backend validates password strength during authentication and returns a `passwordStrength` flag (`'strong'` | `'weak'`) in the login response. See the Security Update section above for implementation details.
+
+#### 2. POST `/users/reset-password/create-verification-code`
+
+**Purpose**: Send password reset verification code to user's email
+
+**Request**:
+
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+**Response**:
+
+```json
+{
+  "message": "Verification code sent to email"
+}
+```
+
+**Behavior**: Sends 6-digit verification code to user's email address.
+
+#### 3. POST `/users/reset-password`
+
+**Purpose**: Reset user password with verification code
+
+**Request**:
+
+```json
+{
+  "email": "user@example.com",
+  "code": "123456",
+  "newPassword": "NewPassword123"
+}
+```
+
+**Response** (201 Created):
+
+```json
+{
+  "message": "Password reset successful"
+}
+```
+
+**Server-Side Validation**:
+
+- Verifies 6-digit code
+- Checks code expiration
+- Validates new password strength (server-side enforcement)
+- Updates password in database
+- Invalidates old tokens
+
+---
+
+### Testing Guide
+
+#### Test Scenario 1: New User Registration with Weak Password
+
+**Expected**: Registration blocked with validation error
+
+**Steps**:
+
+1. Navigate to `/signup`
+2. Fill in form with password: `password` (weak)
+3. Click "Sign up"
+
+**Expected Result**:
+
+- ✅ Form shows validation error
+- ✅ Error message: "Password must contain at least 1 uppercase, 1 lowercase, and 1 number"
+- ✅ Registration is blocked
+
+#### Test Scenario 2: New User Registration with Strong Password
+
+**Expected**: Registration succeeds
+
+**Steps**:
+
+1. Navigate to `/signup`
+2. Fill in form with password: `Password123` (strong)
+3. Click "Sign up"
+
+**Expected Result**:
+
+- ✅ Form submits successfully
+- ✅ Redirected to email verification page
+
+#### Test Scenario 3: Login with Strong Password
+
+**Expected**: Normal login flow, no modal
+
+**Steps**:
+
+1. Navigate to `/login`
+2. Enter email: `strong@test.com`
+3. Enter password: `Password123`
+4. Click "Log in"
+
+**Expected Result**:
+
+- ✅ Login succeeds
+- ✅ Success message: "Logged in successfully"
+- ✅ NO modal appears
+- ✅ Loader: "Loading user's data..."
+- ✅ Redirected to boards
+
+#### Test Scenario 4: Complete Weak Password Flow
+
+**Expected**: Modal → Redirect → Reset → Success
+
+**Part 1: Login & Modal**:
+
+1. Navigate to `/login`
+2. Enter email: `weak@test.com`
+3. Enter password: `password` (weak)
+4. Click "Log in"
+
+**Expected**:
+
+- ✅ Login succeeds
+- ✅ Success message appears briefly
+- ✅ **WeakPasswordModal appears** with:
+  - Title: "🔒 Password Security Update Required"
+  - Yellow security requirements box
+  - Blue instructions box with email
+  - Button: "Reset My Password"
+  - Modal cannot be closed
+
+**Part 2: Redirect**:
+
+1. Click "Reset My Password"
+
+**Expected**:
+
+- ✅ Modal closes
+- ✅ Redirected to: `/forgot-password?email=weak@test.com&reason=weak`
+- ✅ localStorage cleared (tokens removed)
+
+**Part 3: Forgot Password Page**:
+
+1. Verify page content
+
+**Expected**:
+
+- ✅ URL contains correct params
+- ✅ Title: "🔒 Strengthen Your Password"
+- ✅ Yellow banner: "Security Update Required"
+- ✅ Email pre-filled: `weak@test.com`
+- ✅ **NO unicode characters** visible
+- ✅ **NO success message** yet
+
+**Part 4: Send Code**:
+
+1. Click "Send Password Reset Code"
+
+**Expected**:
+
+- ✅ Request sent to backend
+- ✅ Form switches to reset password form
+- ✅ Check email for 6-digit code
+
+**Part 5: Reset Password Form**:
+
+1. Verify form fields
+
+**Expected**:
+
+- ✅ Three empty fields:
+  - Reset Password Code (placeholder: "Enter the reset code here")
+  - New Password (placeholder: "Enter your new password")
+  - Repeat New Password (placeholder: "Re-enter your new password")
+- ✅ Help text: "\*At least: 8 characters, 1 number, 1 upper, 1 lower."
+- ✅ **NO pre-filled values** (no autocomplete)
+- ✅ **NO success message** yet
+
+**Part 6: Test Validation**:
+
+1. Test password mismatch:
+   - Code: `123456`
+   - New Password: `Password123`
+   - Repeat: `Password456` (different)
+   - Click "Reset Password"
+
+**Expected**:
+
+- ✅ Validation error: "Passwords do not match"
+- ✅ Form does not submit
+
+1. Test weak password:
+   - Code: `123456`
+   - New Password: `password` (weak)
+   - Repeat: `password`
+   - Click "Reset Password"
+
+**Expected**:
+
+- ✅ Validation error: "Password must contain at least 1 uppercase, 1 lowercase, and 1 number"
+- ✅ Form does not submit
+
+**Part 7: Successful Reset**:
+
+1. Enter valid data:
+   - Code: `123456` (from email)
+   - New Password: `Password123`
+   - Repeat: `Password123`
+1. Click "Reset Password"
+
+**Expected**:
+
+- ✅ Request sent to backend
+- ✅ **Success message appears**: "Password reset successful"
+- ✅ Form inputs cleared
+- ✅ After 1.5 seconds → redirected to `/login`
+
+**Part 8: Login with New Password**:
+
+1. Enter credentials:
+   - Email: `weak@test.com`
+   - Password: `Password123`
+1. Click "Log in"
+
+**Expected**:
+
+- ✅ Login succeeds
+- ✅ Password strength check: PASS
+- ✅ **NO modal appears**
+- ✅ Boards load normally
+
+#### Test Scenario 5: Normal Forgot Password Flow
+
+**Expected**: No weak password messaging
+
+**Steps**:
+
+1. Navigate to `/login`
+2. Click "Forgot your password?"
+3. Verify page
+
+**Expected Result**:
+
+- ✅ URL: `/forgot-password` (no params)
+- ✅ Title: "Forgot Password"
+- ✅ **NO yellow banner**
+- ✅ **NO emoji in title**
+- ✅ Email field empty
+
+#### Test Scenario 6: Edge Cases
+
+**Test 6a: Code Too Short/Long**:
+
+- Input: `12` (2 digits) → Error: "The code must be exactly 6 digits"
+- Max length enforced: Cannot type more than 6 chars
+
+**Test 6b: Password Too Short**:
+
+- Input: `Pass1` (5 chars) → Error: "Minimum 8 characters required"
+
+**Test 6c: Empty Fields**:
+
+- Submit with empty fields → Multiple validation errors
+
+**Test 6d: Invalid Code**:
+
+- Enter wrong code → Backend error message displayed
+
+---
+
+### Visual Flowchart
+
+```text
+┌──────────────────────┐
+│   User Logs In       │
+│   with Password      │
+└──────────┬───────────┘
+           │
+           ▼
+    ┌──────────────┐
+    │   Backend    │
+    │ Authenticates│
+    └──────┬───────┘
+           │
+     ┌─────┴──────┐
+     │            │
+     ▼            ▼
+  ✅ Success   ❌ Fail
+     │            │
+     │            └──→ Show Error
+     │
+     ▼
+┌──────────────────┐
+│ Check Password   │
+│ Strength         │
+│ (Backend)        │
+└────────┬─────────┘
+         │
+    ┌────┴─────┐
+    │          │
+    ▼          ▼
+ 💪Strong   😰Weak
+    │          │
+    │          ▼
+    │     ┌─────────────────────┐
+    │     │ Show Modal:         │
+    │     │ "Update Required"   │
+    │     └──────────┬──────────┘
+    │                │
+    │                ▼
+    │          User Clicks
+    │        "Reset Password"
+    │                │
+    │                ▼
+    │         ┌─────────────┐
+    │         │ Clear Tokens│
+    │         │   Logout    │
+    │         └──────┬──────┘
+    │                │
+    │                ▼
+    │     ┌──────────────────────┐
+    │     │ Redirect:            │
+    │     │ /forgot-password     │
+    │     │ ?email=...&reason=weak│
+    │     └──────────┬───────────┘
+    │                │
+    │                ▼
+    │      ┌──────────────────┐
+    │      │ Enhanced Forgot  │
+    │      │ Password Page    │
+    │      └────────┬─────────┘
+    │               │
+    │               ▼
+    │      ┌─────────────────┐
+    │      │ Yellow Banner   │
+    │      │ Pre-filled Email│
+    │      └────────┬────────┘
+    │               │
+    │               ▼
+    │        Send Code Email
+    │               │
+    │               ▼
+    │      ┌──────────────────┐
+    │      │ Enter:           │
+    │      │ • Code           │
+    │      │ • New Password   │
+    │      │ • Confirm Pass   │
+    │      └────────┬─────────┘
+    │               │
+    │               ▼
+    │      ┌──────────────────┐
+    │      │ Validation:      │
+    │      │ • Match?         │
+    │      │ • Strong?        │
+    │      └────────┬─────────┘
+    │               │
+    │               ▼
+    │        Backend Reset
+    │               │
+    │               ▼
+    │      Success Message!
+    │               │
+    │               ▼
+    │       Redirect to /login
+    │               │
+    │               ▼
+    │      Login with New
+    │      Strong Password
+    │               │
+    └───────────────┘
+                    │
+                    ▼
+           ┌────────────────┐
+           │  Normal Flow   │
+           │  Load Boards   │
+           └────────────────┘
+```
+
+---
+
+### Security Considerations
+
+#### 1. Client-Side vs Server-Side Validation
+
+**Client-Side (Frontend)**:
+
+- **Purpose**: User experience and immediate feedback
+- **Implementation**: JavaScript regex validation
+- **Limitations**: Can be bypassed by modifying code
+- **Use Case**: Detecting weak passwords after login for UX guidance
+
+**Server-Side (Backend)**:
+
+- **Purpose**: Actual security enforcement
+- **Implementation**: Server validates all password changes
+- **Guarantee**: Cannot be bypassed
+- **Use Case**: Enforcing strong passwords during registration and reset
+
+**Important**: Client-side weak password detection does NOT block login. Backend authentication still succeeds. This is intentional for non-breaking deployment.
+
+#### 2. Non-Breaking Deployment
+
+**Strategy**:
+
+- Existing users with weak passwords can still login
+- No forced logout or service disruption
+- Gradual migration to strong passwords
+- User-friendly guidance rather than hard blocks
+
+**Benefits**:
+
+- No user lockouts
+- Smooth transition period
+- Better user experience
+- Reduced support tickets
+
+#### 3. Version History & Implementation Timeline
+
+**v0.199.0 (2026-01-25)** - Initial Implementation:
+
+- ⚠️ **Security Vulnerability**: Client-side password strength checking with password stored in React state
+- Introduced `userPassword` state in login component
+- Client-side `isStrongPassword()` utility function
+- Weak password modal and reset flow
+
+**v0.200.0 (2026-01-25)** - Security Fix:
+
+- ✅ **Security Fixed**: Moved password validation to backend (server-side)
+- **Removed**: `userPassword` state from React component (eliminates XSS/DevTools exposure)
+- **Removed**: Client-side `isStrongPassword()` import
+- **Added**: Backend `password-strength.util.ts` utility
+- **Added**: `passwordStrength` flag in login API response
+- **Added**: Frontend uses backend flag instead of storing password
+- Exposure window: Same day (2026-01-25)
+- See CHANGELOG.md for lessons learned and security best practices
+
+**Current Implementation**: v0.200.0+ uses backend password strength validation exclusively. Any references to v0.199.0 implementation in this document are marked as deprecated.
+
+#### 4. Future Enhancements
+
+**Option 1: Backend Password Strength Flag** ✅ **IMPLEMENTED (v0.200.0)**:
+
+```typescript
+// Backend returns password strength in login response
+{
+  "accessToken": "...",
+  "refreshToken": "...",
+  "passwordStrength": "weak" // or "strong"
+}
+```
+
+**Status**: ✅ Implemented on 2026-01-25 in v0.200.0
+
+- Backend validates password strength server-side using `isStrongPassword()` utility
+- Login response includes `passwordStrength` flag
+- Frontend no longer stores passwords in component state (security fix)
+- See "Security Update" section (lines 897-948) for full implementation details
+
+**Option 2: Gradual Enforcement**:
+
+- Track users who haven't updated passwords
+- Send email reminders after 30/60/90 days
+- Eventually enforce at backend level
+- Set deadline for compliance
+
+**Option 3: Backend Validation**:
+
+```typescript
+// Eventually add to login endpoint
+if (user.passwordStrength === 'weak') {
+  return {
+    requirePasswordUpdate: true,
+    message: 'Please update your password to meet security standards',
+  };
+}
+```
+
+#### 4. Security Best Practices
+
+✅ **Implemented**:
+
+- Strong password regex validation
+- Password confirmation field
+- Client-side real-time validation
+- Server-side enforcement during reset
+- Clear user messaging
+- Non-dismissible security modal
+- Secure token handling
+- Proper logout before redirect
+
+✅ **Recommended**:
+
+- HTTPS in production (prevent token interception)
+- Rate limiting on password reset endpoints
+- Email verification for password changes
+- Password history (prevent reusing old passwords)
+- Account activity monitoring
+- Security event logging
+
+---
+
+### Files Modified
+
+#### 1. Schema Definitions
+
+**File**: `schemas/index.ts`
+
+**Changes**:
+
+- Added `strongPasswordRegex` constant
+- Updated `RegisterSchema` with regex validation
+- Updated `ResetPasswordSchema` with:
+  - `confirmPassword` field
+  - `.refine()` for password matching
+  - Strong password validation
+
+#### 2. Utilities
+
+**File**: `utils/passwordStrength.ts` (New)
+
+**Purpose**: Password strength checking utility
+
+**Exports**: `isStrongPassword(password: string): boolean`
+
+#### 3. Components
+
+**File**: `components/auth/ForcePasswordChangeModal.tsx`
+
+**Changes**:
+
+- Renamed to `WeakPasswordModal`
+- Removed form inputs (simplified to informational modal)
+- Added logout functionality
+- Redirect to forgot-password with URL params
+- Non-dismissible modal implementation
+
+**File**: `components/ui/dialog.tsx`
+
+**Changes**:
+
+- Added `hideCloseButton` optional prop to `DialogContent`
+- Conditionally render close button based on prop
+
+#### 4. Pages
+
+> ⚠️ **DEPRECATED IMPLEMENTATION (v0.199.0)**: The implementation described below stored passwords in React component state and has been superseded by backend validation in v0.200.0. See the "Security Update" section above for the current implementation.
+
+**File**: `app/(auth)/login/page.tsx` (OLD - v0.199.0)
+
+**Changes** (Deprecated):
+
+- ~~Import `isStrongPassword` utility~~ (REMOVED in v0.200.0)
+- Import `WeakPasswordModal` component
+- ~~Added state: `userEmail`, `userPassword`, `showPasswordModal`~~ (SECURITY FIX: userPassword removed in v0.200.0)
+- ~~Password strength check in `useEffect`~~ (Now done server-side)
+- Added state: `passwordStrength` (from backend response - v0.200.0)
+- Modal display logic (updated to use backend flag)
+- Removed unused `handlePasswordChangeSuccess` function
+
+**Current Implementation (v0.200.0)**: See lines 897-948 for the secure backend-based approach that eliminates client-side password storage.
+
+**File**: `app/(auth)/forgot-password/page.tsx`
+
+**Changes**:
+
+- Import `useSearchParams` hook
+- Detect URL parameters (`reason`, `email`)
+- Conditional title and banner based on weak password context
+- Pre-fill email from URL params
+- Added `confirmPassword` field to form
+- Updated validation schema usage
+- Added `autoComplete` attributes to prevent browser autofill:
+  - `code`: `autoComplete="off"`
+  - `newPassword`: `autoComplete="new-password"`
+  - `confirmPassword`: `autoComplete="new-password"`
+- Updated success message timing (only after successful reset)
+- Improved error handling with timeout
+- Removed unused Redux imports
+
+---
+
+### Configuration
+
+**Environment Variables**: None required - uses existing configuration
+
+**Constants**:
+
+```typescript
+// schemas/index.ts
+const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+// Configurable in future if needed
+const MIN_PASSWORD_LENGTH = 8;
+const REQUIRE_UPPERCASE = true;
+const REQUIRE_LOWERCASE = true;
+const REQUIRE_NUMBER = true;
+const REQUIRE_SPECIAL_CHAR = false; // Not currently required
+```
+
+**Customization Options**:
+
+To change password requirements, update the regex and validation messages in:
+
+1. `schemas/index.ts` - RegisterSchema and ResetPasswordSchema
+2. `utils/passwordStrength.ts` - isStrongPassword function
+3. `components/auth/ForcePasswordChangeModal.tsx` - Requirements list in modal
+4. `app/(auth)/forgot-password/page.tsx` - Help text under password fields
+
+---
+
+### Troubleshooting
+
+#### Issue: Modal doesn't appear after login with weak password
+
+**Check**:
+
+1. Is password actually weak?
+
+```javascript
+const password = 'password';
+const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+console.log(regex.test(password)); // Should be false
+```
+
+1. Check Redux status:
+
+```javascript
+// In React DevTools
+// state.user.status should be 'succeeded'
+```
+
+1. Check passwordStrength state (v0.200.0+):
+
+```javascript
+// In React DevTools → LoginPage
+// passwordStrength should be 'weak' or 'strong' from backend response
+```
+
+**Note**: If you're on v0.199.0 (deprecated), you would check `userPassword` state instead. Upgrade to v0.200.0+ for the secure implementation.
+
+#### Issue: Redirect doesn't work
+
+**Check**:
+
+1. localStorage is cleared:
+
+```javascript
+// DevTools → Application → Local Storage
+// accessToken, refreshToken, user should be removed
+```
+
+1. URL contains correct params:
+
+```text
+Expected: /forgot-password?email=user@test.com&reason=weak
+```
+
+#### Issue: Conditional content doesn't show
+
+**Check**:
+
+1. URL params are read:
+
+```javascript
+const params = new URLSearchParams(window.location.search);
+console.log(params.get('reason')); // Should be 'weak'
+console.log(params.get('email')); // Should be user email
+```
+
+1. isWeakPasswordReset variable:
+
+```javascript
+// React DevTools → ForgotPassword component
+// isWeakPasswordReset should be true
+```
+
+#### Issue: Browser autofills password fields
+
+**Solution**: Already implemented
+
+- Code field: `autoComplete="off"`
+- Password fields: `autoComplete="new-password"`
+
+If still occurring, check browser settings or use incognito mode for testing.
+
+#### Issue: Success message appears too early
+
+**Check**:
+
+- Success message should ONLY appear after successful `/users/reset-password` API call
+- Not during email step
+- Not during form validation errors
+
+**Debug**:
+
+```typescript
+// Check success state in component
+console.log('Success state:', success);
+// Should be empty string until password actually reset
+```
 
 ---
 
@@ -783,7 +1950,7 @@ const response = await RequestDeduplicator.deduplicateRequest(
   method,
   url,
   data,
-  headers
+  headers,
 );
 ```
 
@@ -997,7 +2164,7 @@ if (process.env.NODE_ENV === 'development') {
 
 ---
 
-## Configuration
+## Configuration Options
 
 ### 1. Environment Variables
 
@@ -1098,7 +2265,7 @@ const toastConfig = {
 
 ---
 
-## Troubleshooting
+## Troubleshooting Guide
 
 ### 1. Common Issues
 
@@ -1545,7 +2712,7 @@ const logSecurityEvent = (event: SecurityEvent) => {
 // Lazy load authentication components
 const AuthProvider = lazy(() => import('./components/auth/AuthProvider'));
 const MonitoringDashboard = lazy(
-  () => import('./components/admin/MonitoringDashboard')
+  () => import('./components/admin/MonitoringDashboard'),
 );
 
 // Dynamic imports for utilities

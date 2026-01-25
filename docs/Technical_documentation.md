@@ -1,5 +1,736 @@
 # Technical Documentation
 
+## Strong Password Enforcement System (25/01/2026)
+
+### Overview
+
+Implemented comprehensive strong password enforcement system that validates passwords at registration and guides existing users to update weak passwords through a non-intrusive flow.
+
+### Architecture
+
+```text
+┌─────────────────────────────────────────────────────────┐
+│         Password Security System Architecture           │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  Registration Layer    Login Layer    Reset Layer       │
+│  ┌──────────────┐    ┌───────────┐   ┌──────────────┐   │
+│  │RegisterSchema│    │isStrong   │   │ResetPassword │   │
+│  │(Zod + Regex) │    │Password() │   │Schema        │   │
+│  └──────┬───────┘    └─────┬─────┘   └──────┬───────┘   │
+│         │                  │                 │          │
+│    Block Weak         Detect Weak       Enforce Strong  │
+│    Passwords          Passwords         Passwords       │
+│         │                  │                 │          │
+│         ▼                  ▼                 ▼          │
+│   Client-Side        Client-Side       Server-Side      │
+│   Validation         Detection         Validation       │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Security Requirements
+
+**Password Criteria**:
+
+- Minimum 8 characters
+- At least 1 uppercase letter (A-Z)
+- At least 1 lowercase letter (a-z)
+- At least 1 number (0-9)
+
+**Validation Regex**:
+
+```typescript
+const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+```
+
+### Implementation Components
+
+#### 1. Schema Definitions (`schemas/index.ts`)
+
+**RegisterSchema** - New User Registration:
+
+```typescript
+export const RegisterSchema = z.object({
+  email: z.string().email({ message: 'Email is required' }),
+  password: z
+    .string()
+    .min(8, { message: 'Minimum 8 characters required' })
+    .regex(strongPasswordRegex, {
+      message:
+        'Password must contain at least 1 uppercase, 1 lowercase, and 1 number',
+    }),
+  // ... other fields
+});
+```
+
+**ResetPasswordSchema** - Password Reset with Confirmation:
+
+```typescript
+export const ResetPasswordSchema = z
+  .object({
+    code: z.string().regex(/^\d{6}$/, {
+      message: 'The code must be exactly 6 digits',
+    }),
+    newPassword: z
+      .string()
+      .min(8, { message: 'Minimum 8 characters required' })
+      .regex(strongPasswordRegex, {
+        message:
+          'Password must contain at least 1 uppercase, 1 lowercase, and 1 number',
+      }),
+    confirmPassword: z.string().min(1, {
+      message: 'Please confirm your password',
+    }),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+```
+
+**Key Features**:
+
+- Zod schema validation with TypeScript inference
+- Password confirmation field with match validation
+- Clear, user-friendly error messages
+- Strong password regex enforcement
+
+#### 2. Password Strength Utility (`utils/passwordStrength.ts`)
+
+```typescript
+/**
+ * Validates password against strong password requirements
+ * Used for client-side weak password detection after login
+ *
+ * @param password - The password string to validate
+ * @returns true if password meets requirements, false otherwise
+ */
+export const isStrongPassword = (password: string): boolean => {
+  const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+  return strongPasswordRegex.test(password);
+};
+```
+
+**Usage**:
+
+- Login page: Detect weak passwords after successful authentication
+- Centralized validation logic for consistency
+- Reusable across application
+
+#### 3. Weak Password Modal (`components/auth/ForcePasswordChangeModal.tsx`)
+
+**Component**: `WeakPasswordModal`
+
+```typescript
+interface WeakPasswordModalProps {
+  isOpen: boolean;
+  email: string;
+}
+
+export const WeakPasswordModal = ({ isOpen, email }: WeakPasswordModalProps) => {
+  const router = useRouter();
+
+  const handleUpdatePassword = () => {
+    // Logout: Clear all authentication tokens
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('user');
+
+    // Redirect to forgot-password with context parameters
+    router.push(`/forgot-password?email=${encodeURIComponent(email)}&reason=weak`);
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={() => {}}>
+      <DialogContent className="sm:max-w-[500px]" hideCloseButton>
+        <DialogHeader>
+          <DialogTitle>🔒 Password Security Update Required</DialogTitle>
+          <DialogDescription>
+            Your current password doesn&apos;t meet our updated security standards.
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Yellow security requirements banner */}
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-4 my-4">
+          <p className="text-sm font-semibold">For your account security, passwords must now contain:</p>
+          <ul className="list-disc list-inside space-y-1">
+            <li>At least 8 characters</li>
+            <li>At least 1 uppercase letter (A-Z)</li>
+            <li>At least 1 lowercase letter (a-z)</li>
+            <li>At least 1 number (0-9)</li>
+          </ul>
+        </div>
+
+        {/* Blue instructions banner */}
+        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-4 mb-4">
+          <p className="text-sm font-semibold">What happens next:</p>
+          <ol className="list-decimal list-inside mt-2 space-y-1">
+            <li>Click the button below to reset your password</li>
+            <li>We&apos;ll send a verification code to: <strong>{email}</strong></li>
+            <li>Create a new strong password</li>
+            <li>Log in with your new password</li>
+          </ol>
+        </div>
+
+        <Button onClick={handleUpdatePassword} className="w-full bg-blue-500 hover:bg-blue-600">
+          Reset My Password
+        </Button>
+
+        <p className="text-xs text-center text-gray-500 mt-2">
+          This is a one-time security update to protect your account.
+        </p>
+      </DialogContent>
+    </Dialog>
+  );
+};
+```
+
+**Features**:
+
+- Non-dismissible: No close button, no backdrop click
+- Clear security messaging with color-coded banners
+- Step-by-step instructions for user guidance
+- Shows user's email for context
+- Automatic logout before redirect
+- URL parameters pass context to forgot-password page
+
+#### 4. Enhanced Dialog Component (`components/ui/dialog.tsx`)
+
+**New Feature**: Non-dismissible modal support
+
+```typescript
+interface DialogContentProps {
+  hideCloseButton?: boolean;
+  // ... other props
+}
+
+const DialogContent = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { hideCloseButton?: boolean }
+>(({ children, hideCloseButton, ...props }, ref) => (
+  <DialogPortal>
+    <DialogOverlay />
+    <DialogPrimitive.Content ref={ref} {...props}>
+      {children}
+      {!hideCloseButton && (
+        <DialogPrimitive.Close className="absolute right-4 top-4 ...">
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </DialogPrimitive.Close>
+      )}
+    </DialogPrimitive.Content>
+  </DialogPortal>
+));
+```
+
+**Usage**:
+
+- Set `hideCloseButton={true}` to create non-dismissible modals
+- Used for critical security flows requiring user action
+- Prevents accidental dismissal of important messages
+
+#### 5. Login Page Enhancement (`app/(auth)/login/page.tsx`)
+
+**Weak Password Detection Flow**:
+
+```typescript
+const Login = () => {
+  const [userEmail, setUserEmail] = useState<string>('');
+  const [userPassword, setUserPassword] = useState<string>('');
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+
+  // Detect weak password after successful login
+  useEffect(() => {
+    if (status === 'succeeded') {
+      setSuccess('Logged in successfully');
+
+      // Check password strength (client-side)
+      if (userPassword && !isStrongPassword(userPassword)) {
+        // Show modal for weak password
+        setShowPasswordModal(true);
+      } else {
+        // Strong password: continue normal flow
+        dispatch(getBoards(accessToken as string));
+      }
+    }
+  }, [status, userPassword]);
+
+  const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
+    const { email, password } = values;
+    setUserEmail(email);
+    setUserPassword(password); // Store for strength check
+    dispatch(login({ email, password }));
+    form.reset();
+  };
+
+  return (
+    <>
+      <WeakPasswordModal isOpen={showPasswordModal} email={userEmail} />
+      {/* Login form */}
+    </>
+  );
+};
+```
+
+**Flow**:
+
+1. User enters credentials
+2. Backend authenticates (always succeeds regardless of password strength)
+3. Tokens stored in localStorage
+4. Client-side password strength check
+5. If weak: Show modal
+6. If strong: Continue normal flow
+
+**Key Points**:
+
+- **Non-breaking**: Backend authentication still succeeds
+- **Client-side detection**: UX guidance, not security enforcement
+- **Gradual migration**: Users guided to update passwords voluntarily
+- **User-friendly**: No forced logout or service disruption
+
+#### 6. Enhanced Forgot Password Page (`app/(auth)/forgot-password/page.tsx`)
+
+**URL Parameter Detection**:
+
+```typescript
+const ForgotPassword: React.FC = () => {
+  const searchParams = useSearchParams();
+
+  // Detect weak password context
+  const isWeakPasswordReset = searchParams.get('reason') === 'weak';
+  const prefilledEmail = searchParams.get('email') || '';
+
+  const form = useForm({
+    defaultValues: {
+      email: prefilledEmail, // Pre-fill if provided
+    },
+  });
+
+  const newForm = useForm<z.infer<typeof ResetPasswordSchema>>({
+    defaultValues: {
+      code: '',
+      newPassword: '',
+      confirmPassword: '',
+    },
+  });
+
+  // ... form handlers
+};
+```
+
+**Conditional UI**:
+
+```typescript
+return (
+  <div>
+    {isWeakPasswordReset ? (
+      <>
+        <h1>🔒 Strengthen Your Password</h1>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+          <p className="font-semibold">Security Update Required</p>
+          <p>Your current password doesn't meet our updated security standards.
+             Please reset it to a stronger one to continue.</p>
+        </div>
+      </>
+    ) : (
+      <h1>Forgot Password</h1>
+    )}
+
+    {/* Form content */}
+  </div>
+);
+```
+
+**Form Fields with Autocomplete Prevention**:
+
+```typescript
+{/* Reset Password Code */}
+<Input
+  type="text"
+  placeholder="Enter the reset code here"
+  maxLength={6}
+  autoComplete="off" // Prevent browser autofill
+  {...field}
+/>
+
+{/* New Password */}
+<Input
+  type="password"
+  placeholder="Enter your new password"
+  autoComplete="new-password" // Tell browser this is new password
+  {...field}
+/>
+
+{/* Confirm Password */}
+<Input
+  type="password"
+  placeholder="Re-enter your new password"
+  autoComplete="new-password"
+  {...field}
+/>
+```
+
+**Success Handling**:
+
+```typescript
+const resetPassword = async (values: z.infer<typeof ResetPasswordSchema>) => {
+  setError('');
+  setSuccess('');
+
+  try {
+    const res = await client.post('/users/reset-password', {
+      email: userEmail,
+      code: values.code,
+      newPassword: values.newPassword,
+    });
+
+    if (res.status === 201) {
+      setSuccess('Password reset successful');
+      newForm.reset();
+
+      // Delay redirect to show success message
+      setTimeout(() => {
+        router.push('/login');
+      }, 1500);
+    }
+  } catch (error: any) {
+    setError(
+      error.response.data.userFriendlyMessage || 'Failed to reset password',
+    );
+    setTimeout(() => setError(''), 3000);
+  }
+};
+```
+
+**Key Features**:
+
+- Context-aware title and banner based on URL parameters
+- Email pre-fill when coming from weak password detection
+- Three-field form: code, new password, confirm password
+- Browser autocomplete prevention
+- Success message only after actual success
+- 1.5-second delay before redirect
+
+### Authentication Flows
+
+#### Flow 1: New User Registration
+
+```text
+User Fills Registration Form
+         ↓
+Client-Side Validation (RegisterSchema)
+         ↓
+    Password Strong?
+    ↙              ↘
+  Yes              No
+   ↓                ↓
+Submit Form    Show Error Message
+   ↓           "Password must contain..."
+Backend Creates    ↓
+Account        Block Submission
+```
+
+#### Flow 2: Login with Weak Password
+
+```text
+User Enters Credentials
+         ↓
+POST /auth/login
+         ↓
+Backend Authenticates ✓
+(Always succeeds)
+         ↓
+Store Tokens in localStorage
+         ↓
+Client-Side Password Check
+         ↓
+    Strong?
+    ↙        ↘
+  Yes        No
+   ↓          ↓
+Load      Show Modal
+Boards    "Update Required"
+           ↓
+      User Clicks
+      "Reset Password"
+           ↓
+      Logout (Clear Tokens)
+           ↓
+      Redirect to
+      /forgot-password
+      ?email=...&reason=weak
+           ↓
+      Password Reset Flow
+           ↓
+      Login with New Password
+           ↓
+      Normal Flow
+```
+
+#### Flow 3: Password Reset (from Weak Password)
+
+```text
+Page Loads with URL Parameters
+reason=weak & email=user@test.com
+         ↓
+Show: "🔒 Strengthen Your Password"
+Yellow Banner: "Security Update Required"
+Email Pre-filled: user@test.com
+         ↓
+User Clicks "Send Password Reset Code"
+         ↓
+POST /users/reset-password/create-verification-code
+         ↓
+6-Digit Code Sent to Email
+         ↓
+Form Shows:
+• Reset Password Code (empty)
+• New Password (empty)
+• Repeat New Password (empty)
+         ↓
+User Enters:
+• Code: 123456
+• New Password: Password123
+• Confirm: Password123
+         ↓
+Client-Side Validation:
+• Passwords match? ✓
+• Strong password? ✓
+• Code 6 digits? ✓
+         ↓
+POST /users/reset-password
+         ↓
+Backend Validates & Updates
+         ↓
+Success Message: "Password reset successful"
+(displayed for 1.5 seconds)
+         ↓
+Redirect to /login
+         ↓
+User Logs In with New Password
+         ↓
+Password Check: STRONG ✓
+         ↓
+Normal Flow (No Modal)
+```
+
+### Backend Endpoints
+
+**No new endpoints required** - uses existing infrastructure:
+
+#### POST `/auth/login`
+
+- Authenticates user credentials
+- Returns access token and refresh token
+- Does NOT validate password strength
+
+#### POST `/users/reset-password/create-verification-code`
+
+- Sends 6-digit verification code to user's email
+- No authentication required (public endpoint)
+- Rate limited to prevent abuse
+
+#### POST `/users/reset-password`
+
+- Validates verification code
+- Enforces strong password requirements (server-side)
+- Updates user's password in database
+- Invalidates old tokens
+
+### Security Considerations
+
+#### Client-Side vs Server-Side Validation
+
+**Client-Side** (Frontend):
+
+- **Purpose**: User experience and immediate feedback
+- **Implementation**: JavaScript regex validation
+- **Can be bypassed**: By modifying frontend code
+- **Use case**: Weak password detection for UX guidance
+
+**Server-Side** (Backend):
+
+- **Purpose**: Actual security enforcement
+- **Implementation**: Server validates all password changes
+- **Cannot be bypassed**: Server always validates
+- **Use case**: Enforcing strong passwords during reset
+
+#### Non-Breaking Deployment Strategy
+
+- Existing users with weak passwords can still login
+- No forced logout or service disruption
+- Gradual migration to strong passwords
+- User-friendly guidance rather than hard blocks
+- Better user experience
+- Reduced support tickets
+
+#### Future Enhancements
+
+> **✅ SECURITY FIX IMPLEMENTED (25/01/2026)**
+>
+> **Previous Issue**: Password strength detection was done client-side, storing passwords in React component state, which created security risks (memory exposure, DevTools visibility, XSS vulnerability surface).
+>
+> **Solution Implemented**: Backend now validates password strength and returns it in login response. Frontend no longer stores passwords.
+>
+> **Implementation Details**:
+>
+> - Backend: `src/utils/password-strength.util.ts` - Password strength validation utility
+> - Backend: `src/modules/auth/auth.service.ts` - Modified `signIn` to check password strength
+> - Backend: `src/modules/auth/dtos/jwt-tokens.dto.ts` - Added `passwordStrength` field
+> - Frontend: `redux/user/userSlice.ts` - Extracts `passwordStrength` from response
+> - Frontend: `app/(auth)/login/page.tsx` - Uses backend's password strength flag
+>
+> **Security Benefits**:
+>
+> - ✅ No client-side password storage
+> - ✅ Server-side password validation
+> - ✅ No password exposure in React state/DevTools
+> - ✅ Reduced XSS attack surface
+> - ✅ More secure and maintainable
+
+**Option 1**: Backend password strength flag in login response **(✅ IMPLEMENTED - 25/01/2026)**
+
+```typescript
+// Backend returns password strength in login response
+interface LoginResponse {
+  accessToken: string;
+  refreshToken: string;
+  user: User;
+  passwordStrength: 'strong' | 'weak'; // Server determines this
+  requirePasswordUpdate?: boolean;
+}
+
+// Frontend doesn't store or check password
+const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
+  const { email, password } = values;
+  setUserEmail(email);
+  // Don't store password - let server handle validation
+  const result = await dispatch(login({ email, password }));
+
+  // Server tells us if password is weak
+  if (result.payload?.passwordStrength === 'weak') {
+    setShowPasswordModal(true);
+  }
+};
+```
+
+**Benefits**:
+
+- Eliminates client-side password storage
+- Server-side password validation and hashing check
+- No password exposure in React state/DevTools
+- Reduces XSS attack surface
+- More secure and maintainable
+
+**Option 2**: Gradual enforcement timeline
+
+- Track users who haven't updated passwords
+- Send email reminders after 30/60/90 days
+- Eventually enforce at backend level
+
+**Option 3**: Backend validation on login
+
+```typescript
+if (user.passwordStrength === 'weak') {
+  return {
+    requirePasswordUpdate: true,
+    message: 'Please update your password',
+  };
+}
+```
+
+### Testing Scenarios
+
+#### Test 1: Registration with Weak Password
+
+- Input: `password` (no uppercase, no number)
+- Expected: Validation error, registration blocked
+
+#### Test 2: Registration with Strong Password
+
+- Input: `Password123`
+- Expected: Registration succeeds
+
+#### Test 3: Login with Strong Password
+
+- Expected: Normal flow, no modal, boards load
+
+#### Test 4: Login with Weak Password
+
+- Expected: Modal appears → Redirect → Reset → Success
+
+#### Test 5: Password Mismatch During Reset
+
+- Input: New: `Password123`, Confirm: `Password456`
+- Expected: Error "Passwords do not match"
+
+#### Test 6: Weak Password During Reset
+
+- Input: `password` (weak)
+- Expected: Validation error
+
+### Files Modified
+
+1. `schemas/index.ts` - RegisterSchema and ResetPasswordSchema
+2. `utils/passwordStrength.ts` - New utility file
+3. `components/auth/ForcePasswordChangeModal.tsx` - WeakPasswordModal
+4. `components/ui/dialog.tsx` - hideCloseButton prop
+5. `app/(auth)/login/page.tsx` - Weak password detection
+6. `app/(auth)/forgot-password/page.tsx` - Enhanced with conditional UI
+7. `docs/Authentication_system.md` - Complete documentation
+8. `docs/CHANGELOG.md` - Version 0.199.0 entry
+9. `docs/Technical_documentation.md` - This documentation
+
+### Configuration
+
+**No environment variables required** - uses existing configuration
+
+**Constants**:
+
+```typescript
+// schemas/index.ts
+const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+const MIN_PASSWORD_LENGTH = 8;
+```
+
+**Customization**:
+To change password requirements, update:
+
+1. Regex in `schemas/index.ts`
+2. Utility in `utils/passwordStrength.ts`
+3. Help text in forgot-password page
+4. Modal requirements list
+
+### Troubleshooting
+
+**Modal doesn't appear**:
+
+- Check password is actually weak
+- Verify Redux status is 'succeeded'
+- Check userPassword state has value
+
+**Redirect doesn't work**:
+
+- Verify localStorage is cleared
+- Check URL contains correct parameters
+
+**Conditional content doesn't show**:
+
+- Verify URL parameters are read correctly
+- Check isWeakPasswordReset variable
+
+**Browser autofills password fields**:
+
+- Already fixed with `autoComplete` attributes
+- Test in incognito mode if persists
+
+**Success message appears too early**:
+
+- Should only appear after `/users/reset-password` API success
+- Not during email step or validation errors
+
+---
+
 ## Help Menu System - Logged-In Mode Integration (24/01/2026)
 
 ### Adaptive Layout Architecture for Help Pages
@@ -2593,7 +3324,7 @@ const notifications = {
 - Batch updates send both preferences in single request
 - Cached state reduces redundant API calls
 
-### Security Considerations
+### Security Considerations (17/08/2025)
 
 #### Authentication Integration
 

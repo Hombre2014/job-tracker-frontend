@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
@@ -16,7 +16,17 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   const { accessToken: reduxAccessToken } = useAppSelector(
     (state) => state.user,
   );
-  const accessToken = reduxAccessToken || localStorage.getItem('accessToken');
+  const [accessToken, setAccessToken] = useState<string | null>(
+    reduxAccessToken ?? null,
+  );
+
+  useEffect(() => {
+    if (reduxAccessToken) {
+      setAccessToken(reduxAccessToken);
+    } else {
+      setAccessToken(localStorage.getItem('accessToken'));
+    }
+  }, [reduxAccessToken]);
 
   useEffect(() => {
     if (accessToken) {
@@ -27,12 +37,12 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
     }
   }, [accessToken, router, dispatch]);
   return (
-    <div className="flex h-full bg-white dark:bg-slate-900">
+    <div className="flex h-screen bg-white dark:bg-slate-900">
       <aside className="min-w-60">
         <Sidebar />
       </aside>
       {accessToken && (
-        <div className="mx-auto w-full h-full text-slate-700 dark:text-slate-300 overflow-auto">
+        <div className="mx-auto w-full h-full text-slate-700 dark:text-slate-300 flex flex-col">
           {children}
         </div>
       )}

@@ -3,6 +3,319 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Job Post Creation Error Handling**: Enhanced error handling in job post creation flow
+  - **Issue**: Missing `.catch()` handler could cause runtime errors if `createJobPost` failed
+  - **Fix**: Added payload validation, `.catch()` handler, and proper state reset on failure
+  - **Impact**: Prevents stuck `isSubmittingJob` state and ensures cleanup only runs after successful creation
+  - **Files**: `components/HomePage/Kanban/Column/BoardColumns.tsx`
+
+- **Contact Deletion Error Handling**: Added `.unwrap()` to prevent UI desync
+  - **Issue**: Contact would disappear from UI even if backend delete failed
+  - **Fix**: Added `.unwrap()` and `.catch()` to only update UI on successful deletion
+  - **Impact**: Maintains data consistency between frontend and backend
+  - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/ContactCard.tsx`
+
+- **Login Flow Backward Compatibility**: Added fallback for missing `passwordStrength`
+  - **Issue**: Users could be stuck after login if backend doesn't return `passwordStrength` field
+  - **Fix**: Default to `'strong'` if field is missing, ensuring login flow always completes
+  - **Impact**: Graceful degradation for old backend versions or API failures
+  - **Files**: `app/(auth)/login/page.tsx`
+
+### Changed
+
+- **Password Constants Centralization**: Exported regex and message as reusable constants
+  - **Enhancement**: `STRONG_PASSWORD_REGEX` and `PASSWORD_STRENGTH_MESSAGE` now exported
+  - **Benefits**: Single source of truth, prevents drift, enables reuse in other components
+  - **Files**: `utils/passwordStrength.ts`
+
+- **Password Change Schema Enhancement**: Added password confirmation validation
+  - **Enhancement**: Added `confirmPassword` field with `.refine()` matching validation
+  - **Consistency**: Matches pattern from `ResetPasswordSchema`
+  - **Note**: Schema currently unused, ready for future user settings implementation
+  - **Files**: `schemas/index.ts`
+
+- **Layout Structure Simplification**: Removed redundant nested containers
+  - **Optimization**: Simplified 3 nested containers to 1 semantic `<section>`
+  - **Benefits**: 2 fewer DOM nodes, cleaner code, better performance
+  - **Files**: `app/(loggedin)/home/boards/[board_id]/layout.tsx`
+
+- **Drag Handler Cleanup**: Removed empty `handleDragOver` function
+  - **Cleanup**: Removed unused handler and `onDragOver` prop from DndContext
+  - **Benefits**: Less code, clearer intent, tiny performance gain
+  - **Files**: `components/HomePage/Kanban/Column/BoardColumns.tsx`
+
+### Documentation
+
+- **Grammar Fix**: Fixed compound adjective hyphenation
+  - **Change**: "1.5 second delay" → "1.5-second delay"
+  - **Files**: `docs/Technical_documentation.md`
+
+## [0.200.0] - 2026-01-25
+
+### Security - Critical Password Strength Validation Fix
+
+> ⚠️ **Security Note**: This release fixes a critical security vulnerability introduced in v0.199.0 where user passwords were temporarily stored in React component state. The vulnerability was identified and resolved within the same day (2026-01-25). While the exposure window was minimal, any deployments of v0.199.0 should be immediately upgraded to v0.200.0 or later.
+>
+> **Lessons Learned**:
+>
+> - Client-side password handling creates unnecessary security risks (XSS, DevTools exposure, state inspection)
+> - Security-sensitive features require explicit security review before merging
+> - Password validation should always be server-side; client receives only necessary flags
+> - Rapid detection and remediation demonstrates the value of continuous code review processes
+
+- **Backend Password Strength Validation**: Moved password strength validation to backend (server-side)
+  - **Security Risk Eliminated**: Frontend no longer stores passwords in React component state
+  - **Backend Implementation**: Created `password-strength.util.ts` with `isStrongPassword()` validation
+  - **API Response Enhanced**: Login endpoint now returns `passwordStrength: "strong" | "weak"` flag
+  - **Files**: `backend/src/utils/password-strength.util.ts`, `backend/src/modules/auth/auth.service.ts`
+- **Updated JWT Tokens DTO**: Added `passwordStrength` field to login response
+  - **Type**: Optional `'strong' | 'weak'` field in `JwtTokensDto`
+  - **Usage**: Frontend uses this flag to trigger weak password modal
+  - **Files**: `backend/src/modules/auth/dtos/jwt-tokens.dto.ts`
+
+### Changed
+
+- **Login Flow Security Enhancement**: Refactored frontend login to use backend password strength flag
+  - **Removed**: Client-side password storage (`userPassword` state) - major security improvement
+  - **Removed**: Client-side `isStrongPassword()` validation import
+  - **Added**: `passwordStrength` state derived from backend response
+  - **Security Benefits**: No password in React state, no DevTools exposure, reduced XSS risk
+  - **Files**: `app/(auth)/login/page.tsx`, `redux/user/userSlice.ts`
+
+- **Redux Login Thunk**: Enhanced to extract and return `passwordStrength` from backend
+  - **Data Flow**: Backend response → Redux payload → Login component
+  - **Type Safety**: Proper TypeScript handling of optional `passwordStrength` field
+  - **Files**: `redux/user/userSlice.ts`
+
+### Fixed
+
+- **Optional Chaining for Error Access**: Added safe error handling in forgot-password page
+  - **Issue**: `error.response.data` could be undefined for network failures
+  - **Fix**: Changed to `error?.response?.data?.userFriendlyMessage`
+  - **Files**: `app/(auth)/forgot-password/page.tsx`
+
+- **Invalid Tailwind Class**: Fixed `items-left` → `items-start` in forgot-password layout
+  - **Issue**: `items-left` is not a valid Tailwind CSS utility
+  - **Files**: `app/(auth)/forgot-password/page.tsx`
+
+- **localStorage Error Handling**: Added try-catch for localStorage operations
+  - **Issue**: localStorage can throw in private browsing mode or when disabled
+  - **Fix**: Wrapped localStorage operations in try-catch with fallback
+  - **Files**: `components/auth/ForcePasswordChangeModal.tsx`
+
+- **Dev Tools Popup Behavior**: DevTools now only show when explicitly enabled
+  - **Issue**: DevTools modal appeared on every `npm run dev` startup
+  - **Solution**: Added `NEXT_PUBLIC_ENABLE_DEVTOOLS` environment variable check
+  - **New Script**: `npm run dev:tools` - runs dev mode WITH DevTools
+  - **Default**: `npm run dev` - runs WITHOUT DevTools popup
+  - **Manual Toggle**: `Ctrl+Shift+D` keyboard shortcut still works
+  - **Files**: `components/dev/DevToolsWrapper.tsx`, `package.json`
+
+### Documentation
+
+- **Authentication System Documentation**: Updated with backend security implementation
+  - **Section**: "Existing User Login Flow (Weak Password Detection)"
+  - **Added**: Security update notice and backend implementation details
+  - **Files**: `docs/Authentication_system.md`
+
+- **Technical Documentation**: Marked security fix as implemented
+  - **Section**: "Future Enhancements" updated with implementation status
+  - **Added**: Comprehensive security benefits and implementation details
+  - **Files**: `docs/Technical_documentation.md`
+
+## [0.199.0] - 2026-01-25
+
+### Added - Strong Password Enforcement System
+
+- **Password Security Validation**: Comprehensive strong password enforcement across all authentication flows
+  - **Security Requirements**: All passwords must contain minimum 8 characters, 1 uppercase, 1 lowercase, 1 number
+  - **Validation Regex**: `/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/` used consistently across all validation points
+  - **Files**: `schemas/index.ts`, `utils/passwordStrength.ts`
+
+- **RegisterSchema Enhancement**: Strong password validation for new user registrations
+  - **Real-time Validation**: Immediate feedback as users type password
+  - **Clear Error Messages**: "Password must contain at least 1 uppercase, 1 lowercase, and 1 number"
+  - **Blocks Weak Passwords**: Registration form submission prevented until password meets requirements
+  - **Files**: `schemas/index.ts`
+
+- **ResetPasswordSchema Enhancement**: Password confirmation and matching validation
+  - **Confirm Password Field**: Added `confirmPassword` field to prevent typos
+  - **Match Validation**: `.refine()` method ensures both passwords match
+  - **Error Handling**: Clear error message "Passwords do not match" displayed under confirmation field
+  - **Strong Password Enforcement**: New password must meet security requirements
+  - **Files**: `schemas/index.ts`
+
+- **Password Strength Utility**: Client-side password validation utility function
+  - **isStrongPassword Function**: Validates password against strong password regex
+  - **Reusable Logic**: Centralized password strength checking across application
+  - **Usage**: Login page weak password detection after successful authentication
+  - **Files**: `utils/passwordStrength.ts` (new file)
+
+- **Weak Password Detection Modal**: Non-dismissible modal for guiding users to password reset
+  - **Component Name**: `WeakPasswordModal` (renamed from `ForcePasswordChangeModal`)
+  - **Trigger**: Appears after successful login when weak password detected
+  - **Non-dismissible Design**: No close button, no backdrop click - forces user action
+  - **Clear Messaging**:
+    - Title: "🔒 Password Security Update Required"
+    - Yellow security requirements banner (8 chars, uppercase, lowercase, number)
+    - Blue step-by-step instructions banner with user's email
+  - **User Flow**: Single button "Reset My Password" → Logout → Redirect to forgot-password
+  - **Automatic Logout**: Clears `accessToken`, `refreshToken`, `user` from localStorage before redirect
+  - **Context Passing**: Redirects to `/forgot-password?email=<user>&reason=weak`
+  - **Files**: `components/auth/ForcePasswordChangeModal.tsx`
+
+- **Enhanced Dialog Component**: Non-dismissible modal support
+  - **New Prop**: `hideCloseButton?: boolean` added to `DialogContent` component
+  - **Conditional Rendering**: Close button only rendered when `hideCloseButton` is false/undefined
+  - **Use Case**: Critical security flows requiring user action
+  - **Files**: `components/ui/dialog.tsx`
+
+- **Login Page Weak Password Detection**: Client-side password strength checking after authentication
+  - **Detection Flow**: Backend authenticates → Store tokens → Check password strength → Show modal if weak
+  - **State Management**: Added `userEmail`, `userPassword`, `showPasswordModal` state
+  - **Non-Breaking**: Users with weak passwords can still login (backend doesn't block)
+  - **Gradual Migration**: Guides users to update passwords without forced logout
+  - **Files**: `app/(auth)/login/page.tsx`
+
+- **Enhanced Forgot Password Page**: Context-aware password reset with conditional UI
+  - **URL Parameter Detection**:
+    - `reason=weak` - Indicates user came from weak password detection
+    - `email=<address>` - Pre-fills email field
+  - **Conditional Title**:
+    - Normal: "Forgot Password"
+    - Weak Password: "🔒 Strengthen Your Password"
+  - **Conditional Banner**:
+    - Normal: No banner
+    - Weak Password: Yellow "Security Update Required" banner with explanation
+  - **Email Pre-fill**: Email automatically filled when provided in URL parameters
+  - **Three-Field Form**:
+    - Reset Password Code (6 digits, placeholder: "Enter the reset code here")
+    - New Password (placeholder: "Enter your new password")
+    - Repeat New Password (placeholder: "Re-enter your new password")
+  - **Browser Autofill Prevention**:
+    - Code field: `autoComplete="off"`
+    - Password fields: `autoComplete="new-password"`
+  - **Success Message Timing**: Success badge only appears AFTER successful password reset (not prematurely)
+  - **Auto-redirect**: 1.5 second delay after success before redirecting to login
+  - **Files**: `app/(auth)/forgot-password/page.tsx`
+
+- **Comprehensive Documentation**:
+  - **Authentication System Update**: Added "Password Security Enforcement" major section to `Authentication_system.md`
+    - Security requirements and regex patterns
+    - Implementation architecture and component details
+    - Complete authentication flows with diagrams
+    - Backend endpoints usage
+    - Comprehensive testing guide with 6 test scenarios
+    - Visual flowcharts and decision trees
+    - Security considerations and best practices
+    - Troubleshooting guide
+  - **Test Scenario Documentation**: Complete step-by-step testing instructions in `Authentication_system.md`
+  - **Files**: `docs/Authentication_system.md`
+
+### Changed - Authentication and Security
+
+- **Login Flow Enhancement**: Added weak password detection without breaking existing functionality
+  - **Non-Breaking Change**: Backend authentication still succeeds for users with weak passwords
+  - **Client-Side Detection**: Password strength checked after successful login
+  - **User Guidance**: Modal guides users through password update process
+  - **Seamless Experience**: Strong password users see no difference in login flow
+  - **Files**: `app/(auth)/login/page.tsx`
+
+- **Password Reset Flow Improvement**: Enhanced user experience and validation
+  - **Two-Step Process Maintained**: Email verification → Code + password reset
+  - **Added Password Confirmation**: Reduces password typos during reset
+  - **Improved Validation**: Real-time feedback on password strength and matching
+  - **Success Message Fix**: Only appears after successful password reset (not prematurely)
+  - **Form Reset**: All fields cleared after successful password change
+  - **Files**: `app/(auth)/forgot-password/page.tsx`
+
+- **Form Field Improvements**: Better user experience with proper autocomplete handling
+  - **Code Field**: `maxLength={6}` prevents typing more than 6 characters
+  - **Password Fields**: `autoComplete="new-password"` prevents browser from filling saved passwords
+  - **Placeholders**: Clear, descriptive placeholders for all fields
+  - **Files**: `app/(auth)/forgot-password/page.tsx`
+
+### Fixed - UI and Validation Issues
+
+- **Unicode Character Display**: Fixed emoji and symbol rendering issues
+  - **Issue**: `\u26a0\ufe0f` and `\ud83d\udd12` appeared as text instead of rendering
+  - **Solution**: Proper emoji rendering in JSX (🔒, ⚠️)
+  - **Clean Text**: Changed "⚠️ Security Update Required" to "Security Update Required" (removed redundant emoji)
+  - **Files**: `app/(auth)/forgot-password/page.tsx`, `components/auth/ForcePasswordChangeModal.tsx`
+
+- **Success Message Timing**: Fixed premature success message display
+  - **Issue**: "Password reset successful" appeared before user completed reset
+  - **Root Cause**: useEffect setting success state based on Redux status
+  - **Solution**: Removed premature useEffect logic, success message now only appears after actual API success
+  - **Timing**: 1.5 second display before redirect to login
+  - **Files**: `app/(auth)/forgot-password/page.tsx`
+
+- **Form Field Pre-population**: Fixed unwanted browser autofill
+  - **Issue**: Reset code field showed 6 characters from email, password fields showed stars
+  - **Root Cause**: Browser autofill attempting to populate saved credentials
+  - **Solution**: Added `autoComplete` attributes to all form fields
+  - **Code Field**: `autoComplete="off"` - completely disables autofill
+  - **Password Fields**: `autoComplete="new-password"` - tells browser this is new password creation
+  - **Files**: `app/(auth)/forgot-password/page.tsx`
+
+- **Placeholder Improvements**: Fixed code field placeholder
+  - **Previous**: "Enter 6 digit code" (could be mistaken for pre-filled value)
+  - **Current**: "Enter the reset code here" (clearer instruction)
+  - **Files**: `app/(auth)/forgot-password/page.tsx`
+
+- **Unused Code Cleanup**: Removed unused imports and functions
+  - **Removed Imports**: `useAppDispatch`, `useAppSelector` from forgot-password page
+  - **Removed State**: `dispatch` and `status` variables (not needed)
+  - **Removed Function**: `handlePasswordChangeSuccess` from login page (obsolete with new modal)
+  - **Files**: `app/(auth)/login/page.tsx`, `app/(auth)/forgot-password/page.tsx`
+
+### Security Enhancements
+
+- **Client-Side Password Strength Checking**: Non-breaking weak password detection
+  - **Implementation**: JavaScript regex validation after successful login
+  - **Purpose**: User experience and guidance (not security enforcement)
+  - **Non-Breaking**: Does not block login, only guides users to update password
+  - **Benefits**: Gradual migration, better UX, reduced support tickets
+
+- **Server-Side Enforcement**: Strong password validation during password reset
+  - **ResetPasswordSchema**: Enforces strong password requirements
+  - **Backend Validation**: Server validates all password changes
+  - **Cannot Be Bypassed**: Client-side checks are for UX, server enforces security
+  - **Guarantee**: All new passwords meet security standards
+
+- **Token Security**: Proper logout before password reset redirect
+  - **Token Cleanup**: All authentication tokens cleared from localStorage
+  - **Session Termination**: User fully logged out before password reset
+  - **Security**: Prevents token reuse during password change process
+
+- **Password Confirmation**: Reduces password typos and errors
+  - **Dual Entry**: User must enter new password twice
+  - **Match Validation**: Real-time validation ensures passwords match
+  - **Error Prevention**: Significantly reduces password reset failures due to typos
+
+### Developer Experience
+
+- **Comprehensive Documentation**: Complete technical documentation for password security system
+  - **Architecture Diagrams**: Visual flowcharts showing complete authentication flows
+  - **API Documentation**: Detailed backend endpoint usage
+  - **Testing Guide**: 6 comprehensive test scenarios with expected results
+  - **Troubleshooting**: Common issues and solutions
+  - **Code Examples**: Real implementation snippets throughout documentation
+
+- **Type Safety**: Full TypeScript support for password validation
+  - **Schema Validation**: Zod schemas with TypeScript inference
+  - **Type-Safe Components**: Properly typed props for all password-related components
+  - **Compile-Time Safety**: Catches errors before runtime
+
+- **Reusable Utilities**: Centralized password validation logic
+  - **passwordStrength.ts**: Reusable password strength checking
+  - **Consistent Validation**: Same regex used across all validation points
+  - **Easy Maintenance**: Single source of truth for password requirements
+
 ## [0.198.0] - 2026-01-24
 
 ### Added - Notes and Companies Sections
@@ -1745,7 +2058,7 @@ The document CHANGELOG.md was update with tis implementation.
   - **Improvement**: Developers now know how to use `window.PerformanceMonitor` or import from utils
   - **Files**: `docs/DevTools_and_Monitoring_Guide.md`
 
-### Security Enhancements
+### Security Enhancements 2025-08-01
 
 #### Token Storage Security Guidance Correction
 
@@ -2081,7 +2394,7 @@ The document CHANGELOG.md was update with tis implementation.
 - **Real-time updates**: Profile changes reflect immediately across the application
 - **Cross-tab synchronization**: Authentication state synced across multiple tabs
 
-### Developer Experience
+### Developer Experience Improvements - 2025-07-27
 
 #### Development Tools
 
@@ -2090,7 +2403,7 @@ The document CHANGELOG.md was update with tis implementation.
 - **Debug logging**: Comprehensive logging with development-only features
 - **Keyboard shortcuts**: Quick access to debugging tools (Ctrl+Shift+D)
 
-#### Documentation
+#### Documentation Enhancements - 2025-07-27
 
 - **Comprehensive documentation**: Complete system documentation with troubleshooting guides
 - **Technical specifications**: Detailed API documentation and configuration options
@@ -2992,6 +3305,8 @@ _All changes maintain backward compatibility and enhance user experience with im
 
 <!-- Version comparison links -->
 
+[0.200.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.199.0...v0.200.0
+[0.199.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.198.0...v0.199.0
 [0.198.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.197.0...v0.198.0
 [0.197.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.196.0...v0.197.0
 [0.196.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.195.0...v0.196.0

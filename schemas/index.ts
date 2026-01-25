@@ -1,12 +1,21 @@
 import * as z from 'zod';
 
+// Strong password validation regex: at least 8 chars, 1 number, 1 uppercase, 1 lowercase
+const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
 export const RegisterSchema = z.object({
   email: z.string().email({
     message: 'Email is required',
   }),
-  password: z.string().min(8, {
-    message: 'Minimum 8 characters required',
-  }),
+  password: z
+    .string()
+    .min(8, {
+      message: 'Minimum 8 characters required',
+    })
+    .regex(strongPasswordRegex, {
+      message:
+        'Password must contain at least 1 uppercase, 1 lowercase, and 1 number',
+    }),
   role: z.string().optional(),
   firstName: z.string().min(2, {
     message: 'Name is required',
@@ -32,21 +41,56 @@ export const ForgotPasswordSchema = z.object({
   }),
 });
 
-export const ResetPasswordSchema = z.object({
-  code: z.string().regex(/^\d{6}$/, {
-    message: 'The code must be exactly 6 digits',
-  }),
-  newPassword: z.string().min(8, {
-    message: 'Minimum 8 characters required',
-  }),
-});
+export const ResetPasswordSchema = z
+  .object({
+    code: z.string().regex(/^\d{6}$/, {
+      message: 'The code must be exactly 6 digits',
+    }),
+    newPassword: z
+      .string()
+      .min(8, {
+        message: 'Minimum 8 characters required',
+      })
+      .regex(strongPasswordRegex, {
+        message:
+          'Password must contain at least 1 uppercase, 1 lowercase, and 1 number',
+      }),
+    confirmPassword: z.string().min(1, {
+      message: 'Please confirm your password',
+    }),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+
+export const ChangePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, {
+      message: 'Current password is required',
+    }),
+    newPassword: z
+      .string()
+      .min(8, {
+        message: 'Minimum 8 characters required',
+      })
+      .regex(strongPasswordRegex, {
+        message:
+          'Password must contain at least 1 uppercase, 1 lowercase, and 1 number',
+      }),
+    confirmPassword: z.string().min(1, {
+      message: 'Please confirm your password',
+    }),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
 
 export const VerifyEmailSchema = z.object({
   code: z.preprocess(
     (val) => (typeof val === 'string' ? val.trim() : val),
-    z
-      .string()
-      .regex(/^\d{6}$/, 'Verification code must be exactly 6 digits')
+    z.string().regex(/^\d{6}$/, 'Verification code must be exactly 6 digits'),
   ),
 });
 
@@ -80,7 +124,7 @@ export const AddContactSchema = z.object({
   emails: z.array(
     z.string().email({
       message: 'Invalid email address',
-    })
+    }),
   ),
   githubUrl: z.string().min(1),
   twitterUrl: z.string().min(1),
@@ -97,8 +141,8 @@ export const EditCompanySchema = z.object({
   url: z
     .string()
     .regex(
-      /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/,
-      'Please enter a valid URL (e.g., example.com or https://example.com)'
+      /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]+)?\/?$/,
+      'Please enter a valid URL (e.g., example.com or https://example.com)',
     )
     .or(z.literal(''))
     .optional(),
