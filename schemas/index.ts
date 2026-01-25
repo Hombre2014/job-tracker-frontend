@@ -133,7 +133,7 @@ export const EditCompanySchema = z.object({
   url: z
     .string()
     .regex(
-      /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/,
+      /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]+)?\/?$/,
       'Please enter a valid URL (e.g., example.com or https://example.com)',
     )
     .or(z.literal(''))
