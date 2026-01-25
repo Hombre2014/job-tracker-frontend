@@ -67,7 +67,7 @@ const BoardColumns = () => {
       // For development: log when we have a query but it's not active
       if (process.env.NODE_ENV === 'development') {
         console.log(
-          `Search not active for query "${query}" (length: ${query.length})`
+          `Search not active for query "${query}" (length: ${query.length})`,
         );
       }
       return boardColumns;
@@ -96,13 +96,13 @@ const BoardColumns = () => {
       activationConstraint: {
         distance: 8,
       },
-    })
+    }),
   );
 
   useEffect(() => {
     if (isEditing) {
       const currentInputElement = document.getElementById(
-        currentColumnId
+        currentColumnId,
       ) as HTMLInputElement;
       if (currentInputElement) {
         currentInputElement.focus();
@@ -129,7 +129,7 @@ const BoardColumns = () => {
     if (focusTimeoutRef.current) clearTimeout(focusTimeoutRef.current);
     focusTimeoutRef.current = setTimeout(() => {
       const input = document.getElementById(
-        currentColumnId
+        currentColumnId,
       ) as HTMLInputElement;
       if (input && document.activeElement !== input) {
         input.focus();
@@ -156,7 +156,7 @@ const BoardColumns = () => {
         accessToken,
         id: currentColumnId,
         name: renamedColumnName,
-      })
+      }),
     );
     dispatch(getBoards(accessToken as string));
   };
@@ -225,7 +225,7 @@ const BoardColumns = () => {
 
     // Find current column from all columns
     const currentColumn = boardColumns.find((col) =>
-      col.jobApplications?.some((job) => job.id === draggedJob.id)
+      col.jobApplications?.some((job) => job.id === draggedJob.id),
     );
 
     if (!currentColumn || currentColumn.id === targetColumn.id) return;
@@ -267,7 +267,7 @@ const BoardColumns = () => {
         company: {
           name: draggedJob.company.name,
         },
-      })
+      }),
     );
   };
 
@@ -309,7 +309,7 @@ const BoardColumns = () => {
       <section
         ref={setNodeRef}
         key={column.order + 1}
-        className={`flex flex-col border-r border-slate-200 w-1/5 transition-all duration-200 min-h-[600px] flex-1 ${
+        className={`flex flex-col border-r border-slate-200 w-1/5 transition-all duration-200 flex-1 ${
           isOver
             ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-600'
             : ''
@@ -373,77 +373,84 @@ const BoardColumns = () => {
           {filteredColumns &&
             filteredColumns.map((column) => (
               <DroppableColumn key={column.id} column={column}>
-                <div className="flex items-center justify-between px-4 pt-8">
-                  {returnBoardIcon(column.order + 1)}
-                  <p className="hover:bg-slate-200 dark:hover:bg-slate-700 px-2 py-1 rounded-md cursor-text transition duration-300 delay-150 mx-2">
-                    <Input
-                      id={column.id}
-                      value={
-                        column.id === currentColumnId
-                          ? renamedColumnName.toUpperCase()
-                          : column.name.toUpperCase()
-                      }
-                      className="text-lg font-semibold text-center w-full border-none outline-none shadow-none active:outline-none active:shadow-none active:border-none dark:text-white dark:bg-transparent focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setIsEditing(true);
-                        setCurrentColumnId(column.id);
-                        setRenamedColumnName(column.name);
-                      }}
-                      onBlur={confirmColumnNameChange}
-                      onKeyDown={(e) => checkForEnter(e)}
-                      onChange={(e) => handleColumnNameChange(e)}
-                    />
-                  </p>
-                  <ThreeDotsMenu columnOrder={column.order} />
-                </div>
-                <div className="w-full flex justify-center">
-                  <p className="mb-8 text-center dark:text-white">
-                    {column.jobApplications?.length}{' '}
-                    {column.jobApplications?.length === 1 ? 'JOB' : 'JOBS'}
-                    {isActive && (
-                      <span className="text-xs text-gray-500 block">
-                        {searchSummary.isFiltering ? 'filtered' : 'total'}
-                      </span>
-                    )}
-                  </p>
-                </div>
-                <AlertDialogModal
-                  buttonLabel="+"
-                  cleanupType="job"
-                  dialogTitle="Add Job"
-                  buttonCancel="Discard"
-                  buttonVariant="outline"
-                  actionFunction={createJobApplication}
-                  buttonConfirm={isSubmittingJob ? 'Saving...' : 'Save Job'}
-                  stylings="w-11/12 flex justify-center text-2xl border py-3 mb-4 mx-auto rounded-md hover:border-blue-500 transition duration-300 delay-150 cursor-pointer"
-                >
-                  <AddJobShortForm
-                    columnOrder={column.order}
-                    onDraftChange={(d) => {
-                      jobDraftRef.current = { ...jobDraftRef.current, ...d };
-                    }}
-                  />
-                </AlertDialogModal>
-                {column.jobApplications &&
-                  column.jobApplications.map((job) =>
-                    job.company !== null ? (
-                      <DraggableJobPostCard
-                        id={job.id}
-                        key={job.id}
-                        notes={job.notes}
-                        title={job.title}
-                        color={job.color}
-                        status={job.status}
-                        columnId={column.id}
-                        postUrl={job.postUrl}
-                        deadline={job.deadline}
-                        timeStamp={job.createdAt}
-                        companyName={job.company.name}
-                        statusChangedTime={job.statusChangedAt}
+                {/* Fixed Header */}
+                <div className="flex-shrink-0">
+                  <div className="flex items-center justify-between px-4 pt-8">
+                    {returnBoardIcon(column.order + 1)}
+                    <p className="hover:bg-slate-200 dark:hover:bg-slate-700 px-2 py-1 rounded-md cursor-text transition duration-300 delay-150 mx-2">
+                      <Input
+                        id={column.id}
+                        value={
+                          column.id === currentColumnId
+                            ? renamedColumnName.toUpperCase()
+                            : column.name.toUpperCase()
+                        }
+                        className="text-lg font-semibold text-center w-full border-none outline-none shadow-none active:outline-none active:shadow-none active:border-none dark:text-white dark:bg-transparent focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setIsEditing(true);
+                          setCurrentColumnId(column.id);
+                          setRenamedColumnName(column.name);
+                        }}
+                        onBlur={confirmColumnNameChange}
+                        onKeyDown={(e) => checkForEnter(e)}
+                        onChange={(e) => handleColumnNameChange(e)}
                       />
-                    ) : null
-                  )}
+                    </p>
+                    <ThreeDotsMenu columnOrder={column.order} />
+                  </div>
+                  <div className="w-full flex justify-center">
+                    <p className="mb-8 text-center dark:text-white">
+                      {column.jobApplications?.length}{' '}
+                      {column.jobApplications?.length === 1 ? 'JOB' : 'JOBS'}
+                      {isActive && (
+                        <span className="text-xs text-gray-500 block">
+                          {searchSummary.isFiltering ? 'filtered' : 'total'}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <AlertDialogModal
+                    buttonLabel="+"
+                    cleanupType="job"
+                    dialogTitle="Add Job"
+                    buttonCancel="Discard"
+                    buttonVariant="outline"
+                    actionFunction={createJobApplication}
+                    buttonConfirm={isSubmittingJob ? 'Saving...' : 'Save Job'}
+                    stylings="w-11/12 flex justify-center text-2xl border py-3 mb-4 mx-auto rounded-md hover:border-blue-500 transition duration-300 delay-150 cursor-pointer"
+                  >
+                    <AddJobShortForm
+                      columnOrder={column.order}
+                      onDraftChange={(d) => {
+                        jobDraftRef.current = { ...jobDraftRef.current, ...d };
+                      }}
+                    />
+                  </AlertDialogModal>
+                </div>
+
+                {/* Scrollable Content */}
+                <div className="flex-1 overflow-y-auto min-h-0">
+                  {column.jobApplications &&
+                    column.jobApplications.map((job) =>
+                      job.company !== null ? (
+                        <DraggableJobPostCard
+                          id={job.id}
+                          key={job.id}
+                          notes={job.notes}
+                          title={job.title}
+                          color={job.color}
+                          status={job.status}
+                          columnId={column.id}
+                          postUrl={job.postUrl}
+                          deadline={job.deadline}
+                          timeStamp={job.createdAt}
+                          companyName={job.company.name}
+                          statusChangedTime={job.statusChangedAt}
+                        />
+                      ) : null,
+                    )}
+                </div>
               </DroppableColumn>
             ))}
         </div>
@@ -487,7 +494,17 @@ const BoardColumns = () => {
         {activeId ? (
           <div className="transform rotate-3 opacity-90">
             {(() => {
-              const draggedJob = jobPosts.find((job) => job.id === activeId);
+              // Find the job in boardColumns instead of jobPosts
+              let draggedJob = null;
+              for (const column of boardColumns) {
+                const job = column.jobApplications?.find(
+                  (job) => job.id === activeId,
+                );
+                if (job) {
+                  draggedJob = job;
+                  break;
+                }
+              }
               return draggedJob ? (
                 <JobPostCard
                   id={draggedJob.id}
