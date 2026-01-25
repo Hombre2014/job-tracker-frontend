@@ -42,6 +42,11 @@ const ForgotPassword: React.FC = () => {
   const isWeakPasswordReset = searchParams.get('reason') === 'weak';
   const prefilledEmail = searchParams.get('email') || '';
 
+  console.log('🔍 Forgot Password Page - Initial state:', {
+    isWeakPasswordReset,
+    prefilledEmail,
+  });
+
   const form = useForm<z.infer<typeof ForgotPasswordSchema>>({
     resolver: zodResolver(ForgotPasswordSchema),
     defaultValues: {
@@ -59,6 +64,7 @@ const ForgotPassword: React.FC = () => {
   });
 
   const onSubmit = (values: z.infer<typeof ForgotPasswordSchema>) => {
+    console.log('🔥 onSubmit called with values:', values);
     const { email } = values;
     setUserEmail(email);
 
@@ -77,7 +83,7 @@ const ForgotPassword: React.FC = () => {
 
         console.log('API Response:', res.status, res.data);
 
-        if (res.status === 200) {
+        if (res.status === 200 || res.status === 201 || res.status === 204) {
           newForm.reset();
           setButtonClicked(true);
           setSuccess('Verification code sent to your email');
@@ -127,7 +133,7 @@ const ForgotPassword: React.FC = () => {
           newPassword,
         });
 
-        if (res.status === 201) {
+        if (res.status === 200 || res.status === 201 || res.status === 204) {
           setSuccess('Password reset successful');
           newForm.reset();
           timeoutRef.current = setTimeout(() => {
@@ -275,7 +281,13 @@ const ForgotPassword: React.FC = () => {
               : 'Enter your email'}
           </p>
           <Form {...form}>
-            <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
+            <form
+              className="space-y-6"
+              onSubmit={form.handleSubmit(onSubmit, (errors) => {
+                console.error('❌ Form validation failed:', errors);
+                setError('Please enter a valid email address');
+              })}
+            >
               <div className="space-y-4">
                 <FormField
                   control={form.control}
@@ -298,6 +310,9 @@ const ForgotPassword: React.FC = () => {
               <FormError message={error} />
               <Button
                 type="submit"
+                onClick={() =>
+                  console.log('Button clicked! Form state:', form.formState)
+                }
                 className="w-full bg-blue-500 transition duration-300 delay-100 hover:bg-blue-600 dark:text-white"
               >
                 Send Password Reset Code
