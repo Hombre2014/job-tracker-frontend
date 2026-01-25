@@ -74,7 +74,7 @@ const ForgotPassword: React.FC = () => {
         }
       } catch (error: any) {
         const err =
-          error.response.data.userFriendlyMessage ||
+          error?.response?.data?.userFriendlyMessage ||
           'User not found. Email field is invalid.';
         setError(err);
         form.reset();
@@ -125,7 +125,7 @@ const ForgotPassword: React.FC = () => {
         }
       } catch (error: any) {
         const err =
-          error.response.data.userFriendlyMessage ||
+          error?.response?.data?.userFriendlyMessage ||
           'Failed to reset password. Please try again.';
         setError(err);
         setTimeout(() => setError(''), 3000);
@@ -140,7 +140,7 @@ const ForgotPassword: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex flex-col items-left justify-center h-full min-w-[330px] mx-4">
+    <div className="flex flex-col items-start justify-center h-full min-w-[330px] mx-4">
       {isWeakPasswordReset ? (
         <>
           <h1 className="text-4xl font-semibold">

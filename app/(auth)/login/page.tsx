@@ -110,7 +110,8 @@ const Login = () => {
   return (
     <>
       <WeakPasswordModal isOpen={showPasswordModal} email={userEmail} />
-      <div className="flex flex-col items-left justify-center h-full min-w-[330px] mx-4">
+      <div className="flex flex-col items-start justify-center h-full min-w-[330px] mx-4">
+        {' '}
         <h1 className="text-4xl font-semibold">Log in</h1>
         <p className="text-slate-500 mt-2 mb-6">Log into your account</p>
         <Form {...form}>

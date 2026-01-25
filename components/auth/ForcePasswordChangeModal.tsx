@@ -24,9 +24,14 @@ export const WeakPasswordModal = ({
 
   const handleUpdatePassword = () => {
     // Logout user first
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
+    try {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+    } catch (error) {
+      // Continue with redirect even if localStorage clearing fails
+      console.error('Failed to clear auth tokens:', error);
+    }
 
     // Redirect to forgot-password with context
     router.push(
