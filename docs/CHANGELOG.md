@@ -3,6 +3,57 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Job Post Creation Error Handling**: Enhanced error handling in job post creation flow
+  - **Issue**: Missing `.catch()` handler could cause runtime errors if `createJobPost` failed
+  - **Fix**: Added payload validation, `.catch()` handler, and proper state reset on failure
+  - **Impact**: Prevents stuck `isSubmittingJob` state and ensures cleanup only runs after successful creation
+  - **Files**: `components/HomePage/Kanban/Column/BoardColumns.tsx`
+
+- **Contact Deletion Error Handling**: Added `.unwrap()` to prevent UI desync
+  - **Issue**: Contact would disappear from UI even if backend delete failed
+  - **Fix**: Added `.unwrap()` and `.catch()` to only update UI on successful deletion
+  - **Impact**: Maintains data consistency between frontend and backend
+  - **Files**: `components/HomePage/Kanban/Column/JobPosts/JobModal/JobContacts/ContactCard.tsx`
+
+- **Login Flow Backward Compatibility**: Added fallback for missing `passwordStrength`
+  - **Issue**: Users could be stuck after login if backend doesn't return `passwordStrength` field
+  - **Fix**: Default to `'strong'` if field is missing, ensuring login flow always completes
+  - **Impact**: Graceful degradation for old backend versions or API failures
+  - **Files**: `app/(auth)/login/page.tsx`
+
+### Changed
+
+- **Password Constants Centralization**: Exported regex and message as reusable constants
+  - **Enhancement**: `STRONG_PASSWORD_REGEX` and `PASSWORD_STRENGTH_MESSAGE` now exported
+  - **Benefits**: Single source of truth, prevents drift, enables reuse in other components
+  - **Files**: `utils/passwordStrength.ts`
+
+- **Password Change Schema Enhancement**: Added password confirmation validation
+  - **Enhancement**: Added `confirmPassword` field with `.refine()` matching validation
+  - **Consistency**: Matches pattern from `ResetPasswordSchema`
+  - **Note**: Schema currently unused, ready for future user settings implementation
+  - **Files**: `schemas/index.ts`
+
+- **Layout Structure Simplification**: Removed redundant nested containers
+  - **Optimization**: Simplified 3 nested containers to 1 semantic `<section>`
+  - **Benefits**: 2 fewer DOM nodes, cleaner code, better performance
+  - **Files**: `app/(loggedin)/home/boards/[board_id]/layout.tsx`
+
+- **Drag Handler Cleanup**: Removed empty `handleDragOver` function
+  - **Cleanup**: Removed unused handler and `onDragOver` prop from DndContext
+  - **Benefits**: Less code, clearer intent, tiny performance gain
+  - **Files**: `components/HomePage/Kanban/Column/BoardColumns.tsx`
+
+### Documentation
+
+- **Grammar Fix**: Fixed compound adjective hyphenation
+  - **Change**: "1.5 second delay" → "1.5-second delay"
+  - **Files**: `docs/Technical_documentation.md`
+
 ## [0.200.0] - 2026-01-25
 
 ### Security - Critical Password Strength Validation Fix
