@@ -409,7 +409,7 @@ const resetPassword = async (values: z.infer<typeof ResetPasswordSchema>) => {
 - Three-field form: code, new password, confirm password
 - Browser autocomplete prevention
 - Success message only after actual success
-- 1.5 second delay before redirect
+- 1.5-second delay before redirect
 
 ### Authentication Flows
 

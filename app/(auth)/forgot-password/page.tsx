@@ -60,6 +60,7 @@ const ForgotPassword: React.FC = () => {
 
   const onSubmit = (values: z.infer<typeof ForgotPasswordSchema>) => {
     const { email } = values;
+    setUserEmail(email);
 
     startTransition(async () => {
       try {
@@ -69,7 +70,6 @@ const ForgotPassword: React.FC = () => {
         );
 
         if (res.status === 200) {
-          setUserEmail(email);
           newForm.reset();
           setButtonClicked(true);
         }
@@ -84,8 +84,6 @@ const ForgotPassword: React.FC = () => {
         router.push('/forgot-password');
       }
     });
-    setUserEmail(email);
-    setButtonClicked(true);
   };
 
   const resetPassword = (values: z.infer<typeof ResetPasswordSchema>) => {

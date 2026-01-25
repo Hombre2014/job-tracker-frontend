@@ -64,20 +64,28 @@ export const ResetPasswordSchema = z
     path: ['confirmPassword'],
   });
 
-export const ChangePasswordSchema = z.object({
-  currentPassword: z.string().min(1, {
-    message: 'Current password is required',
-  }),
-  newPassword: z
-    .string()
-    .min(8, {
-      message: 'Minimum 8 characters required',
-    })
-    .regex(strongPasswordRegex, {
-      message:
-        'Password must contain at least 1 uppercase, 1 lowercase, and 1 number',
+export const ChangePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, {
+      message: 'Current password is required',
     }),
-});
+    newPassword: z
+      .string()
+      .min(8, {
+        message: 'Minimum 8 characters required',
+      })
+      .regex(strongPasswordRegex, {
+        message:
+          'Password must contain at least 1 uppercase, 1 lowercase, and 1 number',
+      }),
+    confirmPassword: z.string().min(1, {
+      message: 'Please confirm your password',
+    }),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
 
 export const VerifyEmailSchema = z.object({
   code: z.preprocess(

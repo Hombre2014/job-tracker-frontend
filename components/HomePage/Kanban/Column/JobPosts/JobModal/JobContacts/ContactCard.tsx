@@ -90,6 +90,10 @@ const ContactCard = ({
   useEffect(() => {
     const getCurrentContact = async () => {
       try {
+        if (!accessToken) {
+          setCompanyNames(['No company']);
+          return;
+        }
         // Initialize effectiveBoardId with the current board_id we have
         let effectiveBoardId = board_id;
         // Option 1: If companies data is already available in the contact, use it
@@ -118,7 +122,7 @@ const ContactCard = ({
           try {
             // Try to fetch the first board as default
             const boards = await dispatch(
-              getBoardsOnly(accessToken as string),
+              getBoardsOnly(accessToken),
             ).unwrap();
             if (boards && boards.length > 0) {
               // Sort by creation date to get the first created board
@@ -140,7 +144,7 @@ const ContactCard = ({
           const value = {
             contactId: contact.id,
             boardId: effectiveBoardId,
-            accessToken: accessToken as string,
+            accessToken,
           };
 
           try {
@@ -176,9 +180,15 @@ const ContactCard = ({
   const handleDeleteContact = () => {
     dispatch(
       deleteContact({ id: contact.id, accessToken: accessToken as string }),
-    ).then(() => {
-      onDelete(contact.id);
-    });
+    )
+      .unwrap()
+      .then(() => {
+        onDelete(contact.id);
+      })
+      .catch((error) => {
+        console.error('Failed to delete contact:', error);
+        // Optionally show user-friendly error message
+      });
     setOpenDropdownId(null);
   };
 

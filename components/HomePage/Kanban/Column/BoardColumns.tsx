@@ -230,24 +230,30 @@ const BoardColumns = () => {
       companyId: draft.companyId || legacyCompanyId,
     };
 
-    dispatch(createJobPost(jobPost)).then((result) => {
-      const newJobPostId = result.payload.id;
-      const selectedBoardId =
-        localStorage.getItem('chosenBoardId') || (board_id as string);
-      const targetPath = `/home/boards/${selectedBoardId}/job/${newJobPostId}/job-details`;
-      router.push(targetPath);
-      setIsSubmittingJob(false);
-    });
-    dispatch(getBoards(accessToken as string));
-    cleanupAfterJobPost();
+    dispatch(createJobPost(jobPost))
+      .then((result) => {
+        if (!result.payload?.id) {
+          console.error('Failed to create job post');
+          setIsSubmittingJob(false);
+          return;
+        }
+        const newJobPostId = result.payload.id;
+        const selectedBoardId =
+          localStorage.getItem('chosenBoardId') || (board_id as string);
+        const targetPath = `/home/boards/${selectedBoardId}/job/${newJobPostId}/job-details`;
+        router.push(targetPath);
+        setIsSubmittingJob(false);
+        dispatch(getBoards(accessToken as string));
+        cleanupAfterJobPost();
+      })
+      .catch((error) => {
+        console.error('Error creating job post:', error);
+        setIsSubmittingJob(false);
+      });
   };
 
   const handleDragStart = (event: any) => {
     setActiveId(event.active.id);
-  };
-
-  const handleDragOver = (event: any) => {
-    // DragOver tracking removed as overId was unused
   };
 
   const handleDragEnd = (event: any) => {
@@ -322,7 +328,6 @@ const BoardColumns = () => {
     <DndContext
       sensors={sensors}
       onDragEnd={handleDragEnd}
-      onDragOver={handleDragOver}
       onDragStart={handleDragStart}
       collisionDetection={closestCorners}
     >

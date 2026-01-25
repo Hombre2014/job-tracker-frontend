@@ -113,6 +113,7 @@ const Login = () => {
     const result = await dispatch(login({ email, password }));
 
     // Extract password strength from backend response
+    let strength: 'strong' | 'weak' = 'strong';
     if (
       result.payload &&
       typeof result.payload === 'object' &&
@@ -121,10 +122,9 @@ const Login = () => {
       const payload = result.payload as {
         data: { passwordStrength?: 'strong' | 'weak' };
       };
-      if (payload.data?.passwordStrength) {
-        setPasswordStrength(payload.data.passwordStrength);
-      }
+      strength = payload.data?.passwordStrength ?? 'strong';
     }
+    setPasswordStrength(strength);
 
     form.reset();
   };
