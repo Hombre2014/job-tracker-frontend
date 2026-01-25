@@ -3,7 +3,7 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.201.0] - 2026-01-25 Became the first release v1.0.0
 
 ### Fixed
 
@@ -77,7 +77,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Usage**: Frontend uses this flag to trigger weak password modal
   - **Files**: `backend/src/modules/auth/dtos/jwt-tokens.dto.ts`
 
-### Changed
+### Changed - Security
 
 - **Login Flow Security Enhancement**: Refactored frontend login to use backend password strength flag
   - **Removed**: Client-side password storage (`userPassword` state) - major security improvement
@@ -91,7 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Type Safety**: Proper TypeScript handling of optional `passwordStrength` field
   - **Files**: `redux/user/userSlice.ts`
 
-### Fixed
+### Fixed - Security
 
 - **Optional Chaining for Error Access**: Added safe error handling in forgot-password page
   - **Issue**: `error.response.data` could be undefined for network failures
@@ -115,7 +115,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Manual Toggle**: `Ctrl+Shift+D` keyboard shortcut still works
   - **Files**: `components/dev/DevToolsWrapper.tsx`, `package.json`
 
-### Documentation
+### Documentation - Security
 
 - **Authentication System Documentation**: Updated with backend security implementation
   - **Section**: "Existing User Login Flow (Weak Password Detection)"
