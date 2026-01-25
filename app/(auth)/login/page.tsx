@@ -15,8 +15,8 @@ import { Button } from '@/components/ui/button';
 import { cleanupAfterLogout } from '@/utils/helpers';
 import { getBoards } from '@/redux/boards/boardsThunk';
 import { login, logout } from '@/redux/user/userSlice';
-import { isStrongPassword } from '@/utils/passwordStrength';
 import { FormError } from '@/components/Forms/form-error';
+import { isStrongPassword } from '@/utils/passwordStrength';
 import { FormSuccess } from '@/components/Forms/form-success';
 import { WeakPasswordModal } from '@/components/auth/ForcePasswordChangeModal';
 import {
@@ -32,14 +32,14 @@ const Login = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [isPending, startTransition] = useTransition();
+  const [userEmail, setUserEmail] = useState<string>('');
   const { status } = useAppSelector((state) => state.user);
   const [error, setError] = useState<string | undefined>('');
+  const [userPassword, setUserPassword] = useState<string>('');
   const { accessToken } = useAppSelector((state) => state.user);
   const [success, setSuccess] = useState<string | undefined>('');
-  const { boards, boardsStatus } = useAppSelector((state) => state.boards);
-  const [userEmail, setUserEmail] = useState<string>('');
-  const [userPassword, setUserPassword] = useState<string>('');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const { boards, boardsStatus } = useAppSelector((state) => state.boards);
 
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
