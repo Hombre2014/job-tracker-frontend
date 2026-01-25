@@ -62,20 +62,32 @@ const ForgotPassword: React.FC = () => {
     const { email } = values;
     setUserEmail(email);
 
+    console.log('Submitting forgot password request for email:', email);
+
     startTransition(async () => {
       try {
+        console.log(
+          'Making API call to:',
+          '/users/reset-password/create-verification-code',
+        );
         const res = await client.post(
           '/users/reset-password/create-verification-code',
           { email },
         );
 
+        console.log('API Response:', res.status, res.data);
+
         if (res.status === 200) {
           newForm.reset();
           setButtonClicked(true);
+          setSuccess('Verification code sent to your email');
         }
       } catch (error: any) {
+        console.error('Error in forgot password request:', error);
+        console.error('Error response:', error?.response?.data);
         const err =
           error?.response?.data?.userFriendlyMessage ||
+          error?.response?.data?.message ||
           'User not found. Email field is invalid.';
         setError(err);
         form.reset();
