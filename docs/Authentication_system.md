@@ -672,7 +672,7 @@ All passwords must meet these criteria:
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│              Password Security System                        │
+│              Password Security System                       │
 ├─────────────────────────────────────────────────────────────┤
 │  Registration    │    Login        │   Password Reset       │
 │  Validation      │    Detection    │   Enforcement          │
@@ -688,7 +688,7 @@ All passwords must meet these criteria:
 
 ---
 
-### Core Components
+### Core Components Architecture
 
 #### 1. Password Validation Schema
 
@@ -1118,7 +1118,7 @@ The password security system uses existing backend endpoints - no new endpoints 
 }
 ```
 
-**Note**: Backend does NOT validate password strength - it only authenticates credentials.
+**Note**: Backend validates password strength during authentication and returns a `passwordStrength` flag (`'strong'` | `'weak'`) in the login response. See the Security Update section above for implementation details.
 
 #### 2. POST `/users/reset-password/create-verification-code`
 
@@ -1250,7 +1250,7 @@ The password security system uses existing backend endpoints - no new endpoints 
 
 **Part 2: Redirect**:
 
-5. Click "Reset My Password"
+1. Click "Reset My Password"
 
 **Expected**:
 
@@ -1260,7 +1260,7 @@ The password security system uses existing backend endpoints - no new endpoints 
 
 **Part 3: Forgot Password Page**:
 
-6. Verify page content
+1. Verify page content
 
 **Expected**:
 
@@ -1273,7 +1273,7 @@ The password security system uses existing backend endpoints - no new endpoints 
 
 **Part 4: Send Code**:
 
-7. Click "Send Password Reset Code"
+1. Click "Send Password Reset Code"
 
 **Expected**:
 
@@ -1283,7 +1283,7 @@ The password security system uses existing backend endpoints - no new endpoints 
 
 **Part 5: Reset Password Form**:
 
-8. Verify form fields
+1. Verify form fields
 
 **Expected**:
 
@@ -1297,7 +1297,7 @@ The password security system uses existing backend endpoints - no new endpoints 
 
 **Part 6: Test Validation**:
 
-9. Test password mismatch:
+1. Test password mismatch:
    - Code: `123456`
    - New Password: `Password123`
    - Repeat: `Password456` (different)
@@ -1308,11 +1308,11 @@ The password security system uses existing backend endpoints - no new endpoints 
 - ✅ Validation error: "Passwords do not match"
 - ✅ Form does not submit
 
-10. Test weak password:
-    - Code: `123456`
-    - New Password: `password` (weak)
-    - Repeat: `password`
-    - Click "Reset Password"
+1. Test weak password:
+   - Code: `123456`
+   - New Password: `password` (weak)
+   - Repeat: `password`
+   - Click "Reset Password"
 
 **Expected**:
 
@@ -1321,11 +1321,11 @@ The password security system uses existing backend endpoints - no new endpoints 
 
 **Part 7: Successful Reset**:
 
-11. Enter valid data:
-    - Code: `123456` (from email)
-    - New Password: `Password123`
-    - Repeat: `Password123`
-12. Click "Reset Password"
+1. Enter valid data:
+   - Code: `123456` (from email)
+   - New Password: `Password123`
+   - Repeat: `Password123`
+1. Click "Reset Password"
 
 **Expected**:
 
@@ -1336,10 +1336,10 @@ The password security system uses existing backend endpoints - no new endpoints 
 
 **Part 8: Login with New Password**:
 
-13. Enter credentials:
-    - Email: `weak@test.com`
-    - Password: `Password123`
-14. Click "Log in"
+1. Enter credentials:
+   - Email: `weak@test.com`
+   - Password: `Password123`
+1. Click "Log in"
 
 **Expected**:
 
@@ -1412,7 +1412,7 @@ The password security system uses existing backend endpoints - no new endpoints 
 ┌──────────────────┐
 │ Check Password   │
 │ Strength         │
-│ (Client-Side)    │
+│ (Backend)        │
 └────────┬─────────┘
          │
     ┌────┴─────┐
@@ -1533,18 +1533,47 @@ The password security system uses existing backend endpoints - no new endpoints 
 - Better user experience
 - Reduced support tickets
 
-#### 3. Future Enhancements
+#### 3. Version History & Implementation Timeline
 
-**Option 1: Backend Password Strength Flag**:
+**v0.199.0 (2026-01-25)** - Initial Implementation:
+
+- ⚠️ **Security Vulnerability**: Client-side password strength checking with password stored in React state
+- Introduced `userPassword` state in login component
+- Client-side `isStrongPassword()` utility function
+- Weak password modal and reset flow
+
+**v0.200.0 (2026-01-25)** - Security Fix:
+
+- ✅ **Security Fixed**: Moved password validation to backend (server-side)
+- **Removed**: `userPassword` state from React component (eliminates XSS/DevTools exposure)
+- **Removed**: Client-side `isStrongPassword()` import
+- **Added**: Backend `password-strength.util.ts` utility
+- **Added**: `passwordStrength` flag in login API response
+- **Added**: Frontend uses backend flag instead of storing password
+- Exposure window: Same day (2026-01-25)
+- See CHANGELOG.md for lessons learned and security best practices
+
+**Current Implementation**: v0.200.0+ uses backend password strength validation exclusively. Any references to v0.199.0 implementation in this document are marked as deprecated.
+
+#### 4. Future Enhancements
+
+**Option 1: Backend Password Strength Flag** ✅ **IMPLEMENTED (v0.200.0)**:
 
 ```typescript
-// Backend could return password strength in login response
+// Backend returns password strength in login response
 {
   "accessToken": "...",
-  "user": {...},
+  "refreshToken": "...",
   "passwordStrength": "weak" // or "strong"
 }
 ```
+
+**Status**: ✅ Implemented on 2026-01-25 in v0.200.0
+
+- Backend validates password strength server-side using `isStrongPassword()` utility
+- Login response includes `passwordStrength` flag
+- Frontend no longer stores passwords in component state (security fix)
+- See "Security Update" section (lines 897-948) for full implementation details
 
 **Option 2: Gradual Enforcement**:
 
@@ -1633,16 +1662,21 @@ if (user.passwordStrength === 'weak') {
 
 #### 4. Pages
 
-**File**: `app/(auth)/login/page.tsx`
+> ⚠️ **DEPRECATED IMPLEMENTATION (v0.199.0)**: The implementation described below stored passwords in React component state and has been superseded by backend validation in v0.200.0. See the "Security Update" section above for the current implementation.
 
-**Changes**:
+**File**: `app/(auth)/login/page.tsx` (OLD - v0.199.0)
 
-- Import `isStrongPassword` utility
+**Changes** (Deprecated):
+
+- ~~Import `isStrongPassword` utility~~ (REMOVED in v0.200.0)
 - Import `WeakPasswordModal` component
-- Added state: `userEmail`, `userPassword`, `showPasswordModal`
-- Password strength check in `useEffect`
-- Modal display logic
+- ~~Added state: `userEmail`, `userPassword`, `showPasswordModal`~~ (SECURITY FIX: userPassword removed in v0.200.0)
+- ~~Password strength check in `useEffect`~~ (Now done server-side)
+- Added state: `passwordStrength` (from backend response - v0.200.0)
+- Modal display logic (updated to use backend flag)
 - Removed unused `handlePasswordChangeSuccess` function
+
+**Current Implementation (v0.200.0)**: See lines 897-948 for the secure backend-based approach that eliminates client-side password storage.
 
 **File**: `app/(auth)/forgot-password/page.tsx`
 
@@ -1707,19 +1741,21 @@ const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 console.log(regex.test(password)); // Should be false
 ```
 
-2. Check Redux status:
+1. Check Redux status:
 
 ```javascript
 // In React DevTools
 // state.user.status should be 'succeeded'
 ```
 
-3. Check userPassword state:
+1. Check passwordStrength state (v0.200.0+):
 
 ```javascript
 // In React DevTools → LoginPage
-// userPassword should have the password value
+// passwordStrength should be 'weak' or 'strong' from backend response
 ```
+
+**Note**: If you're on v0.199.0 (deprecated), you would check `userPassword` state instead. Upgrade to v0.200.0+ for the secure implementation.
 
 #### Issue: Redirect doesn't work
 
@@ -1732,7 +1768,7 @@ console.log(regex.test(password)); // Should be false
 // accessToken, refreshToken, user should be removed
 ```
 
-2. URL contains correct params:
+1. URL contains correct params:
 
 ```text
 Expected: /forgot-password?email=user@test.com&reason=weak
@@ -1750,7 +1786,7 @@ console.log(params.get('reason')); // Should be 'weak'
 console.log(params.get('email')); // Should be user email
 ```
 
-2. isWeakPasswordReset variable:
+1. isWeakPasswordReset variable:
 
 ```javascript
 // React DevTools → ForgotPassword component
@@ -2128,7 +2164,7 @@ if (process.env.NODE_ENV === 'development') {
 
 ---
 
-## Configuration
+## Configuration Options
 
 ### 1. Environment Variables
 
@@ -2229,7 +2265,7 @@ const toastConfig = {
 
 ---
 
-## Troubleshooting
+## Troubleshooting Guide
 
 ### 1. Common Issues
 

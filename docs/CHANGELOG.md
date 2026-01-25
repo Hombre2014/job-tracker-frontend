@@ -7,12 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security - Critical Password Strength Validation Fix
 
+> ⚠️ **Security Note**: This release fixes a critical security vulnerability introduced in v0.199.0 where user passwords were temporarily stored in React component state. The vulnerability was identified and resolved within the same day (2026-01-25). While the exposure window was minimal, any deployments of v0.199.0 should be immediately upgraded to v0.200.0 or later.
+>
+> **Lessons Learned**:
+>
+> - Client-side password handling creates unnecessary security risks (XSS, DevTools exposure, state inspection)
+> - Security-sensitive features require explicit security review before merging
+> - Password validation should always be server-side; client receives only necessary flags
+> - Rapid detection and remediation demonstrates the value of continuous code review processes
+
 - **Backend Password Strength Validation**: Moved password strength validation to backend (server-side)
   - **Security Risk Eliminated**: Frontend no longer stores passwords in React component state
   - **Backend Implementation**: Created `password-strength.util.ts` with `isStrongPassword()` validation
   - **API Response Enhanced**: Login endpoint now returns `passwordStrength: "strong" | "weak"` flag
   - **Files**: `backend/src/utils/password-strength.util.ts`, `backend/src/modules/auth/auth.service.ts`
-  
 - **Updated JWT Tokens DTO**: Added `passwordStrength` field to login response
   - **Type**: Optional `'strong' | 'weak'` field in `JwtTokensDto`
   - **Usage**: Frontend uses this flag to trigger weak password modal
@@ -1999,7 +2007,7 @@ The document CHANGELOG.md was update with tis implementation.
   - **Improvement**: Developers now know how to use `window.PerformanceMonitor` or import from utils
   - **Files**: `docs/DevTools_and_Monitoring_Guide.md`
 
-### Security Enhancements
+### Security Enhancements 2025-08-01
 
 #### Token Storage Security Guidance Correction
 
@@ -2335,7 +2343,7 @@ The document CHANGELOG.md was update with tis implementation.
 - **Real-time updates**: Profile changes reflect immediately across the application
 - **Cross-tab synchronization**: Authentication state synced across multiple tabs
 
-### Developer Experience
+### Developer Experience Improvements - 2025-07-27
 
 #### Development Tools
 
@@ -2344,7 +2352,7 @@ The document CHANGELOG.md was update with tis implementation.
 - **Debug logging**: Comprehensive logging with development-only features
 - **Keyboard shortcuts**: Quick access to debugging tools (Ctrl+Shift+D)
 
-#### Documentation
+#### Documentation Enhancements - 2025-07-27
 
 - **Comprehensive documentation**: Complete system documentation with troubleshooting guides
 - **Technical specifications**: Detailed API documentation and configuration options
@@ -3246,6 +3254,8 @@ _All changes maintain backward compatibility and enhance user experience with im
 
 <!-- Version comparison links -->
 
+[0.200.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.199.0...v0.200.0
+[0.199.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.198.0...v0.199.0
 [0.198.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.197.0...v0.198.0
 [0.197.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.196.0...v0.197.0
 [0.196.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.195.0...v0.196.0

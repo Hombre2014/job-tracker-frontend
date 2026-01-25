@@ -65,11 +65,15 @@ const Login = () => {
     if (status === 'succeeded') {
       setSuccess('Logged in successfully');
 
-      // Check password strength from backend response (server-side validation)
-      if (passwordStrength === 'weak') {
+      // Wait for passwordStrength to be determined before taking action
+      // This prevents race condition where status updates before passwordStrength is set
+      if (passwordStrength === null) {
+        // Still waiting for password strength from onSubmit
+        return;
+      } else if (passwordStrength === 'weak') {
         // Password is weak, show modal
         setShowPasswordModal(true);
-      } else {
+      } else if (passwordStrength === 'strong') {
         // Password is strong or already updated, continue normally
         dispatch(getBoards(accessToken as string));
       }
@@ -128,7 +132,6 @@ const Login = () => {
     <>
       <WeakPasswordModal isOpen={showPasswordModal} email={userEmail} />
       <div className="flex flex-col items-start justify-center h-full min-w-[330px] mx-4">
-        {' '}
         <h1 className="text-4xl font-semibold">Log in</h1>
         <p className="text-slate-500 mt-2 mb-6">Log into your account</p>
         <Form {...form}>

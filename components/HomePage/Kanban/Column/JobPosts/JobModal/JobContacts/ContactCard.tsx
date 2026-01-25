@@ -59,6 +59,11 @@ const ContactCard = ({
     }
   }, [contact]);
 
+  // Helper to check if value is truly empty (handles undefined, null, empty string, and literal "undefined")
+  const isEmptyValue = (value: any): boolean => {
+    return !value || value === 'undefined' || value.toString().trim() === '';
+  };
+
   // Memoized formatter functions for better performance
   const formatTextWithEllipsis = useCallback((text: string, maxLength = 22) => {
     return text.length > maxLength ? text.slice(0, maxLength) + '...' : text;
@@ -215,13 +220,26 @@ const ContactCard = ({
               src={contact.photoUrl || '/images/Yuriy.jpg'}
             />
             <div className="flex flex-col items-start justify-center text-sm overflow-hidden flex-1">
-              <p className="font-bold truncate w-full">
-                {formatTextWithEllipsis(
-                  `${contact.firstName} ${contact.lastName}`,
-                )}
+              <p
+                className="font-bold truncate w-full"
+                title={`${isEmptyValue(contact.firstName) ? '' : contact.firstName} ${isEmptyValue(contact.lastName) ? '' : contact.lastName}`.trim()}
+              >
+                {(() => {
+                  const firstName = isEmptyValue(contact.firstName)
+                    ? ''
+                    : contact.firstName;
+                  const lastName = isEmptyValue(contact.lastName)
+                    ? ''
+                    : contact.lastName;
+                  const fullName = `${firstName} ${lastName}`.trim();
+                  return fullName || 'Unknown';
+                })()}
               </p>
-              <p className="font-semibold text-muted-foreground truncate w-full">
-                {formatTextWithEllipsis(contact.jobTitle)}
+              <p
+                className="font-semibold text-muted-foreground truncate w-full"
+                title={isEmptyValue(contact.jobTitle) ? '' : contact.jobTitle}
+              >
+                {isEmptyValue(contact.jobTitle) ? 'No title' : contact.jobTitle}
               </p>
               <p className="text-sm text-muted-foreground truncate w-full">
                 {displayedCompanyNames}
@@ -259,6 +277,8 @@ const ContactCard = ({
               >
                 {' '}
                 <AlertDialogModal
+                  isFormValid={true}
+                  cleanupType="contact"
                   buttonCancel="Cancel"
                   buttonVariant="ghost"
                   buttonConfirm="Delete"

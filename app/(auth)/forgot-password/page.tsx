@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { RiQuestionMark } from 'react-icons/ri';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState, startTransition } from 'react';
+import { useEffect, useState, startTransition, useRef } from 'react';
 
 import client from '@/api/client';
 import { Input } from '@/components/ui/input';
@@ -36,6 +36,7 @@ const ForgotPassword: React.FC = () => {
   const [error, setError] = useState<string | undefined>('');
   const [success, setSuccess] = useState<string | undefined>('');
   const [buttonClicked, setButtonClicked] = useState<boolean>(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Check if user came from weak password detection
   const isWeakPasswordReset = searchParams.get('reason') === 'weak';
@@ -119,7 +120,7 @@ const ForgotPassword: React.FC = () => {
         if (res.status === 201) {
           setSuccess('Password reset successful');
           newForm.reset();
-          setTimeout(() => {
+          timeoutRef.current = setTimeout(() => {
             router.push('/login');
           }, 1500);
         }
@@ -137,6 +138,13 @@ const ForgotPassword: React.FC = () => {
     // Clear messages when component mounts
     setError('');
     setSuccess('');
+
+    // Cleanup timeout on unmount
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, []);
 
   return (
