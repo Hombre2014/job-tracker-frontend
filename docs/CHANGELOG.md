@@ -3,9 +3,26 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.201.0] - 2026-01-25 Became the first release v1.0.0
+## [1.0.1] - 2026-01-25
 
 ### Fixed
+
+- **Password Reset Flow Status Code Handling**: Made forgot password endpoints more resilient
+  - **Issue**: Frontend only accepted status `200` for verification code and `201` for password reset
+  - **Fix**: Now accepts `200`, `201`, or `204` status codes for both endpoints
+  - **Impact**: Handles backend responses gracefully regardless of specific success status code
+  - **Files**: `app/(auth)/forgot-password/page.tsx`
+
+### Changed
+
+- **Code Cleanup**: Removed unnecessary debug console.log statements
+  - **Removed**: Development logging from forgot password flow
+  - **Benefits**: Cleaner production logs, better performance
+  - **Files**: `app/(auth)/forgot-password/page.tsx`
+
+## [1.0.0] - 2026-01-25 (Previously [0.201.0])
+
+### Fixed Issues
 
 - **Job Post Creation Error Handling**: Enhanced error handling in job post creation flow
   - **Issue**: Missing `.catch()` handler could cause runtime errors if `createJobPost` failed
@@ -25,7 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Impact**: Graceful degradation for old backend versions or API failures
   - **Files**: `app/(auth)/login/page.tsx`
 
-### Changed
+### Changed Issues
 
 - **Password Constants Centralization**: Exported regex and message as reusable constants
   - **Enhancement**: `STRONG_PASSWORD_REGEX` and `PASSWORD_STRENGTH_MESSAGE` now exported
