@@ -16,7 +16,6 @@ import { cleanupAfterLogout } from '@/utils/helpers';
 import { getBoards } from '@/redux/boards/boardsThunk';
 import { login, logout } from '@/redux/user/userSlice';
 import { FormError } from '@/components/Forms/form-error';
-import { isStrongPassword } from '@/utils/passwordStrength';
 import { FormSuccess } from '@/components/Forms/form-success';
 import { WeakPasswordModal } from '@/components/auth/ForcePasswordChangeModal';
 import {
@@ -35,10 +34,12 @@ const Login = () => {
   const [userEmail, setUserEmail] = useState<string>('');
   const { status } = useAppSelector((state) => state.user);
   const [error, setError] = useState<string | undefined>('');
-  const [userPassword, setUserPassword] = useState<string>('');
   const { accessToken } = useAppSelector((state) => state.user);
   const [success, setSuccess] = useState<string | undefined>('');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState<
+    'strong' | 'weak' | null
+  >(null);
   const { boards, boardsStatus } = useAppSelector((state) => state.boards);
 
   const form = useForm<z.infer<typeof LoginSchema>>({
@@ -64,8 +65,8 @@ const Login = () => {
     if (status === 'succeeded') {
       setSuccess('Logged in successfully');
 
-      // Check if password is strong
-      if (userPassword && !isStrongPassword(userPassword)) {
+      // Check password strength from backend response (server-side validation)
+      if (passwordStrength === 'weak') {
         // Password is weak, show modal
         setShowPasswordModal(true);
       } else {
@@ -82,7 +83,7 @@ const Login = () => {
         clearTimeout(timeout);
       };
     }
-  }, [status, dispatch, accessToken, userPassword]);
+  }, [status, dispatch, accessToken, passwordStrength]);
 
   useEffect(() => {
     if (boardsStatus === 'succeeded') {
@@ -103,8 +104,24 @@ const Login = () => {
 
     const { email, password } = values;
     setUserEmail(email);
-    setUserPassword(password);
-    dispatch(login({ email, password }));
+
+    // Dispatch login and get result with password strength from backend
+    const result = await dispatch(login({ email, password }));
+
+    // Extract password strength from backend response
+    if (
+      result.payload &&
+      typeof result.payload === 'object' &&
+      'data' in result.payload
+    ) {
+      const payload = result.payload as {
+        data: { passwordStrength?: 'strong' | 'weak' };
+      };
+      if (payload.data?.passwordStrength) {
+        setPasswordStrength(payload.data.passwordStrength);
+      }
+    }
+
     form.reset();
   };
   return (

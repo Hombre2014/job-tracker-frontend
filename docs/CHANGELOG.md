@@ -3,6 +3,71 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.200.0] - 2026-01-25
+
+### Security - Critical Password Strength Validation Fix
+
+- **Backend Password Strength Validation**: Moved password strength validation to backend (server-side)
+  - **Security Risk Eliminated**: Frontend no longer stores passwords in React component state
+  - **Backend Implementation**: Created `password-strength.util.ts` with `isStrongPassword()` validation
+  - **API Response Enhanced**: Login endpoint now returns `passwordStrength: "strong" | "weak"` flag
+  - **Files**: `backend/src/utils/password-strength.util.ts`, `backend/src/modules/auth/auth.service.ts`
+  
+- **Updated JWT Tokens DTO**: Added `passwordStrength` field to login response
+  - **Type**: Optional `'strong' | 'weak'` field in `JwtTokensDto`
+  - **Usage**: Frontend uses this flag to trigger weak password modal
+  - **Files**: `backend/src/modules/auth/dtos/jwt-tokens.dto.ts`
+
+### Changed
+
+- **Login Flow Security Enhancement**: Refactored frontend login to use backend password strength flag
+  - **Removed**: Client-side password storage (`userPassword` state) - major security improvement
+  - **Removed**: Client-side `isStrongPassword()` validation import
+  - **Added**: `passwordStrength` state derived from backend response
+  - **Security Benefits**: No password in React state, no DevTools exposure, reduced XSS risk
+  - **Files**: `app/(auth)/login/page.tsx`, `redux/user/userSlice.ts`
+
+- **Redux Login Thunk**: Enhanced to extract and return `passwordStrength` from backend
+  - **Data Flow**: Backend response → Redux payload → Login component
+  - **Type Safety**: Proper TypeScript handling of optional `passwordStrength` field
+  - **Files**: `redux/user/userSlice.ts`
+
+### Fixed
+
+- **Optional Chaining for Error Access**: Added safe error handling in forgot-password page
+  - **Issue**: `error.response.data` could be undefined for network failures
+  - **Fix**: Changed to `error?.response?.data?.userFriendlyMessage`
+  - **Files**: `app/(auth)/forgot-password/page.tsx`
+
+- **Invalid Tailwind Class**: Fixed `items-left` → `items-start` in forgot-password layout
+  - **Issue**: `items-left` is not a valid Tailwind CSS utility
+  - **Files**: `app/(auth)/forgot-password/page.tsx`
+
+- **localStorage Error Handling**: Added try-catch for localStorage operations
+  - **Issue**: localStorage can throw in private browsing mode or when disabled
+  - **Fix**: Wrapped localStorage operations in try-catch with fallback
+  - **Files**: `components/auth/ForcePasswordChangeModal.tsx`
+
+- **Dev Tools Popup Behavior**: DevTools now only show when explicitly enabled
+  - **Issue**: DevTools modal appeared on every `npm run dev` startup
+  - **Solution**: Added `NEXT_PUBLIC_ENABLE_DEVTOOLS` environment variable check
+  - **New Script**: `npm run dev:tools` - runs dev mode WITH DevTools
+  - **Default**: `npm run dev` - runs WITHOUT DevTools popup
+  - **Manual Toggle**: `Ctrl+Shift+D` keyboard shortcut still works
+  - **Files**: `components/dev/DevToolsWrapper.tsx`, `package.json`
+
+### Documentation
+
+- **Authentication System Documentation**: Updated with backend security implementation
+  - **Section**: "Existing User Login Flow (Weak Password Detection)"
+  - **Added**: Security update notice and backend implementation details
+  - **Files**: `docs/Authentication_system.md`
+
+- **Technical Documentation**: Marked security fix as implemented
+  - **Section**: "Future Enhancements" updated with implementation status
+  - **Added**: Comprehensive security benefits and implementation details
+  - **Files**: `docs/Technical_documentation.md`
+
 ## [0.199.0] - 2026-01-25
 
 ### Added - Strong Password Enforcement System

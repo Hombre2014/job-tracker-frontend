@@ -566,15 +566,61 @@ Normal Flow (No Modal)
 
 #### Future Enhancements
 
-**Option 1**: Backend password strength flag in login response
+> **✅ SECURITY FIX IMPLEMENTED (25/01/2026)**
+>
+> **Previous Issue**: Password strength detection was done client-side, storing passwords in React component state, which created security risks (memory exposure, DevTools visibility, XSS vulnerability surface).
+>
+> **Solution Implemented**: Backend now validates password strength and returns it in login response. Frontend no longer stores passwords.
+>
+> **Implementation Details**:
+>
+> - Backend: `src/utils/password-strength.util.ts` - Password strength validation utility
+> - Backend: `src/modules/auth/auth.service.ts` - Modified `signIn` to check password strength
+> - Backend: `src/modules/auth/dtos/jwt-tokens.dto.ts` - Added `passwordStrength` field
+> - Frontend: `redux/user/userSlice.ts` - Extracts `passwordStrength` from response
+> - Frontend: `app/(auth)/login/page.tsx` - Uses backend's password strength flag
+>
+> **Security Benefits**:
+>
+> - ✅ No client-side password storage
+> - ✅ Server-side password validation
+> - ✅ No password exposure in React state/DevTools
+> - ✅ Reduced XSS attack surface
+> - ✅ More secure and maintainable
+
+**Option 1**: Backend password strength flag in login response **(✅ IMPLEMENTED - 25/01/2026)**
 
 ```typescript
-{
-  "accessToken": "...",
-  "user": {...},
-  "passwordStrength": "weak" // or "strong"
+// Backend returns password strength in login response
+interface LoginResponse {
+  accessToken: string;
+  refreshToken: string;
+  user: User;
+  passwordStrength: 'strong' | 'weak'; // Server determines this
+  requirePasswordUpdate?: boolean;
 }
+
+// Frontend doesn't store or check password
+const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
+  const { email, password } = values;
+  setUserEmail(email);
+  // Don't store password - let server handle validation
+  const result = await dispatch(login({ email, password }));
+
+  // Server tells us if password is weak
+  if (result.payload?.passwordStrength === 'weak') {
+    setShowPasswordModal(true);
+  }
+};
 ```
+
+**Benefits**:
+
+- Eliminates client-side password storage
+- Server-side password validation and hashing check
+- No password exposure in React state/DevTools
+- Reduces XSS attack surface
+- More secure and maintainable
 
 **Option 2**: Gradual enforcement timeline
 

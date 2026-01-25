@@ -894,6 +894,10 @@ Email Verification
 
 #### 2. Existing User Login Flow (Weak Password Detection)
 
+> **✅ SECURITY UPDATE (25/01/2026)**: Password strength validation moved to backend for enhanced security.
+> Backend now validates password strength during authentication and returns `passwordStrength` flag in login response.
+> Frontend no longer stores passwords in state - security vulnerability eliminated!
+
 ```text
 User Enters Credentials
          ↓
@@ -901,9 +905,13 @@ POST /auth/login
          ↓
 Backend Authentication ✓
          ↓
+Backend Password Strength Check (Server-Side) ✓
+         ↓
+Response: { accessToken, refreshToken, passwordStrength: "strong" | "weak" }
+         ↓
 Tokens Stored in localStorage
          ↓
-Client-Side Password Strength Check
+Frontend Receives passwordStrength Flag
          ↓
     Strong?
     ↙     ↘
@@ -931,11 +939,19 @@ Boards  (WeakPasswordModal)
 
 **Key Points**:
 
-- Backend authentication always succeeds
-- Weak password detection is client-side only
-- Non-breaking change (existing users can still login)
+- ✅ **Backend validates password strength** (server-side using plain-text password before hashing)
+- ✅ **No client-side password storage** (security vulnerability fixed)
+- ✅ **Backend returns `passwordStrength` flag** in login response
+- Backend authentication always succeeds (non-breaking)
 - User-friendly guidance through reset process
 - Leverages existing password reset infrastructure
+
+**Backend Implementation**:
+
+- **File**: `backend/src/utils/password-strength.util.ts` - Password validation utility
+- **File**: `backend/src/modules/auth/auth.service.ts` - Modified `signIn()` method
+- **File**: `backend/src/modules/auth/dtos/jwt-tokens.dto.ts` - Added `passwordStrength` field
+- **Validation**: Server validates plain-text password before comparing with hash
 
 #### 3. Enhanced Forgot Password Flow
 

@@ -64,14 +64,16 @@ export const login = createAsyncThunk(
       );
 
       if (response.status === 200) {
-        const { accessToken, refreshToken } = response.data;
+        const { accessToken, refreshToken, passwordStrength } = response.data;
         // ⚠️ SECURITY WARNING: jwt.decode() does NOT verify signatures!
         // This is for UX purposes only (storing user info for display)
         // Server must verify token signatures for all security decisions
-        const decoded = jwt.decode(accessToken); // TODO: Add signature verification
+        // Client-side signature verification is NOT needed - server handles this
+        const decoded = jwt.decode(accessToken);
 
         if (process.env.NODE_ENV === 'development') {
           console.log('Login: JWT decoded payload:', decoded);
+          console.log('Login: Password strength:', passwordStrength);
         }
 
         // Store tokens in localStorage
@@ -141,7 +143,7 @@ export const login = createAsyncThunk(
                 localStorage.setItem('user', JSON.stringify(completeUserInfo));
 
                 return {
-                  data: { accessToken, refreshToken },
+                  data: { accessToken, refreshToken, passwordStrength },
                   decoded,
                   userProfile: apiUserData,
                 };
@@ -168,7 +170,7 @@ export const login = createAsyncThunk(
         );
 
         return {
-          data: { accessToken, refreshToken },
+          data: { accessToken, refreshToken, passwordStrength },
           decoded,
         };
       } else {

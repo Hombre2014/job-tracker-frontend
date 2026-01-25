@@ -5,6 +5,7 @@
   "scripts": {
     "dev:3001": "cross-env PORT=3001 next dev",
     "dev": "next dev",
+    "dev:tools": "cross-env NEXT_PUBLIC_ENABLE_DEVTOOLS=true next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
