@@ -47,6 +47,41 @@ const DraggableJobPostCard = (props: JobPostCardProps) => {
   );
 };
 
+// Column interface for type checking
+interface Column {
+  id: string;
+  order: number;
+  name: string;
+  jobApplications?: { id: string }[];
+}
+
+// Droppable wrapper component for columns
+const DroppableColumn = ({
+  column,
+  children,
+}: {
+  column: Column;
+  children: React.ReactNode;
+}) => {
+  const { setNodeRef, isOver } = useDroppable({
+    id: column.id,
+  });
+
+  return (
+    <section
+      ref={setNodeRef}
+      key={column.order + 1}
+      className={`flex flex-col border-r border-slate-200 w-1/5 transition-all duration-200 flex-1 ${
+        isOver
+          ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-600'
+          : ''
+      }`}
+    >
+      {children}
+    </section>
+  );
+};
+
 const BoardColumns = () => {
   const router = useRouter();
   const { board_id } = useParams();
@@ -283,39 +318,6 @@ const BoardColumns = () => {
     );
   };
 
-  interface Column {
-    id: string;
-    order: number;
-    name: string;
-    jobApplications?: { id: string }[];
-  }
-
-  const DroppableColumn = ({
-    column,
-    children,
-  }: {
-    column: Column;
-    children: React.ReactNode;
-  }) => {
-    const { setNodeRef, isOver } = useDroppable({
-      id: column.id,
-    });
-
-    return (
-      <section
-        ref={setNodeRef}
-        key={column.order + 1}
-        className={`flex flex-col border-r border-slate-200 w-1/5 transition-all duration-200 flex-1 ${
-          isOver
-            ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-600'
-            : ''
-        }`}
-      >
-        {children}
-      </section>
-    );
-  };
-
   return (
     <DndContext
       sensors={sensors}
@@ -427,7 +429,7 @@ const BoardColumns = () => {
               {/* Scrollable Content */}
               <div className="flex-1 overflow-y-auto min-h-0">
                 {column.jobApplications?.map((job) =>
-                  job.company !== null ? (
+                  job.company === null ? null : (
                     <DraggableJobPostCard
                       id={job.id}
                       key={job.id}
@@ -442,7 +444,7 @@ const BoardColumns = () => {
                       companyName={job.company.name}
                       statusChangedTime={job.statusChangedAt}
                     />
-                  ) : null,
+                  ),
                 )}
               </div>
             </DroppableColumn>
