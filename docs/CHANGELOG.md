@@ -39,6 +39,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **User Feedback for Company Creation Failures**
+  - Added toast error notifications when automatic company creation fails
+  - Users now see "Failed to create company. Please try again." message on errors
+  - Prevents silent failures during job creation with typed company names
+  - Implemented in both navbar "+ Create" menu and column "+" buttons
+  - Files: `CreateMenu.tsx`, `BoardColumns.tsx`, `app/layout.tsx`
+
 - **Redux State Management - Null Payload Guards**
   - Added comprehensive null-payload validation across all company Redux actions
   - `getCompanyThatStartsWith`: Returns empty array for null payloads (valid empty search)

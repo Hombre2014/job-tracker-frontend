@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from 'react-toastify';
 import { CSS } from '@dnd-kit/utilities';
 import { useParams, useRouter } from 'next/navigation';
 import { ChangeEvent, useEffect, useState, useMemo, useRef } from 'react';
@@ -21,8 +22,8 @@ import { cleanupAfterJobPost } from '@/utils/helpers';
 import { returnBoardIcon } from '@/utils/ReturnIcons';
 import AlertDialogModal from '../../Boards/AlertDialogModal';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { createJobPost, updateJobPost } from '@/redux/jobs/jobsThunk';
 import { createCompany } from '@/redux/companies/companiesThunk';
+import { createJobPost, updateJobPost } from '@/redux/jobs/jobsThunk';
 import { getBoards, updateColumnName } from '@/redux/boards/boardsThunk';
 import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
 import {
@@ -223,9 +224,9 @@ const BoardColumns = () => {
     const legacyTitle = localStorage.getItem('jobTitle');
     const legacyCompanyId = localStorage.getItem('companyId');
     const draft = jobDraftRef.current || {};
-    
+
     let finalCompanyId = draft.companyId || legacyCompanyId;
-    
+
     // If no companyId but company name exists, create the company first
     if (!finalCompanyId && draft.company) {
       try {
@@ -233,16 +234,17 @@ const BoardColumns = () => {
           createCompany({
             accessToken,
             name: draft.company,
-          })
+          }),
         ).unwrap();
         finalCompanyId = result.id;
       } catch (error) {
         console.error('Error creating company:', error);
+        toast.error('Failed to create company. Please try again.');
         setIsSubmittingJob(false);
         return;
       }
     }
-    
+
     const jobPost = {
       status: 'Job Created',
       accessToken: accessToken as string,

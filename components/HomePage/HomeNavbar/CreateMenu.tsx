@@ -1,3 +1,4 @@
+import { toast } from 'react-toastify';
 import { useState, useRef } from 'react';
 import { GoPersonAdd } from 'react-icons/go';
 import { PiBriefcaseLight } from 'react-icons/pi';
@@ -53,9 +54,9 @@ const CreateMenu = () => {
     const legacyTitle = localStorage.getItem('jobTitle');
     const legacyCompanyId = localStorage.getItem('companyId');
     const draft = jobDraftRef.current || {};
-    
+
     let finalCompanyId = draft.companyId || legacyCompanyId;
-    
+
     // If no companyId but company name exists, create the company first
     if (!finalCompanyId && draft.company) {
       try {
@@ -63,16 +64,17 @@ const CreateMenu = () => {
           createCompany({
             accessToken,
             name: draft.company,
-          })
+          }),
         ).unwrap();
         finalCompanyId = result.id;
       } catch (error) {
         console.error('Error creating company:', error);
+        toast.error('Failed to create company. Please try again.');
         setIsSubmittingJob(false);
         return;
       }
     }
-    
+
     const jobPost = {
       status: 'Job Created',
       accessToken: accessToken as string,
@@ -135,13 +137,13 @@ const CreateMenu = () => {
       try {
         // Get all boards and use the first one (default "Job Search" board)
         const boards = await dispatch(
-          getBoardsOnly(accessToken as string)
+          getBoardsOnly(accessToken as string),
         ).unwrap();
         if (boards && boards.length > 0) {
           // Sort by creation date to get the first created board
           const sortedBoards = [...boards].sort(
             (a, b) =>
-              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
           );
           // Use the first board (likely "Job Search YYYY")
           effectiveBoardId = sortedBoards[0].id;
@@ -180,7 +182,7 @@ const CreateMenu = () => {
             file: pendingImage,
             contactId: newContactId,
             accessToken: accessToken as string,
-          })
+          }),
         ).unwrap();
 
         await dispatch(
@@ -189,13 +191,13 @@ const CreateMenu = () => {
             boardId: board_id,
             photoUrl: uploadImageResult.imageUrl,
             accessToken: accessToken as string,
-          })
+          }),
         ).unwrap();
       }
 
       // Get job posts connected to contact from localStorage
       const jobsConnectedToContact = JSON.parse(
-        localStorage.getItem('jobsConnectedToContact') || '[]'
+        localStorage.getItem('jobsConnectedToContact') || '[]',
       );
 
       // Assign contact to all connected jobs
@@ -208,11 +210,11 @@ const CreateMenu = () => {
               jobApplicationId: jobPost.id,
             };
             await dispatch(assignContactToJobPost(assignData)).unwrap();
-          })
+          }),
         );
       } // Fetch all contacts for the board
       await dispatch(
-        getAllContactsPerBoard({ accessToken, boardId: board_id })
+        getAllContactsPerBoard({ accessToken, boardId: board_id }),
       ).unwrap();
 
       // Redirect to the contacts page to show the newly created contact
@@ -309,12 +311,12 @@ const CreateMenu = () => {
             isUserContactsPage={isContactsPage}
             onValidationChange={setIsFormValid}
             jobsConnectedToContact={JSON.parse(
-              localStorage.getItem('jobsConnectedToContact') || '[]'
+              localStorage.getItem('jobsConnectedToContact') || '[]',
             )}
             setJobsConnectedToContact={(jobs: any) =>
               localStorage.setItem(
                 'jobsConnectedToContact',
-                JSON.stringify(jobs)
+                JSON.stringify(jobs),
               )
             }
           />
