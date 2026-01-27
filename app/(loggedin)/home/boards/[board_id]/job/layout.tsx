@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import Modal from '@/components/Misc/Modal';
 import { Button } from '@/components/ui/button';
+import { CompanyLogo } from '@/components/CompanyLogo';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getAllJobApplicationNotes } from '@/redux/notes/notesThunk';
 import { getAllJobPostsPerColumn, updateJobPost } from '@/redux/jobs/jobsThunk';
@@ -151,8 +152,15 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
             <CardTitle className="mt-8 mx-4 text-xl font-bold">
               {currentJobPost?.title}
             </CardTitle>
-            <CardDescription className="mx-4 mt-8 pb-12 min-h-[20px]">
-              {currentJobPost?.company.name}
+            <CardDescription className="flex items-center gap-2 mx-4 mt-8 pb-12 min-h-[20px]">
+              {currentJobPost?.company.url && (
+                <CompanyLogo
+                  domain={currentJobPost.company.url}
+                  companyName={currentJobPost.company.name}
+                  size="sm"
+                />
+              )}
+              <span>{currentJobPost?.company.name}</span>
             </CardDescription>
           </CardHeader>
           <div className="flex mr-6 gap-4">

@@ -226,7 +226,7 @@ interface SocialMediaLinksProps {
   facebookUrl: string;
   handleFieldChange: (
     fieldName: string,
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
   ) => void;
 }
 
@@ -332,6 +332,7 @@ interface JobPostCardProps {
   deadline: string;
   timeStamp: string;
   companyName: string;
+  companyUrl?: string;
   status: jobPostStatus;
   statusChangedTime: string;
 }
@@ -392,6 +393,6 @@ interface EmailAndPhoneProps {
     id: string,
     value: string,
     type: string,
-    options?: { blur?: boolean }
+    options?: { blur?: boolean },
   ) => void;
 }

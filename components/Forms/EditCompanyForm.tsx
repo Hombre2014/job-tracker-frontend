@@ -1,7 +1,7 @@
 'use client';
 
 import * as z from 'zod';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,6 +14,8 @@ import { FormError } from '@/components/Forms/form-error';
 import { FormSuccess } from '@/components/Forms/form-success';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { updateCompany } from '@/redux/companies/companiesThunk';
+import { CompanyAutocomplete } from '@/components/CompanyAutocomplete';
+import { CompanySuggestion } from '@/services/companyAutocompleteService';
 import {
   Form,
   FormItem,
@@ -61,8 +63,15 @@ const EditCompanyForm = ({
     reset(initialData); // Reset the form values whenever initialData changes
   }, [initialData, reset]);
 
+  const getAccessToken = () =>
+    typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
   const onSubmit = async (data: z.infer<typeof EditCompanySchema>) => {
-    const accessToken = localStorage.getItem('accessToken');
+    const accessToken = getAccessToken();
+    setSubmitError(null); // Clear previous error at start
+    
     const formattedUrl = data.url?.trim()
       ? data.url.startsWith('http')
         ? data.url
@@ -74,16 +83,30 @@ const EditCompanyForm = ({
       url: formattedUrl,
     };
 
-    await dispatch(
-      updateCompany({
-        ...formattedData,
-        accessToken,
-        companyId: currentJobPost?.company?.id,
-      })
-    ).unwrap();
+    try {
+      await dispatch(
+        updateCompany({
+          ...formattedData,
+          accessToken,
+          companyId: currentJobPost?.company?.id,
+        }),
+      ).unwrap();
 
-    updateCompanyInfo(formattedData);
-    onClose();
+      // Update succeeded - update local state and close
+      updateCompanyInfo(formattedData);
+      onClose();
+    } catch (error: any) {
+      console.error('Failed to update company:', error);
+      // Show error to user - don't update local state or close modal
+      setSubmitError(
+        error?.message || 'Failed to update company. Please try again.',
+      );
+    }
+  };
+
+  const handleCompanySelect = (company: CompanySuggestion) => {
+    form.setValue('name', company.name);
+    form.setValue('url', company.domain);
   };
 
   return (
@@ -97,7 +120,12 @@ const EditCompanyForm = ({
               <FormItem>
                 <FormLabel>Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Company Name" {...field} />
+                  <CompanyAutocomplete
+                    value={field.value}
+                    onChange={field.onChange}
+                    onCompanySelect={handleCompanySelect}
+                    placeholder="Search for a company..."
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -168,7 +196,9 @@ const EditCompanyForm = ({
           </div>
 
           {successMessage && <FormSuccess message={successMessage} />}
-          {errorMessage && <FormError message={errorMessage} />}
+          {(errorMessage || submitError) && (
+            <FormError message={submitError || errorMessage} />
+          )}
         </form>
       </Form>
     </div>

@@ -31,7 +31,16 @@ export const companiesSlice = createSlice({
       })
       .addCase(getCompanyThatStartsWith.fulfilled, (state, action) => {
         state.companiesStatus = 'succeeded';
-        state.companies = action.payload;
+        // Guard: payload must not be null/undefined
+        if (action.payload == null) {
+          state.companies = [];
+          state.error = null;
+          return;
+        }
+        // Ensure payload is always treated as an array
+        state.companies = Array.isArray(action.payload)
+          ? action.payload
+          : [action.payload];
         state.error = null;
       })
       .addCase(getCompanyThatStartsWith.rejected, (state, action) => {
@@ -43,7 +52,17 @@ export const companiesSlice = createSlice({
       })
       .addCase(createCompany.fulfilled, (state, action) => {
         state.companiesStatus = 'succeeded';
-        state.companies = action.payload;
+        // Ensure companies is always an array before pushing
+        if (!Array.isArray(state.companies)) {
+          state.companies = [];
+        }
+        // Guard: payload must not be null/undefined
+        if (action.payload == null) {
+          state.companiesStatus = 'failed';
+          state.error = 'Create failed: no payload received';
+          return;
+        }
+        state.companies.push(action.payload);
         state.error = null;
       })
       .addCase(createCompany.rejected, (state, action) => {
@@ -55,7 +74,30 @@ export const companiesSlice = createSlice({
       })
       .addCase(getCompany.fulfilled, (state, action) => {
         state.companiesStatus = 'succeeded';
-        state.companies = action.payload;
+        // Ensure state.companies is always an array
+        if (!Array.isArray(state.companies)) {
+          state.companies = [];
+        }
+        // Guard: payload must not be null/undefined
+        if (action.payload == null) {
+          state.companiesStatus = 'failed';
+          state.error = 'Failed to fetch company: no payload received';
+          return;
+        }
+        // Handle both array and single object responses
+        if (Array.isArray(action.payload)) {
+          state.companies = action.payload;
+        } else {
+          // If single company, check if it exists, update it, or add it
+          const existingIndex = state.companies.findIndex(
+            (c) => c.id === action.payload.id,
+          );
+          if (existingIndex >= 0) {
+            state.companies[existingIndex] = action.payload;
+          } else {
+            state.companies.push(action.payload);
+          }
+        }
         state.error = null;
       })
       .addCase(getCompany.rejected, (state, action) => {
@@ -67,9 +109,25 @@ export const companiesSlice = createSlice({
       })
       .addCase(updateCompany.fulfilled, (state, action) => {
         state.companiesStatus = 'succeeded';
-        state.companies = state.companies.map((company) =>
-          company.id === action.payload.id ? action.payload : company
+        // Ensure companies is always an array before updating
+        if (!Array.isArray(state.companies)) {
+          state.companies = [];
+        }
+        // Guard: payload must not be null/undefined
+        if (action.payload == null) {
+          state.companiesStatus = 'failed';
+          state.error = 'Update failed: no payload received';
+          return;
+        }
+        // Find and update the company, or add if not found
+        const existingIndex = state.companies.findIndex(
+          (company) => company.id === action.payload.id,
         );
+        if (existingIndex >= 0) {
+          state.companies[existingIndex] = action.payload;
+        } else {
+          state.companies.push(action.payload);
+        }
         state.error = null;
       })
       .addCase(updateCompany.rejected, (state, action) => {

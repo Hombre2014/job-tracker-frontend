@@ -1,19 +1,17 @@
 'use client';
 
-import { debounce } from 'lodash';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'next/navigation';
-import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useEffect, useState, useCallback } from 'react';
 
 import { AddJobSchemaShort } from '@/schemas';
 import { Input } from '@/components/ui/input';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { createCompany } from '@/redux/companies/companiesThunk';
+import { CompanyAutocomplete } from '@/components/CompanyAutocomplete';
+import { CompanySuggestion } from '@/services/companyAutocompleteService';
 import ComboBoardListBox from '@/components/Forms/AddJobShort/ComboBoardListBox';
-import {
-  createCompany,
-  getCompanyThatStartsWith,
-} from '@/redux/companies/companiesThunk';
 import {
   Form,
   FormItem,
@@ -41,29 +39,33 @@ const AddJobShortForm = ({
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const [company, setCompany] = useState('');
+  const [companyUrl, setCompanyUrl] = useState('');
+  const [selectedCompany, setSelectedCompany] =
+    useState<CompanySuggestion | null>(null);
   const [jobTitle, setJobTitle] = useState('');
   const [companyId, setCompanyId] = useState<string | undefined>(undefined);
-  // Guard to prevent blur handler from firing creation when user is selecting from dropdown
-  const selectingRef = useRef(false);
-  const accessToken = localStorage.getItem('accessToken');
-  const [showDropdown, setShowDropdown] = useState(false);
+  const getAccessToken = () =>
+    typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
   const { boards } = useAppSelector((state) => state.boards);
-  const initialBoard = boards.find((b) => b.id === board_id)!;
+  const initialBoard = boards.find((b) => b.id === board_id);
+  
+  if (!initialBoard) {
+    throw new Error(`Board with id ${board_id} not found`);
+  }
+  
   const [selectedBoardId, setSelectedBoardId] = useState(initialBoard.id);
   const [selectedBoardName, setSelectedBoardName] = useState(initialBoard.name);
   const [boardColumns, setBoardColumns] = useState(initialBoard.columns);
   const [selectedColumnId, setSelectedColumnId] = useState(
-    initialBoard.columns[columnOrder]?.id
+    initialBoard.columns[columnOrder]?.id,
   );
   const [selectedColumnName, setSelectedColumnName] = useState(
-    initialBoard.columns[columnOrder]?.name
+    initialBoard.columns[columnOrder]?.name,
   );
   const [firstColumnOfTheBoard, setFirstColumnOfTheBoard] = useState(
-    initialBoard.columns[0]?.name
+    initialBoard.columns[0]?.name,
   );
-  const [matchingCompanies, setMatchingCompanies] = useState<string[]>([]);
-  const [highlightedIndex, setHighlightedIndex] = useState<number>(-1);
-  const initialColumnName = initialBoard.columns[columnOrder].name;
+  const initialColumnName = initialBoard.columns[columnOrder]?.name;
   const initialBoardName = initialBoard.name;
 
   // Update columns and first column when selectedBoardId changes
@@ -92,8 +94,8 @@ const AddJobShortForm = ({
       localStorage.setItem('chosenColumn', selectedColumnName);
     if (selectedColumnId) localStorage.setItem('columnId', selectedColumnId);
   }, [
-    selectedBoardName,
     selectedBoardId,
+    selectedBoardName,
     firstColumnOfTheBoard,
     selectedColumnName,
     selectedColumnId,
@@ -109,45 +111,10 @@ const AddJobShortForm = ({
     },
   });
 
-  const debouncedSearch = useMemo(
-    () =>
-      debounce((term: string) => {
-        if (term.length >= 2) {
-          const values = {
-            accessToken,
-            companyName: term,
-          };
-          dispatch(getCompanyThatStartsWith(values))
-            .unwrap()
-            .then((result) => {
-              const companyNames: string[] = result.map(
-                (company: { name: string }) => company.name
-              );
-              setMatchingCompanies(companyNames);
-              setShowDropdown(true);
-            })
-            .catch((error) => {
-              console.error('Search error:', error);
-              setMatchingCompanies([]);
-              setShowDropdown(false);
-            });
-        } else {
-          setMatchingCompanies([]);
-          setShowDropdown(false);
-        }
-      }, 300),
-    [dispatch, accessToken]
-  );
-
-  // Cleanup debounced function on unmount
-  useEffect(() => {
-    return () => {
-      debouncedSearch.cancel();
-    };
-  }, [debouncedSearch]);
-
   const emitDraft = useCallback(
-    (next?: Partial<{ company: string; jobTitle: string; companyId?: string }>) => {
+    (
+      next?: Partial<{ company: string; jobTitle: string; companyId?: string }>,
+    ) => {
       if (onDraftChange) {
         onDraftChange({
           company,
@@ -157,71 +124,53 @@ const AddJobShortForm = ({
         });
       }
     },
-    [onDraftChange, company, jobTitle, companyId]
+    [onDraftChange, company, jobTitle, companyId],
   );
 
-  const handleCompanyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  const handleCompanyChange = (value: string) => {
     setCompany(value);
     form.setValue('company', value);
-    debouncedSearch(value);
+    localStorage.setItem('company', value);
     emitDraft({ company: value });
-  setHighlightedIndex(-1); // reset highlight when user types
+    // If user edits the field, clear selected company and companyId
+    setSelectedCompany(null);
+    setCompanyId(undefined);
+    localStorage.removeItem('companyId');
   };
 
-  const handleCompanyBlur = () => {
-    // If user is in the middle of selecting from dropdown, skip blur logic
-    if (selectingRef.current) {
-      selectingRef.current = false;
+  const handleCompanySelect = async (companyObj: CompanySuggestion) => {
+    const companyName = companyObj.name;
+    const companyDomain = companyObj.domain;
+
+    const accessToken = getAccessToken();
+    if (!accessToken) {
+      console.error('No access token available');
       return;
     }
-    setShowDropdown(false);
-    if (company.trim().length === 0) return;
 
-    if (matchingCompanies.includes(company)) {
-      const values = { accessToken, companyName: company };
-      dispatch(getCompanyThatStartsWith(values))
-        .unwrap()
-        .then((result) => {
-          const companyData = result.find((comp: any) => comp.name === company);
-          if (companyData) {
-            setCompanyId(companyData.id);
-            localStorage.setItem('companyId', companyData.id); // legacy
-            localStorage.setItem('company', company); // legacy
-            emitDraft({ company, companyId: companyData.id });
-          }
-        });
-    } else {
-      dispatch(createCompany({ accessToken, name: company }))
-        .unwrap()
-        .then((result) => {
-          const newCompanyId = result.id;
-          setCompanyId(newCompanyId);
-          localStorage.setItem('companyId', newCompanyId); // legacy
-          localStorage.setItem('company', company); // legacy
-          emitDraft({ company, companyId: newCompanyId });
-        });
-    }
-  };
+    setCompany(companyName);
+    setCompanyUrl(companyDomain);
+    setSelectedCompany(companyObj);
+    form.setValue('company', companyName);
+    localStorage.setItem('company', companyName);
 
-  const handleCompanySelect = async (selectedCompany: string) => {
-    const fullCompanyName = selectedCompany;
-    setCompany(fullCompanyName);
-    form.setValue('company', fullCompanyName);
-    setShowDropdown(false);
-    localStorage.setItem('company', fullCompanyName); // legacy persistence
-
-    const values = { accessToken, companyName: fullCompanyName };
+    // Create company in backend with name and url
     try {
-      const result = await dispatch(getCompanyThatStartsWith(values)).unwrap();
-      const existingCompany = result.find((comp: any) => comp.name === fullCompanyName);
-      if (existingCompany) {
-        setCompanyId(existingCompany.id);
-        localStorage.setItem('companyId', existingCompany.id); // legacy
-        emitDraft({ company: fullCompanyName, companyId: existingCompany.id });
-      }
-    } finally {
-      selectingRef.current = false;
+      const result = await dispatch(
+        createCompany({
+          accessToken,
+          name: companyName,
+          url: companyDomain,
+        }),
+      ).unwrap();
+
+      const newCompanyId = result.id;
+      setCompanyId(newCompanyId);
+      localStorage.setItem('companyId', newCompanyId);
+      emitDraft({ company: companyName, companyId: newCompanyId });
+    } catch (error) {
+      console.error('Error creating company:', error);
+      setSelectedCompany(null);
     }
   };
 
@@ -240,7 +189,7 @@ const AddJobShortForm = ({
     if (onValidationChange) {
       onValidationChange(isValid);
     }
-  emitDraft();
+    emitDraft();
   }, [watchCompany, watchJobTitle, onValidationChange, emitDraft]);
 
   return (
@@ -259,60 +208,13 @@ const AddJobShortForm = ({
                   Required
                 </FormLabel>
               </span>
-              <Input
-                required
-                {...field}
+              <CompanyAutocomplete
                 value={company}
-                aria-required="true"
-                placeholder="Company name"
-                onBlur={handleCompanyBlur}
                 onChange={handleCompanyChange}
-                onKeyDown={(e) => {
-                  if (!showDropdown || matchingCompanies.length === 0) return;
-                  if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    setHighlightedIndex((prev) => {
-                      const next = prev + 1;
-                      return next >= matchingCompanies.length ? 0 : next;
-                    });
-                  } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    setHighlightedIndex((prev) => {
-                      const next = prev - 1;
-                      return next < 0 ? matchingCompanies.length - 1 : next;
-                    });
-                  } else if (e.key === 'Enter') {
-                    if (highlightedIndex >= 0) {
-                      e.preventDefault();
-                      selectingRef.current = true; // prevent blur logic
-                      handleCompanySelect(matchingCompanies[highlightedIndex]);
-                    }
-                  } else if (e.key === 'Escape') {
-                    setShowDropdown(false);
-                  }
-                }}
+                selectedCompany={selectedCompany}
+                onCompanySelect={handleCompanySelect}
+                placeholder="Search for a company..."
               />
-              {showDropdown && matchingCompanies.length > 0 && (
-                <div className="absolute z-10 w-full bg-white dark:bg-slate-800 mt-1 border border-gray-200 dark:border-slate-600 rounded-md shadow-lg max-h-60 overflow-auto">
-                  {matchingCompanies.map((matchingCompany, index) => (
-                    <div
-                      key={index}
-                      className={`px-4 py-2 cursor-pointer dark:text-white hover:bg-gray-100 dark:hover:bg-slate-700 ${
-                        index === highlightedIndex
-                          ? 'bg-gray-100 dark:bg-slate-700'
-                          : ''
-                      }`}
-                      onMouseDown={() => {
-                        selectingRef.current = true; // set before blur fires
-                        handleCompanySelect(matchingCompany);
-                      }}
-                      onClick={(e) => e.preventDefault()}
-                    >
-                      {matchingCompany}
-                    </div>
-                  ))}
-                </div>
-              )}
 
               <FormMessage />
             </FormItem>

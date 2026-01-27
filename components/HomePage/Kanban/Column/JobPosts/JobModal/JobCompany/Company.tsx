@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { EditCompanySchema } from '@/schemas';
 import { Button } from '@/components/ui/button';
+import { CompanyLogo } from '@/components/CompanyLogo';
 import EditCompanyForm from '@/components/Forms/EditCompanyForm';
 import { Card, CardContent, CardDescription } from '@/components/ui/card';
 
@@ -11,7 +12,7 @@ const Company = () => {
 
   const [companyInfo, setCompanyInfo] = useState(() => {
     const currentJobPost = JSON.parse(
-      localStorage.getItem('currentJobPost') || '{}'
+      localStorage.getItem('currentJobPost') || '{}',
     );
     const company = currentJobPost?.company || {};
 
@@ -59,7 +60,14 @@ const Company = () => {
           </div>
           <div className="flex gap-8">
             <div className="flex flex-col gap-4 w-2/3">
-              <h2 className="text-2xl">{companyInfo.name}</h2>
+              <div className="flex items-center gap-4">
+                <CompanyLogo
+                  size="lg"
+                  domain={companyInfo.url || ''}
+                  companyName={companyInfo.name}
+                />
+                <h2 className="text-2xl">{companyInfo.name}</h2>
+              </div>
               <p className="text-muted-foreground mb-8 max-h-[360px] overflow-y-auto">
                 {companyInfo.description}
               </p>

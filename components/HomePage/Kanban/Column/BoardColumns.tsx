@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from 'react-toastify';
 import { CSS } from '@dnd-kit/utilities';
 import { useParams, useRouter } from 'next/navigation';
 import { ChangeEvent, useEffect, useState, useMemo, useRef } from 'react';
@@ -21,6 +22,7 @@ import { cleanupAfterJobPost } from '@/utils/helpers';
 import { returnBoardIcon } from '@/utils/ReturnIcons';
 import AlertDialogModal from '../../Boards/AlertDialogModal';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { createCompany } from '@/redux/companies/companiesThunk';
 import { createJobPost, updateJobPost } from '@/redux/jobs/jobsThunk';
 import { getBoards, updateColumnName } from '@/redux/boards/boardsThunk';
 import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
@@ -216,18 +218,39 @@ const BoardColumns = () => {
     }
   };
 
-  const createJobApplication = () => {
+  const createJobApplication = async () => {
     if (isSubmittingJob) return;
     setIsSubmittingJob(true);
     const legacyTitle = localStorage.getItem('jobTitle');
     const legacyCompanyId = localStorage.getItem('companyId');
     const draft = jobDraftRef.current || {};
+
+    let finalCompanyId = draft.companyId || legacyCompanyId;
+
+    // If no companyId but company name exists, create the company first
+    if (!finalCompanyId && draft.company) {
+      try {
+        const result = await dispatch(
+          createCompany({
+            accessToken,
+            name: draft.company,
+          }),
+        ).unwrap();
+        finalCompanyId = result.id;
+      } catch (error) {
+        console.error('Error creating company:', error);
+        toast.error('Failed to create company. Please try again.');
+        setIsSubmittingJob(false);
+        return;
+      }
+    }
+
     const jobPost = {
       status: 'Job Created',
       accessToken: accessToken as string,
       title: draft.jobTitle || legacyTitle,
       columnId: localStorage.getItem('columnId'),
-      companyId: draft.companyId || legacyCompanyId,
+      companyId: finalCompanyId,
     };
 
     dispatch(createJobPost(jobPost))
@@ -446,6 +469,7 @@ const BoardColumns = () => {
                       postUrl={job.postUrl}
                       deadline={job.deadline}
                       timeStamp={job.createdAt}
+                      companyUrl={job.company.url}
                       companyName={job.company.name}
                       statusChangedTime={job.statusChangedAt}
                     />
@@ -462,15 +486,15 @@ const BoardColumns = () => {
             <div className="text-center py-12">
               <div className="text-gray-500 dark:text-gray-400 mb-4">
                 <svg
-                  className="w-12 h-12 mx-auto mb-4 opacity-50"
                   fill="none"
-                  stroke="currentColor"
                   viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  className="w-12 h-12 mx-auto mb-4 opacity-50"
                 >
                   <path
+                    strokeWidth={1.5}
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={1.5}
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                   />
                 </svg>
@@ -517,6 +541,7 @@ const BoardColumns = () => {
                   deadline={draggedJob.deadline}
                   columnId={draggedJob.column_id}
                   timeStamp={draggedJob.createdAt}
+                  companyUrl={draggedJob.company.url}
                   companyName={draggedJob.company.name}
                   statusChangedTime={draggedJob.statusChangedAt}
                 />

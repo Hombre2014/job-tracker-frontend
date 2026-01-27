@@ -1,6 +1,8 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from 'react-toastify';
 
 import StoreProvider from './StoreProvider';
 import AppClientProviders from './AppClientProvider';
@@ -24,6 +26,7 @@ export default function RootLayout({
         <StoreProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <AppClientProviders>{children}</AppClientProviders>
+            <ToastContainer position="top-right" autoClose={3000} />
           </ThemeProvider>
         </StoreProvider>
       </body>

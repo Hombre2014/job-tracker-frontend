@@ -7,10 +7,10 @@ import { RiDeleteBinLine } from 'react-icons/ri';
 import { format, toZonedTime } from 'date-fns-tz';
 import { useRouter, useParams } from 'next/navigation';
 
-
 import { cn } from '@/lib/utils';
 import { TokenManager } from '@/utils/TokenManager';
 import { deleteJobPost } from '@/redux/jobs/jobsThunk';
+import { CompanyLogo } from '@/components/CompanyLogo';
 import { returnJobPostIcon } from '@/utils/ReturnIcons';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
@@ -47,6 +47,7 @@ const JobPostCard = ({
   deadline,
   timeStamp,
   companyName,
+  companyUrl,
   statusChangedTime,
 }: JobPostCardProps) => {
   const router = useRouter();
@@ -60,7 +61,7 @@ const JobPostCard = ({
 
   const formattedStatusChangedTime = format(
     new Date(statusChangedTime),
-    'dd/MM/yyyy HH:mm, a'
+    'dd/MM/yyyy HH:mm',
   );
 
   const iconsOn = () => {
@@ -84,7 +85,7 @@ const JobPostCard = ({
 
   function formatTimeDifference(
     diffInMs: number,
-    showPrefix: boolean = false
+    showPrefix: boolean = false,
   ): string {
     const isInFuture = diffInMs > 0;
     const absDiffInMs = Math.abs(diffInMs);
@@ -110,7 +111,7 @@ const JobPostCard = ({
 
   const shortTimeSinceChange = getShortTimeSinceStatusChange(timeStamp);
   const shortTimeSinceStatusChange = getShortTimeSinceStatusChange(
-    new Date(Date.parse(statusChangedTime)).toISOString()
+    new Date(Date.parse(statusChangedTime)).toISOString(),
   );
 
   const now = new Date();
@@ -132,7 +133,7 @@ const JobPostCard = ({
       // Only set localStorage if user is authenticated
       localStorage.setItem('columnId', columnId);
       const chosenColumn = boardColumns?.find(
-        (column) => column.id === columnId
+        (column) => column.id === columnId,
       )?.name;
       localStorage.setItem('chosenColumn', chosenColumn as string);
     }
@@ -150,7 +151,7 @@ const JobPostCard = ({
         accessToken,
         jobPostId: id,
         jobPostData: fullJobData,
-      })
+      }),
     );
     setIsDialogOpen(false);
   };
@@ -162,15 +163,20 @@ const JobPostCard = ({
       onMouseLeave={iconsOff}
       className={cn(
         'w-11/12 mx-auto mt-2 rounded-sm text-white cursor-pointer',
-        color === null ? 'bg-[#6a776b]' : `bg-[${color}]`
+        color === null ? 'bg-[#6a776b]' : `bg-[${color}]`,
       )}
       onClick={() => handleJobPostClick(id)}
     >
       <div className="flex h-[90px]">
         <CardHeader className="w-3/4">
           <CardTitle className="!p-0 !m-0 tracking-normal">{title}</CardTitle>
-          <CardDescription className="text-white">
-            {companyName}
+          <CardDescription className="flex items-center gap-2 text-white">
+            <CompanyLogo
+              domain={companyUrl || ''}
+              companyName={companyName}
+              size="sm"
+            />
+            <span>{companyName}</span>
           </CardDescription>
         </CardHeader>
         <div className="flex flex-col gap-1 py-1 pr-2 items-end w-1/4 mt-1">
@@ -184,8 +190,6 @@ const JobPostCard = ({
                     e.stopPropagation();
                     setIsDialogOpen(true);
                   }}
-
-
                   style={{ backgroundColor: color }}
                 >
                   <RiDeleteBinLine className="h-[20px] w-[20px]" />
@@ -234,22 +238,22 @@ const JobPostCard = ({
                       'text-xs cursor-help',
                       isDeadlinePassed
                         ? 'bg-red-700 py-[2px] px-[5px] rounded-md'
-                        : 'text-white'
+                        : 'text-white',
                     )}
                   >
                     <div className="min-w-10">
                       {status === 'Job Created'
                         ? shortTimeSinceChange
                         : status === 'Deadline'
-                        ? isDeadlinePassed
-                          ? `o ${timeDifferenceString}`
-                          : `${timeDifferenceString}`
-                        : `${shortTimeSinceStatusChange}`}
+                          ? isDeadlinePassed
+                            ? `o ${timeDifferenceString}`
+                            : `${timeDifferenceString}`
+                          : `${shortTimeSinceStatusChange}`}
                     </div>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent className="bg-slate-300 text-gray-900">
-                  <p>
+                  <div>
                     <span>
                       {isDeadlinePassed ? (
                         <span>Overdue {timeDifferenceString} ago</span>
@@ -262,14 +266,14 @@ const JobPostCard = ({
                       {status === 'Deadline'
                         ? format(
                             toZonedTime(new Date(deadline), 'UTC'),
-                            'dd/MM/yyyy HH:mm, a',
+                            'dd/MM/yyyy HH:mm',
                             {
                               timeZone: 'UTC',
-                            }
+                            },
                           )
                         : formattedStatusChangedTime}
                     </span>
-                  </p>
+                  </div>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -277,16 +281,16 @@ const JobPostCard = ({
               status === 'Job Created'
                 ? 'HiOutlinePlusCircle'
                 : status === 'Deadline'
-                ? 'HiOutlineClock'
-                : status === 'Applied'
-                ? 'HiOutlineFolder'
-                : status === 'Interview'
-                ? 'PiBriefcaseLight'
-                : status === 'Offer Received'
-                ? 'GoTrophy'
-                : status === 'Job Moved'
-                ? 'GoInbox'
-                : 'HiOutlinePlusCircle'
+                  ? 'HiOutlineClock'
+                  : status === 'Applied'
+                    ? 'HiOutlineFolder'
+                    : status === 'Interview'
+                      ? 'PiBriefcaseLight'
+                      : status === 'Offer Received'
+                        ? 'GoTrophy'
+                        : status === 'Job Moved'
+                          ? 'GoInbox'
+                          : 'HiOutlinePlusCircle',
             )}
           </div>
         </div>
