@@ -3,6 +3,29 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-01-27
+
+### Added
+
+- **Company Autocomplete & Logo Integration**
+  - Integrated Clearbit Autocomplete API for company name suggestions in forms
+  - Integrated Brandfetch Logo API for dynamic company logo display
+  - Company logos now appear on job cards, modals, and company tab
+  - Company name field in forms uses new autocomplete dropdown with logos
+  - No backend changes required; all logic is frontend-only
+  - See `docs/Company_Autocomplete_Integration.md` for full details
+
+### Changed
+
+- Updated `next.config.mjs` to allow external images from Brandfetch and Clearbit
+- Updated forms and UI to use new company autocomplete and logo components
+
+### Migration Notes
+
+- Remove any usage of the old `/companies/starts-with` endpoint (now replaced by Clearbit API)
+- Ensure `.env.local` contains `NEXT_PUBLIC_BRANDFETCH_CLIENT_ID`
+- See troubleshooting and testing checklist in `docs/Company_Autocomplete_Integration.md`
+
 ## [1.0.1] - 2026-01-25
 
 ### Fixed
@@ -13,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Impact**: Handles backend responses gracefully regardless of specific success status code
   - **Files**: `app/(auth)/forgot-password/page.tsx`
 
-### Changed
+### Changed 2026-01-25
 
 - **Code Cleanup**: Removed unnecessary debug console.log statements
   - **Removed**: Development logging from forgot password flow
@@ -1367,12 +1390,14 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
       - Added `rel="noopener noreferrer"` to all external links
       - Prevents potential security vulnerabilities with `window.opener`
       - Added `target="_blank"` for proper external navigation
+      - **Files**: `components/LandingPage/Footer.tsx`
 
   - **Accessibility Improvements**:
     - **Hero Section Accessibility** (`HeroSection.tsx`):
       - Added `aria-labelledby="hero-heading"` and `role="region"` to section
       - Connected section to H1 with `id="hero-heading"` for screen reader navigation
       - Improved semantic structure for assistive technologies
+      - **Files**: `components/LandingPage/HeroSection.tsx`
 
     - **Footer Accessibility** (`Footer.tsx`):
       - Enhanced image alt text from "App logo" to "Job Tracker logo"
@@ -1382,6 +1407,7 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
     - **Navigation Enhancements**:
       - Converted footer brand to Next.js `Link` component for client-side navigation
       - Improved navigation performance and user experience
+      - **Files**: `components/LandingPage/Navbar.tsx`
 
   - **TypeScript Code Quality**:
     - **Type Safety Improvements** (`ContentSection.tsx`):
@@ -1389,10 +1415,12 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
       - Updated all Record types to use strict `SectionId` instead of `string`
       - Removed defensive checks since TypeScript now guarantees valid keys
       - Added explicit `JSX.Element` return type to Footer component
+      - **Files**: `components/LandingPage/ContentSection.tsx`
 
     - **Dead Code Removal** (`BoardColumns.tsx`):
       - Removed unused `isModalOpen` and `setIsModalOpen` state
       - Cleaned up component state for better maintainability
+      - **Files**: `components/HomePage/Kanban/Column/BoardColumns.tsx`
 
   - **Server-Side Rendering Optimization**:
     - **Footer Component Optimization** (`Footer.tsx`):
@@ -1400,6 +1428,7 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
       - Converted to server component for better performance
       - Added `suppressHydrationWarning` for dynamic year rendering
       - Prevented hydration mismatches across year boundaries
+      - **Files**: `components/LandingPage/Footer.tsx`
 
 #### Landing Page Layout and Design Enhancements
 
@@ -1484,7 +1513,7 @@ All notable changes and improvements to the Job Tracker Frontend project are doc
     5. Modal component gets destroyed and recreated during re-render
     6. Form loses all input values and user sees typing disappear
 
-  - **Solution Implementation**: Eliminated shared validation state by making `AlertDialogModal` self-validating:
+  - **Solution Implementation**: Eliminated shared validation state by making `AlertDialogModal.tsx` self-validating:
     - **Self-Validating Modal**: Modified `AlertDialogModal.tsx` to validate form data internally using localStorage instead of shared state
 
     ```typescript
@@ -2040,7 +2069,7 @@ The document CHANGELOG.md was update with tis implementation.
 #### Performance and Code Quality Optimizations
 
 - **Optimized React useEffect dependencies**: Reduced re-render frequency through dependency array optimization
-  - **Issue**: Complex dependency arrays in AuthProvider and ComboBoardListBox causing frequent re-renders
+  - **Issue**: Complex dependency arrays in AuthProvider and ComboBoardListBox caused frequent re-renders
   - **Solution**: Simplified dependency arrays with strategic optimizations
   - **Improvements**:
     - 🚀 **AuthProvider**: Use entire `reduxUser` object instead of individual properties
@@ -2648,6 +2677,9 @@ const accessToken = (() => {
     - Cross-origin access protection via try-catch
     - Graceful degradation for restrictive environments
     - Consistent user feedback across all scenarios
+  - **Files**:
+    - `components/Forms/AddDocument/UploadDocumentModal.tsx`
+    - `components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/Documents.tsx`
 
 #### Type Safety & Route Parameter Validation
 
@@ -2655,15 +2687,14 @@ const accessToken = (() => {
   - **Issue**: `useParams()` could return undefined or array values causing crashes
   - **Solution**: Type-safe parameter extraction with React Hooks compliance
   - **Benefits**: Prevents runtime errors, handles array values, user-friendly error messaging
-
-```typescript
-const { board_id } = useParams();
-const boardId = Array.isArray(board_id) ? board_id[0] : board_id;
+  - **Files**: - `const { board_id } = useParams();
+    const boardId = Array.isArray(board_id) ? board_id[0] : board_id;
 
 if (!boardId) {
-  return <div>Invalid board ID</div>;
-}
-```
+return <div>Invalid board ID</div>;
+}`
+
+- `app/(loggedin)/home/boards/[board_id]/layout.tsx`
 
 ### Quality & Maintenance Enhancements
 
@@ -2721,6 +2752,9 @@ if (!boardId) {
   - **Impact**: Users lost documents from other job applications unintentionally
   - **Solution**: Implemented smart deletion logic that checks attachment count before deletion
   - **Result**: Documents now only detach from current job unless it's the last attachment
+  - **Files**:
+    - `redux/jobs/jobsThunk.ts` (new)
+    - `components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/Documents.tsx` (enhanced)
 
 ### New Features - 2025-07-14
 
@@ -2731,12 +2765,20 @@ if (!boardId) {
   - Responsive unlimited grid layout (auto-fit design)
   - Upload functionality with automatic board detection
   - Link existing documents from other boards
+  - **Files**:
+    - `components/Forms/AddDocument/UploadDocumentModal.tsx`
+    - `components/Forms/AddDocument/DocumentSideBar.tsx`
+    - `components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/`
 
 - **Global User Documents Page**: `/home/documents`
   - Cross-board document overview showing all user documents
   - Read-only design with guided upload experience
   - Same responsive grid system as board pages
   - Smart deletion with job application protection
+  - **Files**:
+    - `app/(loggedin)/home/documents/page.tsx`
+    - `app/(loggedin)/home/boards/[board_id]/documents/page.tsx`
+    - `components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/DocumentCard.tsx`
 
 #### Enhanced Link Document Functionality
 
@@ -2776,6 +2818,9 @@ if (!boardId) {
 - **Enhanced document endpoints**: Proper integration with backend document APIs
 - **Smart caching**: Redux state management for efficient document access
 - **Error handling**: Comprehensive error catching with user-friendly messages
+- **Files**:
+  - `redux/documents/documentsThunk.ts`
+  - `components/HomePage/Kanban/Column/JobPosts/JobModal/JobDocuments/Documents.tsx`
 
 #### Component Architecture - 2025-07-14
 
@@ -2823,14 +2868,17 @@ if (!boardId) {
   - **Header synchronization**: Updates both default headers and request-specific headers
   - **TypeScript safety**: Proper typing for refresh promise and error handling
   - **Storage management**: Maintains localStorage sync with fresh tokens
+  - **Files**:
+    - `utils/TokenRefreshProvider.ts`
+    - `api/client.ts`
 
 #### User Experience Flow
 
-**Before:**
+**Before**:
 
 - User working for 30+ minutes → Token expires → Next action gets 401 → Immediate logout
 
-**After:**
+**After**:
 
 - User working for 30+ minutes → Token expires → Next action gets 401 → Auto refresh in background → Action succeeds → User continues working
 
@@ -2841,7 +2889,7 @@ if (!boardId) {
 - **Memory leak prevention**: Proper promise cleanup and null assignment
 - **Error boundary protection**: Comprehensive error handling with fallback strategies
 
-## 🐛 [0.179.4] - Critical Bug Fix - 2025-07-11 - Document System & Redux State Corruption
+## 🐛 [0.179.4] - 2025-07-11 - Document System & Redux State Corruption
 
 ### Redux State Corruption in jobsSlice
 
@@ -3014,7 +3062,7 @@ if (!boardId) {
   - **Feature**: Interactive dropdown showing available contacts that aren't already linked to the current job
   - **Search functionality**: Real-time filtering by contact name, job title, or company
   - **Visual design**: Clean UI with contact photos, names, companies, and job titles
-  - **Smart filtering**: Only shows contacts that are NOT already assigned to the current job
+  - **Smart filtering**: Only shows contacts that are NOT already linked to the current job
   - **Immediate feedback**: UI updates instantly after linking, contact disappears from dropdown
   - **Empty state handling**: Shows "No contacts available to link" when all board contacts are already linked
   - **Cross-browser compatibility**: Works consistently across Chrome, Firefox, Edge, and Vivaldi
@@ -3166,7 +3214,7 @@ if (!boardId) {
 
 #### Social Media Links - 2025-06-19
 
-- **Fixed social media link URLs**: Resolved issue where clicking social media links generated incorrect URLs
+- **Fixed social media links**: Resolved issue where clicking social media links generated incorrect URLs
   - **Issue**: Links like "John" redirected to `http://localhost:3001/.../John` instead of proper social media URLs
   - **Solution**: Added `getFullUrl()` helper function to reconstruct proper URLs from handles
   - **Result**: Links now correctly redirect to `https://facebook.com/John`, `https://github.com/username`, etc.

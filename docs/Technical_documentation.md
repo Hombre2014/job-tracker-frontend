@@ -1,8 +1,46 @@
 # Technical Documentation
 
-## Strong Password Enforcement System (25/01/2026)
+## Company Autocomplete & Logo Integration (v1.1.0, 27/01/2026)
 
 ### Overview
+
+The application now uses a hybrid approach for company name autocomplete and logo display:
+
+- **Clearbit Autocomplete API** for company name suggestions
+- **Brandfetch Logo API** for dynamic company logo display
+- No backend changes required; all logic is frontend-only
+
+### Key Components
+
+- `components/CompanyAutocomplete/CompanyAutocomplete.tsx`: Autocomplete dropdown with logos
+- `components/CompanyLogo/CompanyLogo.tsx`: Displays company logos with fallback
+- `hooks/useCompanyAutocomplete.ts`: Debounced API calls for suggestions
+- `services/companyAutocompleteService.ts`: Clearbit API client
+
+### Workflow
+
+- **Add/Edit Company**: User types company name, suggestions appear with logos, selection auto-fills name and URL
+- **Display**: Logos shown on job cards, modals, and company tab using the company URL
+
+### API Details
+
+- **Clearbit**: `https://autocomplete.clearbit.com/v1/companies/suggest` (no auth required)
+- **Brandfetch**: `https://cdn.brandfetch.io/{domain}?c={CLIENT_ID}` (client ID required)
+
+### Configuration
+
+- Add `NEXT_PUBLIC_BRANDFETCH_CLIENT_ID` to `.env.local`
+- Update `next.config.mjs` to allow `cdn.brandfetch.io` and `logo.clearbit.com` images
+
+### Reference
+
+See `docs/Company_Autocomplete_Integration.md` for full implementation details, troubleshooting, and testing checklist.
+
+---
+
+## Strong Password Enforcement System (25/01/2026)
+
+### Overview - 25/01/2026
 
 Implemented comprehensive strong password enforcement system that validates passwords at registration and guides existing users to update weak passwords through a non-intrusive flow.
 
@@ -681,7 +719,7 @@ if (user.passwordStrength === 'weak') {
 8. `docs/CHANGELOG.md` - Version 0.199.0 entry
 9. `docs/Technical_documentation.md` - This documentation
 
-### Configuration
+### Configuration - 25/01/2026
 
 **No environment variables required** - uses existing configuration
 
