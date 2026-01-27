@@ -97,6 +97,7 @@ export const companiesSlice = createSlice({
         }
         // Guard: payload must not be null/undefined
         if (action.payload == null) {
+          state.companiesStatus = 'failed';
           state.error = 'Update failed: no payload received';
           return;
         }

@@ -47,21 +47,27 @@ const AddJobShortForm = ({
   const getAccessToken = () =>
     typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
   const { boards } = useAppSelector((state) => state.boards);
-  const initialBoard = boards.find((b) => b.id === board_id)!;
-  const [selectedBoardId, setSelectedBoardId] = useState(initialBoard.id);
-  const [selectedBoardName, setSelectedBoardName] = useState(initialBoard.name);
-  const [boardColumns, setBoardColumns] = useState(initialBoard.columns);
+  const initialBoard = boards.find((b) => b.id === board_id);
+  const boardNotFound = !initialBoard;
+  // Always call hooks with safe defaults
+  const [selectedBoardId, setSelectedBoardId] = useState(
+    initialBoard?.id || '',
+  );
+  const [selectedBoardName, setSelectedBoardName] = useState(
+    initialBoard?.name || '',
+  );
+  const [boardColumns, setBoardColumns] = useState(initialBoard?.columns || []);
   const [selectedColumnId, setSelectedColumnId] = useState(
-    initialBoard.columns[columnOrder]?.id,
+    initialBoard?.columns?.[columnOrder]?.id || '',
   );
   const [selectedColumnName, setSelectedColumnName] = useState(
-    initialBoard.columns[columnOrder]?.name,
+    initialBoard?.columns?.[columnOrder]?.name || '',
   );
   const [firstColumnOfTheBoard, setFirstColumnOfTheBoard] = useState(
-    initialBoard.columns[0]?.name,
+    initialBoard?.columns?.[0]?.name || '',
   );
-  const initialColumnName = initialBoard.columns[columnOrder].name;
-  const initialBoardName = initialBoard.name;
+  const initialColumnName = initialBoard?.columns?.[columnOrder]?.name || '';
+  const initialBoardName = initialBoard?.name || '';
 
   // Update columns and first column when selectedBoardId changes
   useEffect(() => {
@@ -177,122 +183,13 @@ const AddJobShortForm = ({
     emitDraft();
   }, [watchCompany, watchJobTitle, onValidationChange, emitDraft]);
 
+  if (boardNotFound) {
+    return <div>Board not found</div>;
+  }
+
   return (
     <Form {...form}>
-      <form className="space-y-8">
-        <FormField
-          name="company"
-          control={form.control}
-          render={({ field }) => (
-            <FormItem className="!text-left relative">
-              <span className="flex justify-between">
-                <FormLabel className="text-gray-800 dark:text-white font-semibold">
-                  Company
-                </FormLabel>
-                <FormLabel className="text-gray-400 dark:text-slate-400">
-                  Required
-                </FormLabel>
-              </span>
-              <CompanyAutocomplete
-                value={company}
-                onChange={handleCompanyChange}
-                onCompanySelect={handleCompanySelect}
-                placeholder="Search for a company..."
-                selectedCompany={selectedCompany}
-              />
-
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          name="jobTitle"
-          control={form.control}
-          render={({ field }) => (
-            <FormItem className="!text-left">
-              <span className="flex justify-between">
-                <FormLabel className="text-gray-800 dark:text-white font-semibold">
-                  Job Title
-                </FormLabel>
-                <FormLabel className="text-gray-400 dark:text-slate-400">
-                  Required
-                </FormLabel>
-              </span>
-              <Input
-                required
-                {...field}
-                value={jobTitle}
-                aria-required="true"
-                placeholder="Job Title"
-                onChange={(e) => handleJobTitleChange(e)}
-              />
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <span className="flex justify-between gap-4 pb-4">
-          <FormField
-            name="board"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem className="!text-left w-1/2">
-                <span className="flex justify-between">
-                  <FormLabel className="text-gray-800 dark:text-white font-semibold">
-                    Board
-                  </FormLabel>
-                  <FormLabel className="text-gray-400 dark:text-slate-400">
-                    Required
-                  </FormLabel>
-                </span>
-                <ComboBoardListBox
-                  {...field}
-                  itemsType="boards"
-                  searchItem="Boards"
-                  value={selectedBoardName}
-                  initialBoardString={initialBoardName}
-                  items={boards.map((b) => ({ id: b.id, name: b.name }))}
-                  onSelectItem={(item) => {
-                    setSelectedBoardId(item.id);
-                    // Immediate persistence to ensure redirect uses updated board
-                    localStorage.setItem('chosenBoardId', item.id);
-                    localStorage.setItem('chosenBoard', item.name);
-                  }}
-                />
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            name="list"
-            control={form.control}
-            render={({ field }) => (
-              <FormItem className="!text-left w-1/2">
-                <span className="flex justify-between">
-                  <FormLabel className="text-gray-800 dark:text-white font-semibold">
-                    List
-                  </FormLabel>
-                  <FormLabel className="text-gray-400 dark:text-slate-400">
-                    Required
-                  </FormLabel>
-                </span>
-                <ComboBoardListBox
-                  {...field}
-                  searchItem="Lists"
-                  itemsType="columns"
-                  value={selectedColumnName}
-                  initialColumnString={initialColumnName}
-                  items={boardColumns.map((c) => ({ id: c.id, name: c.name }))}
-                  onSelectItem={(item) => {
-                    setSelectedColumnId(item.id);
-                    setSelectedColumnName(item.name);
-                  }}
-                />
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </span>
-      </form>
+      <form className="space-y-8">{/* ...existing code... */}</form>
     </Form>
   );
 };

@@ -1,7 +1,7 @@
 'use client';
 
 import * as z from 'zod';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -66,6 +66,8 @@ const EditCompanyForm = ({
   const getAccessToken = () =>
     typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
 
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
   const onSubmit = async (data: z.infer<typeof EditCompanySchema>) => {
     const accessToken = getAccessToken();
     const formattedUrl = data.url?.trim()
@@ -91,12 +93,13 @@ const EditCompanyForm = ({
       // Update succeeded - update local state and close
       updateCompanyInfo(formattedData);
       onClose();
-    } catch (error) {
+      setSubmitError(null);
+    } catch (error: any) {
       console.error('Failed to update company:', error);
-      // Still update local state and close since backend likely succeeded
-      // The error is usually in Redux state management, not the API call
-      updateCompanyInfo(formattedData);
-      onClose();
+      // Show error to user - don't update local state or close modal
+      setSubmitError(
+        error?.message || 'Failed to update company. Please try again.',
+      );
     }
   };
 
@@ -192,7 +195,9 @@ const EditCompanyForm = ({
           </div>
 
           {successMessage && <FormSuccess message={successMessage} />}
-          {errorMessage && <FormError message={errorMessage} />}
+          {(errorMessage || submitError) && (
+            <FormError message={submitError || errorMessage} />
+          )}
         </form>
       </Form>
     </div>
