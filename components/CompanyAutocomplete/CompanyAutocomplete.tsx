@@ -6,24 +6,26 @@ import { Input } from '@/components/ui/input';
 import { CompanyLogo } from '@/components/CompanyLogo';
 import { useCompanyAutocomplete } from '@/hooks/useCompanyAutocomplete';
 import { CompanySuggestion } from '@/services/companyAutocompleteService';
-
-interface CompanyAutocompleteProps {
+export interface CompanyAutocompleteProps {
   value: string;
   disabled?: boolean;
   className?: string;
   placeholder?: string;
   onChange: (value: string) => void;
   onCompanySelect: (company: CompanySuggestion) => void;
+  selectedCompany?: CompanySuggestion | null;
 }
 
-export const CompanyAutocomplete = ({
-  value,
-  onChange,
-  className,
-  onCompanySelect,
-  disabled = false,
-  placeholder = 'Search for a company...',
-}: CompanyAutocompleteProps) => {
+export const CompanyAutocomplete = (props: CompanyAutocompleteProps) => {
+  const {
+    value,
+    onChange,
+    className,
+    onCompanySelect,
+    disabled = false,
+    placeholder = 'Search for a company...',
+    selectedCompany = null,
+  } = props;
   const [isOpen, setIsOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -119,8 +121,17 @@ export const CompanyAutocomplete = ({
           }}
           placeholder={placeholder}
           disabled={disabled}
-          className="w-full"
+          className={selectedCompany?.domain ? 'pr-10 w-full' : 'w-full'}
         />
+        {selectedCompany?.domain && !isOpen && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+            <CompanyLogo
+              domain={selectedCompany.domain}
+              companyName={selectedCompany.name}
+              size="sm"
+            />
+          </span>
+        )}
         {isLoading && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />

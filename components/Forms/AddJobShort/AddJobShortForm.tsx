@@ -40,6 +40,8 @@ const AddJobShortForm = ({
   const dispatch = useAppDispatch();
   const [company, setCompany] = useState('');
   const [companyUrl, setCompanyUrl] = useState('');
+  const [selectedCompany, setSelectedCompany] =
+    useState<CompanySuggestion | null>(null);
   const [jobTitle, setJobTitle] = useState('');
   const [companyId, setCompanyId] = useState<string | undefined>(undefined);
   const getAccessToken = () =>
@@ -124,14 +126,17 @@ const AddJobShortForm = ({
     setCompany(value);
     form.setValue('company', value);
     emitDraft({ company: value });
+    // If user edits the field, clear selected company
+    setSelectedCompany(null);
   };
 
-  const handleCompanySelect = async (selectedCompany: CompanySuggestion) => {
-    const companyName = selectedCompany.name;
-    const companyDomain = selectedCompany.domain;
+  const handleCompanySelect = async (companyObj: CompanySuggestion) => {
+    const companyName = companyObj.name;
+    const companyDomain = companyObj.domain;
 
     setCompany(companyName);
     setCompanyUrl(companyDomain);
+    setSelectedCompany(companyObj);
     form.setValue('company', companyName);
     localStorage.setItem('company', companyName);
 
@@ -193,6 +198,7 @@ const AddJobShortForm = ({
                 onChange={handleCompanyChange}
                 onCompanySelect={handleCompanySelect}
                 placeholder="Search for a company..."
+                selectedCompany={selectedCompany}
               />
 
               <FormMessage />
