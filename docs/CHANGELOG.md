@@ -15,20 +15,85 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - No backend changes required; all logic is frontend-only
   - See `docs/Company_Autocomplete_Integration.md` for full details
 
+- **Automatic Company Creation for Typed Names**
+  - Users can now create job applications by typing company names without selecting from dropdown
+  - System automatically creates company with typed name when no dropdown selection is made
+  - Works from both navbar "+ Create" menu and column "+" buttons
+  - Default building icon (🏢) displayed for companies without logos
+  - Eliminates 400 Bad Request errors that previously blocked job creation
+  - Files: `CreateMenu.tsx`, `BoardColumns.tsx`, `AddJobShortForm.tsx`
+
+- **Default Company Logo System**
+  - Building icon from lucide-react displays when company has no URL
+  - Always shows visual identifier (logo or icon) for every company
+  - Consistent display across job cards and company details pages
+  - Proper dark mode support with muted colors
+  - Files: `JobPostCard.tsx`, `Company.tsx`, `CompanyLogo.tsx`
+
 ### Changed
 
 - Updated `next.config.mjs` to allow external images from Brandfetch and Clearbit
 - Updated forms and UI to use new company autocomplete and logo components
+- Enhanced CompanyLogo component with 'use client' directive for Next.js App Router compatibility
+- Improved error handling in CompanyAutocomplete with user-friendly error messages
+
+### Fixed
+
+- **Redux State Management - Null Payload Guards**
+  - Added comprehensive null-payload validation across all company Redux actions
+  - `getCompanyThatStartsWith`: Returns empty array for null payloads (valid empty search)
+  - `getCompany`: Sets failed status with error message for null payloads
+  - `createCompany`: Sets failed status with error message, prevents pushing null to array
+  - `updateCompany`: Sets failed status with error message, prevents null updates
+  - Prevents `[null]` arrays that violate `Company[]` type and break UI
+  - Files: `redux/companies/companiesSlice.ts`
+
+- **CompanyAutocomplete UI/UX Fixes**
+  - Fixed visual overlap between company logo and loading spinner (both at `right-3`)
+  - Added `!isLoading` condition to logo display to prevent simultaneous rendering
+  - Added error state handling from `useCompanyAutocomplete` hook
+  - Displays "Failed to load suggestions. Please try again." on API errors
+  - Improved user feedback for network failures
+  - Files: `CompanyAutocomplete.tsx`
+
+- **CompanyLogo Component Enhancements**
+  - Added automatic error state reset when domain prop changes
+  - Prevents stuck fallback icon when switching between companies
+  - Implemented `useEffect` with `cleanDomain` dependency for proper state management
+  - Added 'use client' directive for Next.js App Router hook compatibility
+  - Files: `CompanyLogo.tsx`
+
+- **Form Error Handling Improvements**
+  - Added access token validation in `handleCompanySelect` before API calls
+  - Clears `selectedCompany` on company creation errors to allow retry
+  - Prevents passing null accessToken to Redux thunks
+  - Better error recovery for failed company creation attempts
+  - Files: `AddJobShortForm.tsx`
+
+- **EditCompanyForm State Management**
+  - Moved `setSubmitError(null)` to start of submission to clear stale errors
+  - Removed state update after `onClose()` to prevent unmounted component warnings
+  - Eliminates React warning: "Can't perform a React state update on an unmounted component"
+  - Files: `EditCompanyForm.tsx`
+
+- **Type Safety and Null Safety**
+  - Removed non-null assertion (`!`) from `initialBoard` lookup
+  - Added proper null check with error throw for missing board
+  - Added optional chaining to `initialColumnName` access
+  - Prevents runtime crashes when board_id doesn't match or columnOrder is out of bounds
+  - Files: `AddJobShortForm.tsx`
 
 ### Migration Notes
 
 - Remove any usage of the old `/companies/starts-with` endpoint (now replaced by Clearbit API)
 - Ensure `.env.local` contains `NEXT_PUBLIC_BRANDFETCH_CLIENT_ID`
 - See troubleshooting and testing checklist in `docs/Company_Autocomplete_Integration.md`
+- Test job creation by typing company names without selecting from dropdown
+- Verify default building icons appear for companies without URLs
 
 ## [1.0.1] - 2026-01-25
 
-### Fixed
+### Fixed - 2026-01-25
 
 - **Password Reset Flow Status Code Handling**: Made forgot password endpoints more resilient
   - **Issue**: Frontend only accepted status `200` for verification code and `201` for password reset
