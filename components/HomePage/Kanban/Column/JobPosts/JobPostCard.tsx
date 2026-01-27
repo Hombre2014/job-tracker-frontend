@@ -61,7 +61,7 @@ const JobPostCard = ({
 
   const formattedStatusChangedTime = format(
     new Date(statusChangedTime),
-    'dd/MM/yyyy HH:mm, a',
+    'dd/MM/yyyy HH:mm',
   );
 
   const iconsOn = () => {
@@ -255,7 +255,7 @@ const JobPostCard = ({
                   </span>
                 </TooltipTrigger>
                 <TooltipContent className="bg-slate-300 text-gray-900">
-                  <p>
+                  <div>
                     <span>
                       {isDeadlinePassed ? (
                         <span>Overdue {timeDifferenceString} ago</span>
@@ -268,14 +268,14 @@ const JobPostCard = ({
                       {status === 'Deadline'
                         ? format(
                             toZonedTime(new Date(deadline), 'UTC'),
-                            'dd/MM/yyyy HH:mm, a',
+                            'dd/MM/yyyy HH:mm',
                             {
                               timeZone: 'UTC',
                             },
                           )
                         : formattedStatusChangedTime}
                     </span>
-                  </p>
+                  </div>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

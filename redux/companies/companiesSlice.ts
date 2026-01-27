@@ -95,6 +95,11 @@ export const companiesSlice = createSlice({
         if (!Array.isArray(state.companies)) {
           state.companies = [];
         }
+        // Guard: payload must not be null/undefined
+        if (action.payload == null) {
+          state.error = 'Update failed: no payload received';
+          return;
+        }
         // Find and update the company, or add if not found
         const existingIndex = state.companies.findIndex(
           (company) => company.id === action.payload.id,

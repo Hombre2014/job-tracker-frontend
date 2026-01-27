@@ -13,6 +13,7 @@ export interface CompanySuggestion {
  */
 export const fetchCompanySuggestions = async (
   query: string,
+  signal?: AbortSignal,
 ): Promise<CompanySuggestion[]> => {
   if (!query || query.length < 2) {
     return [];
@@ -21,6 +22,7 @@ export const fetchCompanySuggestions = async (
   try {
     const response = await fetch(
       `${config.clearbit.autocompleteUrl}?query=${encodeURIComponent(query)}`,
+      { signal },
     );
 
     if (!response.ok) {
@@ -29,7 +31,10 @@ export const fetchCompanySuggestions = async (
 
     const data: CompanySuggestion[] = await response.json();
     return data;
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.name === 'AbortError') {
+      throw error;
+    }
     console.error('Error fetching company suggestions:', error);
     return [];
   }
