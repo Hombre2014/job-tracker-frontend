@@ -42,7 +42,8 @@ const AddJobShortForm = ({
   const [companyUrl, setCompanyUrl] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [companyId, setCompanyId] = useState<string | undefined>(undefined);
-  const accessToken = localStorage.getItem('accessToken');
+  const getAccessToken = () =>
+    typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
   const { boards } = useAppSelector((state) => state.boards);
   const initialBoard = boards.find((b) => b.id === board_id)!;
   const [selectedBoardId, setSelectedBoardId] = useState(initialBoard.id);
@@ -138,7 +139,7 @@ const AddJobShortForm = ({
     try {
       const result = await dispatch(
         createCompany({
-          accessToken,
+          accessToken: getAccessToken(),
           name: companyName,
           url: companyDomain,
         }),

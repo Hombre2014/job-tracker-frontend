@@ -63,8 +63,11 @@ const EditCompanyForm = ({
     reset(initialData); // Reset the form values whenever initialData changes
   }, [initialData, reset]);
 
+  const getAccessToken = () =>
+    typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+
   const onSubmit = async (data: z.infer<typeof EditCompanySchema>) => {
-    const accessToken = localStorage.getItem('accessToken');
+    const accessToken = getAccessToken();
     const formattedUrl = data.url?.trim()
       ? data.url.startsWith('http')
         ? data.url
