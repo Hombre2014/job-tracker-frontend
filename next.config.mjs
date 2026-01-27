@@ -13,6 +13,16 @@ const nextConfig = {
         hostname: 'cloud.appwrite.io',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'cdn.brandfetch.io',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'logo.clearbit.com',
+        pathname: '/**',
+      },
     ],
   },
   async headers() {

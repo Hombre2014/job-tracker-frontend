@@ -17,27 +17,32 @@ export const getCompanyThatStartsWith = createAsyncThunk(
             Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
           },
-        }
+        },
       );
       return res.data;
     } catch (err: unknown) {
       if (isAxiosError(err)) {
         return thunkAPI.rejectWithValue(
-          err.response?.data || 'Error fetching companies'
+          err.response?.data || 'Error fetching companies',
         );
       }
       return thunkAPI.rejectWithValue('Error fetching companies');
     }
-  }
+  },
 );
 
 export const createCompany = createAsyncThunk(
   'companies/createNewCompany',
   async (values: any, thunkAPI) => {
-    const { accessToken, name } = values;
-    const body = {
+    const { accessToken, name, url } = values;
+    const body: { name: string; url?: string } = {
       name: name,
     };
+
+    // Include URL if provided
+    if (url) {
+      body.url = url;
+    }
 
     try {
       const res = await client.post('/companies', body, {
@@ -50,12 +55,12 @@ export const createCompany = createAsyncThunk(
     } catch (err: unknown) {
       if (isAxiosError(err)) {
         return thunkAPI.rejectWithValue(
-          err.response?.data || 'Error creating company'
+          err.response?.data || 'Error creating company',
         );
       }
       return thunkAPI.rejectWithValue('Error creating company');
     }
-  }
+  },
 );
 
 export const getCompany = createAsyncThunk(
@@ -73,12 +78,12 @@ export const getCompany = createAsyncThunk(
     } catch (err: unknown) {
       if (isAxiosError(err)) {
         return thunkAPI.rejectWithValue(
-          err.response?.data || 'Error fetching company'
+          err.response?.data || 'Error fetching company',
         );
       }
       return thunkAPI.rejectWithValue('Error fetching company');
     }
-  }
+  },
 );
 
 export const updateCompany = createAsyncThunk(
@@ -96,10 +101,10 @@ export const updateCompany = createAsyncThunk(
     } catch (err: unknown) {
       if (isAxiosError(err)) {
         return thunkAPI.rejectWithValue(
-          err.response?.data || 'Error updating company'
+          err.response?.data || 'Error updating company',
         );
       }
       return thunkAPI.rejectWithValue('Error updating company');
     }
-  }
+  },
 );

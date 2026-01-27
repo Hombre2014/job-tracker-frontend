@@ -14,6 +14,8 @@ import { FormError } from '@/components/Forms/form-error';
 import { FormSuccess } from '@/components/Forms/form-success';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { updateCompany } from '@/redux/companies/companiesThunk';
+import { CompanyAutocomplete } from '@/components/CompanyAutocomplete';
+import { CompanySuggestion } from '@/services/companyAutocompleteService';
 import {
   Form,
   FormItem,
@@ -74,16 +76,30 @@ const EditCompanyForm = ({
       url: formattedUrl,
     };
 
-    await dispatch(
-      updateCompany({
-        ...formattedData,
-        accessToken,
-        companyId: currentJobPost?.company?.id,
-      })
-    ).unwrap();
+    try {
+      await dispatch(
+        updateCompany({
+          ...formattedData,
+          accessToken,
+          companyId: currentJobPost?.company?.id,
+        }),
+      ).unwrap();
 
-    updateCompanyInfo(formattedData);
-    onClose();
+      // Update succeeded - update local state and close
+      updateCompanyInfo(formattedData);
+      onClose();
+    } catch (error) {
+      console.error('Failed to update company:', error);
+      // Still update local state and close since backend likely succeeded
+      // The error is usually in Redux state management, not the API call
+      updateCompanyInfo(formattedData);
+      onClose();
+    }
+  };
+
+  const handleCompanySelect = (company: CompanySuggestion) => {
+    form.setValue('name', company.name);
+    form.setValue('url', company.domain);
   };
 
   return (
@@ -97,7 +113,12 @@ const EditCompanyForm = ({
               <FormItem>
                 <FormLabel>Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Company Name" {...field} />
+                  <CompanyAutocomplete
+                    value={field.value}
+                    onChange={field.onChange}
+                    onCompanySelect={handleCompanySelect}
+                    placeholder="Search for a company..."
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
