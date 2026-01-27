@@ -34,14 +34,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Issue**: Frontend only accepted status `200` for verification code and `201` for password reset
   - **Fix**: Now accepts `200`, `201`, or `204` status codes for both endpoints
   - **Impact**: Handles backend responses gracefully regardless of specific success status code
-  - **Files**: `app/(auth)/forgot-password/page.tsx`
 
-### Changed 2026-01-25
+### Documentation & UI Improvements
 
-- **Code Cleanup**: Removed unnecessary debug console.log statements
-  - **Removed**: Development logging from forgot password flow
-  - **Benefits**: Cleaner production logs, better performance
-  - **Files**: `app/(auth)/forgot-password/page.tsx`
+- **Removed**: Development logging from forgot password flow
+- **Benefits**: Cleaner production logs, better performance
+- **Files**: `app/(auth)/forgot-password/page.tsx`
 
 ## [1.0.0] - 2026-01-25 (Previously [0.201.0])
 
@@ -2688,11 +2686,14 @@ const accessToken = (() => {
   - **Solution**: Type-safe parameter extraction with React Hooks compliance
   - **Benefits**: Prevents runtime errors, handles array values, user-friendly error messaging
   - **Files**: - `const { board_id } = useParams();
+
     const boardId = Array.isArray(board_id) ? board_id[0] : board_id;
 
+```jsx
 if (!boardId) {
-return <div>Invalid board ID</div>;
-}`
+  return <>Invalid board ID</>;
+}
+```
 
 - `app/(loggedin)/home/boards/[board_id]/layout.tsx`
 
@@ -3370,6 +3371,9 @@ _All changes maintain backward compatibility and enhance user experience with im
 
 <!-- Version comparison links -->
 
+[1.1.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.0.1...v1.1.0
+[1.0.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.200.0...v1.0.0
 [0.200.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.199.0...v0.200.0
 [0.199.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.198.0...v0.199.0
 [0.198.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.197.0...v0.198.0

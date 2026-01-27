@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import React, { useEffect } from 'react';
+
 import { useAppSelector } from '@/redux/hooks';
 
 const HowTo = () => {
@@ -9,9 +11,8 @@ const HowTo = () => {
   const { accessToken: reduxAccessToken } = useAppSelector(
     (state) => state.user,
   );
-  const [isAuthenticated, setIsAuthenticated] = React.useState(
-    !!reduxAccessToken,
-  );
+  const [isAuthenticated, setIsAuthenticated] =
+    React.useState(!!reduxAccessToken);
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -92,6 +93,61 @@ const HowTo = () => {
                 </p>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* New Section: Adding a Job with Company Autocomplete */}
+        <section className="bg-blue-100 dark:bg-slate-700 rounded-xl p-8 shadow-lg mb-12">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-4 text-center">
+            Adding a New Job Application with Company Autocomplete
+          </h2>
+          <p className="text-lg text-slate-700 dark:text-slate-200 mb-6 text-center">
+            JobTracker makes it easy to add new job applications by helping you
+            quickly find and select the correct company name using our smart
+            autocomplete feature.
+          </p>
+          <ol className="list-decimal list-inside space-y-4 text-slate-700 dark:text-slate-200 max-w-2xl mx-auto">
+            <li>
+              <strong>Start typing the company name:</strong> In the{' '}
+              <span className="font-semibold">Company</span> field, enter the
+              first 2–3 letters of the company you want to add. For example,
+              type{' '}
+              <span className="bg-slate-200 dark:bg-slate-600 px-1 rounded">
+                Mic
+              </span>{' '}
+              for Microsoft.
+            </li>
+            <li>
+              <strong>View suggestions:</strong> As you type, a dropdown will
+              appear with a list of matching company names and their logos. This
+              helps you quickly find the correct company and avoid typos.
+            </li>
+            <li>
+              <strong>Select the correct company:</strong> Click on the company
+              name from the suggestions list. The company name and logo will
+              automatically fill the field.
+            </li>
+            <li>
+              <strong>Continue filling out the form:</strong> Complete the rest
+              of the job application details as usual.
+            </li>
+          </ol>
+          <div className="flex justify-center mt-8">
+            <Image
+              priority
+              unoptimized
+              width={1200}
+              height={800}
+              src="/gifs/Add_a_job.gif"
+              alt="Demo: Adding a job with company autocomplete"
+              className="rounded-lg border border-blue-400 shadow-md max-w-full h-auto"
+              style={{
+                zIndex: 2,
+                position: 'relative',
+                transform: 'translateZ(0)',
+                backfaceVisibility: 'hidden',
+              }}
+            />
           </div>
         </section>
 
