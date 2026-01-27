@@ -31,6 +31,12 @@ export const companiesSlice = createSlice({
       })
       .addCase(getCompanyThatStartsWith.fulfilled, (state, action) => {
         state.companiesStatus = 'succeeded';
+        // Guard: payload must not be null/undefined
+        if (action.payload == null) {
+          state.companies = [];
+          state.error = null;
+          return;
+        }
         // Ensure payload is always treated as an array
         state.companies = Array.isArray(action.payload)
           ? action.payload
@@ -50,6 +56,12 @@ export const companiesSlice = createSlice({
         if (!Array.isArray(state.companies)) {
           state.companies = [];
         }
+        // Guard: payload must not be null/undefined
+        if (action.payload == null) {
+          state.companiesStatus = 'failed';
+          state.error = 'Create failed: no payload received';
+          return;
+        }
         state.companies.push(action.payload);
         state.error = null;
       })
@@ -65,6 +77,12 @@ export const companiesSlice = createSlice({
         // Ensure state.companies is always an array
         if (!Array.isArray(state.companies)) {
           state.companies = [];
+        }
+        // Guard: payload must not be null/undefined
+        if (action.payload == null) {
+          state.companiesStatus = 'failed';
+          state.error = 'Failed to fetch company: no payload received';
+          return;
         }
         // Handle both array and single object responses
         if (Array.isArray(action.payload)) {

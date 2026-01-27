@@ -33,7 +33,7 @@ export const CompanyAutocomplete = (props: CompanyAutocompleteProps) => {
   const [justSelected, setJustSelected] = useState(false);
   const [userInteracted, setUserInteracted] = useState(false); // Track if user has typed
 
-  const { suggestions, isLoading } = useCompanyAutocomplete(value);
+  const { suggestions, isLoading, error } = useCompanyAutocomplete(value);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -123,7 +123,7 @@ export const CompanyAutocomplete = (props: CompanyAutocompleteProps) => {
           disabled={disabled}
           className={selectedCompany?.domain ? 'pr-10 w-full' : 'w-full'}
         />
-        {selectedCompany?.domain && !isOpen && (
+        {selectedCompany?.domain && !isOpen && !isLoading && (
           <span className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
             <CompanyLogo
               domain={selectedCompany.domain}
@@ -185,13 +185,22 @@ export const CompanyAutocomplete = (props: CompanyAutocompleteProps) => {
       {isOpen &&
         !isLoading &&
         value.length >= 2 &&
-        suggestions.length === 0 && (
+        suggestions.length === 0 &&
+        !error && (
           <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg">
             <div className="px-3 py-4 text-center text-sm text-muted-foreground">
               No companies found
             </div>
           </div>
         )}
+
+      {isOpen && error && (
+        <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg">
+          <div className="px-3 py-4 text-center text-sm text-destructive">
+            Failed to load suggestions. Please try again.
+          </div>
+        </div>
+      )}
     </div>
   );
 };

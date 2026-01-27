@@ -47,7 +47,12 @@ const AddJobShortForm = ({
   const getAccessToken = () =>
     typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
   const { boards } = useAppSelector((state) => state.boards);
-  const initialBoard = boards.find((b) => b.id === board_id)!;
+  const initialBoard = boards.find((b) => b.id === board_id);
+  
+  if (!initialBoard) {
+    throw new Error(`Board with id ${board_id} not found`);
+  }
+  
   const [selectedBoardId, setSelectedBoardId] = useState(initialBoard.id);
   const [selectedBoardName, setSelectedBoardName] = useState(initialBoard.name);
   const [boardColumns, setBoardColumns] = useState(initialBoard.columns);
@@ -60,7 +65,7 @@ const AddJobShortForm = ({
   const [firstColumnOfTheBoard, setFirstColumnOfTheBoard] = useState(
     initialBoard.columns[0]?.name,
   );
-  const initialColumnName = initialBoard.columns[columnOrder].name;
+  const initialColumnName = initialBoard.columns[columnOrder]?.name;
   const initialBoardName = initialBoard.name;
 
   // Update columns and first column when selectedBoardId changes
@@ -125,14 +130,23 @@ const AddJobShortForm = ({
   const handleCompanyChange = (value: string) => {
     setCompany(value);
     form.setValue('company', value);
+    localStorage.setItem('company', value);
     emitDraft({ company: value });
-    // If user edits the field, clear selected company
+    // If user edits the field, clear selected company and companyId
     setSelectedCompany(null);
+    setCompanyId(undefined);
+    localStorage.removeItem('companyId');
   };
 
   const handleCompanySelect = async (companyObj: CompanySuggestion) => {
     const companyName = companyObj.name;
     const companyDomain = companyObj.domain;
+
+    const accessToken = getAccessToken();
+    if (!accessToken) {
+      console.error('No access token available');
+      return;
+    }
 
     setCompany(companyName);
     setCompanyUrl(companyDomain);
@@ -144,7 +158,7 @@ const AddJobShortForm = ({
     try {
       const result = await dispatch(
         createCompany({
-          accessToken: getAccessToken(),
+          accessToken,
           name: companyName,
           url: companyDomain,
         }),
@@ -156,6 +170,7 @@ const AddJobShortForm = ({
       emitDraft({ company: companyName, companyId: newCompanyId });
     } catch (error) {
       console.error('Error creating company:', error);
+      setSelectedCompany(null);
     }
   };
 

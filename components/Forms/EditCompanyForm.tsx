@@ -70,6 +70,8 @@ const EditCompanyForm = ({
 
   const onSubmit = async (data: z.infer<typeof EditCompanySchema>) => {
     const accessToken = getAccessToken();
+    setSubmitError(null); // Clear previous error at start
+    
     const formattedUrl = data.url?.trim()
       ? data.url.startsWith('http')
         ? data.url
@@ -93,7 +95,6 @@ const EditCompanyForm = ({
       // Update succeeded - update local state and close
       updateCompanyInfo(formattedData);
       onClose();
-      setSubmitError(null);
     } catch (error: any) {
       console.error('Failed to update company:', error);
       // Show error to user - don't update local state or close modal

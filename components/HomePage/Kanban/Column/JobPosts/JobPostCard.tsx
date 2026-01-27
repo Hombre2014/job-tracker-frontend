@@ -171,13 +171,11 @@ const JobPostCard = ({
         <CardHeader className="w-3/4">
           <CardTitle className="!p-0 !m-0 tracking-normal">{title}</CardTitle>
           <CardDescription className="flex items-center gap-2 text-white">
-            {companyUrl && (
-              <CompanyLogo
-                domain={companyUrl}
-                companyName={companyName}
-                size="sm"
-              />
-            )}
+            <CompanyLogo
+              domain={companyUrl || ''}
+              companyName={companyName}
+              size="sm"
+            />
             <span>{companyName}</span>
           </CardDescription>
         </CardHeader>

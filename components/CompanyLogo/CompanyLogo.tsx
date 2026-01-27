@@ -1,5 +1,7 @@
+'use client';
+
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Building2 } from 'lucide-react';
 
 import { config } from '@/lib/config';
@@ -32,6 +34,11 @@ export const CompanyLogo = ({
     .replace(/^https?:\/\//, '')
     .replace(/^www\./, '')
     .split('/')[0];
+
+  // Reset error state when domain changes
+  useEffect(() => {
+    setHasError(false);
+  }, [cleanDomain]);
 
   const logoUrl = `https://cdn.brandfetch.io/${cleanDomain}?c=${config.brandfetch.clientId}`;
 

@@ -61,13 +61,11 @@ const Company = () => {
           <div className="flex gap-8">
             <div className="flex flex-col gap-4 w-2/3">
               <div className="flex items-center gap-4">
-                {companyInfo.url && (
-                  <CompanyLogo
-                    size="lg"
-                    domain={companyInfo.url}
-                    companyName={companyInfo.name}
-                  />
-                )}
+                <CompanyLogo
+                  size="lg"
+                  domain={companyInfo.url || ''}
+                  companyName={companyInfo.name}
+                />
                 <h2 className="text-2xl">{companyInfo.name}</h2>
               </div>
               <p className="text-muted-foreground mb-8 max-h-[360px] overflow-y-auto">

@@ -5,6 +5,7 @@ import { useParams, useRouter, usePathname } from 'next/navigation';
 
 import { useAppDispatch } from '@/redux/hooks';
 import { createJobPost } from '@/redux/jobs/jobsThunk';
+import { createCompany } from '@/redux/companies/companiesThunk';
 import { getBoards, getBoardsOnly } from '@/redux/boards/boardsThunk';
 import { cleanupAfterContact, cleanupAfterJobPost } from '@/utils/helpers';
 import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
@@ -45,19 +46,39 @@ const CreateMenu = () => {
   const [showContactModal, setShowContactModal] = useState(false);
   const [pendingImage, setPendingImage] = useState<File | null>(null);
 
-  const createJobApplication = () => {
+  const createJobApplication = async () => {
     if (isSubmittingJob) return; // guard against double click
     setIsSubmittingJob(true);
     setShowJobModal(false);
     const legacyTitle = localStorage.getItem('jobTitle');
     const legacyCompanyId = localStorage.getItem('companyId');
     const draft = jobDraftRef.current || {};
+    
+    let finalCompanyId = draft.companyId || legacyCompanyId;
+    
+    // If no companyId but company name exists, create the company first
+    if (!finalCompanyId && draft.company) {
+      try {
+        const result = await dispatch(
+          createCompany({
+            accessToken,
+            name: draft.company,
+          })
+        ).unwrap();
+        finalCompanyId = result.id;
+      } catch (error) {
+        console.error('Error creating company:', error);
+        setIsSubmittingJob(false);
+        return;
+      }
+    }
+    
     const jobPost = {
       status: 'Job Created',
       accessToken: accessToken as string,
       title: draft.jobTitle || legacyTitle,
       columnId: localStorage.getItem('columnId'),
-      companyId: draft.companyId || legacyCompanyId,
+      companyId: finalCompanyId,
     };
 
     dispatch(createJobPost(jobPost)).then((result) => {
