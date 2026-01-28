@@ -1,5 +1,27 @@
 # Technical Documentation
 
+## Test Infrastructure (v1.1.1, 28/01/2026)
+
+### Overview
+
+Enhanced the testing infrastructure to fix TypeScript errors and improve test reliability. The project uses Vitest with React Testing Library.
+
+### Changes
+
+- **Dependencies**: Added `@testing-library/jest-dom` for custom DOM matchers.
+- **Configuration**:
+  - `vitest.setup.ts` now imports `@testing-library/jest-dom/vitest`.
+  - `package.json` includes proper devDependencies.
+- **Components**:
+  - `AddJobShortForm.test.tsx`: Fixed mocks to use `forwardRef` and assertions to handle multiple elements.
+
+### Verification
+
+Run tests with:
+```bash
+npm test
+```
+
 ## Company Autocomplete & Logo Integration (v1.1.0, 27/01/2026)
 
 ### Overview

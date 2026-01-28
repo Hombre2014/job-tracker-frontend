@@ -3,6 +3,18 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-01-28
+
+### Fixed
+
+- **Test Infrastructure & Type Safety**
+  - Resolved `Property 'toBeInTheDocument' does not exist` TypeScript error in tests
+  - Added `@testing-library/jest-dom` to `package.json` devDependencies
+  - Configured `vitest.setup.ts` to properly import `jest-dom/vitest` matchers
+  - Fixed `AddJobShortForm` tests by correcting `ComboBoardListBox` mock (added `forwardRef`)
+  - Fixed test assertions to handle multiple existing board selection elements using `getAllByTestId`
+  - Files: `package.json`, `vitest.setup.ts`, `components/Forms/AddJobShort/__tests__/AddJobShortForm.test.tsx`
+
 ## [1.1.0] - 2026-01-27
 
 ### Added
@@ -3443,6 +3455,7 @@ _All changes maintain backward compatibility and enhance user experience with im
 
 <!-- Version comparison links -->
 
+[1.1.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.200.0...v1.0.0
