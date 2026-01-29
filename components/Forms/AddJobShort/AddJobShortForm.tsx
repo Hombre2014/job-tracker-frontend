@@ -1,7 +1,7 @@
 'use client';
 
 import { useForm } from 'react-hook-form';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState, useCallback } from 'react';
 
@@ -42,6 +42,7 @@ const AddJobShortForm = ({
   const [companyUrl, setCompanyUrl] = useState('');
   const [selectedCompany, setSelectedCompany] =
     useState<CompanySuggestion | null>(null);
+  const searchParams = useSearchParams();
   const [jobTitle, setJobTitle] = useState('');
   const [companyId, setCompanyId] = useState<string | undefined>(undefined);
   const getAccessToken = () =>
@@ -110,6 +111,23 @@ const AddJobShortForm = ({
       jobTitle: '',
     },
   });
+
+  // Handle URL search parameters (for browser extension integration)
+  useEffect(() => {
+    const urlCompany = searchParams.get('company');
+    const urlJobTitle = searchParams.get('jobTitle') || searchParams.get('title');
+
+    if (urlCompany) {
+      setCompany(urlCompany);
+      form.setValue('company', urlCompany);
+      localStorage.setItem('company', urlCompany);
+    }
+    if (urlJobTitle) {
+      setJobTitle(urlJobTitle);
+      form.setValue('jobTitle', urlJobTitle);
+      localStorage.setItem('jobTitle', urlJobTitle);
+    }
+  }, [searchParams, form]);
 
   const emitDraft = useCallback(
     (

@@ -1,41 +1,36 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 
 import { getUser } from '@/redux/user/userSlice';
 import { getBoards } from '@/redux/boards/boardsThunk';
+import { useAuth } from '@/components/auth/AuthProvider';
 import Sidebar from '@/components/HomePage/SideBar/Sidebar';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 
 const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { accessToken: reduxAccessToken } = useAppSelector(
-    (state) => state.user,
-  );
-  const [accessToken, setAccessToken] = useState<string | null>(
-    reduxAccessToken ?? null,
-  );
+  const { authState } = useAuth();
+  const { accessToken } = useAppSelector((state) => state.user);
 
   useEffect(() => {
-    if (reduxAccessToken) {
-      setAccessToken(reduxAccessToken);
-    } else {
-      setAccessToken(localStorage.getItem('accessToken'));
-    }
-  }, [reduxAccessToken]);
+    if (authState.isLoading) return;
 
-  useEffect(() => {
-    if (accessToken) {
-      dispatch(getBoards(accessToken));
-      dispatch(getUser());
-    } else {
+    if (!authState.isAuthenticated) {
       router.push('/login');
+    } else {
+      // Sync Boards and User data if authenticated
+      const token = accessToken || localStorage.getItem('accessToken');
+      if (token) {
+        dispatch(getBoards(token));
+        dispatch(getUser());
+      }
     }
-  }, [accessToken, router, dispatch]);
+  }, [authState.isAuthenticated, authState.isLoading, accessToken, router, dispatch]);
   return (
     <div className="flex h-screen bg-white dark:bg-slate-900">
       <aside className="min-w-60">

@@ -44,6 +44,9 @@ describe('AddJobShortForm', () => {
     (hooks.useAppDispatch as any).mockReturnValue(mockDispatch);
     (hooks.useAppSelector as any).mockReturnValue({ boards: mockBoards });
     (navigation.useParams as any).mockReturnValue({ board_id: 'board-1' });
+    (navigation.useSearchParams as any).mockReturnValue({
+      get: (key: string) => null,
+    });
   });
 
   it('renders correctly with initial board data', () => {
@@ -54,6 +57,24 @@ describe('AddJobShortForm', () => {
     
     const boardSelects = screen.getAllByTestId('board-select');
     expect(boardSelects[0]).toHaveTextContent('My Board');
+  });
+
+  it('pre-fills fields from URL parameters', () => {
+    (navigation.useSearchParams as any).mockReturnValue({
+      get: (key: string) => {
+        if (key === 'company') return 'Apple';
+        if (key === 'jobTitle') return 'Designer';
+        return null;
+      },
+    });
+
+    render(<AddJobShortForm columnOrder={0} />);
+
+    const companyInput = screen.getByTestId('company-input');
+    const titleInput = screen.getByPlaceholderText('Job Title');
+
+    expect(companyInput).toHaveValue('Apple');
+    expect(titleInput).toHaveValue('Designer');
   });
 
   it('updates input fields', () => {

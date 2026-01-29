@@ -17,7 +17,6 @@ import {
   Card,
   CardTitle,
   CardHeader,
-  CardDescription,
 } from '@/components/ui/card';
 import {
   Tooltip,
@@ -170,14 +169,14 @@ const JobPostCard = ({
       <div className="flex h-[90px]">
         <CardHeader className="w-3/4">
           <CardTitle className="!p-0 !m-0 tracking-normal">{title}</CardTitle>
-          <CardDescription className="flex items-center gap-2 text-white">
+          <div className="flex items-center gap-2 text-white text-sm">
             <CompanyLogo
               domain={companyUrl || ''}
               companyName={companyName}
               size="sm"
             />
             <span>{companyName}</span>
-          </CardDescription>
+          </div>
         </CardHeader>
         <div className="flex flex-col gap-1 py-1 pr-2 items-end w-1/4 mt-1">
           {showIcons ? (
