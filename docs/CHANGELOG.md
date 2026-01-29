@@ -3,6 +3,39 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-01-29
+
+### Added
+
+- **Comprehensive Test Suite (Phase 1 Complete)**
+  - Implemented 24 unit and integration tests across 5 core components
+  - **CompanyAutocomplete Tests** (6 tests)
+    - Rendering and input handling
+    - Suggestion display and selection logic
+    - Error states and empty states
+    - Keyboard navigation
+  - **JobPostCard Tests** (5 tests)
+    - Component rendering with job details
+    - Hover interactions with icon visibility
+    - Navigation with authentication checks
+    - Delete flow with AlertDialog integration
+    - Redux integration for data selection
+  - **JobInfo Tests** (8 tests)
+    - Initial data loading and display
+    - Form field rendering with Redux state
+    - Field updates (salary, location, description)
+    - URL validation with alert feedback
+    - Duplicate dispatch prevention
+  - **AddJobShortForm Tests** (3 tests)
+    - Form rendering and validation
+    - Successful job creation flow
+  - **CreateMenu Tests** (2 tests)
+    - Modal opening from navigation menu
+    - Job creation with Redux dispatch
+  - All tests use Vitest and React Testing Library
+  - Proper mocking of Redux hooks, Next.js navigation, and UI components
+  - Files: `components/CompanyAutocomplete/__tests__/CompanyAutocomplete.test.tsx`, `components/HomePage/Kanban/Column/JobPosts/__tests__/JobPostCard.test.tsx`, `components/HomePage/Kanban/Column/JobPosts/JobModal/JobEdit/__tests__/JobInfo.test.tsx`
+
 ## [1.1.1] - 2026-01-28
 
 ### Fixed
@@ -3455,6 +3488,7 @@ _All changes maintain backward compatibility and enhance user experience with im
 
 <!-- Version comparison links -->
 
+[1.2.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.0.0...v1.0.1
@@ -3491,3 +3525,5 @@ _All changes maintain backward compatibility and enhance user experience with im
 [0.179.3]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.179.2...v0.179.3
 [0.179.2]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.179.1...v0.179.2
 [0.179.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.179.0...v0.179.1
+[1.2.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.1.1...v1.2.0
+[1.1.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.1.0...v1.1.1
