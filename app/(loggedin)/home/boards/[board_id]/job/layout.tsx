@@ -35,16 +35,17 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   const chosenColumn = localStorage.getItem('chosenColumn');
   const { jobPosts } = useAppSelector((state) => state.jobs);
   const { boards } = useAppSelector((state) => state.boards);
-  const placeholderRef = useRef<HTMLDivElement | null>(null);
-  const [triggerWidth, setTriggerWidth] = useState<number>(80);
   const [selectedListName, setSelectedListName] = useState('');
   const [temporaryMessage, setTemporaryMessage] = useState<string>('');
   const boardColumns = boards.find((board) => board.id === board_id)?.columns;
 
   useEffect(() => {
+    const columnId = localStorage.getItem('columnId');
+    if (!columnId || columnId === 'null') return;
+
     const jobPostsData = {
       accessToken: accessToken as string,
-      columnId: localStorage.getItem('columnId'),
+      columnId,
     };
 
     dispatch(getAllJobPostsPerColumn(jobPostsData));
@@ -138,11 +139,6 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  useEffect(() => {
-    if (placeholderRef.current) {
-      setTriggerWidth(placeholderRef.current.offsetWidth);
-    }
-  }, [temporaryMessage]);
 
   return (
     <Modal stylings="sm:w-11/12 md:w-3/4 lg:w-2/3 xl:w-[960px]" onDismiss={closeModal}>
@@ -169,15 +165,9 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
               value={temporaryMessage ? undefined : selectedListName}
             >
               <SelectTrigger
-                className={cn(
-                  'bg-blue-500 text-white transition-all duration-300 delay-100 ease-in-out overflow-hidden pr-2',
-                  {
-                    'w-[`$triggerWidth`px]': triggerWidth,
-                  }
-                )}
+                className="bg-blue-500 text-white w-24 px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex items-center justify-between"
               >
                 <SelectValue
-                  ref={placeholderRef}
                   placeholder={temporaryMessage || 'Move'}
                 />
               </SelectTrigger>

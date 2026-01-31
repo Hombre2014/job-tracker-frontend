@@ -2,9 +2,6 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer } from 'react-toastify';
-
 import { getUser } from '@/redux/user/userSlice';
 import { getBoards } from '@/redux/boards/boardsThunk';
 import { useAuth } from '@/components/auth/AuthProvider';
@@ -41,19 +38,6 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
           {children}
         </div>
       )}
-      <ToastContainer
-        draggable
-        rtl={false}
-        pauseOnHover
-        closeOnClick
-        theme="colored"
-        className="mr-4"
-        pauseOnFocusLoss
-        autoClose={3000}
-        newestOnTop={false}
-        position="top-right"
-        hideProgressBar={false}
-      />
     </div>
   );
 };

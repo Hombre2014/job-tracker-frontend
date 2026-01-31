@@ -2,7 +2,7 @@
 
 import { toast } from 'react-toastify';
 import { CSS } from '@dnd-kit/utilities';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { ChangeEvent, useEffect, useState, useMemo, useRef } from 'react';
 import {
   useSensor,
@@ -127,6 +127,9 @@ const BoardColumns = () => {
     return filterBoardColumns(boardColumns, query);
   }, [boardColumns, query, isActive]);
 
+  const searchParams = useSearchParams();
+  const arrivalProcessed = useRef(false);
+
   // Get search summary for status indicators
   const searchSummary = useMemo(() => {
     // Only compute search summary for active searches
@@ -141,6 +144,72 @@ const BoardColumns = () => {
     }
     return getSearchSummary(boardColumns, filteredColumns, query);
   }, [boardColumns, filteredColumns, query, isActive]);
+
+  // Handle Arrival Auto-Save from Extension
+  useEffect(() => {
+    const autoSave = searchParams.get('autoSave') === 'true';
+    const company = searchParams.get('company');
+    const title = searchParams.get('title');
+
+    if (autoSave && company && title && !arrivalProcessed.current && accessToken && boardColumns.length > 0) {
+      arrivalProcessed.current = true;
+      
+      const handleArrivalAutoSave = async () => {
+        setIsSubmittingJob(true);
+        try {
+          // Create company first if needed
+          let companyId = '';
+          const createCompanyResult = await dispatch(
+            createCompany({
+              accessToken,
+              name: company,
+            }),
+          ).unwrap();
+          companyId = createCompanyResult.id;
+
+          // Create the job application in the specified column or first column
+          const selectedColumnId = searchParams.get('columnId') || boardColumns[0].id;
+          const selectedColumn = boardColumns.find(c => c.id === selectedColumnId) || boardColumns[0];
+
+          const result = await dispatch(
+            createJobPost({
+              status: 'Job Created',
+              accessToken: accessToken as string,
+              title: title,
+              columnId: selectedColumn.id,
+              companyId: companyId,
+              location: searchParams.get('location') || '',
+              description: searchParams.get('description') || '',
+              postUrl: searchParams.get('url') || '',
+              salary: searchParams.get('salary') || '',
+            }),
+          ).unwrap();
+
+          if (result?.id) {
+            // Set required localStorage for the details layout
+            localStorage.setItem('columnId', selectedColumn.id);
+            localStorage.setItem('chosenColumn', selectedColumn.name);
+            localStorage.setItem('chosenBoardId', board_id as string);
+            
+            // Clear URL parameters and navigate to details
+            router.replace(`/home/boards/${board_id}/job/${result.id}/job-details`);
+            
+            // Show toast after a tiny delay to avoid conflict with navigation
+            setTimeout(() => {
+              toast.success('Job saved automatically!');
+            }, 100);
+          }
+        } catch (error) {
+          console.error('Auto-save failed:', error);
+          toast.error('Failed to auto-save job. Use the manual form.');
+        } finally {
+          setIsSubmittingJob(false);
+        }
+      };
+
+      handleArrivalAutoSave();
+    }
+  }, [searchParams, accessToken, boardColumns, board_id, dispatch, router]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -167,6 +236,10 @@ const BoardColumns = () => {
     company?: string;
     jobTitle?: string;
     companyId?: string;
+    location?: string;
+    description?: string;
+    postUrl?: string;
+    salary?: string;
   } | null>(null);
   const [isSubmittingJob, setIsSubmittingJob] = useState(false);
 
@@ -251,6 +324,10 @@ const BoardColumns = () => {
       title: draft.jobTitle || legacyTitle,
       columnId: localStorage.getItem('columnId'),
       companyId: finalCompanyId,
+      location: draft.location || localStorage.getItem('jobLocation') || '',
+      description: draft.description || localStorage.getItem('jobDescription') || '',
+      postUrl: draft.postUrl || localStorage.getItem('jobPostUrl') || '',
+      salary: draft.salary || localStorage.getItem('jobSalary') || '',
     };
 
     dispatch(createJobPost(jobPost))

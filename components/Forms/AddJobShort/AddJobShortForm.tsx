@@ -28,6 +28,10 @@ interface AddJobShortFormProps {
     company: string;
     jobTitle: string;
     companyId?: string;
+    location?: string;
+    description?: string;
+    postUrl?: string;
+    salary?: string;
   }) => void;
 }
 
@@ -116,6 +120,10 @@ const AddJobShortForm = ({
   useEffect(() => {
     const urlCompany = searchParams.get('company');
     const urlJobTitle = searchParams.get('jobTitle') || searchParams.get('title');
+    const urlLocation = searchParams.get('location');
+    const urlDescription = searchParams.get('description');
+    const urlPostUrl = searchParams.get('url');
+    const urlSalary = searchParams.get('salary');
 
     if (urlCompany) {
       setCompany(urlCompany);
@@ -127,22 +135,40 @@ const AddJobShortForm = ({
       form.setValue('jobTitle', urlJobTitle);
       localStorage.setItem('jobTitle', urlJobTitle);
     }
+    
+    // Store extra fields in localStorage for the "Save" thunk to pick up
+    if (urlLocation) localStorage.setItem('jobLocation', urlLocation);
+    if (urlDescription) localStorage.setItem('jobDescription', urlDescription);
+    if (urlPostUrl) localStorage.setItem('jobPostUrl', urlPostUrl);
+    if (urlSalary) localStorage.setItem('jobSalary', urlSalary);
   }, [searchParams, form]);
 
   const emitDraft = useCallback(
     (
-      next?: Partial<{ company: string; jobTitle: string; companyId?: string }>,
+      next?: Partial<{ 
+        company: string; 
+        jobTitle: string; 
+        companyId?: string;
+        location?: string;
+        description?: string;
+        postUrl?: string;
+        salary?: string;
+      }>,
     ) => {
       if (onDraftChange) {
         onDraftChange({
           company,
           jobTitle,
           companyId,
+          location: searchParams.get('location') || localStorage.getItem('jobLocation') || '',
+          description: searchParams.get('description') || localStorage.getItem('jobDescription') || '',
+          postUrl: searchParams.get('url') || localStorage.getItem('jobPostUrl') || '',
+          salary: searchParams.get('salary') || localStorage.getItem('jobSalary') || '',
           ...(next || {}),
         });
       }
     },
-    [onDraftChange, company, jobTitle, companyId],
+    [onDraftChange, company, jobTitle, companyId, searchParams],
   );
 
   const handleCompanyChange = (value: string) => {

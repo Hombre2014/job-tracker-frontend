@@ -8,12 +8,28 @@ import { DocumentService } from '@/services/documentService';
 export const createJobPost = createAsyncThunk(
   'jobs/createJobPost',
   async (values: any, thunkAPI) => {
-    const { accessToken, title, companyId, columnId, status } = values;
+    const {
+      accessToken,
+      title,
+      companyId,
+      columnId,
+      status,
+      postUrl,
+      description,
+      location,
+      salary,
+      deadline,
+    } = values;
     const body = {
       title: title,
       status: status,
       columnId: columnId,
       companyId: companyId,
+      postUrl: postUrl,
+      location: location,
+      salary: salary,
+      description: description,
+      deadline: deadline,
       color: defaultJobPostColor,
       createdAt: new Date().toISOString(),
     };
