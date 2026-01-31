@@ -3,6 +3,23 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-01-30
+
+### Added
+
+- **Frontend URL Parameter Integration (Phase 3)**
+  - Implemented `useSearchParams` logic in `AddJobShortForm` to pre-fill job details
+  - Supported parameters: `company`, `title` (or `jobTitle`), `location`, `description`, `salary`, `url`
+  - Added logic to automatically enable "Add" button when required fields are populated via URL
+  - Persisted URL parameters to `localStorage` for cross-component access
+  - Prevented login redirects when accessing deep links with parameters
+  - Files: `components/Forms/AddJobShort/AddJobShortForm.tsx`
+
+- **Extension Integration Tests**
+  - Added comprehensive test case for URL parameter pre-filling
+  - Verified form state updates correctly from mocked navigation parameters
+  - Files: `components/Forms/AddJobShort/__tests__/AddJobShortForm.test.tsx`
+
 ## [1.2.0] - 2026-01-29
 
 ### Added
