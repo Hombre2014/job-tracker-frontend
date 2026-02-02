@@ -168,7 +168,9 @@ const JobPostCard = ({
     >
       <div className="flex h-[90px]">
         <CardHeader className="w-3/4">
-          <CardTitle className="!p-0 !m-0 tracking-normal">{title}</CardTitle>
+          <CardTitle className="!p-0 !m-0 tracking-normal line-clamp-2">
+            {title}
+          </CardTitle>
           <div className="flex items-center gap-2 text-white text-sm">
             <CompanyLogo
               domain={companyUrl || ''}
