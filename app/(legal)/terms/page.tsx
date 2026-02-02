@@ -6,7 +6,7 @@ const Terms = () => {
   return (
     <div>
       <h1 className="text-3xl font-bold mb-8">JobsTracker Terms of Service</h1>
-      <p className="mb-8 mt-2">Last updated: March 10, 2024</p>
+      <p className="mb-8 mt-2">Last updated: February 2, 2026</p>
       <p className="mb-8 mt-2">
         These terms and conditions outline the rules and regulations for the use
         of JobsTracker&#39;s Website, located at{' '}
@@ -210,6 +210,151 @@ const Terms = () => {
         that the website remains available or that the material on the website
         is kept up to date.
       </p>
+      <h2 className="text-2xl font-bold mt-8">Browser Extension</h2>
+      <p className="mb-8 mt-2">
+        JobsTracker may offer an optional browser extension (the &quot;Extension&quot;)
+        to enhance Your experience. Use of the Extension is entirely optional and
+        subject to the following terms:
+      </p>
+      <h3 className="mt-4 text-xl font-bold">Availability and Functionality</h3>
+      <p className="mb-8 mt-2">
+        The Extension is provided as an optional tool to help You collect job
+        posting information. We make no guarantee regarding:
+      </p>
+      <ul className="list-disc list-inside flex flex-col pl-4 my-4">
+        <li className="mb-2">Compatibility with all websites or browsers</li>
+        <li className="mb-2">Continuous functionality or availability</li>
+        <li className="mb-2">Accuracy of data collected</li>
+        <li className="mb-2">Freedom from errors, bugs, or interruptions</li>
+      </ul>
+      <h3 className="mt-4 text-xl font-bold">Your Responsibility</h3>
+      <p className="mb-8 mt-2">
+        <strong>You are solely responsible</strong> for Your use of the Browser
+        Extension, including but not limited to:
+      </p>
+      <ul className="list-disc list-inside flex flex-col pl-4 my-4">
+        <li className="mb-2">
+          <strong>Compliance with Third-Party Terms:</strong> You must comply
+          with the Terms of Service of any third-party websites (including but
+          not limited to LinkedIn, Indeed, and other job boards) when using the
+          Extension on their platforms.
+        </li>
+        <li className="mb-2">
+          <strong>Consequences of Use:</strong> You accept all consequences
+          resulting from Your use of the Extension, including any account
+          restrictions, suspensions, or bans imposed by third-party services.
+        </li>
+        <li className="mb-2">
+          <strong>Data Accuracy:</strong> You are responsible for verifying the
+          accuracy of any data collected by the Extension before using it.
+        </li>
+        <li className="mb-2">
+          <strong>Personal Use Only:</strong> The Extension is for Your personal
+          job search activities only and may not be used for commercial data
+          collection or scraping.
+        </li>
+      </ul>
+      <h3 className="mt-4 text-xl font-bold">No Warranty</h3>
+      <p className="mb-8 mt-2">
+        The Browser Extension is provided &quot;AS IS&quot; and &quot;AS
+        AVAILABLE&quot; without warranty of any kind, either express or implied,
+        including but not limited to warranties of merchantability, fitness for
+        a particular purpose, or non-infringement.
+      </p>
+      <h3 className="mt-4 text-xl font-bold">Limitation of Liability</h3>
+      <p className="mb-8 mt-2">
+        To the maximum extent permitted by law, JobsTracker shall NOT be liable
+        for any damages or losses arising from Your use of the Browser Extension,
+        including but not limited to:
+      </p>
+      <ul className="list-disc list-inside flex flex-col pl-4 my-4">
+        <li className="mb-2">
+          Violations of third-party Terms of Service resulting from Extension use
+        </li>
+        <li className="mb-2">
+          Account restrictions, suspensions, or bans on third-party platforms
+          (LinkedIn, Indeed, etc.)
+        </li>
+        <li className="mb-2">
+          Inaccurate, incomplete, or incorrect data collection
+        </li>
+        <li className="mb-2">
+          Loss of data, employment opportunities, or any other losses
+        </li>
+        <li className="mb-2">
+          Any direct, indirect, incidental, consequential, special, or punitive
+          damages arising from Extension use
+        </li>
+      </ul>
+      <h3 className="mt-4 text-xl font-bold">Third-Party Platforms</h3>
+      <p className="mb-8 mt-2">
+        The Extension may interact with third-party websites such as LinkedIn,
+        Indeed, and other job boards. <strong>Important:</strong>
+      </p>
+      <ul className="list-disc list-inside flex flex-col pl-4 my-4">
+        <li className="mb-2">
+          JobsTracker is NOT affiliated with, endorsed by, or sponsored by
+          LinkedIn, Indeed, or any other job board platform.
+        </li>
+        <li className="mb-2">
+          Your use of the Extension on third-party sites is subject to those
+          platforms&#39; Terms of Service, which may prohibit automated data
+          collection.
+        </li>
+        <li className="mb-2">
+          We strongly advise You to review and comply with the Terms of Service
+          of any third-party websites before using the Extension on their
+          platforms.
+        </li>
+        <li className="mb-2">
+          You use the Extension on third-party websites entirely at Your own
+          risk.
+        </li>
+      </ul>
+      <h3 className="mt-4 text-xl font-bold">Indemnification</h3>
+      <p className="mb-8 mt-2">
+        You agree to indemnify, defend, and hold harmless JobsTracker, its
+        officers, directors, employees, and agents from any claims, liabilities,
+        damages, losses, costs, or expenses (including reasonable attorneys&#39;
+        fees) arising from:
+      </p>
+      <ul className="list-disc list-inside flex flex-col pl-4 my-4">
+        <li className="mb-2">Your use of the Browser Extension</li>
+        <li className="mb-2">
+          Your violation of any third-party Terms of Service
+        </li>
+        <li className="mb-2">
+          Any claims by third-party platforms regarding Your Extension use
+        </li>
+        <li className="mb-2">Your violation of these Terms of Service</li>
+      </ul>
+      <h3 className="mt-4 text-xl font-bold">Modification or Discontinuation</h3>
+      <p className="mb-8 mt-2">
+        We reserve the right to modify, suspend, or discontinue the Browser
+        Extension at any time, with or without notice, for any reason. We shall
+        not be liable to You or any third party for any modification,
+        suspension, or discontinuation of the Extension.
+      </p>
+      <h3 className="mt-4 text-xl font-bold">User Acknowledgment</h3>
+      <p className="mb-8 mt-2">
+        By installing and using the Browser Extension, You acknowledge that:
+      </p>
+      <ul className="list-disc list-inside flex flex-col pl-4 my-4">
+        <li className="mb-2">
+          You have read and understood these terms regarding the Extension
+        </li>
+        <li className="mb-2">
+          You accept all risks associated with using the Extension
+        </li>
+        <li className="mb-2">
+          You are solely responsible for compliance with third-party Terms of
+          Service
+        </li>
+        <li className="mb-2">
+          You will not hold JobsTracker liable for any consequences of Extension
+          use
+        </li>
+      </ul>
       <h2 className="text-2xl font-bold mt-8">Disclaimer</h2>
       <p className="mb-8 mt-2">
         To the maximum extent permitted by applicable law, we exclude all
