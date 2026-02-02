@@ -216,6 +216,7 @@ const BoardColumns = () => {
         } catch (error) {
           console.error('Auto-save failed:', error);
           toast.error('Failed to auto-save job. Use the manual form.');
+          arrivalProcessed.current = false; // Allow retry on next render
         } finally {
           setIsSubmittingJob(false);
         }

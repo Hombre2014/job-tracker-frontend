@@ -9,12 +9,12 @@ import BoardColumns from '@/components/HomePage/Kanban/Column/BoardColumns';
 
 const KanbanBoard = () => {
   const dispatch = useAppDispatch();
-  const accessToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
   const { jobPosts } = useAppSelector((state) => state.jobs);
+  const { accessToken } = useAppSelector((state) => state.user);
 
-  // Check it out. It reduces the number of requests to the server.
+  // Fetch boards only when no job posts are loaded yet to reduce server requests
   useEffect(() => {
-    if (jobPosts.length >= 0 && accessToken) {
+    if (jobPosts.length === 0 && accessToken) {
       dispatch(getBoards(accessToken));
     }
   }, [dispatch, accessToken, jobPosts]);
@@ -27,7 +27,11 @@ const KanbanBoard = () => {
 
   return (
     <div className="h-full">
-      <Suspense fallback={<div className="p-8 text-center text-slate-500">Loading board...</div>}>
+      <Suspense
+        fallback={
+          <div className="p-8 text-center text-slate-500">Loading board...</div>
+        }
+      >
         <BoardColumns />
       </Suspense>
     </div>
