@@ -149,11 +149,19 @@ const BoardColumns = () => {
   useEffect(() => {
     const autoSave = searchParams.get('autoSave') === 'true';
     const company = searchParams.get('company');
+    const companyDomain = searchParams.get('companyDomain');
     const title = searchParams.get('title');
 
-    if (autoSave && company && title && !arrivalProcessed.current && accessToken && boardColumns.length > 0) {
+    if (
+      autoSave &&
+      company &&
+      title &&
+      !arrivalProcessed.current &&
+      accessToken &&
+      boardColumns.length > 0
+    ) {
       arrivalProcessed.current = true;
-      
+
       const handleArrivalAutoSave = async () => {
         setIsSubmittingJob(true);
         try {
@@ -163,13 +171,17 @@ const BoardColumns = () => {
             createCompany({
               accessToken,
               name: company,
+              url: companyDomain || '',
             }),
           ).unwrap();
           companyId = createCompanyResult.id;
 
           // Create the job application in the specified column or first column
-          const selectedColumnId = searchParams.get('columnId') || boardColumns[0].id;
-          const selectedColumn = boardColumns.find(c => c.id === selectedColumnId) || boardColumns[0];
+          const selectedColumnId =
+            searchParams.get('columnId') || boardColumns[0].id;
+          const selectedColumn =
+            boardColumns.find((c) => c.id === selectedColumnId) ||
+            boardColumns[0];
 
           const result = await dispatch(
             createJobPost({
@@ -190,10 +202,12 @@ const BoardColumns = () => {
             localStorage.setItem('columnId', selectedColumn.id);
             localStorage.setItem('chosenColumn', selectedColumn.name);
             localStorage.setItem('chosenBoardId', board_id as string);
-            
+
             // Clear URL parameters and navigate to details
-            router.replace(`/home/boards/${board_id}/job/${result.id}/job-details`);
-            
+            router.replace(
+              `/home/boards/${board_id}/job/${result.id}/job-details`,
+            );
+
             // Show toast after a tiny delay to avoid conflict with navigation
             setTimeout(() => {
               toast.success('Job saved automatically!');
@@ -325,7 +339,8 @@ const BoardColumns = () => {
       columnId: localStorage.getItem('columnId'),
       companyId: finalCompanyId,
       location: draft.location || localStorage.getItem('jobLocation') || '',
-      description: draft.description || localStorage.getItem('jobDescription') || '',
+      description:
+        draft.description || localStorage.getItem('jobDescription') || '',
       postUrl: draft.postUrl || localStorage.getItem('jobPostUrl') || '',
       salary: draft.salary || localStorage.getItem('jobSalary') || '',
     };

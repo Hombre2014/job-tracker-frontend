@@ -3,9 +3,46 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.3.0] - 2026-01-30
+## [1.3.1] - 2026-02-02
 
 ### Added
+
+- **Company Domain/Logo Support from Browser Extension**
+  - Implemented `companyDomain` URL parameter support in BoardColumns auto-save flow
+  - Company domain is now passed when creating companies from extension
+  - Enables automatic logo fetching for companies created via extension
+  - Logos now display correctly in Job Info Modal, Job Post cards, and Company tab
+  - Files: `components/HomePage/Kanban/Column/BoardColumns.tsx`
+
+### Fixed
+
+- **Company Logo Not Displaying from Extension**
+  - Fixed missing `url` parameter when creating company during auto-save
+  - Extension now sends `companyDomain` parameter via URL
+  - Frontend reads `companyDomain` from searchParams and passes as `url` to createCompany
+  - Resolves issue where extension-created companies had generic logos
+  - Files: `components/HomePage/Kanban/Column/BoardColumns.tsx`
+
+### Changed
+
+- **Extension Integration Flow**
+  - Auto-save now captures and stores company domain alongside company name
+  - Company records created from extension now include URL/domain field
+  - Enables logo display using existing CompanyLogo component
+  - No changes to API or database schema required
+
+### Technical Details
+
+- **URL Parameter Flow**
+  - Extension sends: `company=Tesla&companyDomain=tesla.com&...`
+  - Frontend reads: `searchParams.get('companyDomain')`
+  - Frontend passes: `createCompany({ accessToken, name: company, url: companyDomain || '' })`
+  - Backend stores domain in company record
+  - CompanyLogo component fetches logo using stored domain
+
+## [1.3.0] - 2026-01-30
+
+### Added - 2026-01-30
 
 - **Frontend URL Parameter Integration (Phase 3)**
   - Implemented `useSearchParams` logic in `AddJobShortForm` to pre-fill job details
@@ -22,7 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.2.0] - 2026-01-29
 
-### Added
+### Added - 2026-01-29
 
 - **Comprehensive Test Suite (Phase 1 Complete)**
   - Implemented 24 unit and integration tests across 5 core components
@@ -55,7 +92,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.1] - 2026-01-28
 
-### Fixed
+### Fixed - 2026-01-28
 
 - **Test Infrastructure & Type Safety**
   - Resolved `Property 'toBeInTheDocument' does not exist` TypeScript error in tests
@@ -67,7 +104,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.0] - 2026-01-27
 
-### Added
+### Added - 2026-01-27
 
 - **Company Autocomplete & Logo Integration**
   - Integrated Clearbit Autocomplete API for company name suggestions in forms
@@ -92,14 +129,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Proper dark mode support with muted colors
   - Files: `JobPostCard.tsx`, `Company.tsx`, `CompanyLogo.tsx`
 
-### Changed
+### Changed - 2026-01-27
 
 - Updated `next.config.mjs` to allow external images from Brandfetch and Clearbit
 - Updated forms and UI to use new company autocomplete and logo components
 - Enhanced CompanyLogo component with 'use client' directive for Next.js App Router compatibility
 - Improved error handling in CompanyAutocomplete with user-friendly error messages
 
-### Fixed
+### Fixed - 2026-01-27
 
 - **User Feedback for Company Creation Failures**
   - Added toast error notifications when automatic company creation fails
