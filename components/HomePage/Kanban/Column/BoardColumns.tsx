@@ -24,6 +24,7 @@ import AlertDialogModal from '../../Boards/AlertDialogModal';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { createCompany } from '@/redux/companies/companiesThunk';
 import { createJobPost, updateJobPost } from '@/redux/jobs/jobsThunk';
+import { retrieveJobDraftFromExtension } from '@/lib/extensionBridge';
 import { getBoards, updateColumnName } from '@/redux/boards/boardsThunk';
 import AddJobShortForm from '@/components/Forms/AddJobShort/AddJobShortForm';
 import {
@@ -150,7 +151,9 @@ const BoardColumns = () => {
     const autoSave = searchParams.get('autoSave') === 'true';
     const company = searchParams.get('company');
     const companyDomain = searchParams.get('companyDomain');
+    const companyLogo = searchParams.get('companyLogo');
     const title = searchParams.get('title');
+    const jobDataKey = searchParams.get('jobDataKey'); // NEW: Storage key for full data
 
     if (
       autoSave &&
@@ -165,13 +168,36 @@ const BoardColumns = () => {
       const handleArrivalAutoSave = async () => {
         setIsSubmittingJob(true);
         try {
+          // NEW: Try to retrieve full data from extension if jobDataKey exists
+          let jobData = null;
+          if (jobDataKey) {
+            jobData = await retrieveJobDraftFromExtension(jobDataKey);
+          }
+
+          // Use data from extension storage (full description) or fallback to URL params (truncated)
+          const finalDescription =
+            jobData?.description || searchParams.get('description') || '';
+          const finalLocation =
+            jobData?.location || searchParams.get('location') || '';
+          const finalSalary =
+            jobData?.salary || searchParams.get('salary') || '';
+          const finalPostUrl = jobData?.url || searchParams.get('url') || '';
+          const finalCompanyDomain =
+            jobData?.companyDomain || companyDomain || '';
+          // Handle logo: prefer explicit null over empty string
+          const finalCompanyLogo =
+            jobData?.companyLogo !== undefined
+              ? jobData.companyLogo
+              : companyLogo || null;
+
           // Create company first if needed
           let companyId = '';
           const createCompanyResult = await dispatch(
             createCompany({
               accessToken,
               name: company,
-              url: companyDomain || '',
+              url: finalCompanyDomain,
+              logo: finalCompanyLogo,
             }),
           ).unwrap();
           companyId = createCompanyResult.id;
@@ -190,10 +216,10 @@ const BoardColumns = () => {
               title: title,
               columnId: selectedColumn.id,
               companyId: companyId,
-              location: searchParams.get('location') || '',
-              description: searchParams.get('description') || '',
-              postUrl: searchParams.get('url') || '',
-              salary: searchParams.get('salary') || '',
+              location: finalLocation,
+              description: finalDescription, // Full description if retrieved from extension!
+              postUrl: finalPostUrl,
+              salary: finalSalary,
             }),
           ).unwrap();
 

@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 import { RootState } from '../store';
+import { deleteJobPost } from '../jobs/jobsThunk';
 import {
   getBoards,
   createBoard,
@@ -166,6 +167,18 @@ export const boardsSlice = createSlice({
       .addCase(getBoardsOnly.rejected, (state, action) => {
         state.boardsStatus = 'failed';
         state.error = action.error.message || 'Failed to fetch boards';
+      })
+      // Handle job deletion to update board state
+      .addCase(deleteJobPost.fulfilled, (state, action) => {
+        const deletedJobId = action.payload;
+        // Remove the job from all boards' columns
+        state.boards.forEach((board) => {
+          board.columns?.forEach((column) => {
+            column.jobApplications = column.jobApplications.filter(
+              (job) => job.id !== deletedJobId
+            );
+          });
+        });
       });
   },
 });
