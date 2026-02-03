@@ -256,20 +256,37 @@ https://job-tracker.app/home/boards/123?company=Google&title=Software+Engineer&l
 
 #### **Character Encoding Requirements**
 
-**Extension MUST use `encodeURIComponent()` for all parameter values:**
+**Extension MUST use `URLSearchParams` constructor (automatic encoding):**
 
 ```javascript
-// ✅ CORRECT - Extension code
+// ✅ CORRECT - Extension code (recommended)
 const params = new URLSearchParams({
-  company: encodeURIComponent(companyName), // Handles &, =, #, spaces, non-ASCII
-  title: encodeURIComponent(jobTitle),
-  location: encodeURIComponent(location),
-  salary: encodeURIComponent(salaryRange),
-  url: encodeURIComponent(jobPostingUrl),
+  company: companyName, // URLSearchParams handles encoding automatically
+  title: jobTitle,
+  location: location,
+  salary: salaryRange,
+  url: jobPostingUrl,
+});
+const fullUrl = `https://job-tracker.app/home/boards/${boardId}?${params.toString()}`;
+```
+
+**Alternative: Manual URL building with `encodeURIComponent()`:**
+
+```javascript
+// ✅ ALSO CORRECT - Manual URL building
+const fullUrl = `https://job-tracker.app/home/boards/${boardId}?company=${encodeURIComponent(companyName)}&title=${encodeURIComponent(jobTitle)}&location=${encodeURIComponent(location)}`;
+```
+
+**⚠️ CRITICAL: Do NOT double-encode:**
+
+```javascript
+// ❌ WRONG - Double encoding (space becomes %2520 instead of %20)
+const params = new URLSearchParams({
+  company: encodeURIComponent(companyName), // URLSearchParams will encode again!
 });
 ```
 
-**Special Characters to Handle**:
+**Special Characters Handled Automatically by `URLSearchParams`**:
 
 - Spaces: `encodeURIComponent` converts to `%20` (not `+`)
 - Ampersands `&`: Must be encoded (otherwise breaks parameters)
@@ -278,14 +295,16 @@ const params = new URLSearchParams({
 - Non-ASCII characters: Properly UTF-8 encoded
 - Quotes `"` and `'`: Encoded to prevent injection
 
-**Frontend MUST use `decodeURIComponent()` when reading:**
+**Frontend reads already-decoded values:**
 
 ```javascript
 // ✅ CORRECT - Frontend code
 const searchParams = useSearchParams();
-const company = decodeURIComponent(searchParams.get('company') || '');
-const title = decodeURIComponent(searchParams.get('title') || '');
+const company = searchParams.get('company') || ''; // Already decoded by URLSearchParams
+const title = searchParams.get('title') || ''; // Already decoded by URLSearchParams
 ```
+
+**Note**: `URLSearchParams.get()` automatically decodes values, so `decodeURIComponent()` is not needed and would be redundant.
 
 #### **Input Validation & Sanitization (XSS Prevention)**
 
@@ -335,21 +354,53 @@ const title = decodeURIComponent(searchParams.get('title') || '');
 ```typescript
 // Example sanitization before setting form values
 useEffect(() => {
-  const company = searchParams.get('company');
-  const title = searchParams.get('title');
+  const company = searchParams.get('company'); // Already decoded
+  const title = searchParams.get('title'); // Already decoded
 
   if (company) {
-    const sanitized = sanitizeInput(decodeURIComponent(company)).slice(0, 200);
-    if (!containsScript(sanitized)) {
-      setValue('company', sanitized);
+    // 1. Check for malicious content FIRST (before sanitization)
+    if (containsScript(company)) {
+      console.warn('Suspicious input detected in company parameter');
+      toast.error('Invalid input detected. Please enter manually.');
+      return; // Reject entirely
     }
+
+    // 2. Then sanitize and truncate
+    const sanitized = sanitizeInput(company).slice(0, 200);
+    setValue('company', sanitized);
   }
 
   if (title) {
-    const sanitized = sanitizeInput(decodeURIComponent(title)).slice(0, 300);
-    if (!containsScript(sanitized)) {
-      setValue('title', sanitized);
+    // 1. Check for malicious content FIRST (before sanitization)
+    if (containsScript(title)) {
+      console.warn('Suspicious input detected in title parameter');
+      toast.error('Invalid input detected. Please enter manually.');
+      return; // Reject entirely
     }
+
+    // 2. Then sanitize and truncate
+    const sanitized = sanitizeInput(title).slice(0, 300);
+    setValue('title', sanitized);
+  }
+}, [searchParams]);
+```
+
+**Alternative: Use DOMPurify (Recommended for Production)**:
+
+```typescript
+import DOMPurify from 'dompurify';
+
+useEffect(() => {
+  const company = searchParams.get('company');
+
+  if (company) {
+    // DOMPurify provides battle-tested XSS protection
+    const sanitized = DOMPurify.sanitize(company, {
+      ALLOWED_TAGS: [], // Strip all HTML tags
+      KEEP_CONTENT: true,
+    }).slice(0, 200);
+
+    setValue('company', sanitized);
   }
 }, [searchParams]);
 ```
@@ -517,15 +568,17 @@ DEPLOY 🚀: Merge feat/browser-extension-integration → dev
 - **Integration**: End-to-end test of extension → frontend flow
 - **Deployment**: Only merge to `dev` when all phases complete
 
-## Legal Document Updates (Required Before Phase 4)
+## Legal Document Updates (Completed ✅)
 
 ### Privacy Policy Updates
 
 **File**: `app/(legal)/privacy/page.tsx`  
-**Current Last Updated**: March 10, 2024  
-**Requires Update**: YES
+**Status**: ✅ **COMPLETED**  
+**Last Updated**: February 2, 2026
 
-Add new section: "Browser Extension"
+**Changes Made**:
+
+Added comprehensive "Browser Extension" section including:
 
 ```text
 Browser Extension (Optional Feature)
@@ -548,10 +601,12 @@ Your Responsibility: You are solely responsible for ensuring your use of the bro
 ### Terms of Service Updates
 
 **File**: `app/(legal)/terms/page.tsx`  
-**Current Last Updated**: March 10, 2024  
-**Requires Update**: YES
+**Status**: ✅ **COMPLETED**  
+**Last Updated**: February 2, 2026
 
-Add new section: "Browser Extension Use
+**Changes Made**:
+
+Added comprehensive "Browser Extension" section including:
 
 ```text
 Browser Extension (Optional Feature)
@@ -600,13 +655,17 @@ By clicking "I Understand", you acknowledge these risks and agree to use the ext
 [Cancel] [I Understand and Accept]
 ```
 
-### Update Dates
+### Implementation Status
 
-**After making legal document updates:**
+✅ **Privacy Policy**: Updated February 2, 2026  
+✅ **Terms of Service**: Updated February 2, 2026  
+⏳ **Extension Consent Dialog**: To be implemented in Phase 2/4 extension code
 
-- Change "Last updated: March 10, 2024" → "Last updated: February 2, 2026"
-- Notify existing users of Privacy Policy / Terms updates
-- Require users to re-accept updated terms (optional but recommended)
+**Next Steps for Production**:
+
+- Notify existing users of Privacy Policy / Terms updates via email
+- Consider requiring users to re-accept updated terms (optional but recommended)
+- Implement consent dialog in browser extension on first run
 
 ## References
 
