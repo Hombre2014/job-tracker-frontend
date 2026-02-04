@@ -675,6 +675,186 @@ By clicking "I Understand", you acknowledge these risks and agree to use the ext
 - Consider requiring users to re-accept updated terms (optional but recommended)
 - Implement consent dialog in browser extension on first run
 
+## Phase 4.5: Extension Message Passing (Implemented ✅)
+
+**Status**: ✅ **COMPLETED**  
+**Last Updated**: February 4, 2026  
+**Branch**: `fix-extension-message-passing`
+
+### Overview and Motivation
+
+Implemented direct message passing between the browser extension and frontend application to enable:
+
+- **Tab reuse**: Extension can send data to existing open tabs instead of opening new ones
+- **Better UX**: No URL parameter limitations or browser history pollution
+- **Real-time communication**: Direct postMessage API for instant data transfer
+
+### Implementation
+
+**Frontend Files Created/Modified**:
+
+1. **`lib/extensionMessageListener.ts`** (New)
+   - Message listener initialization
+   - Message validation and type safety
+   - Acknowledgment system
+
+2. **`components/Forms/AddJobShort/AddJobShortForm.tsx`** (Modified)
+   - Integrated extension message listener
+   - Handles both URL parameters (backward compatibility) and direct messages
+   - Sends acknowledgment back to extension
+
+### Message Protocol
+
+**Extension → Frontend Message Format**:
+
+```typescript
+{
+  type: 'JOB_DATA',
+  source: 'job-tracker-extension',
+  payload: {
+    company: string;        // Required
+    title: string;          // Required
+    location?: string;      // Optional
+    salary?: string;        // Optional
+    url?: string;           // Optional (original job posting URL)
+    source?: 'linkedin' | 'indeed' | 'manual';  // Optional
+  }
+}
+```
+
+**Frontend → Extension Acknowledgment**:
+
+```typescript
+{
+  type: 'JOB_DATA_RECEIVED',
+  source: 'job-tracker-frontend'
+}
+```
+
+### Extension Implementation Guide
+
+**For the `job-tracker-extension` repository**, implement the following:
+
+#### 1. Check for Existing Tab
+
+```javascript
+// background.js or popup.js
+async function sendJobData(jobData) {
+  // Step 1: Query for existing Job Tracker tabs
+  const tabs = await chrome.tabs.query({
+    url: 'http://localhost:3000/home/boards/*', // Adjust URL for production
+  });
+
+  if (tabs.length > 0) {
+    // Tab exists - use message passing
+    const tab = tabs[0];
+
+    // Focus the existing tab
+    await chrome.tabs.update(tab.id, { active: true });
+    await chrome.windows.update(tab.windowId, { focused: true });
+
+    // Send message to the tab's content script
+    await chrome.tabs.sendMessage(tab.id, {
+      type: 'JOB_DATA',
+      source: 'job-tracker-extension',
+      payload: jobData,
+    });
+  } else {
+    // No tab exists - open new tab with URL parameters (fallback)
+    const url = buildUrlWithParams(jobData);
+    await chrome.tabs.create({ url });
+  }
+}
+```
+
+#### 2. Content Script (Forward to Page)
+
+```javascript
+// content-script.js
+// Listen for messages from extension background/popup
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (
+    message.type === 'JOB_DATA' &&
+    message.source === 'job-tracker-extension'
+  ) {
+    // Forward message to the page (frontend)
+    window.postMessage(message, window.location.origin);
+
+    // Listen for acknowledgment
+    const ackListener = (event) => {
+      if (
+        event.data.type === 'JOB_DATA_RECEIVED' &&
+        event.data.source === 'job-tracker-frontend'
+      ) {
+        window.removeEventListener('message', ackListener);
+        sendResponse({ success: true });
+      }
+    };
+    window.addEventListener('message', ackListener);
+
+    // Timeout after 5 seconds
+    setTimeout(() => {
+      window.removeEventListener('message', ackListener);
+    }, 5000);
+
+    return true; // Keep channel open for async response
+  }
+});
+```
+
+#### 3. Update manifest.json
+
+```json
+{
+  "manifest_version": 3,
+  "content_scripts": [
+    {
+      "matches": [
+        "http://localhost:3000/home/boards/*",
+        "https://your-production-domain.com/home/boards/*"
+      ],
+      "js": ["content-script.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
+```
+
+### Benefits
+
+1. **Tab Reuse**: Extension detects existing tabs and reuses them
+2. **No URL Pollution**: Job data not stored in browser history
+3. **Character Limits**: No URL length restrictions
+4. **Backward Compatible**: Falls back to URL parameters if no tab exists
+5. **Real-time**: Instant data transfer without page reload
+
+### Testing
+
+**Manual Test Flow**:
+
+1. Open Job Tracker at `/home/boards/{board_id}`
+2. Click "Add Job" button (opens AddJobShortForm)
+3. From extension, send job data message
+4. Verify form fields are populated
+5. Check console for "Extension message received" log
+
+**Test Cases**:
+
+- ✅ Message received with all fields
+- ✅ Message received with only required fields (company, title)
+- ✅ Invalid message rejected (missing required fields)
+- ✅ Acknowledgment sent back to extension
+- ✅ Form fields populated correctly
+- ✅ Draft state updated
+
+### Next Steps
+
+1. Implement extension side (background.js, content-script.js)
+2. Update extension manifest.json with content scripts
+3. Test end-to-end integration
+4. Update production URLs in both repositories
+5. Version both repositories together
+
 ## References
 
 - [Chrome Extension Manifest V3](https://developer.chrome.com/docs/extensions/mv3/)
@@ -684,3 +864,5 @@ By clicking "I Understand", you acknowledge these risks and agree to use the ext
 - [Indeed Terms of Service](https://www.indeed.com/legal)
 - [GDPR Compliance Guide](https://gdpr.eu/what-is-gdpr/)
 - [CCPA Compliance Guide](https://oag.ca.gov/privacy/ccpa)
+- [Chrome Extension Messaging](https://developer.chrome.com/docs/extensions/mv3/messaging/)
+- [Window.postMessage() API](https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage)

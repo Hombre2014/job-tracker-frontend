@@ -3,9 +3,80 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.3.1] - 2026-02-02
+## [1.4.0] - 2026-02-04
 
 ### Added
+
+- **Extension Message Passing (Phase 4.5)**
+  - Implemented direct postMessage communication between extension and frontend
+  - Created `lib/extensionMessageListener.ts` for message handling
+  - Integrated message listener in `AddJobShortForm` component
+  - Supports both message passing and URL parameters (backward compatible)
+  - Enables tab reuse - extension can send data to existing open tabs
+  - No URL character limits or browser history pollution
+  - Includes acknowledgment system for confirmation (`JOB_DATA_ACK` message)
+  - Files: `lib/extensionMessageListener.ts`, `components/Forms/AddJobShort/AddJobShortForm.tsx`
+
+- **Company Logo Support in Message Passing**
+  - Added `companyDomain` and `companyLogo` fields to `ExtensionMessage` interface
+  - Message listener stores company domain and logo to localStorage
+  - `AddJobShortForm` reads and applies company data when creating jobs
+  - Ensures logos display correctly in Job Post Modal and cards
+  - Files: `lib/extensionMessageListener.ts`, `components/Forms/AddJobShort/AddJobShortForm.tsx`
+
+### Fixed
+
+- **Company Logo Issues**
+  - Fixed missing company logo in Job Post Modal header (Job Info tab)
+  - Removed conditional rendering - CompanyLogo now always displays
+  - Increased placeholder detection threshold from <10px to <60px
+  - Added `companyName` to useEffect dependencies for proper state reset
+  - Logos now consistently display Building2 icon for invalid/missing logos
+  - Files: `app/(loggedin)/home/boards/[board_id]/job/layout.tsx`, `components/CompanyLogo/CompanyLogo.tsx`
+
+- **Code Quality Improvements**
+  - Removed console.log statements from production code
+  - Fixed early return issue in documentation examples
+  - Added defensive check for `jobApplications` array in Redux slice
+  - Added consistency fix for deleting jobs from archived boards
+  - Files: `components/CompanyLogo/CompanyLogo.tsx`, `docs/Browser_Extension_Development.md`, `redux/boards/boardsSlice.ts`
+
+### Changed
+
+- **Extension Integration Architecture**
+  - Primary method: Direct message passing (new)
+  - Fallback method: URL parameters (existing)
+  - Extension can detect existing tabs and send messages
+  - Frontend listens for messages and populates form
+  - Better user experience with no page navigation required
+
+### Documentation
+
+- **Phase 4.5: Extension Message Passing**
+  - Complete implementation guide for extension side
+  - Message protocol specification
+  - Content script examples
+  - Testing procedures
+  - Benefits and use cases
+  - Files: `docs/Browser_Extension_Development.md`
+
+### Technical Details
+
+- **Message Protocol**
+  - Extension → Frontend: `{ type: 'JOB_DATA', source: 'job-tracker-extension', payload: {...} }`
+  - Frontend → Extension: `{ type: 'JOB_DATA_RECEIVED', source: 'job-tracker-frontend' }`
+  - Validation: Type checking, required fields, source verification
+  - Security: Origin validation, message structure validation
+
+- **Extension Implementation Requirements**
+  - Use `chrome.tabs.query()` to find existing tabs
+  - Use `chrome.tabs.sendMessage()` to send to content script
+  - Content script forwards to page via `window.postMessage()`
+  - Update manifest.json with content_scripts configuration
+
+## [1.3.1] - 2026-02-02
+
+### Added - 2026-02-02
 
 - **Company Domain/Logo Support from Browser Extension**
   - Implemented `companyDomain` URL parameter support in BoardColumns auto-save flow
@@ -14,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Logos now display correctly in Job Info Modal, Job Post cards, and Company tab
   - Files: `components/HomePage/Kanban/Column/BoardColumns.tsx`
 
-### Fixed
+### Fixed - 2026-02-02
 
 - **Company Logo Not Displaying from Extension**
   - Fixed missing `url` parameter when creating company during auto-save
@@ -23,7 +94,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Resolves issue where extension-created companies had generic logos
   - Files: `components/HomePage/Kanban/Column/BoardColumns.tsx`
 
-### Changed
+### Changed - 2026-02-02
 
 - **Extension Integration Flow**
   - Auto-save now captures and stores company domain alongside company name
@@ -31,7 +102,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enables logo display using existing CompanyLogo component
   - No changes to API or database schema required
 
-### Technical Details
+### Technical Details - 2026-02-02
 
 - **URL Parameter Flow**
   - Extension sends: `company=Tesla&companyDomain=tesla.com&...`
@@ -257,7 +328,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Benefits**: Less code, clearer intent, tiny performance gain
   - **Files**: `components/HomePage/Kanban/Column/BoardColumns.tsx`
 
-### Documentation
+### Documentation Improvements
 
 - **Grammar Fix**: Fixed compound adjective hyphenation
   - **Change**: "1.5 second delay" → "1.5-second delay"
@@ -3542,6 +3613,9 @@ _All changes maintain backward compatibility and enhance user experience with im
 
 <!-- Version comparison links -->
 
+[1.4.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.3.0...v1.4.0
+[1.3.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.3.0...v1.3.1
+[1.3.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.0.1...v1.1.0

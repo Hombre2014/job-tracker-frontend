@@ -13,6 +13,10 @@ import { CompanyAutocomplete } from '@/components/CompanyAutocomplete';
 import { CompanySuggestion } from '@/services/companyAutocompleteService';
 import ComboBoardListBox from '@/components/Forms/AddJobShort/ComboBoardListBox';
 import {
+  initExtensionMessageListener,
+  sendAcknowledgment,
+} from '@/lib/extensionMessageListener';
+import {
   Form,
   FormItem,
   FormField,
@@ -53,11 +57,11 @@ const AddJobShortForm = ({
     typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
   const { boards } = useAppSelector((state) => state.boards);
   const initialBoard = boards.find((b) => b.id === board_id);
-  
+
   if (!initialBoard) {
     throw new Error(`Board with id ${board_id} not found`);
   }
-  
+
   const [selectedBoardId, setSelectedBoardId] = useState(initialBoard.id);
   const [selectedBoardName, setSelectedBoardName] = useState(initialBoard.name);
   const [boardColumns, setBoardColumns] = useState(initialBoard.columns);
@@ -119,7 +123,8 @@ const AddJobShortForm = ({
   // Handle URL search parameters (for browser extension integration)
   useEffect(() => {
     const urlCompany = searchParams.get('company');
-    const urlJobTitle = searchParams.get('jobTitle') || searchParams.get('title');
+    const urlJobTitle =
+      searchParams.get('jobTitle') || searchParams.get('title');
     const urlLocation = searchParams.get('location');
     const urlDescription = searchParams.get('description');
     const urlPostUrl = searchParams.get('url');
@@ -135,7 +140,7 @@ const AddJobShortForm = ({
       form.setValue('jobTitle', urlJobTitle);
       localStorage.setItem('jobTitle', urlJobTitle);
     }
-    
+
     // Store extra fields in localStorage for the "Save" thunk to pick up
     if (urlLocation) localStorage.setItem('jobLocation', urlLocation);
     if (urlDescription) localStorage.setItem('jobDescription', urlDescription);
@@ -145,9 +150,9 @@ const AddJobShortForm = ({
 
   const emitDraft = useCallback(
     (
-      next?: Partial<{ 
-        company: string; 
-        jobTitle: string; 
+      next?: Partial<{
+        company: string;
+        jobTitle: string;
         companyId?: string;
         location?: string;
         description?: string;
@@ -160,16 +165,72 @@ const AddJobShortForm = ({
           company,
           jobTitle,
           companyId,
-          location: searchParams.get('location') || localStorage.getItem('jobLocation') || '',
-          description: searchParams.get('description') || localStorage.getItem('jobDescription') || '',
-          postUrl: searchParams.get('url') || localStorage.getItem('jobPostUrl') || '',
-          salary: searchParams.get('salary') || localStorage.getItem('jobSalary') || '',
+          location:
+            searchParams.get('location') ||
+            localStorage.getItem('jobLocation') ||
+            '',
+          description:
+            searchParams.get('description') ||
+            localStorage.getItem('jobDescription') ||
+            '',
+          postUrl:
+            searchParams.get('url') || localStorage.getItem('jobPostUrl') || '',
+          salary:
+            searchParams.get('salary') ||
+            localStorage.getItem('jobSalary') ||
+            '',
           ...(next || {}),
         });
       }
     },
     [onDraftChange, company, jobTitle, companyId, searchParams],
   );
+
+  // Listen for messages from browser extension (direct communication)
+  useEffect(() => {
+    const cleanup = initExtensionMessageListener((data) => {
+      // Populate form with data from extension
+      if (data.company) {
+        setCompany(data.company);
+        form.setValue('company', data.company);
+        localStorage.setItem('company', data.company);
+      }
+      if (data.title) {
+        setJobTitle(data.title);
+        form.setValue('jobTitle', data.title);
+        localStorage.setItem('jobTitle', data.title);
+      }
+
+      // Store company data for logo/domain
+      if (data.companyDomain) {
+        setCompanyUrl(data.companyDomain);
+        localStorage.setItem('companyUrl', data.companyDomain);
+      }
+      if (data.companyLogo) {
+        localStorage.setItem('companyLogo', data.companyLogo);
+      }
+
+      // Store extra fields in localStorage
+      if (data.location) localStorage.setItem('jobLocation', data.location);
+      if (data.salary) localStorage.setItem('jobSalary', data.salary);
+      if (data.url) localStorage.setItem('jobPostUrl', data.url);
+
+      // Send acknowledgment back to extension
+      sendAcknowledgment();
+
+      // Trigger draft update
+      emitDraft({
+        company: data.company,
+        jobTitle: data.title,
+        location: data.location,
+        salary: data.salary,
+        postUrl: data.url,
+      });
+    });
+
+    // Cleanup listener on unmount
+    return cleanup;
+  }, [form, emitDraft]);
 
   const handleCompanyChange = (value: string) => {
     setCompany(value);
