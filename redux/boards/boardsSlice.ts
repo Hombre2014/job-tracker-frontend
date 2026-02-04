@@ -65,7 +65,7 @@ export const boardsSlice = createSlice({
       .addCase(renameBoard.fulfilled, (state, action) => {
         state.boardsStatus = 'succeeded';
         state.boards = state.boards.map((board) =>
-          board.id === action.payload.id ? action.payload : board
+          board.id === action.payload.id ? action.payload : board,
         );
         state.error = null;
       })
@@ -79,7 +79,7 @@ export const boardsSlice = createSlice({
       .addCase(archiveBoard.fulfilled, (state, action) => {
         state.boardsStatus = 'succeeded';
         state.boards = state.boards.map((board) =>
-          board.id === action.payload.id ? action.payload : board
+          board.id === action.payload.id ? action.payload : board,
         );
         state.error = null;
       })
@@ -105,7 +105,7 @@ export const boardsSlice = createSlice({
       .addCase(unarchiveBoard.fulfilled, (state, action) => {
         state.boardsStatus = 'succeeded';
         state.archivedBoards = state.archivedBoards.filter(
-          (board) => board.id !== action.payload.id
+          (board) => board.id !== action.payload.id,
         );
         state.error = null;
       })
@@ -119,7 +119,7 @@ export const boardsSlice = createSlice({
       .addCase(getBoardWithColumns.fulfilled, (state, action) => {
         state.boardsStatus = 'succeeded';
         state.boards = state.boards.map((board) =>
-          board.id === action.payload.id ? action.payload : board
+          board.id === action.payload.id ? action.payload : board,
         );
         state.error = null;
       })
@@ -134,7 +134,7 @@ export const boardsSlice = createSlice({
       .addCase(updateColumnName.fulfilled, (state, action) => {
         state.boardsStatus = 'succeeded';
         state.boards = state.boards.map((board) =>
-          board.id === action.payload.id ? action.payload : board
+          board.id === action.payload.id ? action.payload : board,
         );
         state.error = null;
       })
@@ -148,7 +148,7 @@ export const boardsSlice = createSlice({
       .addCase(rearrangeColumns.fulfilled, (state, action) => {
         state.boardsStatus = 'succeeded';
         state.boards = state.boards.map((board) =>
-          board.id === action.payload.id ? action.payload : board
+          board.id === action.payload.id ? action.payload : board,
         );
         state.error = null;
       })
@@ -174,9 +174,21 @@ export const boardsSlice = createSlice({
         // Remove the job from all boards' columns
         state.boards.forEach((board) => {
           board.columns?.forEach((column) => {
-            column.jobApplications = column.jobApplications.filter(
-              (job) => job.id !== deletedJobId
-            );
+            if (column.jobApplications) {
+              column.jobApplications = column.jobApplications.filter(
+                (job) => job.id !== deletedJobId,
+              );
+            }
+          });
+        });
+        // Also remove from archived boards for consistency
+        state.archivedBoards.forEach((board) => {
+          board.columns?.forEach((column) => {
+            if (column.jobApplications) {
+              column.jobApplications = column.jobApplications.filter(
+                (job) => job.id !== deletedJobId,
+              );
+            }
           });
         });
       });

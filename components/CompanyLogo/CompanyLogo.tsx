@@ -35,11 +35,11 @@ export const CompanyLogo = ({
     .replace(/^www\./, '')
     .split('/')[0];
 
-  // Reset error state when domain changes
+  // Reset error states when domain or companyName changes
   useEffect(() => {
     setHasError(false);
     setIsBlankImage(false);
-  }, [cleanDomain]);
+  }, [cleanDomain, companyName]);
 
   const logoUrl = `https://cdn.brandfetch.io/${cleanDomain}?c=${config.brandfetch.clientId}`;
 
@@ -67,37 +67,16 @@ export const CompanyLogo = ({
       style={{ width, height }}
     >
       <img
+        key={`${cleanDomain}-${companyName}`}
         src={logoUrl}
         alt={`${companyName} logo`}
         className="object-contain w-full h-full"
         onLoad={(e) => {
           const img = e.currentTarget;
-          console.log(
-            'CompanyLogo: Image loaded for',
-            companyName,
-            'dimensions:',
-            img.naturalWidth,
-            'x',
-            img.naturalHeight,
-          );
 
-          // Check if image is suspiciously small (likely a placeholder)
-          if (img.naturalWidth < 10 || img.naturalHeight < 10) {
-            console.log(
-              'CompanyLogo: Image too small, treating as blank for',
-              companyName,
-            );
-            setIsBlankImage(true);
-            return;
-          }
-
-          // Additional check: detect if image is effectively blank by checking if it's too uniform
-          // Very small images from Brandfetch are usually placeholders
-          if (img.naturalWidth <= 50 && img.naturalHeight <= 50) {
-            console.log(
-              'CompanyLogo: Image dimensions suggest placeholder for',
-              companyName,
-            );
+          // Check if image is suspiciously small (likely a placeholder or low-quality)
+          // Brandfetch often returns small placeholder images (e.g., 40x40) for unavailable logos
+          if (img.naturalWidth < 60 || img.naturalHeight < 60) {
             setIsBlankImage(true);
           }
         }}

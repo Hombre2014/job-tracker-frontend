@@ -356,31 +356,39 @@ const title = searchParams.get('title') || ''; // Already decoded by URLSearchPa
 useEffect(() => {
   const company = searchParams.get('company'); // Already decoded
   const title = searchParams.get('title'); // Already decoded
+  let hasInvalidInput = false;
 
   if (company) {
     // 1. Check for malicious content FIRST (before sanitization)
     if (containsScript(company)) {
       console.warn('Suspicious input detected in company parameter');
-      toast.error('Invalid input detected. Please enter manually.');
-      return; // Reject entirely
+      hasInvalidInput = true;
+      // Don't set company, but continue processing other params
+    } else {
+      // 2. Then sanitize and truncate
+      const sanitized = sanitizeInput(company).slice(0, 200);
+      setValue('company', sanitized);
     }
-
-    // 2. Then sanitize and truncate
-    const sanitized = sanitizeInput(company).slice(0, 200);
-    setValue('company', sanitized);
   }
 
   if (title) {
     // 1. Check for malicious content FIRST (before sanitization)
     if (containsScript(title)) {
       console.warn('Suspicious input detected in title parameter');
-      toast.error('Invalid input detected. Please enter manually.');
-      return; // Reject entirely
+      hasInvalidInput = true;
+      // Don't set title, but continue processing other params
+    } else {
+      // 2. Then sanitize and truncate
+      const sanitized = sanitizeInput(title).slice(0, 300);
+      setValue('title', sanitized);
     }
+  }
 
-    // 2. Then sanitize and truncate
-    const sanitized = sanitizeInput(title).slice(0, 300);
-    setValue('title', sanitized);
+  // Show error toast once if any parameter was rejected
+  if (hasInvalidInput) {
+    toast.error(
+      'Some invalid input was detected and skipped. Please review the form.',
+    );
   }
 }, [searchParams]);
 ```

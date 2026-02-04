@@ -72,15 +72,15 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
     }
 
     const currentColumnOrder = boardColumns?.find(
-      (column) => column.name === chosenColumn
+      (column) => column.name === chosenColumn,
     )?.order;
 
     const newColumnOrder = boardColumns?.find(
-      (column) => column.name === value
+      (column) => column.name === value,
     )?.order;
 
     const newColumnId = boardColumns?.find(
-      (column) => column.name === value
+      (column) => column.name === value,
     )?.id;
 
     if (
@@ -128,7 +128,7 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
           getAllJobApplicationNotes({
             accessToken,
             jobApplicationId: job_id,
-          })
+          }),
         );
       });
 
@@ -139,9 +139,11 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-
   return (
-    <Modal stylings="sm:w-11/12 md:w-3/4 lg:w-2/3 xl:w-[960px]" onDismiss={closeModal}>
+    <Modal
+      stylings="sm:w-11/12 md:w-3/4 lg:w-2/3 xl:w-[960px]"
+      onDismiss={closeModal}
+    >
       <Card className="w-full min-h-[840px]">
         <div className="flex justify-between items-center">
           <CardHeader>
@@ -149,13 +151,11 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
               {currentJobPost?.title}
             </CardTitle>
             <CardDescription className="flex items-center gap-2 mx-4 mt-8 pb-12 min-h-[20px]">
-              {currentJobPost?.company.url && (
-                <CompanyLogo
-                  domain={currentJobPost.company.url}
-                  companyName={currentJobPost.company.name}
-                  size="sm"
-                />
-              )}
+              <CompanyLogo
+                domain={currentJobPost?.company.url || ''}
+                companyName={currentJobPost?.company.name || ''}
+                size="sm"
+              />
               <span>{currentJobPost?.company.name}</span>
             </CardDescription>
           </CardHeader>
@@ -164,12 +164,8 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
               onValueChange={handleSelectList}
               value={temporaryMessage ? undefined : selectedListName}
             >
-              <SelectTrigger
-                className="bg-blue-500 text-white w-24 px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex items-center justify-between"
-              >
-                <SelectValue
-                  placeholder={temporaryMessage || 'Move'}
-                />
+              <SelectTrigger className="bg-blue-500 text-white w-24 px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex items-center justify-between">
+                <SelectValue placeholder={temporaryMessage || 'Move'} />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
