@@ -910,7 +910,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Form Validation Enhancement**: Implemented Zod preprocessing to eliminate dual trimming logic
   - **Files**: `app/(loggedin)/home/settings/page.tsx`, `app/(auth)/delete-account-verify/page.tsx`, `schemas/index.ts`
 
-### Technical Details
+### Technical Details - 2025-09-23
 
 - **Code Quality**: Resolved all CodeRabbit security and performance recommendations
 - **Type Safety**: Maintained 100% TypeScript compliance throughout all improvements
@@ -947,7 +947,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Rate Limiting**: Resend code functionality with proper debouncing
   - **Files**: `app/(auth)/delete-account-verify/page.tsx`
 
-### Technical Details - 2025-09-23
+### Technical Details in v0.194.0
 
 - **Route Configuration**: Proper Next.js App Router integration in auth layout
 - **TypeScript Safety**: Full type safety with zero compilation errors
@@ -3579,5 +3579,3 @@ _All changes maintain backward compatibility and enhance user experience with im
 [0.179.3]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.179.2...v0.179.3
 [0.179.2]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.179.1...v0.179.2
 [0.179.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.179.0...v0.179.1
-[1.2.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.1.1...v1.2.0
-[1.1.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.1.0...v1.1.1
