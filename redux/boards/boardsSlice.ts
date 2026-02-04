@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 import { RootState } from '../store';
-import { deleteJobPost } from '../jobs/jobsThunk';
+import { deleteJobPost, createJobPost, updateJobPost } from '../jobs/jobsThunk';
 import {
   getBoards,
   createBoard,
@@ -118,9 +118,54 @@ export const boardsSlice = createSlice({
       })
       .addCase(getBoardWithColumns.fulfilled, (state, action) => {
         state.boardsStatus = 'succeeded';
-        state.boards = state.boards.map((board) =>
-          board.id === action.payload.id ? action.payload : board,
+        const fetchedBoard = action.payload;
+        const existingBoardIndex = state.boards.findIndex(
+          (board) => board.id === fetchedBoard.id,
         );
+
+        if (existingBoardIndex !== -1) {
+          // Merge: Keep locally created jobs that might not be in API response yet
+          const existingBoard = state.boards[existingBoardIndex];
+          const mergedBoard = { ...fetchedBoard };
+
+          // For each column, merge job applications
+          if (mergedBoard.columns && existingBoard.columns) {
+            mergedBoard.columns = mergedBoard.columns.map(
+              (fetchedCol: Column) => {
+                const existingCol = existingBoard.columns?.find(
+                  (c) => c.id === fetchedCol.id,
+                );
+
+                if (existingCol?.jobApplications) {
+                  // Find jobs that exist locally but not in fetched data
+                  const localOnlyJobs = existingCol.jobApplications.filter(
+                    (localJob) =>
+                      !fetchedCol.jobApplications?.some(
+                        (fetchedJob) => fetchedJob.id === localJob.id,
+                      ),
+                  );
+
+                  // Merge: fetched jobs + local-only jobs
+                  return {
+                    ...fetchedCol,
+                    jobApplications: [
+                      ...(fetchedCol.jobApplications || []),
+                      ...localOnlyJobs,
+                    ],
+                  };
+                }
+
+                return fetchedCol;
+              },
+            );
+          }
+
+          state.boards[existingBoardIndex] = mergedBoard;
+        } else {
+          // Board doesn't exist in state yet, add it
+          state.boards.push(fetchedBoard);
+        }
+
         state.error = null;
       })
       .addCase(getBoardWithColumns.rejected, (state, action) => {
@@ -191,6 +236,98 @@ export const boardsSlice = createSlice({
             }
           });
         });
+      })
+      // Handle job creation to update board state
+      .addCase(createJobPost.fulfilled, (state, action) => {
+        const newJob = action.payload;
+        if (!newJob?.columnId) return;
+
+        // Find the board that contains this column and update it
+        for (const board of state.boards) {
+          if (!board.columns) continue;
+
+          const targetColumn = board.columns.find(
+            (col) => col.id === newJob.columnId,
+          );
+
+          if (targetColumn) {
+            // Initialize jobApplications array if it doesn't exist
+            if (!targetColumn.jobApplications) {
+              targetColumn.jobApplications = [];
+            }
+
+            // Only add if not already present (avoid duplicates)
+            const exists = targetColumn.jobApplications.some(
+              (job) => job.id === newJob.id,
+            );
+
+            if (!exists) {
+              targetColumn.jobApplications.push(newJob);
+            }
+
+            // Found and updated, exit loop
+            break;
+          }
+        }
+      })
+      // Handle job updates (including drag and drop) to update board state
+      .addCase(updateJobPost.fulfilled, (state, action) => {
+        const updatedJob = action.payload;
+        if (!updatedJob?.id) return;
+
+        // Find and remove the job from its current column
+        let sourceBoard: Board | null = null;
+        let sourceColumn: Column | null = null;
+
+        for (const board of state.boards) {
+          if (!board.columns) continue;
+
+          for (const column of board.columns) {
+            if (!column.jobApplications) continue;
+
+            const jobIndex = column.jobApplications.findIndex(
+              (job) => job.id === updatedJob.id,
+            );
+
+            if (jobIndex !== -1) {
+              sourceBoard = board;
+              sourceColumn = column;
+              // Remove the job from the source column
+              column.jobApplications.splice(jobIndex, 1);
+              break;
+            }
+          }
+
+          if (sourceColumn) break;
+        }
+
+        // If columnId is specified in the updated job, add it to the target column
+        if (updatedJob.columnId) {
+          for (const board of state.boards) {
+            if (!board.columns) continue;
+
+            const targetColumn = board.columns.find(
+              (col) => col.id === updatedJob.columnId,
+            );
+
+            if (targetColumn) {
+              // Initialize jobApplications array if it doesn't exist
+              if (!targetColumn.jobApplications) {
+                targetColumn.jobApplications = [];
+              }
+
+              // Add the updated job to the target column
+              targetColumn.jobApplications.push(updatedJob);
+              break;
+            }
+          }
+        } else if (sourceColumn) {
+          // If no columnId specified, put it back in the source column with updated data
+          if (!sourceColumn.jobApplications) {
+            sourceColumn.jobApplications = [];
+          }
+          sourceColumn.jobApplications.push(updatedJob);
+        }
       });
   },
 });

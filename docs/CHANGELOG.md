@@ -26,6 +26,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Drag and Drop UI Update Issue** ⚠️ CRITICAL
+  - Fixed critical bug where drag and drop wouldn't visually update after moving a job between columns
+  - **Root cause**: `updateJobPost.fulfilled` action was only updating `jobsSlice`, not `boardsSlice`
+  - Board columns render from `boardsSlice.boards` state, so UI didn't reflect the move
+  - **Solution**: Added `updateJobPost.fulfilled` handler to `boardsSlice`:
+    - Removes job from source column
+    - Adds updated job to target column (when `columnId` changes)
+    - Updates job in-place when only job data changes (no column move)
+    - Handles edge cases: missing arrays, job not found, no columnId
+  - Now drag and drop instantly updates UI without requiring page refresh
+  - File: `redux/boards/boardsSlice.ts`
+
+- **Drag and Drop State Synchronization**
+  - Fixed critical issue where drag and drop wouldn't reflect changes after extension saves a job
+  - **Root cause**: `getBoardWithColumns.fulfilled` was completely replacing board data, overwriting locally created jobs
+  - Implemented intelligent merge strategy in `getBoardWithColumns.fulfilled`:
+    - Preserves locally created jobs that haven't synced to API yet
+    - Merges fresh API data with local-only jobs
+    - Prevents state overwrites from API fetches
+  - Added `createJobPost.fulfilled` handler to `boardsSlice` for immediate state updates
+  - Optimized with for-of loop, early break, null safety, and duplicate prevention
+  - Resolves need to refresh page or navigate away to see newly created jobs
+  - File: `redux/boards/boardsSlice.ts`
+
 - **Company Logo Issues**
   - Fixed missing company logo in Job Post Modal header (Job Info tab)
   - Removed conditional rendering - CompanyLogo now always displays
