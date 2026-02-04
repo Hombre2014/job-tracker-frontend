@@ -11,7 +11,9 @@ vi.mock('@/redux/hooks');
 vi.mock('next/navigation');
 vi.mock('@/redux/jobs/jobsThunk');
 vi.mock('@/redux/companies/companiesThunk');
-vi.mock('react-toastify', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
+vi.mock('react-toastify', () => ({
+  toast: { error: vi.fn(), success: vi.fn() },
+}));
 
 // Mock Radix Navigation Menu
 vi.mock('@/components/ui/navigation-menu', () => ({
@@ -27,10 +29,12 @@ vi.mock('@/components/Forms/AddJobShort/AddJobShortForm', () => ({
   default: ({ onDraftChange }: any) => (
     <div data-testid="add-job-form">
       <input
+        placeholder="Job Title"
         data-testid="job-title-input"
         onChange={(e) => onDraftChange({ jobTitle: e.target.value })}
       />
       <input
+        placeholder="Company Name"
         data-testid="company-input"
         onChange={(e) => onDraftChange({ company: e.target.value })}
       />
@@ -43,20 +47,19 @@ vi.mock('@/components/Forms/AddContact/CreateContactForm', () => ({
 }));
 
 vi.mock('@/components/HomePage/Boards/AlertDialogModal', async () => {
-    const { forwardRef } = await import('react');
-    return {
-      default: ({ open, children, buttonConfirm, actionFunction }: any) => {
-        if (!open) return null;
-        return (
-          <div data-testid="alert-dialog">
-            {children}
-            <button onClick={actionFunction}>{buttonConfirm}</button>
-          </div>
-        );
-      },
-    };
+  const { forwardRef } = await import('react');
+  return {
+    default: ({ open, children, buttonConfirm, actionFunction }: any) => {
+      if (!open) return null;
+      return (
+        <div data-testid="alert-dialog">
+          {children}
+          <button onClick={actionFunction}>{buttonConfirm}</button>
+        </div>
+      );
+    },
+  };
 });
-
 
 describe('CreateMenu', () => {
   const mockDispatch = vi.fn();
@@ -68,33 +71,33 @@ describe('CreateMenu', () => {
     (navigation.useRouter as any).mockReturnValue(mockRouter);
     (navigation.usePathname as any).mockReturnValue('/home/boards/board-1');
     (navigation.useParams as any).mockReturnValue({ board_id: 'board-1' });
-    
+
     // Mock thunk returns
     (jobsThunk.createJobPost as any).mockReturnValue({
-        type: 'jobs/createJobPost/fulfilled',
-        payload: { id: 'new-job-id' }
+      type: 'jobs/createJobPost/fulfilled',
+      payload: { id: 'new-job-id' },
     });
-     
-     // Thunks usually return a promise that resolves to an action object,
-     // and when dispatched, that promise resolves.
-     // To mock dispatch(createJobPost(...)).then(...) we need dispatch to return a promise.
-     mockDispatch.mockImplementation((action: any) => {
-         // Simulate thunk behavior: if action is a function (thunk), call it.
-         // But here we are dispatching result of createJobPost(), which we mocked to return an object.
-         // Actually, RTK dispatch returns the action object (or promise for thunks).
-         // In the component: dispatch(createJobPost(jobPost)).then(...)
-         // So dispatch must return a Promise that resolves to the result action.
-         return Promise.resolve({
-             payload: { id: 'new-job-id' },
-             type: 'jobs/createJobPost/fulfilled',
-             meta: { requestStatus: 'fulfilled' }
-         });
+
+    // Thunks usually return a promise that resolves to an action object,
+    // and when dispatched, that promise resolves.
+    // To mock dispatch(createJobPost(...)).then(...) we need dispatch to return a promise.
+    mockDispatch.mockImplementation((action: any) => {
+      // Simulate thunk behavior: if action is a function (thunk), call it.
+      // But here we are dispatching result of createJobPost(), which we mocked to return an object.
+      // Actually, RTK dispatch returns the action object (or promise for thunks).
+      // In the component: dispatch(createJobPost(jobPost)).then(...)
+      // So dispatch must return a Promise that resolves to the result action.
+      return Promise.resolve({
+        payload: { id: 'new-job-id' },
+        type: 'jobs/createJobPost/fulfilled',
+        meta: { requestStatus: 'fulfilled' },
+      });
     });
   });
 
   it('opens job modal when functionality is triggered', () => {
     render(<CreateMenu />);
-    
+
     // Open menu
     const createBtn = screen.getByText('+ Create');
     fireEvent.click(createBtn);
@@ -110,7 +113,7 @@ describe('CreateMenu', () => {
   it('creates a job post when save is clicked', async () => {
     // 1. Setup mock to start with 'pending' then 'fulfilled' if needed, or simply return action
     // But our simplified mockDispatch handles promises.
-    
+
     render(<CreateMenu />);
 
     // Open modal
@@ -120,7 +123,7 @@ describe('CreateMenu', () => {
     // Fill form
     const titleInput = screen.getByTestId('job-title-input');
     fireEvent.change(titleInput, { target: { value: 'Frontend Dev' } });
-    
+
     // Check if button is clickable
     const saveBtn = screen.getByText('Save Job');
     expect(saveBtn).toBeInTheDocument();
@@ -130,14 +133,18 @@ describe('CreateMenu', () => {
 
     // Wait for dispatch
     await waitFor(() => {
-        expect(jobsThunk.createJobPost).toHaveBeenCalledWith(expect.objectContaining({
-            title: 'Frontend Dev'
-        }));
+      expect(jobsThunk.createJobPost).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Frontend Dev',
+        }),
+      );
     });
-    
+
     // Wait for router push
     await waitFor(() => {
-         expect(mockRouter.push).toHaveBeenCalledWith(expect.stringContaining('new-job-id'));
+      expect(mockRouter.push).toHaveBeenCalledWith(
+        expect.stringContaining('new-job-id'),
+      );
     });
   });
 });
