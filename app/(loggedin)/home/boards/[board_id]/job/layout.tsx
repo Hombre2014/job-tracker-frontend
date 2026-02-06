@@ -123,7 +123,7 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
         statusChangedTime: new Date().toISOString(),
         accessToken,
         company: {
-          name: currentJobPost!.company.name,
+          name: currentJobPost!.company?.name || '',
         },
       };
 
@@ -160,7 +160,7 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
                 companyName={currentJobPost?.company?.name || ''}
                 size="sm"
               />
-              <span>{currentJobPost?.company.name}</span>
+              <span>{currentJobPost?.company?.name}</span>
             </CardDescription>
           </CardHeader>
           <div className="flex mr-6 gap-4">

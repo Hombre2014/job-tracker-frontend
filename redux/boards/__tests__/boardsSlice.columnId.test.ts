@@ -100,6 +100,39 @@ describe('boardsSlice - column_id vs columnId handling', () => {
       expect(newState.boards[0].columns[1].jobApplications[0].id).toBe('job-2');
     });
 
+    it('should add job when API returns ONLY columnId (camelCase) without column_id', () => {
+      const newJob = {
+        id: 'job-2b',
+        title: 'Product Manager',
+        columnId: 'column-2', // Only camelCase, no column_id
+        company: { id: 'comp-2', name: 'Another Company', url: '', industry: '', description: '' },
+        status: 'Job Created' as const,
+        color: '#6a776b',
+        salary: '',
+        postUrl: '',
+        location: '',
+        deadline: '',
+        description: '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        statusChangedAt: new Date().toISOString(),
+        notes: [],
+        contacts: [],
+        documents: [],
+      };
+
+      const action = {
+        type: createJobPost.fulfilled.type,
+        payload: newJob,
+      };
+
+      const newState = boardsReducer(initialState, action);
+
+      // Job should be added to column-2
+      expect(newState.boards[0].columns[1].jobApplications).toHaveLength(1);
+      expect(newState.boards[0].columns[1].jobApplications[0].id).toBe('job-2b');
+    });
+
     it('should NOT add job when neither column_id nor columnId exists', () => {
       const newJob = {
         id: 'job-3',
@@ -215,6 +248,41 @@ describe('boardsSlice - column_id vs columnId handling', () => {
         title: 'Software Engineer',
         columnId: 'column-2', // Hypothetical future camelCase
         column_id: 'column-2',
+        company: { id: 'comp-1', name: 'Test Company', url: '', industry: '', description: '' },
+        status: 'Applied' as const,
+        color: '#6a776b',
+        salary: '',
+        postUrl: '',
+        location: '',
+        deadline: '',
+        description: '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        statusChangedAt: new Date().toISOString(),
+        notes: [],
+        contacts: [],
+        documents: [],
+      };
+
+      const action = {
+        type: updateJobPost.fulfilled.type,
+        payload: updatedJob,
+      };
+
+      const newState = boardsReducer(stateWithJob, action);
+
+      // Job should be removed from column-1
+      expect(newState.boards[0].columns[0].jobApplications).toHaveLength(0);
+      // Job should be added to column-2
+      expect(newState.boards[0].columns[1].jobApplications).toHaveLength(1);
+      expect(newState.boards[0].columns[1].jobApplications[0].id).toBe('job-1');
+    });
+
+    it('should move job when API returns ONLY columnId (camelCase) without column_id', () => {
+      const updatedJob = {
+        id: 'job-1',
+        title: 'Software Engineer',
+        columnId: 'column-2', // Only camelCase, no column_id
         company: { id: 'comp-1', name: 'Test Company', url: '', industry: '', description: '' },
         status: 'Applied' as const,
         color: '#6a776b',

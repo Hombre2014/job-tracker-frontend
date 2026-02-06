@@ -3,6 +3,14 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.3] - 2026-02-06
+
+### Fixed - Some minor code review feedback items that didn't fit into the main 1.4.2 release
+
+- "Backward compatibility" test doesn't isolate columnId (camelCase) — it supplies both keys.
+- Incomplete optional chaining — currentJobPost?.company.name in the span element.
+- currentJobPost!.company.name can throw if company is undefined.
+
 ## [1.4.2] - 2026-02-06
 
 ### Fixed - Code Review Improvements
@@ -3755,6 +3763,7 @@ _All changes maintain backward compatibility and enhance user experience with im
 
 <!-- Version comparison links -->
 
+[1.4.2]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.3.1...v1.4.0
 [1.3.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.3.0...v1.3.1
