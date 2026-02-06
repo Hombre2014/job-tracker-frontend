@@ -68,14 +68,13 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
 
   const handleSelectList = (value: string) => {
     const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) return;
+    
     const chosenColumn = localStorage.getItem('chosenColumn');
     
     setSelectedListName(value);
     setTemporaryMessage(`Moved to ${value}`);
-    // Only set localStorage if user is authenticated
-    if (accessToken) {
-      localStorage.setItem('chosenColumn', value);
-    }
+    localStorage.setItem('chosenColumn', value);
 
     const currentColumnOrder = boardColumns?.find(
       (column) => column.name === chosenColumn,
@@ -121,23 +120,20 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
         status: newStatus,
         jobPostId: job_id,
         columnId: newColumnId,
-        statusChangedTime: new Date().toISOString(), // Set the current date and time
-        accessToken: localStorage.getItem('accessToken'),
+        statusChangedTime: new Date().toISOString(),
+        accessToken,
         company: {
           name: currentJobPost!.company.name,
         },
       };
 
       dispatch(updateJobPost(updatePayload)).then(() => {
-        const accessToken = localStorage.getItem('accessToken');
-        if (accessToken) {
-          dispatch(
-            getAllJobApplicationNotes({
-              accessToken,
-              jobApplicationId: job_id,
-            }),
-          );
-        }
+        dispatch(
+          getAllJobApplicationNotes({
+            accessToken,
+            jobApplicationId: job_id,
+          }),
+        );
       });
 
       setTimeout(() => {
@@ -160,8 +156,8 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
             </CardTitle>
             <CardDescription className="flex items-center gap-2 mx-4 mt-8 pb-12 min-h-[20px]">
               <CompanyLogo
-                domain={currentJobPost?.company.url || ''}
-                companyName={currentJobPost?.company.name || ''}
+                domain={currentJobPost?.company?.url || ''}
+                companyName={currentJobPost?.company?.name || ''}
                 size="sm"
               />
               <span>{currentJobPost?.company.name}</span>

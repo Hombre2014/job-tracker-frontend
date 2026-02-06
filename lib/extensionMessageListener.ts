@@ -16,6 +16,7 @@
  *     location?: string;
  *     salary?: string;
  *     url?: string;
+ *     description?: string;
  *     storageKey?: string;
  *   }
  * }
@@ -32,6 +33,7 @@ export interface ExtensionMessage {
     location?: string;
     salary?: string;
     url?: string;
+    description?: string;
     storageKey?: string;
   };
 }

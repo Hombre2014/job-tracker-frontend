@@ -3,6 +3,75 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.2] - 2026-02-06
+
+### Fixed - Code Review Improvements
+
+- **localStorage Error Handling** (`utils/helpers.ts`):
+  - Added try-catch wrapper to `cleanupAfterJobPost` function
+  - Prevents crashes in private browsing mode or when localStorage is disabled
+  - Graceful degradation with console warning on failures
+
+- **Redundant localStorage Reads** (`app/(loggedin)/home/boards/[board_id]/job/layout.tsx`):
+  - Eliminated redundant `localStorage.getItem('accessToken')` calls
+  - Reused existing `accessToken` variable to prevent null token in API payload
+  - Added early return guard when token is missing
+  - Prevents "Authorization: Bearer null" header in API requests
+
+- **useEffect Dependencies** (`app/(loggedin)/home/boards/[board_id]/job/[job_id]/job-details/page.tsx`):
+  - Added `eslint-disable-next-line react-hooks/exhaustive-deps` comments
+  - Intentionally excluded localStorage values from dependency arrays
+  - Prevents infinite re-render loops while maintaining correct behavior
+
+- **Optional Chaining Safety** (`app/(loggedin)/home/boards/[board_id]/job/layout.tsx`):
+  - Added optional chaining on `company` property: `currentJobPost?.company?.url`
+  - Prevents TypeError if company object is undefined
+  - Consistent defensive programming pattern
+
+- **localStorage Error Handling in Layout** (`app/(loggedin)/layout.tsx`):
+  - Added try-catch for localStorage access in useEffect
+  - Fixed type annotation: `let token: string | null | undefined`
+  - Handles both Redux's `string | undefined` and localStorage's `string | null`
+
+- **Accessibility Improvements** (`components/LandingPage/Footer.tsx`):
+  - Updated aria-labels to be unique and descriptive
+  - Changed "GitHub" to "Job Tracker Helper GitHub repository" and "Job Tracker GitHub repository"
+  - Screen readers can now distinguish between different GitHub links
+
+- **CRITICAL: column_id vs columnId Mismatch** (`redux/boards/boardsSlice.ts`):
+  - Fixed critical bug where API returns `column_id` (snake_case) but code checked `columnId` (camelCase)
+  - Jobs were never being placed on boards after creation/update
+  - Added fallback logic: `const columnId = job?.columnId ?? job?.column_id`
+  - Comprehensive test suite with 8 passing tests validates the fix
+
+- **Duplicate Prevention in updateJobPost** (`redux/boards/boardsSlice.ts`):
+  - Added duplicate check before adding job to target column
+  - Prevents edge case where job could be added twice to same column
+  - Uses `some()` to check if job already exists before pushing
+
+### Fixed - TypeScript Compilation Errors
+
+- **Missing description Field** (`lib/extensionMessageListener.ts`):
+  - Added `description?: string` to `ExtensionMessage` interface
+  - Fixed Vercel deployment failure: "Property 'description' does not exist"
+  - Updated JSDoc comment to reflect the change
+
+- **Type Mismatch in Layout** (`app/(loggedin)/layout.tsx`):
+  - Fixed type annotation from `string | null` to `string | null | undefined`
+  - Accommodates both Redux's `accessToken` type and localStorage's return type
+  - Resolved build error preventing Vercel deployment
+
+### Testing
+
+- **Board State Management Tests** (`redux/boards/__tests__/boardsSlice.columnId.test.ts`):
+  - Created comprehensive test suite for column_id vs columnId handling
+  - 8 passing tests covering:
+    - Job creation with snake_case `column_id`
+    - Job creation with camelCase `columnId` (backward compatibility)
+    - Job updates and column moves
+    - Duplicate prevention
+    - Edge cases (missing properties, same column updates)
+
 ## [1.4.1] - 2026-02-06
 
 ### Security Enhancements
@@ -32,7 +101,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - New jobs added on other clients appear properly
     - Entire board state replacement works as expected
 
-### Testing
+### Testing Improvements
 
 - **Extension Message Listener Tests** (`lib/__tests__/extensionMessageListener.test.ts`):
   - Fixed failing tests by using `window.dispatchEvent(new MessageEvent(...))` instead of `window.postMessage()`

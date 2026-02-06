@@ -30,6 +30,7 @@ const JobDetails = () => {
     };
 
     dispatch(getAllJobPostsPerColumn(jobPostsData));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch]);
 
   useEffect(() => {
@@ -41,6 +42,7 @@ const JobDetails = () => {
       jobApplicationId: job_id,
     };
     dispatch(getAllJobApplicationNotes(updatePayload));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, job_id]);
 
   // TODO: Maybe make it the same way as Documents and Contacts

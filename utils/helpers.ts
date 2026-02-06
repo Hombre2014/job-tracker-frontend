@@ -25,15 +25,19 @@ export const cleanupAfterContact = () => {
 };
 
 export const cleanupAfterJobPost = () => {
-  localStorage.removeItem('company');
-  localStorage.removeItem('jobTitle');
-  localStorage.removeItem('companyId');
-  localStorage.removeItem('chosenColumn');
-  localStorage.removeItem('jobLocation');
-  localStorage.removeItem('jobDescription');
-  localStorage.removeItem('jobPostUrl');
-  localStorage.removeItem('jobSalary');
-  localStorage.removeItem('boardValueChanged');
+  try {
+    localStorage.removeItem('company');
+    localStorage.removeItem('jobTitle');
+    localStorage.removeItem('companyId');
+    localStorage.removeItem('chosenColumn');
+    localStorage.removeItem('jobLocation');
+    localStorage.removeItem('jobDescription');
+    localStorage.removeItem('jobPostUrl');
+    localStorage.removeItem('jobSalary');
+    localStorage.removeItem('boardValueChanged');
+  } catch (err) {
+    console.warn('Failed to clear job post draft data:', err);
+  }
 };
 
 export const cleanupAfterLogout = () => {

@@ -33,7 +33,7 @@ const Footer = (): JSX.Element => {
             <div className="flex gap-2 items-center cursor-pointer text-gray-400 text-sm hover:text-gray-200 transition">
               <a
                 target="_blank"
-                aria-label="GitHub"
+                aria-label="Job Tracker Helper GitHub repository"
                 rel="noopener noreferrer"
                 className="hover:text-gray-200 flex gap-2"
                 href="https://github.com/Hombre2014/job-tracker-extension"
@@ -56,7 +56,7 @@ const Footer = (): JSX.Element => {
               <div className="flex gap-2 items-center cursor-pointer text-gray-400 text-sm hover:text-gray-200 transition">
                 <a
                   target="_blank"
-                  aria-label="GitHub"
+                  aria-label="Job Tracker GitHub repository"
                   rel="noopener noreferrer"
                   className="hover:text-gray-200 flex gap-2"
                   href="https://github.com/Hombre2014/job-tracker-frontend"

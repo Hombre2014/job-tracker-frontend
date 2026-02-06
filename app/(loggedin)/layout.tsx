@@ -13,7 +13,14 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   const { accessToken } = useAppSelector((state) => state.user);
 
   useEffect(() => {
-    const token = accessToken || localStorage.getItem('accessToken');
+    let token: string | null | undefined = accessToken;
+    if (!token) {
+      try {
+        token = localStorage.getItem('accessToken');
+      } catch {
+        token = null;
+      }
+    }
 
     if (!token) {
       router.push('/login');

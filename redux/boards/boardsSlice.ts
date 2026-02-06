@@ -206,14 +206,15 @@ export const boardsSlice = createSlice({
       // Handle job creation to update board state
       .addCase(createJobPost.fulfilled, (state, action) => {
         const newJob = action.payload;
-        if (!newJob?.columnId) return;
+        const newJobColumnId = newJob?.columnId ?? newJob?.column_id;
+        if (!newJobColumnId) return;
 
         // Find the board that contains this column and update it
         for (const board of state.boards) {
           if (!board.columns) continue;
 
           const targetColumn = board.columns.find(
-            (col) => col.id === newJob.columnId,
+            (col) => col.id === newJobColumnId,
           );
 
           if (targetColumn) {
@@ -240,6 +241,7 @@ export const boardsSlice = createSlice({
       .addCase(updateJobPost.fulfilled, (state, action) => {
         const updatedJob = action.payload;
         if (!updatedJob?.id) return;
+        const updatedColumnId = updatedJob.columnId ?? updatedJob.column_id;
 
         // Find and remove the job from its current column
         let sourceBoard: Board | null = null;
@@ -268,12 +270,12 @@ export const boardsSlice = createSlice({
         }
 
         // If columnId is specified in the updated job, add it to the target column
-        if (updatedJob.columnId) {
+        if (updatedColumnId) {
           for (const board of state.boards) {
             if (!board.columns) continue;
 
             const targetColumn = board.columns.find(
-              (col) => col.id === updatedJob.columnId,
+              (col) => col.id === updatedColumnId,
             );
 
             if (targetColumn) {
@@ -282,8 +284,14 @@ export const boardsSlice = createSlice({
                 targetColumn.jobApplications = [];
               }
 
-              // Add the updated job to the target column
-              targetColumn.jobApplications.push(updatedJob);
+              // Only add if not already present (avoid duplicates)
+              const exists = targetColumn.jobApplications.some(
+                (job) => job.id === updatedJob.id,
+              );
+
+              if (!exists) {
+                targetColumn.jobApplications.push(updatedJob);
+              }
               break;
             }
           }
