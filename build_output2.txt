@@ -1,0 +1,29 @@
+
+> job-tracker-frontend@0.1.0 build
+> next build
+
+   ▲ Next.js 14.1.0
+   - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+
+🌼   [35mdaisyUI[39m [2m4.12.24[22m
+├─ [32m✔︎[39m 2 themes added[2m		https://daisyui.com/docs/themes[22m
+╰─ [32m★[39m [0mStar daisyUI on GitHub[0m	[2mhttps://github.com/saadeghi/daisyui[22m
+
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+./components/admin/MonitoringDashboard.tsx
+56:6  Warning: React Hook useEffect has a missing dependency: 'refreshInterval'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/auth/NetworkStatus.tsx
+55:6  Warning: React Hook useEffect has a missing dependency: 'wasOffline'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/CompanyLogo/CompanyLogo.tsx
+69:7  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./components/Forms/AddContact/CompaniesInput.tsx
+44:15  Warning: Elements with the ARIA role "option" must have the following attributes defined: aria-selected  jsx-a11y/role-has-required-aria-props
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/basic-features/eslint#disabling-rules

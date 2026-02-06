@@ -6,7 +6,7 @@ const Privacy = () => {
   return (
     <div>
       <h1 className="text-3xl font-bold mb-8">JobsTracker Privacy Policy</h1>
-      <p className="mb-8 mt-2">Last updated: March 10, 2024</p>
+      <p className="mb-8 mt-2">Last updated: February 2, 2026</p>
       <p className="mb-8 mt-2">
         This Privacy Policy describes Our policies and procedures on the
         collection, use and disclosure of Your information when You use the
@@ -41,6 +41,11 @@ const Privacy = () => {
           &quot;control&quot; means ownership of 50% or more of the shares,
           equity interest or other securities entitled to vote for election of
           directors or other managing authority.
+        </li>
+        <li className="mb-2">
+          <strong>Browser Extension</strong> refers to the optional browser
+          extension software that may be offered by JobsTracker to help users
+          collect and transfer job posting information to the Service.
         </li>
         <li className="mb-2">
           <strong>Company</strong> (referred to as either &quot;the
@@ -463,6 +468,60 @@ const Privacy = () => {
       <p className="mb-8 mt-2">
         We have no control over and assume no responsibility for the content,
         privacy policies or practices of any third party sites or services.
+      </p>
+      <h2 className="text-2xl font-bold mt-8">Browser Extension</h2>
+      <p className="mb-8 mt-2">
+        JobsTracker may offer an optional browser extension to enhance Your
+        experience. When You use the Browser Extension:
+      </p>
+      <h3 className="mt-4 text-xl font-bold">Data Collection</h3>
+      <p className="mb-8 mt-2">
+        The Browser Extension may collect job-related information (such as
+        company name, job title, location, and salary information) from web
+        pages You visit when You explicitly activate the extension by clicking
+        on it.
+      </p>
+      <h3 className="mt-4 text-xl font-bold">Data Transmission</h3>
+      <p className="mb-8 mt-2">
+        Any data collected by the Browser Extension is transmitted directly to
+        the JobsTracker web application via URL parameters. This data is NOT
+        stored on any server and passes through our systems only to pre-fill
+        forms in Your account.
+      </p>
+      <h3 className="mt-4 text-xl font-bold">No Persistent Storage</h3>
+      <p className="mb-8 mt-2">
+        We do not store, retain, or maintain any data collected by the Browser
+        Extension on our servers. All data transmission is ephemeral and exists
+        only temporarily during the transfer to pre-fill Your forms.
+      </p>
+      <h3 className="mt-4 text-xl font-bold">User Control</h3>
+      <p className="mb-8 mt-2">
+        You have complete control over what data is collected and when. The
+        Browser Extension only activates when You explicitly click on it and can
+        be uninstalled at any time. You can review and edit any collected data
+        before it is sent to the Service.
+      </p>
+      <h3 className="mt-4 text-xl font-bold">Third-Party Websites</h3>
+      <p className="mb-8 mt-2">
+        The Browser Extension may operate on third-party websites (such as
+        LinkedIn, Indeed, and other job boards). Your use of the Browser
+        Extension on these sites is at Your own risk and subject to those
+        sites&#39; Terms of Service. JobsTracker is not responsible for any
+        violations of third-party Terms of Service.
+      </p>
+      <p className="mb-8 mt-2">
+        <strong>Your Responsibility:</strong> You are solely responsible for
+        ensuring Your use of the Browser Extension complies with the Terms of
+        Service of any third-party websites You visit. We recommend reviewing
+        the terms of service of LinkedIn, Indeed, and other job boards before
+        using the Browser Extension on their sites.
+      </p>
+      <h3 className="mt-4 text-xl font-bold">No Third-Party Affiliation</h3>
+      <p className="mb-8 mt-2">
+        JobsTracker and its Browser Extension are not affiliated with,
+        endorsed by, or sponsored by LinkedIn, Indeed, or any other job board
+        platform. Use of the Browser Extension is entirely at Your own
+        discretion and risk.
       </p>
       <h2 className="text-2xl font-bold mt-8">
         Changes to this Privacy Policy

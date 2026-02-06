@@ -1,10 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer } from 'react-toastify';
-
 import { getUser } from '@/redux/user/userSlice';
 import { getBoards } from '@/redux/boards/boardsThunk';
 import Sidebar from '@/components/HomePage/SideBar/Sidebar';
@@ -13,27 +10,23 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 const HomeLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { accessToken: reduxAccessToken } = useAppSelector(
-    (state) => state.user,
-  );
-  const [accessToken, setAccessToken] = useState<string | null>(
-    reduxAccessToken ?? null,
-  );
+  const { accessToken } = useAppSelector((state) => state.user);
 
   useEffect(() => {
-    if (reduxAccessToken) {
-      setAccessToken(reduxAccessToken);
-    } else {
-      setAccessToken(localStorage.getItem('accessToken'));
+    let token: string | null | undefined = accessToken;
+    if (!token) {
+      try {
+        token = localStorage.getItem('accessToken');
+      } catch {
+        token = null;
+      }
     }
-  }, [reduxAccessToken]);
 
-  useEffect(() => {
-    if (accessToken) {
-      dispatch(getBoards(accessToken));
-      dispatch(getUser());
-    } else {
+    if (!token) {
       router.push('/login');
+    } else {
+      dispatch(getBoards(token));
+      dispatch(getUser());
     }
   }, [accessToken, router, dispatch]);
   return (
@@ -46,19 +39,6 @@ const HomeLayout = ({ children }: { children: React.ReactNode }) => {
           {children}
         </div>
       )}
-      <ToastContainer
-        draggable
-        rtl={false}
-        pauseOnHover
-        closeOnClick
-        theme="colored"
-        className="mr-4"
-        pauseOnFocusLoss
-        autoClose={3000}
-        newestOnTop={false}
-        position="top-right"
-        hideProgressBar={false}
-      />
     </div>
   );
 };

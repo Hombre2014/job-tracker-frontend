@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { Building2 } from 'lucide-react';
 
@@ -27,6 +26,7 @@ export const CompanyLogo = ({
   className,
 }: CompanyLogoProps) => {
   const [hasError, setHasError] = useState(false);
+  const [isBlankImage, setIsBlankImage] = useState(false);
   const { width, height, iconSize } = sizeMap[size];
 
   // Extract domain from URL if needed
@@ -35,14 +35,15 @@ export const CompanyLogo = ({
     .replace(/^www\./, '')
     .split('/')[0];
 
-  // Reset error state when domain changes
+  // Reset error states when domain or companyName changes
   useEffect(() => {
     setHasError(false);
-  }, [cleanDomain]);
+    setIsBlankImage(false);
+  }, [cleanDomain, companyName]);
 
   const logoUrl = `https://cdn.brandfetch.io/${cleanDomain}?c=${config.brandfetch.clientId}`;
 
-  if (hasError || !cleanDomain) {
+  if (hasError || isBlankImage || !cleanDomain) {
     return (
       <div
         className={cn(
@@ -59,17 +60,30 @@ export const CompanyLogo = ({
 
   return (
     <div
-      className={cn('relative overflow-hidden rounded', className)}
+      className={cn(
+        'relative flex items-center justify-center overflow-hidden rounded',
+        className,
+      )}
       style={{ width, height }}
     >
-      <Image
+      <img
         src={logoUrl}
+        loading="lazy"
         alt={`${companyName} logo`}
-        width={width}
-        height={height}
-        className="object-contain"
-        onError={() => setHasError(true)}
-        unoptimized
+        key={`${cleanDomain}-${companyName}`}
+        className="object-contain w-full h-full"
+        onLoad={(e) => {
+          const img = e.currentTarget;
+
+          // Check if image is suspiciously small (likely a placeholder or low-quality)
+          // Brandfetch often returns small placeholder images (e.g., 40x40) for unavailable logos
+          if (img.naturalWidth < 60 || img.naturalHeight < 60) {
+            setIsBlankImage(true);
+          }
+        }}
+        onError={() => {
+          setHasError(true);
+        }}
       />
     </div>
   );

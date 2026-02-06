@@ -34,14 +34,19 @@ export const getCompanyThatStartsWith = createAsyncThunk(
 export const createCompany = createAsyncThunk(
   'companies/createNewCompany',
   async (values: any, thunkAPI) => {
-    const { accessToken, name, url } = values;
-    const body: { name: string; url?: string } = {
+    const { accessToken, name, url, logo } = values;
+    const body: { name: string; url?: string; logo?: string | null } = {
       name: name,
     };
 
     // Include URL if provided
     if (url) {
       body.url = url;
+    }
+
+    // Include logo if provided (can be null for generic icon)
+    if (logo !== undefined) {
+      body.logo = logo;
     }
 
     try {

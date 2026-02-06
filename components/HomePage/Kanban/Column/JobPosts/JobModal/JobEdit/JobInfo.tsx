@@ -90,9 +90,12 @@ const JobInfo = () => {
   }, []);
 
   useEffect(() => {
+    const columnId = localStorage.getItem('columnId');
+    if (!columnId || columnId === 'null') return;
+
     const jobPostsData = {
       accessToken: localStorage.getItem('accessToken') as string,
-      columnId: localStorage.getItem('columnId'),
+      columnId,
     };
 
     dispatch(getAllJobPostsPerColumn(jobPostsData));

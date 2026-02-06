@@ -3,9 +3,330 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.0] - 2026-01-27
+## [1.4.3] - 2026-02-06
+
+### Fixed - Some minor code review feedback items that didn't fit into the main 1.4.2 release
+
+- "Backward compatibility" test doesn't isolate columnId (camelCase) — it supplies both keys.
+- Incomplete optional chaining — currentJobPost?.company.name in the span element.
+- currentJobPost!.company.name can throw if company is undefined.
+- Missing 'null' string guard on accessToken.
+
+## [1.4.2] - 2026-02-06
+
+### Fixed - Code Review Improvements
+
+- **localStorage Error Handling** (`utils/helpers.ts`):
+  - Added try-catch wrapper to `cleanupAfterJobPost` function
+  - Prevents crashes in private browsing mode or when localStorage is disabled
+  - Graceful degradation with console warning on failures
+
+- **Redundant localStorage Reads** (`app/(loggedin)/home/boards/[board_id]/job/layout.tsx`):
+  - Eliminated redundant `localStorage.getItem('accessToken')` calls
+  - Reused existing `accessToken` variable to prevent null token in API payload
+  - Added early return guard when token is missing
+  - Prevents "Authorization: Bearer null" header in API requests
+
+- **useEffect Dependencies** (`app/(loggedin)/home/boards/[board_id]/job/[job_id]/job-details/page.tsx`):
+  - Added `eslint-disable-next-line react-hooks/exhaustive-deps` comments
+  - Intentionally excluded localStorage values from dependency arrays
+  - Prevents infinite re-render loops while maintaining correct behavior
+
+- **Optional Chaining Safety** (`app/(loggedin)/home/boards/[board_id]/job/layout.tsx`):
+  - Added optional chaining on `company` property: `currentJobPost?.company?.url`
+  - Prevents TypeError if company object is undefined
+  - Consistent defensive programming pattern
+
+- **localStorage Error Handling in Layout** (`app/(loggedin)/layout.tsx`):
+  - Added try-catch for localStorage access in useEffect
+  - Fixed type annotation: `let token: string | null | undefined`
+  - Handles both Redux's `string | undefined` and localStorage's `string | null`
+
+- **Accessibility Improvements** (`components/LandingPage/Footer.tsx`):
+  - Updated aria-labels to be unique and descriptive
+  - Changed "GitHub" to "Job Tracker Helper GitHub repository" and "Job Tracker GitHub repository"
+  - Screen readers can now distinguish between different GitHub links
+
+- **CRITICAL: column_id vs columnId Mismatch** (`redux/boards/boardsSlice.ts`):
+  - Fixed critical bug where API returns `column_id` (snake_case) but code checked `columnId` (camelCase)
+  - Jobs were never being placed on boards after creation/update
+  - Added fallback logic: `const columnId = job?.columnId ?? job?.column_id`
+  - Comprehensive test suite with 8 passing tests validates the fix
+
+- **Duplicate Prevention in updateJobPost** (`redux/boards/boardsSlice.ts`):
+  - Added duplicate check before adding job to target column
+  - Prevents edge case where job could be added twice to same column
+  - Uses `some()` to check if job already exists before pushing
+
+### Fixed - TypeScript Compilation Errors
+
+- **Missing description Field** (`lib/extensionMessageListener.ts`):
+  - Added `description?: string` to `ExtensionMessage` interface
+  - Fixed Vercel deployment failure: "Property 'description' does not exist"
+  - Updated JSDoc comment to reflect the change
+
+- **Type Mismatch in Layout** (`app/(loggedin)/layout.tsx`):
+  - Fixed type annotation from `string | null` to `string | null | undefined`
+  - Accommodates both Redux's `accessToken` type and localStorage's return type
+  - Resolved build error preventing Vercel deployment
+
+### Testing
+
+- **Board State Management Tests** (`redux/boards/__tests__/boardsSlice.columnId.test.ts`):
+  - Created comprehensive test suite for column_id vs columnId handling
+  - 8 passing tests covering:
+    - Job creation with snake_case `column_id`
+    - Job creation with camelCase `columnId` (backward compatibility)
+    - Job updates and column moves
+    - Duplicate prevention
+    - Edge cases (missing properties, same column updates)
+
+## [1.4.1] - 2026-02-06
+
+### Security Enhancements
+
+- **Origin Validation for Extension Messages** (`lib/extensionMessageListener.ts`):
+  - Added strict origin validation to prevent malicious iframe/window message injection
+  - Only accepts messages from `window.location.origin` to block external attacks
+  - Prevents crafted JOB_DATA messages from unauthorized sources
+  - Enhanced test suite to use `MessageEvent` constructor with proper origin setting
+
+- **Production Logging Cleanup** (`lib/extensionMessageListener.ts`):
+  - Gated extension message logging behind `process.env.NODE_ENV === 'development'` check
+  - Prevents sensitive job data (URLs, company names) from being logged in production
+  - Reduces security risk of data exposure in production environments
+
+### Bug Fixes
+
+- **Board Sync Data Consistency** (`redux/boards/boardsSlice.ts`):
+  - **Fixed critical bug**: Jobs deleted on other clients were being resurrected during board sync
+  - **Root cause**: Merge logic couldn't distinguish between locally-pending jobs and server-deleted jobs
+  - **Solution**: Removed merge logic entirely; server response is now the single source of truth
+  - **Rationale**: Job creation is synchronous (backend returns ID immediately), so no pending jobs exist
+  - **Impact**: Multi-client consistency maintained; deleted jobs stay deleted across all clients
+  - **Test coverage**: Added comprehensive test suite (`boardsSlice.deletionSync.test.ts`) validating:
+    - Jobs deleted on other clients are properly removed (not resurrected)
+    - Complete column job deletion works correctly
+    - New jobs added on other clients appear properly
+    - Entire board state replacement works as expected
+
+### Testing Improvements
+
+- **Extension Message Listener Tests** (`lib/__tests__/extensionMessageListener.test.ts`):
+  - Fixed failing tests by using `window.dispatchEvent(new MessageEvent(...))` instead of `window.postMessage()`
+  - Properly sets `event.origin` for origin validation testing
+  - All 10 tests now passing with proper origin validation
+
+- **Board Deletion Sync Tests** (`redux/boards/__tests__/boardsSlice.deletionSync.test.ts`):
+  - New test suite with 4 comprehensive test scenarios
+  - Validates server-as-source-of-truth architecture
+  - Ensures deleted jobs are not resurrected during sync
+  - Tests complete board state replacement scenarios
+
+### Technical Improvements
+
+- **Event-Driven Architecture**: Extension message listener uses proper browser event system
+- **Type Safety**: Maintained strict TypeScript typing throughout all changes
+- **Code Quality**: Removed development logging from production code paths
+- **Security**: Enhanced message validation to prevent injection attacks
+
+## [1.4.0] - 2026-02-04 (Previous Release)
 
 ### Added
+
+- **Extension Message Passing (Phase 4.5)**
+  - Implemented direct postMessage communication between extension and frontend
+  - Created `lib/extensionMessageListener.ts` for message handling
+  - Integrated message listener in `AddJobShortForm` component
+  - Supports both message passing and URL parameters (backward compatible)
+  - Enables tab reuse - extension can send data to existing open tabs
+  - No URL character limits or browser history pollution
+  - Includes acknowledgment system for confirmation (`JOB_DATA_RECEIVED` message)
+  - Files: `lib/extensionMessageListener.ts`, `components/Forms/AddJobShort/AddJobShortForm.tsx`
+
+- **Company Logo Support in Message Passing**
+  - Added `companyDomain` and `companyLogo` fields to `ExtensionMessage` interface
+  - Message listener stores company domain and logo to localStorage
+  - `AddJobShortForm` reads and applies company data when creating jobs
+  - Ensures logos display correctly in Job Post Modal and cards
+  - Files: `lib/extensionMessageListener.ts`, `components/Forms/AddJobShort/AddJobShortForm.tsx`
+
+### Fixed
+
+- **Drag and Drop UI Update Issue** ⚠️ CRITICAL
+  - Fixed critical bug where drag and drop wouldn't visually update after moving a job between columns
+  - **Root cause**: `updateJobPost.fulfilled` action was only updating `jobsSlice`, not `boardsSlice`
+  - Board columns render from `boardsSlice.boards` state, so UI didn't reflect the move
+  - **Solution**: Added `updateJobPost.fulfilled` handler to `boardsSlice`:
+    - Removes job from source column
+    - Adds updated job to target column (when `columnId` changes)
+    - Updates job in-place when only job data changes (no column move)
+    - Handles edge cases: missing arrays, job not found, no columnId
+  - Now drag and drop instantly updates UI without requiring page refresh
+  - File: `redux/boards/boardsSlice.ts`
+
+- **Drag and Drop State Synchronization**
+  - Fixed critical issue where drag and drop wouldn't reflect changes after extension saves a job
+  - **Root cause**: `getBoardWithColumns.fulfilled` was completely replacing board data, overwriting locally created jobs
+  - Implemented intelligent merge strategy in `getBoardWithColumns.fulfilled`:
+    - Preserves locally created jobs that haven't synced to API yet
+    - Merges fresh API data with local-only jobs
+    - Prevents state overwrites from API fetches
+  - Added `createJobPost.fulfilled` handler to `boardsSlice` for immediate state updates
+  - Optimized with for-of loop, early break, null safety, and duplicate prevention
+  - Resolves need to refresh page or navigate away to see newly created jobs
+  - File: `redux/boards/boardsSlice.ts`
+
+- **Company Logo Issues**
+  - Fixed missing company logo in Job Post Modal header (Job Info tab)
+  - Removed conditional rendering - CompanyLogo now always displays
+  - Increased placeholder detection threshold from <10px to <60px
+  - Added `companyName` to useEffect dependencies for proper state reset
+  - Logos now consistently display Building2 icon for invalid/missing logos
+  - Files: `app/(loggedin)/home/boards/[board_id]/job/layout.tsx`, `components/CompanyLogo/CompanyLogo.tsx`
+
+- **Code Quality Improvements**
+  - Removed console.log statements from production code
+  - Fixed early return issue in documentation examples
+  - Added defensive check for `jobApplications` array in Redux slice
+  - Added consistency fix for deleting jobs from archived boards
+  - Files: `components/CompanyLogo/CompanyLogo.tsx`, `docs/Browser_Extension_Development.md`, `redux/boards/boardsSlice.ts`
+
+### Changed
+
+- **Extension Integration Architecture**
+  - Primary method: Direct message passing (new)
+  - Fallback method: URL parameters (existing)
+  - Extension can detect existing tabs and send messages
+  - Frontend listens for messages and populates form
+  - Better user experience with no page navigation required
+
+### Documentation
+
+- **Phase 4.5: Extension Message Passing**
+  - Complete implementation guide for extension side
+  - Message protocol specification
+  - Content script examples
+  - Testing procedures
+  - Benefits and use cases
+  - Files: `docs/Browser_Extension_Development.md`
+
+### Technical Details
+
+- **Message Protocol**
+  - Extension → Frontend: `{ type: 'JOB_DATA', source: 'job-tracker-extension', payload: {...} }`
+  - Frontend → Extension: `{ type: 'JOB_DATA_RECEIVED', source: 'job-tracker-frontend' }`
+  - Validation: Type checking, required fields, source verification
+  - Security: Origin validation, message structure validation
+
+- **Extension Implementation Requirements**
+  - Use `chrome.tabs.query()` to find existing tabs
+  - Use `chrome.tabs.sendMessage()` to send to content script
+  - Content script forwards to page via `window.postMessage()`
+  - Update manifest.json with content_scripts configuration
+
+## [1.3.1] - 2026-02-02
+
+### Added - 2026-02-02
+
+- **Company Domain/Logo Support from Browser Extension**
+  - Implemented `companyDomain` URL parameter support in BoardColumns auto-save flow
+  - Company domain is now passed when creating companies from extension
+  - Enables automatic logo fetching for companies created via extension
+  - Logos now display correctly in Job Info Modal, Job Post cards, and Company tab
+  - Files: `components/HomePage/Kanban/Column/BoardColumns.tsx`
+
+### Fixed - 2026-02-02
+
+- **Company Logo Not Displaying from Extension**
+  - Fixed missing `url` parameter when creating company during auto-save
+  - Extension now sends `companyDomain` parameter via URL
+  - Frontend reads `companyDomain` from searchParams and passes as `url` to createCompany
+  - Resolves issue where extension-created companies had generic logos
+  - Files: `components/HomePage/Kanban/Column/BoardColumns.tsx`
+
+### Changed - 2026-02-02
+
+- **Extension Integration Flow**
+  - Auto-save now captures and stores company domain alongside company name
+  - Company records created from extension now include URL/domain field
+  - Enables logo display using existing CompanyLogo component
+  - No changes to API or database schema required
+
+### Technical Details - 2026-02-02
+
+- **URL Parameter Flow**
+  - Extension sends: `company=Tesla&companyDomain=tesla.com&...`
+  - Frontend reads: `searchParams.get('companyDomain')`
+  - Frontend passes: `createCompany({ accessToken, name: company, url: companyDomain || '' })`
+  - Backend stores domain in company record
+  - CompanyLogo component fetches logo using stored domain
+
+## [1.3.0] - 2026-01-30
+
+### Added - 2026-01-30
+
+- **Frontend URL Parameter Integration (Phase 3)**
+  - Implemented `useSearchParams` logic in `AddJobShortForm` to pre-fill job details
+  - Supported parameters: `company`, `title` (or `jobTitle`), `location`, `description`, `salary`, `url`
+  - Added logic to automatically enable "Add" button when required fields are populated via URL
+  - Persisted URL parameters to `localStorage` for cross-component access
+  - Prevented login redirects when accessing deep links with parameters
+  - Files: `components/Forms/AddJobShort/AddJobShortForm.tsx`
+
+- **Extension Integration Tests**
+  - Added comprehensive test case for URL parameter pre-filling
+  - Verified form state updates correctly from mocked navigation parameters
+  - Files: `components/Forms/AddJobShort/__tests__/AddJobShortForm.test.tsx`
+
+## [1.2.0] - 2026-01-29
+
+### Added - 2026-01-29
+
+- **Comprehensive Test Suite (Phase 1 Complete)**
+  - Implemented 24 unit and integration tests across 5 core components
+  - **CompanyAutocomplete Tests** (6 tests)
+    - Rendering and input handling
+    - Suggestion display and selection logic
+    - Error states and empty states
+    - Keyboard navigation
+  - **JobPostCard Tests** (5 tests)
+    - Component rendering with job details
+    - Hover interactions with icon visibility
+    - Navigation with authentication checks
+    - Delete flow with AlertDialog integration
+    - Redux integration for data selection
+  - **JobInfo Tests** (8 tests)
+    - Initial data loading and display
+    - Form field rendering with Redux state
+    - Field updates (salary, location, description)
+    - URL validation with alert feedback
+    - Duplicate dispatch prevention
+  - **AddJobShortForm Tests** (3 tests)
+    - Form rendering and validation
+    - Successful job creation flow
+  - **CreateMenu Tests** (2 tests)
+    - Modal opening from navigation menu
+    - Job creation with Redux dispatch
+  - All tests use Vitest and React Testing Library
+  - Proper mocking of Redux hooks, Next.js navigation, and UI components
+  - Files: `components/CompanyAutocomplete/__tests__/CompanyAutocomplete.test.tsx`, `components/HomePage/Kanban/Column/JobPosts/__tests__/JobPostCard.test.tsx`, `components/HomePage/Kanban/Column/JobPosts/JobModal/JobEdit/__tests__/JobInfo.test.tsx`
+
+## [1.1.1] - 2026-01-28
+
+### Fixed - 2026-01-28
+
+- **Test Infrastructure & Type Safety**
+  - Resolved `Property 'toBeInTheDocument' does not exist` TypeScript error in tests
+  - Added `@testing-library/jest-dom` to `package.json` devDependencies
+  - Configured `vitest.setup.ts` to properly import `jest-dom/vitest` matchers
+  - Fixed `AddJobShortForm` tests by correcting `ComboBoardListBox` mock (added `forwardRef`)
+  - Fixed test assertions to handle multiple existing board selection elements using `getAllByTestId`
+  - Files: `package.json`, `vitest.setup.ts`, `components/Forms/AddJobShort/__tests__/AddJobShortForm.test.tsx`
+
+## [1.1.0] - 2026-01-27
+
+### Added - 2026-01-27
 
 - **Company Autocomplete & Logo Integration**
   - Integrated Clearbit Autocomplete API for company name suggestions in forms
@@ -30,14 +351,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Proper dark mode support with muted colors
   - Files: `JobPostCard.tsx`, `Company.tsx`, `CompanyLogo.tsx`
 
-### Changed
+### Changed - 2026-01-27
 
 - Updated `next.config.mjs` to allow external images from Brandfetch and Clearbit
 - Updated forms and UI to use new company autocomplete and logo components
 - Enhanced CompanyLogo component with 'use client' directive for Next.js App Router compatibility
 - Improved error handling in CompanyAutocomplete with user-friendly error messages
 
-### Fixed
+### Fixed - 2026-01-27
 
 - **User Feedback for Company Creation Failures**
   - Added toast error notifications when automatic company creation fails
@@ -158,7 +479,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Benefits**: Less code, clearer intent, tiny performance gain
   - **Files**: `components/HomePage/Kanban/Column/BoardColumns.tsx`
 
-### Documentation
+### Documentation Improvements
 
 - **Grammar Fix**: Fixed compound adjective hyphenation
   - **Change**: "1.5 second delay" → "1.5-second delay"
@@ -383,7 +704,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Removed Function**: `handlePasswordChangeSuccess` from login page (obsolete with new modal)
   - **Files**: `app/(auth)/login/page.tsx`, `app/(auth)/forgot-password/page.tsx`
 
-### Security Enhancements
+### Security Enhancements 2026-01-25
 
 - **Client-Side Password Strength Checking**: Non-breaking weak password detection
   - **Implementation**: JavaScript regex validation after successful login
@@ -811,7 +1132,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Form Validation Enhancement**: Implemented Zod preprocessing to eliminate dual trimming logic
   - **Files**: `app/(loggedin)/home/settings/page.tsx`, `app/(auth)/delete-account-verify/page.tsx`, `schemas/index.ts`
 
-### Technical Details
+### Technical Details - 2025-09-23
 
 - **Code Quality**: Resolved all CodeRabbit security and performance recommendations
 - **Type Safety**: Maintained 100% TypeScript compliance throughout all improvements
@@ -848,7 +1169,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Rate Limiting**: Resend code functionality with proper debouncing
   - **Files**: `app/(auth)/delete-account-verify/page.tsx`
 
-### Technical Details - 2025-09-23
+### Technical Details in v0.194.0
 
 - **Route Configuration**: Proper Next.js App Router integration in auth layout
 - **TypeScript Safety**: Full type safety with zero compilation errors
@@ -1826,7 +2147,7 @@ The document CHANGELOG.md was update with tis implementation.
   - **Solution**: Removed unnecessary `if (handleDismiss)` check since `useCallback` always returns a function
   - **Files**: `components/Misc/Modal.tsx`
 
-### Technical Improvements
+### Technical Improvements - 2025-08-02
 
 #### Authentication Flow Optimization
 
@@ -2526,7 +2847,7 @@ The document CHANGELOG.md was update with tis implementation.
 - **Security guidelines**: Best practices and production deployment recommendations
 - **Testing strategies**: Unit, integration, and end-to-end testing approaches
 
-### Bug Fixes
+### Bug Fixes - 2025-07-27
 
 #### Authentication Flow
 
@@ -3443,6 +3764,14 @@ _All changes maintain backward compatibility and enhance user experience with im
 
 <!-- Version comparison links -->
 
+[1.4.3]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.4.2...v1.4.3
+[1.4.2]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.4.1...v1.4.2
+[1.4.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.4.0...v1.4.1
+[1.4.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.3.1...v1.4.0
+[1.3.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.3.0...v1.3.1
+[1.3.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.2.0...v1.3.0
+[1.2.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.1.1...v1.2.0
+[1.1.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v0.200.0...v1.0.0

@@ -1,7 +1,7 @@
 'use client';
 
 import { useForm } from 'react-hook-form';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState, useCallback } from 'react';
 
@@ -12,6 +12,9 @@ import { createCompany } from '@/redux/companies/companiesThunk';
 import { CompanyAutocomplete } from '@/components/CompanyAutocomplete';
 import { CompanySuggestion } from '@/services/companyAutocompleteService';
 import ComboBoardListBox from '@/components/Forms/AddJobShort/ComboBoardListBox';
+import {
+  initExtensionMessageListener,
+} from '@/lib/extensionMessageListener';
 import {
   Form,
   FormItem,
@@ -28,6 +31,10 @@ interface AddJobShortFormProps {
     company: string;
     jobTitle: string;
     companyId?: string;
+    location?: string;
+    description?: string;
+    postUrl?: string;
+    salary?: string;
   }) => void;
 }
 
@@ -42,17 +49,18 @@ const AddJobShortForm = ({
   const [companyUrl, setCompanyUrl] = useState('');
   const [selectedCompany, setSelectedCompany] =
     useState<CompanySuggestion | null>(null);
+  const searchParams = useSearchParams();
   const [jobTitle, setJobTitle] = useState('');
   const [companyId, setCompanyId] = useState<string | undefined>(undefined);
   const getAccessToken = () =>
     typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
   const { boards } = useAppSelector((state) => state.boards);
   const initialBoard = boards.find((b) => b.id === board_id);
-  
+
   if (!initialBoard) {
     throw new Error(`Board with id ${board_id} not found`);
   }
-  
+
   const [selectedBoardId, setSelectedBoardId] = useState(initialBoard.id);
   const [selectedBoardName, setSelectedBoardName] = useState(initialBoard.name);
   const [boardColumns, setBoardColumns] = useState(initialBoard.columns);
@@ -111,21 +119,123 @@ const AddJobShortForm = ({
     },
   });
 
+  // Handle URL search parameters (for browser extension integration)
+  useEffect(() => {
+    const syncField = (key: string, value: string | null) => {
+      if (value && value.trim()) localStorage.setItem(key, value);
+      else localStorage.removeItem(key);
+    };
+
+    const urlCompany = searchParams.get('company');
+    const urlJobTitle =
+      searchParams.get('jobTitle') || searchParams.get('title');
+    const urlLocation = searchParams.get('location');
+    const urlDescription = searchParams.get('description');
+    const urlPostUrl = searchParams.get('url');
+    const urlSalary = searchParams.get('salary');
+
+    if (urlCompany) {
+      setCompany(urlCompany);
+      form.setValue('company', urlCompany);
+      localStorage.setItem('company', urlCompany);
+    }
+    if (urlJobTitle) {
+      setJobTitle(urlJobTitle);
+      form.setValue('jobTitle', urlJobTitle);
+      localStorage.setItem('jobTitle', urlJobTitle);
+    }
+
+    syncField('jobLocation', urlLocation);
+    syncField('jobDescription', urlDescription);
+    syncField('jobPostUrl', urlPostUrl);
+    syncField('jobSalary', urlSalary);
+  }, [searchParams, form]);
+
   const emitDraft = useCallback(
     (
-      next?: Partial<{ company: string; jobTitle: string; companyId?: string }>,
+      next?: Partial<{
+        company: string;
+        jobTitle: string;
+        companyId?: string;
+        location?: string;
+        description?: string;
+        postUrl?: string;
+        salary?: string;
+      }>,
     ) => {
       if (onDraftChange) {
         onDraftChange({
           company,
           jobTitle,
           companyId,
+          location:
+            searchParams.get('location') ||
+            localStorage.getItem('jobLocation') ||
+            '',
+          description:
+            searchParams.get('description') ||
+            localStorage.getItem('jobDescription') ||
+            '',
+          postUrl:
+            searchParams.get('url') || localStorage.getItem('jobPostUrl') || '',
+          salary:
+            searchParams.get('salary') ||
+            localStorage.getItem('jobSalary') ||
+            '',
           ...(next || {}),
         });
       }
     },
-    [onDraftChange, company, jobTitle, companyId],
+    [onDraftChange, company, jobTitle, companyId, searchParams],
   );
+
+  // Listen for messages from browser extension (direct communication)
+  useEffect(() => {
+    const cleanup = initExtensionMessageListener((data) => {
+      // Populate form with data from extension
+      if (data.company) {
+        setCompany(data.company);
+        form.setValue('company', data.company);
+        localStorage.setItem('company', data.company);
+      }
+      if (data.title) {
+        setJobTitle(data.title);
+        form.setValue('jobTitle', data.title);
+        localStorage.setItem('jobTitle', data.title);
+      }
+
+      // Store company data for logo/domain
+      if (data.companyDomain) {
+        setCompanyUrl(data.companyDomain);
+        localStorage.setItem('companyUrl', data.companyDomain);
+      }
+      if (data.companyLogo) {
+        localStorage.setItem('companyLogo', data.companyLogo);
+      }
+
+      // Store extra fields in localStorage
+      if (data.location) localStorage.setItem('jobLocation', data.location);
+      else localStorage.removeItem('jobLocation');
+      if (data.salary) localStorage.setItem('jobSalary', data.salary);
+      else localStorage.removeItem('jobSalary');
+      if (data.url) localStorage.setItem('jobPostUrl', data.url);
+      else localStorage.removeItem('jobPostUrl');
+      if (data.description) localStorage.setItem('jobDescription', data.description);
+      else localStorage.removeItem('jobDescription');
+
+      // Trigger draft update
+      emitDraft({
+        company: data.company,
+        jobTitle: data.title,
+        location: data.location,
+        salary: data.salary,
+        postUrl: data.url,
+      });
+    });
+
+    // Cleanup listener on unmount
+    return cleanup;
+  }, [form, emitDraft]);
 
   const handleCompanyChange = (value: string) => {
     setCompany(value);

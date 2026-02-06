@@ -26,7 +26,17 @@ export default function RootLayout({
         <StoreProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <AppClientProviders>{children}</AppClientProviders>
-            <ToastContainer position="top-right" autoClose={3000} />
+            <ToastContainer 
+              position="top-right" 
+              autoClose={3000} 
+              theme="colored" 
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+            />
           </ThemeProvider>
         </StoreProvider>
       </body>

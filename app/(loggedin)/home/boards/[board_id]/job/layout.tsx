@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 import { cn } from '@/lib/utils';
@@ -31,24 +31,30 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   const { push } = useRouter();
   const dispatch = useAppDispatch();
   const { board_id, job_id } = useParams();
-  const accessToken = localStorage.getItem('accessToken');
-  const chosenColumn = localStorage.getItem('chosenColumn');
   const { jobPosts } = useAppSelector((state) => state.jobs);
   const { boards } = useAppSelector((state) => state.boards);
-  const placeholderRef = useRef<HTMLDivElement | null>(null);
-  const [triggerWidth, setTriggerWidth] = useState<number>(80);
   const [selectedListName, setSelectedListName] = useState('');
   const [temporaryMessage, setTemporaryMessage] = useState<string>('');
   const boardColumns = boards.find((board) => board.id === board_id)?.columns;
 
   useEffect(() => {
+    const accessToken = localStorage.getItem('accessToken');
+    const columnId = localStorage.getItem('columnId');
+    if (
+      !columnId ||
+      columnId === 'null' ||
+      !accessToken ||
+      accessToken === 'null'
+    )
+      return;
+
     const jobPostsData = {
-      accessToken: accessToken as string,
-      columnId: localStorage.getItem('columnId'),
+      accessToken,
+      columnId,
     };
 
     dispatch(getAllJobPostsPerColumn(jobPostsData));
-  }, [dispatch, accessToken, board_id, job_id]);
+  }, [dispatch, board_id, job_id]);
 
   const closeModal = () => {
     push(`/home/boards/${board_id}/board`);
@@ -57,36 +63,41 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   // Defensive programming: Ensure jobPosts is always an array
   const safeJobPosts = Array.isArray(jobPosts) ? jobPosts : [];
   const currentJobPost = safeJobPosts.find((jobPost) => jobPost.id === job_id);
-  if (currentJobPost && accessToken) {
-    // Only set localStorage if user is authenticated
-    localStorage.setItem('currentJobPost', JSON.stringify(currentJobPost));
-  }
+
+  useEffect(() => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (currentJobPost && accessToken) {
+      // Only set localStorage if user is authenticated
+      localStorage.setItem('currentJobPost', JSON.stringify(currentJobPost));
+    }
+  }, [currentJobPost]);
 
   const handleSelectList = (value: string) => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) return;
+
+    const chosenColumn = localStorage.getItem('chosenColumn');
+
     setSelectedListName(value);
     setTemporaryMessage(`Moved to ${value}`);
-    // Only set localStorage if user is authenticated
-    if (accessToken) {
-      localStorage.setItem('chosenColumn', value);
-    }
+    localStorage.setItem('chosenColumn', value);
 
     const currentColumnOrder = boardColumns?.find(
-      (column) => column.name === chosenColumn
+      (column) => column.name === chosenColumn,
     )?.order;
 
     const newColumnOrder = boardColumns?.find(
-      (column) => column.name === value
+      (column) => column.name === value,
     )?.order;
 
     const newColumnId = boardColumns?.find(
-      (column) => column.name === value
+      (column) => column.name === value,
     )?.id;
 
     if (
-      (currentJobPost &&
-        newColumnOrder !== undefined &&
-        currentColumnOrder !== undefined) ||
-      currentColumnOrder === 0
+      currentJobPost &&
+      newColumnOrder !== undefined &&
+      currentColumnOrder !== undefined
     ) {
       let newStatus: jobPostStatus = currentJobPost!.status;
 
@@ -115,10 +126,10 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
         status: newStatus,
         jobPostId: job_id,
         columnId: newColumnId,
-        statusChangedTime: new Date().toISOString(), // Set the current date and time
-        accessToken: localStorage.getItem('accessToken'),
+        statusChangedTime: new Date().toISOString(),
+        accessToken,
         company: {
-          name: currentJobPost!.company.name,
+          name: currentJobPost!.company?.name || '',
         },
       };
 
@@ -127,7 +138,7 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
           getAllJobApplicationNotes({
             accessToken,
             jobApplicationId: job_id,
-          })
+          }),
         );
       });
 
@@ -138,14 +149,11 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  useEffect(() => {
-    if (placeholderRef.current) {
-      setTriggerWidth(placeholderRef.current.offsetWidth);
-    }
-  }, [temporaryMessage]);
-
   return (
-    <Modal stylings="sm:w-11/12 md:w-3/4 lg:w-2/3 xl:w-[960px]" onDismiss={closeModal}>
+    <Modal
+      stylings="sm:w-11/12 md:w-3/4 lg:w-2/3 xl:w-[960px]"
+      onDismiss={closeModal}
+    >
       <Card className="w-full min-h-[840px]">
         <div className="flex justify-between items-center">
           <CardHeader>
@@ -153,14 +161,12 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
               {currentJobPost?.title}
             </CardTitle>
             <CardDescription className="flex items-center gap-2 mx-4 mt-8 pb-12 min-h-[20px]">
-              {currentJobPost?.company.url && (
-                <CompanyLogo
-                  domain={currentJobPost.company.url}
-                  companyName={currentJobPost.company.name}
-                  size="sm"
-                />
-              )}
-              <span>{currentJobPost?.company.name}</span>
+              <CompanyLogo
+                domain={currentJobPost?.company?.url || ''}
+                companyName={currentJobPost?.company?.name || ''}
+                size="sm"
+              />
+              <span>{currentJobPost?.company?.name}</span>
             </CardDescription>
           </CardHeader>
           <div className="flex mr-6 gap-4">
@@ -168,31 +174,27 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
               onValueChange={handleSelectList}
               value={temporaryMessage ? undefined : selectedListName}
             >
-              <SelectTrigger
-                className={cn(
-                  'bg-blue-500 text-white transition-all duration-300 delay-100 ease-in-out overflow-hidden pr-2',
-                  {
-                    'w-[`$triggerWidth`px]': triggerWidth,
-                  }
-                )}
-              >
-                <SelectValue
-                  ref={placeholderRef}
-                  placeholder={temporaryMessage || 'Move'}
-                />
+              <SelectTrigger className="bg-blue-500 text-white w-24 px-4 py-2 rounded-md hover:bg-blue-600 transition-colors flex items-center justify-between">
+                <SelectValue placeholder={temporaryMessage || 'Move'} />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>Select list</SelectLabel>
-                  {boardColumns?.map((column) => (
-                    <SelectItem
-                      key={column.id}
-                      value={column.name}
-                      disabled={column.name === chosenColumn}
-                    >
-                      {column.name}
-                    </SelectItem>
-                  ))}
+                  {boardColumns?.map((column) => {
+                    const chosenColumn =
+                      typeof window !== 'undefined'
+                        ? localStorage.getItem('chosenColumn')
+                        : null;
+                    return (
+                      <SelectItem
+                        key={column.id}
+                        value={column.name}
+                        disabled={column.name === chosenColumn}
+                      >
+                        {column.name}
+                      </SelectItem>
+                    );
+                  })}
                 </SelectGroup>
               </SelectContent>
             </Select>

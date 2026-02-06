@@ -1,5 +1,65 @@
 # Technical Documentation
 
+## Frontend URL Parameter Integration (v1.3.0, 30/01/2026)
+
+### Overview
+
+Implemented deep linking support to allow external sources (like the browser extension) to pre-fill the "Add Job" form via URL parameters. This enables seamless data transfer from job boards to the Job Tracker.
+
+### Supported Parameters
+
+The `AddJobShortForm` component now accepts the following URL search parameters:
+
+- `company`: Company name (e.g., "Google")
+- `title` / `jobTitle`: Job title (e.g., "Software Engineer")
+- `location`: Job location (saved to localStorage for full details)
+- `description`: Job description (saved to localStorage)
+- `salary`: Salary information (saved to localStorage)
+- `url`: Direct link to the job post (saved to localStorage)
+
+### Workflow
+
+1.  **Incoming URL**: `.../board?company=Google&title=Engineer`
+2.  **Detection**: `useSearchParams` hook detects parameters on board load.
+3.  **State Update**:
+    *   Form fields (`company`, `jobTitle`) are auto-populated.
+    *   `localStorage` is updated to persist data across component re-renders (like modals).
+4.  **Validation**: Form validation runs immediately, enabling the "Add" button if requirements are met.
+5.  **Submission**: User clicks "Add" to create the job with pre-filled data.
+
+### Key Components
+
+- `components/Forms/AddJobShort/AddJobShortForm.tsx`: Logic for parsing params and updating state.
+- `app/(loggedin)/home/boards/[board_id]/board/page.tsx`: Ensures params are preserved during board rendering.
+
+### Testing
+
+- **Unit Test**: `components/Forms/AddJobShort/__tests__/AddJobShortForm.test.tsx` verifies that URL parameters correctly populate input fields.
+
+---
+
+## Test Infrastructure (v1.1.1, 28/01/2026)
+
+### Overview
+
+Enhanced the testing infrastructure to fix TypeScript errors and improve test reliability. The project uses Vitest with React Testing Library.
+
+### Changes
+
+- **Dependencies**: Added `@testing-library/jest-dom` for custom DOM matchers.
+- **Configuration**:
+  - `vitest.setup.ts` now imports `@testing-library/jest-dom/vitest`.
+  - `package.json` includes proper devDependencies.
+- **Components**:
+  - `AddJobShortForm.test.tsx`: Fixed mocks to use `forwardRef` and assertions to handle multiple elements.
+
+### Verification
+
+Run tests with:
+```bash
+npm test
+```
+
 ## Company Autocomplete & Logo Integration (v1.1.0, 27/01/2026)
 
 ### Overview
