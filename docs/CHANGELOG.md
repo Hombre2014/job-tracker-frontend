@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - "Backward compatibility" test doesn't isolate columnId (camelCase) — it supplies both keys.
 - Incomplete optional chaining — currentJobPost?.company.name in the span element.
 - currentJobPost!.company.name can throw if company is undefined.
+- Missing 'null' string guard on accessToken.
 
 ## [1.4.2] - 2026-02-06
 
@@ -3763,6 +3764,7 @@ _All changes maintain backward compatibility and enhance user experience with im
 
 <!-- Version comparison links -->
 
+[1.4.3]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.4.2...v1.4.3
 [1.4.2]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.3.1...v1.4.0

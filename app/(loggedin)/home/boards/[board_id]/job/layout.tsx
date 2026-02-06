@@ -40,7 +40,13 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const accessToken = localStorage.getItem('accessToken');
     const columnId = localStorage.getItem('columnId');
-    if (!columnId || columnId === 'null' || !accessToken) return;
+    if (
+      !columnId ||
+      columnId === 'null' ||
+      !accessToken ||
+      accessToken === 'null'
+    )
+      return;
 
     const jobPostsData = {
       accessToken,
@@ -57,7 +63,7 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   // Defensive programming: Ensure jobPosts is always an array
   const safeJobPosts = Array.isArray(jobPosts) ? jobPosts : [];
   const currentJobPost = safeJobPosts.find((jobPost) => jobPost.id === job_id);
-  
+
   useEffect(() => {
     const accessToken = localStorage.getItem('accessToken');
     if (currentJobPost && accessToken) {
@@ -69,9 +75,9 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   const handleSelectList = (value: string) => {
     const accessToken = localStorage.getItem('accessToken');
     if (!accessToken) return;
-    
+
     const chosenColumn = localStorage.getItem('chosenColumn');
-    
+
     setSelectedListName(value);
     setTemporaryMessage(`Moved to ${value}`);
     localStorage.setItem('chosenColumn', value);
@@ -175,7 +181,10 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
                 <SelectGroup>
                   <SelectLabel>Select list</SelectLabel>
                   {boardColumns?.map((column) => {
-                    const chosenColumn = typeof window !== 'undefined' ? localStorage.getItem('chosenColumn') : null;
+                    const chosenColumn =
+                      typeof window !== 'undefined'
+                        ? localStorage.getItem('chosenColumn')
+                        : null;
                     return (
                       <SelectItem
                         key={column.id}
