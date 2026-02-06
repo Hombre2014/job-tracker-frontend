@@ -24,26 +24,48 @@ const Footer = (): JSX.Element => {
             Job Tracker
           </Link>
         </div>
-        <div className="flex flex-col gap-2">
-          <div className="flex gap-2 items-center text-gray-400 text-sm hover:text-gray-200 transition">
-            <FaFileContract size={18} />
-            <a href="/terms">Terms of Service</a>
+        <div className="flex gap-4">
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2 items-center cursor-pointer text-gray-400 text-sm hover:text-gray-200 transition">
+              <FaUserShield size={18} />
+              <a href="/helper-privacy">JT Helper Privacy Policy</a>
+            </div>
+            <div className="flex gap-2 items-center cursor-pointer text-gray-400 text-sm hover:text-gray-200 transition">
+              <a
+                target="_blank"
+                aria-label="GitHub"
+                rel="noopener noreferrer"
+                className="hover:text-gray-200 flex gap-2"
+                href="https://github.com/Hombre2014/job-tracker-extension"
+              >
+                <FaGithub size={18} />
+                <span>Give JT Helper a star</span>
+              </a>
+            </div>
           </div>
-          <div className="flex gap-2 items-center text-gray-400 text-sm hover:text-gray-200 transition">
-            <FaUserShield size={18} />
-            <a href="/privacy">Privacy Policy</a>
-          </div>
-          <div className="flex gap-2 items-center cursor-pointer text-gray-400 text-sm hover:text-gray-200 transition">
-            <a
-              target="_blank"
-              aria-label="GitHub"
-              rel="noopener noreferrer"
-              className="hover:text-gray-200 flex gap-2"
-              href="https://github.com/Hombre2014/job-tracker-frontend"
-            >
-              <FaGithub size={18} />
-              <span>Give us a star</span>
-            </a>
+          <div>
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2 items-center text-gray-400 text-sm hover:text-gray-200 transition">
+                <FaFileContract size={18} />
+                <a href="/terms">Terms of Service</a>
+              </div>
+              <div className="flex gap-2 items-center text-gray-400 text-sm hover:text-gray-200 transition">
+                <FaUserShield size={18} />
+                <a href="/privacy">Privacy Policy</a>
+              </div>
+              <div className="flex gap-2 items-center cursor-pointer text-gray-400 text-sm hover:text-gray-200 transition">
+                <a
+                  target="_blank"
+                  aria-label="GitHub"
+                  rel="noopener noreferrer"
+                  className="hover:text-gray-200 flex gap-2"
+                  href="https://github.com/Hombre2014/job-tracker-frontend"
+                >
+                  <FaGithub size={18} />
+                  <span>Give JT a star</span>
+                </a>
+              </div>
+            </div>
           </div>
         </div>
         <div className="text-xs text-gray-400">
