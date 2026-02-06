@@ -3,7 +3,56 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.4.0] - 2026-02-04
+## [1.4.1] - 2026-02-06
+
+### Security Enhancements
+
+- **Origin Validation for Extension Messages** (`lib/extensionMessageListener.ts`):
+  - Added strict origin validation to prevent malicious iframe/window message injection
+  - Only accepts messages from `window.location.origin` to block external attacks
+  - Prevents crafted JOB_DATA messages from unauthorized sources
+  - Enhanced test suite to use `MessageEvent` constructor with proper origin setting
+
+- **Production Logging Cleanup** (`lib/extensionMessageListener.ts`):
+  - Gated extension message logging behind `process.env.NODE_ENV === 'development'` check
+  - Prevents sensitive job data (URLs, company names) from being logged in production
+  - Reduces security risk of data exposure in production environments
+
+### Bug Fixes
+
+- **Board Sync Data Consistency** (`redux/boards/boardsSlice.ts`):
+  - **Fixed critical bug**: Jobs deleted on other clients were being resurrected during board sync
+  - **Root cause**: Merge logic couldn't distinguish between locally-pending jobs and server-deleted jobs
+  - **Solution**: Removed merge logic entirely; server response is now the single source of truth
+  - **Rationale**: Job creation is synchronous (backend returns ID immediately), so no pending jobs exist
+  - **Impact**: Multi-client consistency maintained; deleted jobs stay deleted across all clients
+  - **Test coverage**: Added comprehensive test suite (`boardsSlice.deletionSync.test.ts`) validating:
+    - Jobs deleted on other clients are properly removed (not resurrected)
+    - Complete column job deletion works correctly
+    - New jobs added on other clients appear properly
+    - Entire board state replacement works as expected
+
+### Testing
+
+- **Extension Message Listener Tests** (`lib/__tests__/extensionMessageListener.test.ts`):
+  - Fixed failing tests by using `window.dispatchEvent(new MessageEvent(...))` instead of `window.postMessage()`
+  - Properly sets `event.origin` for origin validation testing
+  - All 10 tests now passing with proper origin validation
+
+- **Board Deletion Sync Tests** (`redux/boards/__tests__/boardsSlice.deletionSync.test.ts`):
+  - New test suite with 4 comprehensive test scenarios
+  - Validates server-as-source-of-truth architecture
+  - Ensures deleted jobs are not resurrected during sync
+  - Tests complete board state replacement scenarios
+
+### Technical Improvements
+
+- **Event-Driven Architecture**: Extension message listener uses proper browser event system
+- **Type Safety**: Maintained strict TypeScript typing throughout all changes
+- **Code Quality**: Removed development logging from production code paths
+- **Security**: Enhanced message validation to prevent injection attacks
+
+## [1.4.0] - 2026-02-04 (Previous Release)
 
 ### Added
 
@@ -14,7 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Supports both message passing and URL parameters (backward compatible)
   - Enables tab reuse - extension can send data to existing open tabs
   - No URL character limits or browser history pollution
-  - Includes acknowledgment system for confirmation (`JOB_DATA_ACK` message)
+  - Includes acknowledgment system for confirmation (`JOB_DATA_RECEIVED` message)
   - Files: `lib/extensionMessageListener.ts`, `components/Forms/AddJobShort/AddJobShortForm.tsx`
 
 - **Company Logo Support in Message Passing**
@@ -577,7 +626,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Removed Function**: `handlePasswordChangeSuccess` from login page (obsolete with new modal)
   - **Files**: `app/(auth)/login/page.tsx`, `app/(auth)/forgot-password/page.tsx`
 
-### Security Enhancements
+### Security Enhancements 2026-01-25
 
 - **Client-Side Password Strength Checking**: Non-breaking weak password detection
   - **Implementation**: JavaScript regex validation after successful login
@@ -2020,7 +2069,7 @@ The document CHANGELOG.md was update with tis implementation.
   - **Solution**: Removed unnecessary `if (handleDismiss)` check since `useCallback` always returns a function
   - **Files**: `components/Misc/Modal.tsx`
 
-### Technical Improvements
+### Technical Improvements - 2025-08-02
 
 #### Authentication Flow Optimization
 
@@ -2720,7 +2769,7 @@ The document CHANGELOG.md was update with tis implementation.
 - **Security guidelines**: Best practices and production deployment recommendations
 - **Testing strategies**: Unit, integration, and end-to-end testing approaches
 
-### Bug Fixes
+### Bug Fixes - 2025-07-27
 
 #### Authentication Flow
 
@@ -3637,7 +3686,8 @@ _All changes maintain backward compatibility and enhance user experience with im
 
 <!-- Version comparison links -->
 
-[1.4.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.3.0...v1.4.0
+[1.4.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.4.0...v1.4.1
+[1.4.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.3.1...v1.4.0
 [1.3.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.1.1...v1.2.0

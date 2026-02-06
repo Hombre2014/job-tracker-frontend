@@ -6,7 +6,7 @@ export default function PrivacyPolicyPage() {
     <div>
       <h1 className="text-3xl font-bold mb-8">Privacy Policy for Job Tracker Extension</h1>
       <p className="mb-8 mt-2">
-        <strong>Last Updated:</strong> February 5, 2026
+        <strong>Last Updated:</strong> February 2, 2026
       </p>
       <h2 className="text-2xl font-bold mt-8">Overview</h2>
       <p className="mb-8 mt-2">
@@ -17,8 +17,8 @@ export default function PrivacyPolicyPage() {
       </p>
       <h2 className="text-2xl font-bold mt-8">Information Collection and Use</h2>
       <h3 className="mt-4 text-xl font-bold">Data We Collect</h3>
-      <ol>
-        <li>
+      <ol className="list-decimal list-inside flex flex-col pl-4 my-4">
+        <li className="mb-2">
           <strong>Authentication Information</strong>
           <ul>
             <li>
@@ -111,8 +111,8 @@ export default function PrivacyPolicyPage() {
         </li>
       </ul>
       <h2 className="text-2xl font-bold mt-8">Third-Party Services</h2>
-      <ol>
-        <li>
+      <ol className="list-decimal list-inside flex flex-col pl-4 my-4">
+        <li className="mb-2">
           <strong>Job Tracker Web Application</strong> (
           <code>https://online-job-trackr.vercel.app</code>)
           <ul>
@@ -168,8 +168,8 @@ export default function PrivacyPolicyPage() {
         </li>
       </ol>
       <h2 className="text-2xl font-bold mt-8">Legal Basis for Processing (GDPR Article 6)</h2>
-      <ol>
-        <li>
+      <ol className="list-decimal list-inside flex flex-col pl-4 my-4">
+        <li className="mb-2">
           <strong>Contract Performance</strong> (Article 6(1)(b))
           <ul>
             <li>Authentication and account access</li>
@@ -282,8 +282,8 @@ export default function PrivacyPolicyPage() {
         </li>
       </ul>
       <h3 className="mt-4 text-xl font-bold">Third-Party Services and Data Transfers</h3>
-      <ol>
-        <li>
+      <ol className="list-decimal list-inside flex flex-col pl-4 my-4">
+        <li className="mb-2">
           <strong>Job Tracker Backend</strong> (
           <code>online-job-trackr.vercel.app</code>)
           <ul>
@@ -484,8 +484,8 @@ export default function PrivacyPolicyPage() {
       </p>
       <h2 className="text-2xl font-bold mt-8">Consent and Agreement</h2>
       <h3 className="mt-4 text-xl font-bold">Installing This Extension</h3>
-      <ol>
-        <li>
+      <ol className="list-decimal list-inside flex flex-col pl-4 my-4">
+        <li className="mb-2">
           <strong>Informed</strong>: You have access to this Privacy Policy
           explaining all data processing
         </li>

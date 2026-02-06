@@ -69,7 +69,13 @@ export const retrieveJobDraftFromExtension = async (
     );
 
     if (response?.success && response.data) {
-      return response.data as ExtensionJobData;
+      const data = response.data;
+      // Validate required fields before casting external data
+      if (typeof data.company === 'string' && typeof data.title === 'string') {
+        return data as ExtensionJobData;
+      }
+      console.warn('Extension bridge: Response data missing required fields');
+      return null;
     } else {
       console.warn('Extension bridge: Failed to retrieve data:', response);
       return null;

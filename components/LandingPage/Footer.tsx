@@ -28,7 +28,7 @@ const Footer = (): JSX.Element => {
           <div className="flex flex-col gap-2">
             <div className="flex gap-2 items-center cursor-pointer text-gray-400 text-sm hover:text-gray-200 transition">
               <FaUserShield size={18} />
-              <a href="/helper-privacy">JT Helper Privacy Policy</a>
+              <Link href="/helper-privacy">JT Helper Privacy Policy</Link>
             </div>
             <div className="flex gap-2 items-center cursor-pointer text-gray-400 text-sm hover:text-gray-200 transition">
               <a
@@ -47,11 +47,11 @@ const Footer = (): JSX.Element => {
             <div className="flex flex-col gap-2">
               <div className="flex gap-2 items-center text-gray-400 text-sm hover:text-gray-200 transition">
                 <FaFileContract size={18} />
-                <a href="/terms">Terms of Service</a>
+                <Link href="/terms">Terms of Service</Link>
               </div>
               <div className="flex gap-2 items-center text-gray-400 text-sm hover:text-gray-200 transition">
                 <FaUserShield size={18} />
-                <a href="/privacy">Privacy Policy</a>
+                <Link href="/privacy">Privacy Policy</Link>
               </div>
               <div className="flex gap-2 items-center cursor-pointer text-gray-400 text-sm hover:text-gray-200 transition">
                 <a

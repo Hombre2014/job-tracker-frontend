@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, Suspense } from 'react';
+import { useEffect } from 'react';
 
 import { getBoards } from '@/redux/boards/boardsThunk';
 import { setStatusToIdle } from '@/redux/user/userSlice';
@@ -27,13 +27,7 @@ const KanbanBoard = () => {
 
   return (
     <div className="h-full">
-      <Suspense
-        fallback={
-          <div className="p-8 text-center text-slate-500">Loading board...</div>
-        }
-      >
-        <BoardColumns />
-      </Suspense>
+      <BoardColumns />
     </div>
   );
 };

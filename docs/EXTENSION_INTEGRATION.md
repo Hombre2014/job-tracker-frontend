@@ -92,6 +92,6 @@ The system is **fully backward compatible**:
 ## Benefits
 
 ✅ **Full descriptions** - No more 1000-character truncation!
-✅ **Secure** - One-time use, data auto-deleted after retrieval
+✅ **Secure** - One-time use, extension auto-deletes data after retrieval
 ✅ **Clean URLs** - Storage key is small, data doesn't bloat the URL
 ✅ **Backward compatible** - Works with or without extension ID configured

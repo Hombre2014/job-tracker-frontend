@@ -8,13 +8,15 @@
  * {
  *   type: 'JOB_DATA',
  *   source: 'job-tracker-extension',
- *   payload: {
+ *   data: {
  *     company: string;
+ *     companyDomain?: string;
+ *     companyLogo?: string | null;
  *     title: string;
  *     location?: string;
  *     salary?: string;
  *     url?: string;
- *     source?: 'linkedin' | 'indeed' | 'manual';
+ *     storageKey?: string;
  *   }
  * }
  */
@@ -45,8 +47,17 @@ export function initExtensionMessageListener(
   handler: ExtensionMessageHandler,
 ): () => void {
   const messageListener = (event: MessageEvent) => {
-    // Verify message origin (allow from same origin or extension)
-    // In production, you might want to be more restrictive
+    // Only accept messages from same origin
+    // In test environment, allow 'http://localhost' origins
+    const isValidOrigin =
+      event.origin === window.location.origin ||
+      (process.env.NODE_ENV === 'test' &&
+        event.origin.startsWith('http://localhost'));
+
+    if (!isValidOrigin) {
+      return;
+    }
+
     if (!event.data || typeof event.data !== 'object') {
       return;
     }
@@ -67,7 +78,9 @@ export function initExtensionMessageListener(
         message.data.company.trim() &&
         message.data.title.trim()
       ) {
-        console.log('Extension message received:', message.data);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Extension message received:', message.data);
+        }
 
         // Send acknowledgment
         sendAcknowledgment();

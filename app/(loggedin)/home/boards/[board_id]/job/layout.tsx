@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 import { cn } from '@/lib/utils';
@@ -31,8 +31,6 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   const { push } = useRouter();
   const dispatch = useAppDispatch();
   const { board_id, job_id } = useParams();
-  const accessToken = localStorage.getItem('accessToken');
-  const chosenColumn = localStorage.getItem('chosenColumn');
   const { jobPosts } = useAppSelector((state) => state.jobs);
   const { boards } = useAppSelector((state) => state.boards);
   const [selectedListName, setSelectedListName] = useState('');
@@ -40,16 +38,17 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   const boardColumns = boards.find((board) => board.id === board_id)?.columns;
 
   useEffect(() => {
+    const accessToken = localStorage.getItem('accessToken');
     const columnId = localStorage.getItem('columnId');
-    if (!columnId || columnId === 'null') return;
+    if (!columnId || columnId === 'null' || !accessToken) return;
 
     const jobPostsData = {
-      accessToken: accessToken as string,
+      accessToken,
       columnId,
     };
 
     dispatch(getAllJobPostsPerColumn(jobPostsData));
-  }, [dispatch, accessToken, board_id, job_id]);
+  }, [dispatch, board_id, job_id]);
 
   const closeModal = () => {
     push(`/home/boards/${board_id}/board`);
@@ -58,12 +57,19 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   // Defensive programming: Ensure jobPosts is always an array
   const safeJobPosts = Array.isArray(jobPosts) ? jobPosts : [];
   const currentJobPost = safeJobPosts.find((jobPost) => jobPost.id === job_id);
-  if (currentJobPost && accessToken) {
-    // Only set localStorage if user is authenticated
-    localStorage.setItem('currentJobPost', JSON.stringify(currentJobPost));
-  }
+  
+  useEffect(() => {
+    const accessToken = localStorage.getItem('accessToken');
+    if (currentJobPost && accessToken) {
+      // Only set localStorage if user is authenticated
+      localStorage.setItem('currentJobPost', JSON.stringify(currentJobPost));
+    }
+  }, [currentJobPost]);
 
   const handleSelectList = (value: string) => {
+    const accessToken = localStorage.getItem('accessToken');
+    const chosenColumn = localStorage.getItem('chosenColumn');
+    
     setSelectedListName(value);
     setTemporaryMessage(`Moved to ${value}`);
     // Only set localStorage if user is authenticated
@@ -84,10 +90,9 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
     )?.id;
 
     if (
-      (currentJobPost &&
-        newColumnOrder !== undefined &&
-        currentColumnOrder !== undefined) ||
-      currentColumnOrder === 0
+      currentJobPost &&
+      newColumnOrder !== undefined &&
+      currentColumnOrder !== undefined
     ) {
       let newStatus: jobPostStatus = currentJobPost!.status;
 
@@ -124,12 +129,15 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
       };
 
       dispatch(updateJobPost(updatePayload)).then(() => {
-        dispatch(
-          getAllJobApplicationNotes({
-            accessToken,
-            jobApplicationId: job_id,
-          }),
-        );
+        const accessToken = localStorage.getItem('accessToken');
+        if (accessToken) {
+          dispatch(
+            getAllJobApplicationNotes({
+              accessToken,
+              jobApplicationId: job_id,
+            }),
+          );
+        }
       });
 
       setTimeout(() => {
@@ -170,15 +178,18 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
               <SelectContent>
                 <SelectGroup>
                   <SelectLabel>Select list</SelectLabel>
-                  {boardColumns?.map((column) => (
-                    <SelectItem
-                      key={column.id}
-                      value={column.name}
-                      disabled={column.name === chosenColumn}
-                    >
-                      {column.name}
-                    </SelectItem>
-                  ))}
+                  {boardColumns?.map((column) => {
+                    const chosenColumn = typeof window !== 'undefined' ? localStorage.getItem('chosenColumn') : null;
+                    return (
+                      <SelectItem
+                        key={column.id}
+                        value={column.name}
+                        disabled={column.name === chosenColumn}
+                      >
+                        {column.name}
+                      </SelectItem>
+                    );
+                  })}
                 </SelectGroup>
               </SelectContent>
             </Select>

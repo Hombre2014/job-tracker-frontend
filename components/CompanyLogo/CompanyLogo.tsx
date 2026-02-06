@@ -67,9 +67,10 @@ export const CompanyLogo = ({
       style={{ width, height }}
     >
       <img
-        key={`${cleanDomain}-${companyName}`}
         src={logoUrl}
+        loading="lazy"
         alt={`${companyName} logo`}
+        key={`${cleanDomain}-${companyName}`}
         className="object-contain w-full h-full"
         onLoad={(e) => {
           const img = e.currentTarget;

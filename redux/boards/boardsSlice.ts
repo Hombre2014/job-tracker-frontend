@@ -124,43 +124,9 @@ export const boardsSlice = createSlice({
         );
 
         if (existingBoardIndex !== -1) {
-          // Merge: Keep locally created jobs that might not be in API response yet
-          const existingBoard = state.boards[existingBoardIndex];
-          const mergedBoard = { ...fetchedBoard };
-
-          // For each column, merge job applications
-          if (mergedBoard.columns && existingBoard.columns) {
-            mergedBoard.columns = mergedBoard.columns.map(
-              (fetchedCol: Column) => {
-                const existingCol = existingBoard.columns?.find(
-                  (c) => c.id === fetchedCol.id,
-                );
-
-                if (existingCol?.jobApplications) {
-                  // Find jobs that exist locally but not in fetched data
-                  const localOnlyJobs = existingCol.jobApplications.filter(
-                    (localJob) =>
-                      !fetchedCol.jobApplications?.some(
-                        (fetchedJob) => fetchedJob.id === localJob.id,
-                      ),
-                  );
-
-                  // Merge: fetched jobs + local-only jobs
-                  return {
-                    ...fetchedCol,
-                    jobApplications: [
-                      ...(fetchedCol.jobApplications || []),
-                      ...localOnlyJobs,
-                    ],
-                  };
-                }
-
-                return fetchedCol;
-              },
-            );
-          }
-
-          state.boards[existingBoardIndex] = mergedBoard;
+          // Replace with server data as source of truth
+          // Job creation is synchronous, so no pending jobs exist
+          state.boards[existingBoardIndex] = fetchedBoard;
         } else {
           // Board doesn't exist in state yet, add it
           state.boards.push(fetchedBoard);

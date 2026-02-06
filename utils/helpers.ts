@@ -29,7 +29,11 @@ export const cleanupAfterJobPost = () => {
   localStorage.removeItem('jobTitle');
   localStorage.removeItem('companyId');
   localStorage.removeItem('chosenColumn');
-  localStorage.removeItem('boardValueChanged'); // Remove instead of setting to false
+  localStorage.removeItem('jobLocation');
+  localStorage.removeItem('jobDescription');
+  localStorage.removeItem('jobPostUrl');
+  localStorage.removeItem('jobSalary');
+  localStorage.removeItem('boardValueChanged');
 };
 
 export const cleanupAfterLogout = () => {

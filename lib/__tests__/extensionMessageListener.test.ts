@@ -27,21 +27,25 @@ describe('extensionMessageListener', () => {
       const message = {
         type: 'JOB_DATA',
         source: 'job-tracker-extension',
-        payload: {
+        data: {
           company: 'Tesla',
           title: 'Senior Frontend Engineer',
           location: 'Remote',
           salary: '$120k-$160k',
           url: 'https://tesla.com/careers/123',
-          source: 'linkedin' as const,
         },
       };
 
-      window.postMessage(message, '*');
+      // Dispatch event directly to simulate same-origin message
+      const event = new MessageEvent('message', {
+        data: message,
+        origin: window.location.origin,
+      });
+      window.dispatchEvent(event);
 
       // Wait for message to be processed
       await new Promise((resolve) => setTimeout(resolve, 10));
-      expect(handler).toHaveBeenCalledWith(message.payload);
+      expect(handler).toHaveBeenCalledWith(message.data);
     });
 
     it('should call handler with only required fields', async () => {
@@ -51,16 +55,20 @@ describe('extensionMessageListener', () => {
       const message = {
         type: 'JOB_DATA',
         source: 'job-tracker-extension',
-        payload: {
+        data: {
           company: 'Google',
           title: 'Software Engineer',
         },
       };
 
-      window.postMessage(message, '*');
+      const event = new MessageEvent('message', {
+        data: message,
+        origin: window.location.origin,
+      });
+      window.dispatchEvent(event);
 
       await new Promise((resolve) => setTimeout(resolve, 10));
-      expect(handler).toHaveBeenCalledWith(message.payload);
+      expect(handler).toHaveBeenCalledWith(message.data);
     });
 
     it('should not call handler with invalid message type', async () => {
@@ -70,7 +78,7 @@ describe('extensionMessageListener', () => {
       const message = {
         type: 'INVALID_TYPE',
         source: 'job-tracker-extension',
-        payload: {
+        data: {
           company: 'Tesla',
           title: 'Engineer',
         },
@@ -89,7 +97,7 @@ describe('extensionMessageListener', () => {
       const message = {
         type: 'JOB_DATA',
         source: 'malicious-extension',
-        payload: {
+        data: {
           company: 'Tesla',
           title: 'Engineer',
         },
@@ -108,7 +116,7 @@ describe('extensionMessageListener', () => {
       const message = {
         type: 'JOB_DATA',
         source: 'job-tracker-extension',
-        payload: {
+        data: {
           title: 'Engineer',
         },
       };
@@ -126,7 +134,7 @@ describe('extensionMessageListener', () => {
       const message = {
         type: 'JOB_DATA',
         source: 'job-tracker-extension',
-        payload: {
+        data: {
           company: 'Tesla',
         },
       };
@@ -144,7 +152,7 @@ describe('extensionMessageListener', () => {
       const message = {
         type: 'JOB_DATA',
         source: 'job-tracker-extension',
-        payload: {
+        data: {
           company: '',
           title: 'Engineer',
         },
@@ -163,7 +171,7 @@ describe('extensionMessageListener', () => {
       const message = {
         type: 'JOB_DATA',
         source: 'job-tracker-extension',
-        payload: {
+        data: {
           company: 'Tesla',
           title: '   ',
         },
@@ -188,7 +196,7 @@ describe('extensionMessageListener', () => {
       const message = {
         type: 'JOB_DATA',
         source: 'job-tracker-extension',
-        payload: {
+        data: {
           company: 'Tesla',
           title: 'Engineer',
         },

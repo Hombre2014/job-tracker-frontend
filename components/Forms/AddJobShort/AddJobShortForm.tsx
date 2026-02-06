@@ -14,7 +14,6 @@ import { CompanySuggestion } from '@/services/companyAutocompleteService';
 import ComboBoardListBox from '@/components/Forms/AddJobShort/ComboBoardListBox';
 import {
   initExtensionMessageListener,
-  sendAcknowledgment,
 } from '@/lib/extensionMessageListener';
 import {
   Form,
@@ -122,6 +121,11 @@ const AddJobShortForm = ({
 
   // Handle URL search parameters (for browser extension integration)
   useEffect(() => {
+    const syncField = (key: string, value: string | null) => {
+      if (value && value.trim()) localStorage.setItem(key, value);
+      else localStorage.removeItem(key);
+    };
+
     const urlCompany = searchParams.get('company');
     const urlJobTitle =
       searchParams.get('jobTitle') || searchParams.get('title');
@@ -141,11 +145,10 @@ const AddJobShortForm = ({
       localStorage.setItem('jobTitle', urlJobTitle);
     }
 
-    // Store extra fields in localStorage for the "Save" thunk to pick up
-    if (urlLocation) localStorage.setItem('jobLocation', urlLocation);
-    if (urlDescription) localStorage.setItem('jobDescription', urlDescription);
-    if (urlPostUrl) localStorage.setItem('jobPostUrl', urlPostUrl);
-    if (urlSalary) localStorage.setItem('jobSalary', urlSalary);
+    syncField('jobLocation', urlLocation);
+    syncField('jobDescription', urlDescription);
+    syncField('jobPostUrl', urlPostUrl);
+    syncField('jobSalary', urlSalary);
   }, [searchParams, form]);
 
   const emitDraft = useCallback(
@@ -212,11 +215,13 @@ const AddJobShortForm = ({
 
       // Store extra fields in localStorage
       if (data.location) localStorage.setItem('jobLocation', data.location);
+      else localStorage.removeItem('jobLocation');
       if (data.salary) localStorage.setItem('jobSalary', data.salary);
+      else localStorage.removeItem('jobSalary');
       if (data.url) localStorage.setItem('jobPostUrl', data.url);
-
-      // Send acknowledgment back to extension
-      sendAcknowledgment();
+      else localStorage.removeItem('jobPostUrl');
+      if (data.description) localStorage.setItem('jobDescription', data.description);
+      else localStorage.removeItem('jobDescription');
 
       // Trigger draft update
       emitDraft({
