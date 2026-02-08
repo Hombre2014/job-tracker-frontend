@@ -95,8 +95,13 @@ const EditCompanyForm = ({
       url: formattedUrl,
     };
 
-    // Normalize URLs for comparison to avoid false positives due to formatting
-    function normalizeUrl(url: string) {
+    const originalDomain = normalizeUrl(initialData.url);
+    const newDomain = normalizeUrl(formattedUrl);
+    const nameChanged = data.name !== initialData.name;
+    const domainChanged = newDomain !== originalDomain;
+    // Hoisted utility: Normalize URLs for comparison to avoid false positives due to formatting
+    function normalizeUrl(url?: string | null): string {
+      if (!url) return '';
       try {
         return new URL(url.startsWith('http') ? url : `https://${url}`)
           .hostname;
@@ -104,59 +109,73 @@ const EditCompanyForm = ({
         return url;
       }
     }
-    const originalDomain = normalizeUrl(initialData.url);
-    const newDomain = normalizeUrl(formattedUrl);
-    const nameChanged = data.name !== initialData.name;
-    const domainChanged = newDomain !== originalDomain;
 
     // Validate domain changes
     if (domainChanged && newDomain && accessToken) {
-      const validation = await validateDomain(newDomain, accessToken);
-      if (validation.error) {
-        toast.error('Could not validate domain. Please try again or check your connection.');
+      try {
+        const validation = await validateDomain(newDomain, accessToken);
+        if (validation.error) {
+          toast.error(
+            'Could not validate domain. Please try again or check your connection.',
+          );
+          return;
+        }
+        if (
+          validation.exists &&
+          validation.name &&
+          validation.name !== data.name
+        ) {
+          // Domain is registered to a different company
+          setDomainValidationData({
+            domain: newDomain,
+            registeredName: validation.name,
+            logo: validation.logo,
+            type: 'domain-change',
+            formData: formattedData,
+          });
+          setShowDomainDialog(true);
+          return; // Stop submission, wait for user confirmation
+        }
+      } catch {
+        toast.error(
+          'Could not validate domain. Please try again or check your connection.',
+        );
         return;
-      }
-      if (
-        validation.exists &&
-        validation.name &&
-        validation.name !== data.name
-      ) {
-        // Domain is registered to a different company
-        setDomainValidationData({
-          domain: newDomain,
-          registeredName: validation.name,
-          logo: validation.logo,
-          type: 'domain-change',
-          formData: formattedData,
-        });
-        setShowDomainDialog(true);
-        return; // Stop submission, wait for user confirmation
       }
     }
 
     // Check if name changed but domain stayed the same
     if (nameChanged && !domainChanged && originalDomain && accessToken) {
-      const validation = await validateDomain(originalDomain, accessToken);
-      if (validation.error) {
-        toast.error('Could not validate domain. Please try again or check your connection.');
+      try {
+        const validation = await validateDomain(originalDomain, accessToken);
+        if (validation.error) {
+          toast.error(
+            'Could not validate domain. Please try again or check your connection.',
+          );
+          return;
+        }
+        if (
+          validation.exists &&
+          validation.name &&
+          validation.name !== data.name
+        ) {
+          // Domain belongs to a different company name
+          setDomainValidationData({
+            domain: originalDomain,
+            registeredName: validation.name,
+            logo: validation.logo,
+            type: 'name-mismatch',
+            attemptedName: data.name,
+            formData: formattedData,
+          });
+          setShowDomainDialog(true);
+          return; // Stop submission, show warning
+        }
+      } catch {
+        toast.error(
+          'Could not validate domain. Please try again or check your connection.',
+        );
         return;
-      }
-      if (
-        validation.exists &&
-        validation.name &&
-        validation.name !== data.name
-      ) {
-        // Domain belongs to a different company name
-        setDomainValidationData({
-          domain: originalDomain,
-          registeredName: validation.name,
-          logo: validation.logo,
-          type: 'name-mismatch',
-          attemptedName: data.name,
-          formData: formattedData,
-        });
-        setShowDomainDialog(true);
-        return; // Stop submission, show warning
       }
     }
 
@@ -166,6 +185,10 @@ const EditCompanyForm = ({
 
   const performUpdate = async (formattedData: any) => {
     const accessToken = getAccessToken();
+    if (!accessToken) {
+      setSubmitError('Session expired. Please log in again.');
+      return;
+    }
 
     try {
       const result = await dispatch(
@@ -201,8 +224,8 @@ const EditCompanyForm = ({
   };
 
   const handleDomainDialogAccept = async () => {
-    if (domainValidationData?.type === 'domain-change') {
-      // User accepted the domain change with the registered company name
+    if (domainValidationData) {
+      // User accepted the dialog (domain-change or name-mismatch): revert name to registered
       const updatedData = {
         ...domainValidationData.formData,
         name: domainValidationData.registeredName,
@@ -325,6 +348,9 @@ const EditCompanyForm = ({
                         src={field.value}
                         alt="Logo preview"
                         className="max-w-full max-h-full object-contain"
+                        onLoad={(e) =>
+                          (e.currentTarget.style.display = 'block')
+                        }
                         onError={(e) =>
                           (e.currentTarget.style.display = 'none')
                         }

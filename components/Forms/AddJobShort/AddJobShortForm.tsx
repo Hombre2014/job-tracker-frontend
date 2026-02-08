@@ -244,13 +244,15 @@ const AddJobShortForm = ({
         localStorage.setItem('jobDescription', data.description);
       else localStorage.removeItem('jobDescription');
 
-      // Trigger draft update
+      // Trigger draft update, passing extension-sourced domain/logo directly
       emitDraft({
         company: data.company,
         jobTitle: data.title,
         location: data.location,
         salary: data.salary,
         postUrl: data.url,
+        companyDomain: data.companyDomain,
+        companyLogo: data.companyLogo,
       });
     });
 
