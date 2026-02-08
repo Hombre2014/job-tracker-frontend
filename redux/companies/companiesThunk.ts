@@ -2,10 +2,6 @@ import { isAxiosError } from 'axios';
 
 import client from '@/api/client';
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import {
-  findCompanyByNameOrDomain,
-  validateDomain as validateDomainService,
-} from '@/services/brandfetchValidationService';
 
 export const getCompanyThatStartsWith = createAsyncThunk(
   'companies/getCompanyThatStartsWith',
@@ -71,7 +67,6 @@ export const createCompany = createAsyncThunk(
     }
   },
 );
-
 
 export const getCompany = createAsyncThunk(
   'companies/getCompany',

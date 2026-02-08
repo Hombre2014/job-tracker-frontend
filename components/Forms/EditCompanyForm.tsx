@@ -19,7 +19,6 @@ import { CompanyAutocomplete } from '@/components/CompanyAutocomplete';
 import { validateDomain } from '@/services/brandfetchValidationService';
 import { CompanySuggestion } from '@/services/companyAutocompleteService';
 import { DomainValidationDialog } from '@/components/Dialogs/DomainValidationDialog';
-import type { DomainValidationData } from '@/components/Dialogs/DomainValidationDialog';
 import {
   Form,
   FormItem,
@@ -84,7 +83,7 @@ const EditCompanyForm = ({
   const onSubmit = async (data: z.infer<typeof EditCompanySchema>) => {
     const accessToken = getAccessToken();
     setSubmitError(null); // Clear previous error at start
-    
+
     const formattedUrl = data.url?.trim()
       ? data.url.startsWith('http')
         ? data.url
@@ -96,60 +95,68 @@ const EditCompanyForm = ({
       url: formattedUrl,
     };
 
-    // Check if domain changed
-    const originalDomain = initialData.url;
-    const newDomain = formattedUrl;
+    // Normalize URLs for comparison to avoid false positives due to formatting
+    function normalizeUrl(url: string) {
+      try {
+        return new URL(url.startsWith('http') ? url : `https://${url}`)
+          .hostname;
+      } catch {
+        return url;
+      }
+    }
+    const originalDomain = normalizeUrl(initialData.url);
+    const newDomain = normalizeUrl(formattedUrl);
     const nameChanged = data.name !== initialData.name;
     const domainChanged = newDomain !== originalDomain;
 
     // Validate domain changes
     if (domainChanged && newDomain && accessToken) {
-      try {
-        const validation = await validateDomain(newDomain, accessToken);
-        
-        if (validation.exists && validation.name && validation.name !== data.name) {
-          // Domain is registered to a different company
-          setDomainValidationData({
-            domain: newDomain,
-            registeredName: validation.name,
-            logo: validation.logo,
-            type: 'domain-change',
-            formData: formattedData,
-          });
-          setShowDomainDialog(true);
-          return; // Stop submission, wait for user confirmation
-        }
-      } catch (error) {
-        console.error('Error validating domain:', error);
-        // If validation fails (e.g. backend error), warn the user and stop.
+      const validation = await validateDomain(newDomain, accessToken);
+      if (validation.error) {
         toast.error('Could not validate domain. Please try again or check your connection.');
-        return; 
+        return;
+      }
+      if (
+        validation.exists &&
+        validation.name &&
+        validation.name !== data.name
+      ) {
+        // Domain is registered to a different company
+        setDomainValidationData({
+          domain: newDomain,
+          registeredName: validation.name,
+          logo: validation.logo,
+          type: 'domain-change',
+          formData: formattedData,
+        });
+        setShowDomainDialog(true);
+        return; // Stop submission, wait for user confirmation
       }
     }
 
     // Check if name changed but domain stayed the same
     if (nameChanged && !domainChanged && originalDomain && accessToken) {
-      try {
-        const validation = await validateDomain(originalDomain, accessToken);
-        
-        if (validation.exists && validation.name && validation.name !== data.name) {
-          // Domain belongs to a different company name
-          setDomainValidationData({
-            domain: originalDomain,
-            registeredName: validation.name,
-            logo: validation.logo,
-            type: 'name-mismatch',
-            attemptedName: data.name,
-            formData: formattedData,
-          });
-          setShowDomainDialog(true);
-          return; // Stop submission, show warning
-        }
-      } catch (error) {
-        console.error('Error validating domain:', error);
-        // If validation fails (e.g. backend error), warn the user and stop.
+      const validation = await validateDomain(originalDomain, accessToken);
+      if (validation.error) {
         toast.error('Could not validate domain. Please try again or check your connection.');
-        return; 
+        return;
+      }
+      if (
+        validation.exists &&
+        validation.name &&
+        validation.name !== data.name
+      ) {
+        // Domain belongs to a different company name
+        setDomainValidationData({
+          domain: originalDomain,
+          registeredName: validation.name,
+          logo: validation.logo,
+          type: 'name-mismatch',
+          attemptedName: data.name,
+          formData: formattedData,
+        });
+        setShowDomainDialog(true);
+        return; // Stop submission, show warning
       }
     }
 
@@ -159,7 +166,7 @@ const EditCompanyForm = ({
 
   const performUpdate = async (formattedData: any) => {
     const accessToken = getAccessToken();
-    
+
     try {
       const result = await dispatch(
         updateCompany({
@@ -306,15 +313,21 @@ const EditCompanyForm = ({
                 </div>
                 <div className="flex gap-4 items-start">
                   <FormControl>
-                    <Input placeholder="Custom Logo URL (Override)" {...field} value={field.value || ''} />
+                    <Input
+                      placeholder="Custom Logo URL (Override)"
+                      {...field}
+                      value={field.value || ''}
+                    />
                   </FormControl>
                   {field.value && (
                     <div className="flex-shrink-0 w-10 h-10 border rounded overflow-hidden bg-white flex items-center justify-center">
-                      <img 
-                        src={field.value} 
-                        alt="Logo preview" 
+                      <img
+                        src={field.value}
+                        alt="Logo preview"
                         className="max-w-full max-h-full object-contain"
-                        onError={(e) => (e.currentTarget.style.display = 'none')}
+                        onError={(e) =>
+                          (e.currentTarget.style.display = 'none')
+                        }
                       />
                     </div>
                   )}

@@ -12,9 +12,7 @@ import { createCompany } from '@/redux/companies/companiesThunk';
 import { CompanyAutocomplete } from '@/components/CompanyAutocomplete';
 import { CompanySuggestion } from '@/services/companyAutocompleteService';
 import ComboBoardListBox from '@/components/Forms/AddJobShort/ComboBoardListBox';
-import {
-  initExtensionMessageListener,
-} from '@/lib/extensionMessageListener';
+import { initExtensionMessageListener } from '@/lib/extensionMessageListener';
 import {
   Form,
   FormItem,
@@ -51,6 +49,10 @@ const AddJobShortForm = ({
   const [companyUrl, setCompanyUrl] = useState('');
   const [selectedCompany, setSelectedCompany] =
     useState<CompanySuggestion | null>(null);
+  // Track companyLogo in state for reactivity
+  const [companyLogo, setCompanyLogo] = useState<string | null>(() =>
+    typeof window !== 'undefined' ? localStorage.getItem('companyLogo') : null,
+  );
   const searchParams = useSearchParams();
   const [jobTitle, setJobTitle] = useState('');
   const [companyId, setCompanyId] = useState<string | undefined>(undefined);
@@ -187,12 +189,23 @@ const AddJobShortForm = ({
             localStorage.getItem('jobSalary') ||
             '',
           companyDomain: companyUrl || '',
-          companyLogo: localStorage.getItem('companyLogo'),
+          companyLogo:
+            typeof next?.companyLogo !== 'undefined'
+              ? next.companyLogo
+              : companyLogo,
           ...(next || {}),
         });
       }
     },
-    [onDraftChange, company, jobTitle, companyId, searchParams, companyUrl],
+    [
+      onDraftChange,
+      company,
+      jobTitle,
+      companyId,
+      searchParams,
+      companyUrl,
+      companyLogo,
+    ],
   );
 
   // Listen for messages from browser extension (direct communication)
@@ -217,6 +230,7 @@ const AddJobShortForm = ({
       }
       if (data.companyLogo) {
         localStorage.setItem('companyLogo', data.companyLogo);
+        setCompanyLogo(data.companyLogo);
       }
 
       // Store extra fields in localStorage
@@ -226,7 +240,8 @@ const AddJobShortForm = ({
       else localStorage.removeItem('jobSalary');
       if (data.url) localStorage.setItem('jobPostUrl', data.url);
       else localStorage.removeItem('jobPostUrl');
-      if (data.description) localStorage.setItem('jobDescription', data.description);
+      if (data.description)
+        localStorage.setItem('jobDescription', data.description);
       else localStorage.removeItem('jobDescription');
 
       // Trigger draft update
@@ -247,16 +262,17 @@ const AddJobShortForm = ({
     setCompany(value);
     form.setValue('company', value);
     localStorage.setItem('company', value);
-    
+
     // Clear domain/logo when user overrides the company text
     setCompanyUrl('');
     localStorage.removeItem('companyUrl');
     localStorage.removeItem('companyLogo');
+    setCompanyLogo(null);
 
-    emitDraft({ 
+    emitDraft({
       company: value,
       companyDomain: '',
-      companyLogo: null
+      companyLogo: null,
     });
 
     // If user edits the field, clear selected company and companyId
@@ -275,6 +291,7 @@ const AddJobShortForm = ({
     setSelectedCompany(companyObj);
     form.setValue('company', companyName);
     localStorage.setItem('company', companyName);
+    setCompanyLogo(companyLogo ?? null);
 
     // Defer company creation to the parent component (on Save)
     // Clear any existing companyId so the parent knows to create/find it
@@ -282,11 +299,11 @@ const AddJobShortForm = ({
     localStorage.removeItem('companyId');
 
     // Emit draft with company details for creation
-    emitDraft({ 
-      company: companyName, 
+    emitDraft({
+      company: companyName,
       companyId: undefined,
       companyDomain,
-      companyLogo 
+      companyLogo,
     });
   };
 
