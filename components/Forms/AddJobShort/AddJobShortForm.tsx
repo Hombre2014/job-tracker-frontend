@@ -186,11 +186,13 @@ const AddJobShortForm = ({
             searchParams.get('salary') ||
             localStorage.getItem('jobSalary') ||
             '',
+          companyDomain: companyUrl || '',
+          companyLogo: localStorage.getItem('companyLogo'),
           ...(next || {}),
         });
       }
     },
-    [onDraftChange, company, jobTitle, companyId, searchParams],
+    [onDraftChange, company, jobTitle, companyId, searchParams, companyUrl],
   );
 
   // Listen for messages from browser extension (direct communication)
@@ -245,7 +247,18 @@ const AddJobShortForm = ({
     setCompany(value);
     form.setValue('company', value);
     localStorage.setItem('company', value);
-    emitDraft({ company: value });
+    
+    // Clear domain/logo when user overrides the company text
+    setCompanyUrl('');
+    localStorage.removeItem('companyUrl');
+    localStorage.removeItem('companyLogo');
+
+    emitDraft({ 
+      company: value,
+      companyDomain: '',
+      companyLogo: null
+    });
+
     // If user edits the field, clear selected company and companyId
     setSelectedCompany(null);
     setCompanyId(undefined);

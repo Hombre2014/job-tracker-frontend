@@ -107,11 +107,11 @@ const EditCompanyForm = ({
       try {
         const validation = await validateDomain(newDomain, accessToken);
         
-        if (validation.exists && validation.name !== data.name) {
+        if (validation.exists && validation.name && validation.name !== data.name) {
           // Domain is registered to a different company
           setDomainValidationData({
             domain: newDomain,
-            registeredName: validation.name!,
+            registeredName: validation.name,
             logo: validation.logo,
             type: 'domain-change',
             formData: formattedData,
@@ -121,7 +121,9 @@ const EditCompanyForm = ({
         }
       } catch (error) {
         console.error('Error validating domain:', error);
-        // Continue with update if validation fails
+        // If validation fails (e.g. backend error), warn the user and stop.
+        toast.error('Could not validate domain. Please try again or check your connection.');
+        return; 
       }
     }
 
@@ -130,11 +132,11 @@ const EditCompanyForm = ({
       try {
         const validation = await validateDomain(originalDomain, accessToken);
         
-        if (validation.exists && validation.name !== data.name) {
+        if (validation.exists && validation.name && validation.name !== data.name) {
           // Domain belongs to a different company name
           setDomainValidationData({
             domain: originalDomain,
-            registeredName: validation.name!,
+            registeredName: validation.name,
             logo: validation.logo,
             type: 'name-mismatch',
             attemptedName: data.name,
@@ -180,7 +182,7 @@ const EditCompanyForm = ({
       }
 
       // Update succeeded - update local state and close
-      updateCompanyInfo(formattedData);
+      updateCompanyInfo(result);
       onClose();
     } catch (error: any) {
       console.error('Failed to update company:', error);

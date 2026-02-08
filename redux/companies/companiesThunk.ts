@@ -72,42 +72,6 @@ export const createCompany = createAsyncThunk(
   },
 );
 
-export const findCompany = createAsyncThunk(
-  'companies/findCompany',
-  async (values: any, thunkAPI) => {
-    const { accessToken, name, domain } = values;
-    try {
-      const company = await findCompanyByNameOrDomain({ name, domain }, accessToken);
-      return company;
-    } catch (err: unknown) {
-      if (isAxiosError(err)) {
-        return thunkAPI.rejectWithValue(
-          err.response?.data || 'Error finding company',
-        );
-      }
-      return thunkAPI.rejectWithValue('Error finding company');
-    }
-  },
-);
-
-export const validateDomain = createAsyncThunk(
-  'companies/validateDomain',
-  async (values: any, thunkAPI) => {
-    const { accessToken, domain } = values;
-    try {
-      const result = await validateDomainService(domain, accessToken);
-      return result;
-    } catch (err: unknown) {
-      if (isAxiosError(err)) {
-        return thunkAPI.rejectWithValue(
-          err.response?.data || 'Error validating domain',
-        );
-      }
-      return thunkAPI.rejectWithValue('Error validating domain');
-    }
-  },
-);
-
 
 export const getCompany = createAsyncThunk(
   'companies/getCompany',

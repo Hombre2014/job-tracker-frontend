@@ -67,7 +67,7 @@ export function DomainValidationDialog({
                   </p>
                   {logo && (
                     <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-                      <CompanyLogo domain={domain} companyName={registeredName} size="md" />
+                      <CompanyLogo domain={domain} companyName={registeredName} logo={logo} size="md" />
                       <span className="font-medium">{registeredName}</span>
                     </div>
                   )}
@@ -83,7 +83,7 @@ export function DomainValidationDialog({
                   </p>
                   {logo && (
                     <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
-                      <CompanyLogo domain={domain} companyName={registeredName} size="md" />
+                      <CompanyLogo domain={domain} companyName={registeredName} logo={logo} size="md" />
                       <span className="font-medium">{registeredName}</span>
                     </div>
                   )}
