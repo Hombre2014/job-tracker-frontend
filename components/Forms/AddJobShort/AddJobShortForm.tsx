@@ -12,9 +12,7 @@ import { createCompany } from '@/redux/companies/companiesThunk';
 import { CompanyAutocomplete } from '@/components/CompanyAutocomplete';
 import { CompanySuggestion } from '@/services/companyAutocompleteService';
 import ComboBoardListBox from '@/components/Forms/AddJobShort/ComboBoardListBox';
-import {
-  initExtensionMessageListener,
-} from '@/lib/extensionMessageListener';
+import { initExtensionMessageListener } from '@/lib/extensionMessageListener';
 import {
   Form,
   FormItem,
@@ -35,6 +33,8 @@ interface AddJobShortFormProps {
     description?: string;
     postUrl?: string;
     salary?: string;
+    companyDomain?: string;
+    companyLogo?: string | null;
   }) => void;
 }
 
@@ -49,6 +49,10 @@ const AddJobShortForm = ({
   const [companyUrl, setCompanyUrl] = useState('');
   const [selectedCompany, setSelectedCompany] =
     useState<CompanySuggestion | null>(null);
+  // Track companyLogo in state for reactivity
+  const [companyLogo, setCompanyLogo] = useState<string | null>(() =>
+    typeof window !== 'undefined' ? localStorage.getItem('companyLogo') : null,
+  );
   const searchParams = useSearchParams();
   const [jobTitle, setJobTitle] = useState('');
   const [companyId, setCompanyId] = useState<string | undefined>(undefined);
@@ -161,6 +165,8 @@ const AddJobShortForm = ({
         description?: string;
         postUrl?: string;
         salary?: string;
+        companyDomain?: string;
+        companyLogo?: string | null;
       }>,
     ) => {
       if (onDraftChange) {
@@ -183,10 +189,23 @@ const AddJobShortForm = ({
             localStorage.getItem('jobSalary') ||
             '',
           ...(next || {}),
+          companyDomain: next?.companyDomain ?? companyUrl ?? '',
+          companyLogo:
+            typeof next?.companyLogo !== 'undefined'
+              ? next.companyLogo
+              : companyLogo,
         });
       }
     },
-    [onDraftChange, company, jobTitle, companyId, searchParams],
+    [
+      onDraftChange,
+      company,
+      jobTitle,
+      companyId,
+      searchParams,
+      companyUrl,
+      companyLogo,
+    ],
   );
 
   // Listen for messages from browser extension (direct communication)
@@ -211,6 +230,7 @@ const AddJobShortForm = ({
       }
       if (data.companyLogo) {
         localStorage.setItem('companyLogo', data.companyLogo);
+        setCompanyLogo(data.companyLogo);
       }
 
       // Store extra fields in localStorage
@@ -220,16 +240,19 @@ const AddJobShortForm = ({
       else localStorage.removeItem('jobSalary');
       if (data.url) localStorage.setItem('jobPostUrl', data.url);
       else localStorage.removeItem('jobPostUrl');
-      if (data.description) localStorage.setItem('jobDescription', data.description);
+      if (data.description)
+        localStorage.setItem('jobDescription', data.description);
       else localStorage.removeItem('jobDescription');
 
-      // Trigger draft update
+      // Trigger draft update, passing extension-sourced domain/logo directly
       emitDraft({
         company: data.company,
         jobTitle: data.title,
         location: data.location,
         salary: data.salary,
         postUrl: data.url,
+        companyDomain: data.companyDomain,
+        companyLogo: data.companyLogo,
       });
     });
 
@@ -241,47 +264,49 @@ const AddJobShortForm = ({
     setCompany(value);
     form.setValue('company', value);
     localStorage.setItem('company', value);
-    emitDraft({ company: value });
+
+    // Clear domain/logo when user overrides the company text
+    setCompanyUrl('');
+    localStorage.removeItem('companyUrl');
+    localStorage.removeItem('companyLogo');
+    setCompanyLogo(null);
+
+    emitDraft({
+      company: value,
+      companyDomain: '',
+      companyLogo: null,
+    });
+
     // If user edits the field, clear selected company and companyId
     setSelectedCompany(null);
     setCompanyId(undefined);
     localStorage.removeItem('companyId');
   };
 
-  const handleCompanySelect = async (companyObj: CompanySuggestion) => {
+  const handleCompanySelect = (companyObj: CompanySuggestion) => {
     const companyName = companyObj.name;
     const companyDomain = companyObj.domain;
-
-    const accessToken = getAccessToken();
-    if (!accessToken) {
-      console.error('No access token available');
-      return;
-    }
+    const companyLogo = companyObj.logo;
 
     setCompany(companyName);
     setCompanyUrl(companyDomain);
     setSelectedCompany(companyObj);
     form.setValue('company', companyName);
     localStorage.setItem('company', companyName);
+    setCompanyLogo(companyLogo ?? null);
 
-    // Create company in backend with name and url
-    try {
-      const result = await dispatch(
-        createCompany({
-          accessToken,
-          name: companyName,
-          url: companyDomain,
-        }),
-      ).unwrap();
+    // Defer company creation to the parent component (on Save)
+    // Clear any existing companyId so the parent knows to create/find it
+    setCompanyId(undefined);
+    localStorage.removeItem('companyId');
 
-      const newCompanyId = result.id;
-      setCompanyId(newCompanyId);
-      localStorage.setItem('companyId', newCompanyId);
-      emitDraft({ company: companyName, companyId: newCompanyId });
-    } catch (error) {
-      console.error('Error creating company:', error);
-      setSelectedCompany(null);
-    }
+    // Emit draft with company details for creation
+    emitDraft({
+      company: companyName,
+      companyId: undefined,
+      companyDomain,
+      companyLogo,
+    });
   };
 
   const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -8,6 +8,7 @@ import {
   deleteJobPost,
   getAllJobPostsPerColumn,
 } from './jobsThunk';
+import { updateCompany } from '../companies/companiesThunk';
 
 interface JobPostState {
   jobPosts: JobApplication[];
@@ -97,6 +98,23 @@ export const jobsSlice = createSlice({
       .addCase(getJobPost.rejected, (state, action) => {
         state.jobPostsStatus = 'failed';
         state.error = action.error.message || 'Failed to fetch job post';
+      })
+      .addCase(updateCompany.fulfilled, (state, action) => {
+        const updatedCompany = action.payload;
+        if (!updatedCompany?.id) return;
+
+        state.jobPosts = state.jobPosts.map((job) => {
+          if (job.company?.id === updatedCompany.id) {
+            return {
+              ...job,
+              company: {
+                ...job.company,
+                ...updatedCompany,
+              },
+            };
+          }
+          return job;
+        });
       });
   },
 });

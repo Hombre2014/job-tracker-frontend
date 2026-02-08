@@ -128,6 +128,7 @@ export const CompanyAutocomplete = (props: CompanyAutocompleteProps) => {
             <CompanyLogo
               domain={selectedCompany.domain}
               companyName={selectedCompany.name}
+              logo={selectedCompany.logo}
               size="sm"
             />
           </span>
@@ -164,6 +165,7 @@ export const CompanyAutocomplete = (props: CompanyAutocompleteProps) => {
                   <CompanyLogo
                     domain={company.domain}
                     companyName={company.name}
+                    logo={company.logo}
                     size="sm"
                   />
                   <div className="flex-1 overflow-hidden">

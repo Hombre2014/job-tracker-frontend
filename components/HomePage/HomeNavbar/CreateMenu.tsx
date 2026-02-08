@@ -42,6 +42,8 @@ const CreateMenu = () => {
     company?: string;
     jobTitle?: string;
     companyId?: string;
+    companyDomain?: string;
+    companyLogo?: string | null;
   } | null>(null);
   const isContactsPage = pathname?.includes('/home/contacts');
   const [showContactModal, setShowContactModal] = useState(false);
@@ -64,6 +66,8 @@ const CreateMenu = () => {
           createCompany({
             accessToken,
             name: draft.company,
+            url: draft.companyDomain,
+            logo: draft.companyLogo,
           }),
         ).unwrap();
         finalCompanyId = result.id;

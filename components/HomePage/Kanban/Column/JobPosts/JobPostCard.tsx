@@ -47,6 +47,7 @@ const JobPostCard = ({
   timeStamp,
   companyName,
   companyUrl,
+  companyLogo,
   statusChangedTime,
 }: JobPostCardProps) => {
   const router = useRouter();
@@ -175,6 +176,7 @@ const JobPostCard = ({
             <CompanyLogo
               domain={companyUrl || ''}
               companyName={companyName}
+              logo={companyLogo}
               size="sm"
             />
             <span>{companyName}</span>
