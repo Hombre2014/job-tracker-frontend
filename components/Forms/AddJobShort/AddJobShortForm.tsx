@@ -188,12 +188,12 @@ const AddJobShortForm = ({
             searchParams.get('salary') ||
             localStorage.getItem('jobSalary') ||
             '',
-          companyDomain: companyUrl || '',
+          ...(next || {}),
+          companyDomain: next?.companyDomain ?? companyUrl ?? '',
           companyLogo:
             typeof next?.companyLogo !== 'undefined'
               ? next.companyLogo
               : companyLogo,
-          ...(next || {}),
         });
       }
     },

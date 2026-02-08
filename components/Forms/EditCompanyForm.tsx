@@ -114,17 +114,13 @@ const EditCompanyForm = ({
     if (domainChanged && newDomain && accessToken) {
       try {
         const validation = await validateDomain(newDomain, accessToken);
-        if (validation.error) {
+        if (!validation.exists) {
           toast.error(
             'Could not validate domain. Please try again or check your connection.',
           );
           return;
         }
-        if (
-          validation.exists &&
-          validation.name &&
-          validation.name !== data.name
-        ) {
+        if (validation.name && validation.name !== data.name) {
           // Domain is registered to a different company
           setDomainValidationData({
             domain: newDomain,
@@ -148,17 +144,13 @@ const EditCompanyForm = ({
     if (nameChanged && !domainChanged && originalDomain && accessToken) {
       try {
         const validation = await validateDomain(originalDomain, accessToken);
-        if (validation.error) {
+        if (!validation.exists) {
           toast.error(
             'Could not validate domain. Please try again or check your connection.',
           );
           return;
         }
-        if (
-          validation.exists &&
-          validation.name &&
-          validation.name !== data.name
-        ) {
+        if (validation.name && validation.name !== data.name) {
           // Domain belongs to a different company name
           setDomainValidationData({
             domain: originalDomain,
