@@ -18,6 +18,7 @@ type Company = {
   name: string;
   industry: string;
   description: string;
+  logo?: string | null;
 };
 
 type jobPostStatus =
@@ -333,6 +334,7 @@ interface JobPostCardProps {
   timeStamp: string;
   companyName: string;
   companyUrl?: string;
+  companyLogo?: string | null;
   status: jobPostStatus;
   statusChangedTime: string;
 }

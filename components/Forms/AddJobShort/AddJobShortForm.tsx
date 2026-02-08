@@ -35,6 +35,8 @@ interface AddJobShortFormProps {
     description?: string;
     postUrl?: string;
     salary?: string;
+    companyDomain?: string;
+    companyLogo?: string | null;
   }) => void;
 }
 
@@ -161,6 +163,8 @@ const AddJobShortForm = ({
         description?: string;
         postUrl?: string;
         salary?: string;
+        companyDomain?: string;
+        companyLogo?: string | null;
       }>,
     ) => {
       if (onDraftChange) {
@@ -248,15 +252,10 @@ const AddJobShortForm = ({
     localStorage.removeItem('companyId');
   };
 
-  const handleCompanySelect = async (companyObj: CompanySuggestion) => {
+  const handleCompanySelect = (companyObj: CompanySuggestion) => {
     const companyName = companyObj.name;
     const companyDomain = companyObj.domain;
-
-    const accessToken = getAccessToken();
-    if (!accessToken) {
-      console.error('No access token available');
-      return;
-    }
+    const companyLogo = companyObj.logo;
 
     setCompany(companyName);
     setCompanyUrl(companyDomain);
@@ -264,24 +263,18 @@ const AddJobShortForm = ({
     form.setValue('company', companyName);
     localStorage.setItem('company', companyName);
 
-    // Create company in backend with name and url
-    try {
-      const result = await dispatch(
-        createCompany({
-          accessToken,
-          name: companyName,
-          url: companyDomain,
-        }),
-      ).unwrap();
+    // Defer company creation to the parent component (on Save)
+    // Clear any existing companyId so the parent knows to create/find it
+    setCompanyId(undefined);
+    localStorage.removeItem('companyId');
 
-      const newCompanyId = result.id;
-      setCompanyId(newCompanyId);
-      localStorage.setItem('companyId', newCompanyId);
-      emitDraft({ company: companyName, companyId: newCompanyId });
-    } catch (error) {
-      console.error('Error creating company:', error);
-      setSelectedCompany(null);
-    }
+    // Emit draft with company details for creation
+    emitDraft({ 
+      company: companyName, 
+      companyId: undefined,
+      companyDomain,
+      companyLogo 
+    });
   };
 
   const handleJobTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

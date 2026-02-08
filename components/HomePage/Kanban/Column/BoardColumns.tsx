@@ -281,6 +281,8 @@ const BoardColumns = () => {
     description?: string;
     postUrl?: string;
     salary?: string;
+    companyDomain?: string;
+    companyLogo?: string | null;
   } | null>(null);
   const [isSubmittingJob, setIsSubmittingJob] = useState(false);
 
@@ -348,6 +350,8 @@ const BoardColumns = () => {
           createCompany({
             accessToken,
             name: draft.company,
+            url: draft.companyDomain,
+            logo: draft.companyLogo,
           }),
         ).unwrap();
         finalCompanyId = result.id;
@@ -590,6 +594,7 @@ const BoardColumns = () => {
                       timeStamp={job.createdAt}
                       companyUrl={job.company.url}
                       companyName={job.company.name}
+                      companyLogo={job.company.logo}
                       statusChangedTime={job.statusChangedAt}
                     />
                   ),
@@ -662,6 +667,7 @@ const BoardColumns = () => {
                   timeStamp={draggedJob.createdAt}
                   companyUrl={draggedJob.company.url}
                   companyName={draggedJob.company.name}
+                  companyLogo={draggedJob.company.logo}
                   statusChangedTime={draggedJob.statusChangedAt}
                 />
               ) : null;

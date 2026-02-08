@@ -10,7 +10,9 @@ import { Card, CardContent, CardDescription } from '@/components/ui/card';
 const Company = () => {
   const [showModal, setShowModal] = useState(false);
 
-  const [companyInfo, setCompanyInfo] = useState(() => {
+  type CompanyStateType = Omit<Company, 'id'>;
+
+  const [companyInfo, setCompanyInfo] = useState<CompanyStateType>(() => {
     const currentJobPost = JSON.parse(
       localStorage.getItem('currentJobPost') || '{}',
     );
@@ -25,6 +27,7 @@ const Company = () => {
           ? company.url
           : `https://${company.url}`
         : '',
+      logo: company.logo || '',
     };
   });
 
@@ -32,10 +35,8 @@ const Company = () => {
     setShowModal(true);
   };
 
-  type CompanyStateType = Omit<Company, 'id'>;
-
   const updateCompanyInfo = (data: CompanyStateType) => {
-    setCompanyInfo((prevInfo: CompanyStateType) => ({
+    setCompanyInfo((prevInfo) => ({
       ...prevInfo,
       ...data,
     }));
@@ -65,6 +66,7 @@ const Company = () => {
                   size="lg"
                   domain={companyInfo.url || ''}
                   companyName={companyInfo.name}
+                  logo={companyInfo.logo}
                 />
                 <h2 className="text-2xl">{companyInfo.name}</h2>
               </div>

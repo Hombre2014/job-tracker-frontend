@@ -1,5 +1,99 @@
 # Technical Documentation
 
+## Company Logo Persistence (v1.1.0 / v1.5.0, 08/02/2026)
+
+### Overview
+
+Implemented persistent storage and manual management for company logos to ensure consistency across the application and reduce reliance on external APIs. The system supports manual logo URLs, which take priority over a robust three-stage fallback mechanism.
+
+### Architecture
+
+#### Backend (NestJS)
+- **Entities**: Added a nullable `logo` column to the `Company` entity.
+- **DTOs**: 
+  - `CreateCompanyDto`: Now includes optional `logo` for initial creation.
+  - `UpdateCompanyDto`: Added `logo` field to allow manual URL updates for existing companies.
+- **Data Integrity**: Backend mappers (`CompanyMapper`, `JobApplicationMapper`) and services automatically propagate the `logo` field through the relational chain.
+
+#### Frontend (Next.js + Redux)
+- **Manual Override**:
+  - `EditCompanyForm` includes a "Logo URL" field with a live preview.
+  - On save, the new URL is persisted to the database and synchronized immediately with `localStorage` (`currentJobPost`).
+- **State Propagation**:
+  - `jobsSlice` and `boardsSlice` handle `updateCompany.fulfilled` to propagate company logo changes to all related job applications in the local state.
+- **Resilient Display Logic (`CompanyLogo` component)**:
+  - The component follows a prioritized three-stage fallback flow:
+    1.  **Manual URL**: Uses the stored URL from the database.
+    2.  **Brandfetch Dynamic**: High-quality dynamic logo derived from the domain. Used if no manual URL is provided or if the manual URL fails to load.
+    3.  **Generic Icon**: Final fallback (`Building2` from Lucide).
+  - **Auto-Sync**: The component resets when the company domain, name, or manual logo URL changes.
+
+### Key Implementation Details
+
+1.  **LocalStorage Sync**: In `EditCompanyForm`, `localStorage` is updated immediately upon success to ensure sub-views (like Job Details) reflect changes without a refresh.
+2.  **Reset to Automatic**: Added a "Reset to Automatic" button in `EditCompanyForm` to allow users to clear a manual override and revert to the high-quality dynamic logo.
+3.  **Autocomplete Integration**: Selecting a company from the autocomplete dropdown automatically clears the `logo` field to ensure the new company uses high-quality dynamic logos by default.
+4.  **Domain-less Support**: The logo system works for companies without URLs by relying strictly on manual URLs or the default icon.
+5.  **Placeholder Detection**: `CompanyLogo` detects if an external service returns a small/empty placeholder and automatically advances to the next fallback.
+
+### Files
+- **Backend**: 
+  - `src/modules/companies/entities/company.entity.ts`
+  - `src/modules/companies/dtos/update-company.dto.ts`
+  - `src/modules/companies/companies.mapper.ts`
+- **Frontend**: 
+  - `components/CompanyLogo/CompanyLogo.tsx`
+  - `components/Forms/EditCompanyForm.tsx`
+  - `redux/jobs/jobsSlice.ts`
+  - `redux/boards/boardsSlice.ts`
+  - `types/index.d.ts`
+
+---
+
+## Company Deduplication System (v1.0.2 / v1.4.4, 07/02/2026)
+
+### Overview
+
+Implemented a robust system to prevent duplicate company records based on company name and domain URL. This ensures data integrity and provides a seamless user experience when adding or editing companies.
+
+### Architecture
+
+#### Backend (NestJS)
+- **Entities**: `Company` entity now enforces unique constraints on `name` and `url`.
+- **Service**: 
+  - `CompaniesService.create` checks for existing companies by name OR domain before creation.
+  - `findByNameOrDomain` method uses `LOWER()` for case-insensitive matching.
+- **Validation**:
+  - `BrandfetchService` validates domains against the Brandfetch API to ensure they are real and retrieves official company data.
+  - New endpoints: `/companies/find-by-name-or-domain` and `/companies/validate-domain`.
+
+#### Frontend (Next.js)
+- **Validation**:
+  - `brandfetchValidationService` handles client-side validation calls.
+  - `EditCompanyForm` includes real-time domain validation to warn if a user tries to change a domain to one that is already registered.
+  - `DomainValidationDialog` alerts users of conflicts and offers resolution paths.
+- **UX**:
+  - `AddJobShortForm` silently handles duplicates by linking to existing companies if found.
+  - Extension integration automatically benefits from backend deduplication.
+
+### Key Workflows
+
+1. **Creating a Company**:
+   - Backend checks if `name` or `url` exists.
+   - If found, returns existing company.
+   - If not found, creates new company.
+   
+2. **Editing a Company Domain**:
+   - Frontend validates new domain against backend.
+   - If domain belongs to another company, shows warning dialog.
+   - User can cancel or confirm generic "update" (which might fail if strict constraint is hit, but frontend dialog handles the user intent first).
+
+### Files
+- **Backend**: `src/modules/companies/companies.service.ts`, `brandfetch.service.ts`
+- **Frontend**: `components/Forms/EditCompanyForm.tsx`, `services/brandfetchValidationService.ts`
+
+---
+
 ## Frontend URL Parameter Integration (v1.3.0, 30/01/2026)
 
 ### Overview

@@ -3,6 +3,44 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.5] - 2026-02-08
+
+### Added - Company Logo Persistence
+
+- **Backend Persistence**:
+  - Added `logo` column to `Company` entity to store official company logo URLs
+  - Modified `CreateCompanyDto` to accept optional `logo` field
+  - Implemented database migration to add the new column to existing installations
+  - **Files**: `src/modules/companies/entities/company.entity.ts`, `src/modules/companies/dtos/create-company.dto.ts`, `src/migrations/1770493336331-AddLogoToCompanies.ts`
+
+- **Frontend Integration**:
+  - Updated `CompanyLogo` component to prioritize persisted logos over dynamic fetching
+  - Updated `JobPostCard` and `BoardColumns` to pass and display stored logos
+  - Enhanced `types/index.d.ts` with updated `Company` and `JobPostCardProps` interfaces
+  - **Files**: `components/CompanyLogo/CompanyLogo.tsx`, `components/HomePage/Kanban/Column/JobPosts/JobPostCard.tsx`, `components/HomePage/Kanban/Column/BoardColumns.tsx`, `types/index.d.ts`
+
+- **Technical Documentation**:
+  - Detailed the logo persistence architecture and migration process in `Technical_documentation.md`
+
+## [1.4.4] - 2026-02-07
+
+### Added - Company Deduplication UI
+
+- **Domain Validation**: Added real-time domain validation in `EditCompanyForm`
+  - **Warning Dialog**: New `DomainValidationDialog` warns users when changing a company's domain to one already registered
+  - **Conflict Resolution**: Prompts user to confirm if they want to link to existing company or cancel
+  - **Files**: `components/Forms/EditCompanyForm.tsx`, `components/Dialogs/DomainValidationDialog.tsx`
+
+- **Company Creation**:
+  - `AddJobShortForm` now checks for existing companies via backend before creating new ones
+  - Prevents duplicate company creation from the UI
+  - **Files**: `components/Forms/AddJobShort/AddJobShortForm.tsx`
+
+- **Services**:
+  - Created `brandfetchValidationService` for client-side validation logic
+  - Added new Redux thunks `findCompany` and `validateDomain`
+  - **Files**: `services/brandfetchValidationService.ts`, `redux/companies/companiesThunk.ts`
+
 ## [1.4.3] - 2026-02-06
 
 ### Fixed - Some minor code review feedback items that didn't fit into the main 1.4.2 release
@@ -3764,6 +3802,8 @@ _All changes maintain backward compatibility and enhance user experience with im
 
 <!-- Version comparison links -->
 
+[1.4.5]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.4.4...v1.4.5
+[1.4.4]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.4.3...v1.4.4
 [1.4.3]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.4.2...v1.4.3
 [1.4.2]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.4.1...v1.4.2
 [1.4.1]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.4.0...v1.4.1

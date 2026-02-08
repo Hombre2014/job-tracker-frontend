@@ -146,6 +146,7 @@ export const EditCompanySchema = z.object({
     )
     .or(z.literal(''))
     .optional(),
+  logo: z.string().url('Please enter a valid image URL').or(z.literal('')).optional(),
 });
 
 export const EditDocumentSchema = z.object({

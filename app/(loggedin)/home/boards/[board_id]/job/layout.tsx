@@ -164,6 +164,7 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
               <CompanyLogo
                 domain={currentJobPost?.company?.url || ''}
                 companyName={currentJobPost?.company?.name || ''}
+                logo={currentJobPost?.company?.logo}
                 size="sm"
               />
               <span>{currentJobPost?.company?.name}</span>

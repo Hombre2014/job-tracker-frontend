@@ -14,6 +14,7 @@ import {
   getArchivedBoards,
   getBoardWithColumns,
 } from './boardsThunk';
+import { updateCompany } from '../companies/companiesThunk';
 
 interface BoardsState {
   boards: Board[];
@@ -302,6 +303,32 @@ export const boardsSlice = createSlice({
           }
           sourceColumn.jobApplications.push(updatedJob);
         }
+      })
+      .addCase(updateCompany.fulfilled, (state, action) => {
+        const updatedCompany = action.payload;
+        if (!updatedCompany?.id) return;
+
+        const updateCompanyInBoard = (board: Board) => {
+          board.columns?.forEach((column) => {
+            if (column.jobApplications) {
+              column.jobApplications = column.jobApplications.map((job) => {
+                if (job.company?.id === updatedCompany.id) {
+                  return {
+                    ...job,
+                    company: {
+                      ...job.company,
+                      ...updatedCompany,
+                    },
+                  };
+                }
+                return job;
+              });
+            }
+          });
+        };
+
+        state.boards.forEach(updateCompanyInBoard);
+        state.archivedBoards.forEach(updateCompanyInBoard);
       });
   },
 });

@@ -1,8 +1,9 @@
 'use client';
 
 import * as z from 'zod';
-import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import { useForm } from 'react-hook-form';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -15,7 +16,10 @@ import { FormSuccess } from '@/components/Forms/form-success';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { updateCompany } from '@/redux/companies/companiesThunk';
 import { CompanyAutocomplete } from '@/components/CompanyAutocomplete';
+import { validateDomain } from '@/services/brandfetchValidationService';
 import { CompanySuggestion } from '@/services/companyAutocompleteService';
+import { DomainValidationDialog } from '@/components/Dialogs/DomainValidationDialog';
+import type { DomainValidationData } from '@/components/Dialogs/DomainValidationDialog';
 import {
   Form,
   FormItem,
@@ -67,6 +71,15 @@ const EditCompanyForm = ({
     typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
 
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showDomainDialog, setShowDomainDialog] = useState(false);
+  const [domainValidationData, setDomainValidationData] = useState<{
+    domain: string;
+    registeredName: string;
+    logo?: string;
+    type: 'name-mismatch' | 'domain-change';
+    attemptedName?: string;
+    formData: any;
+  } | null>(null);
 
   const onSubmit = async (data: z.infer<typeof EditCompanySchema>) => {
     const accessToken = getAccessToken();
@@ -83,14 +96,88 @@ const EditCompanyForm = ({
       url: formattedUrl,
     };
 
+    // Check if domain changed
+    const originalDomain = initialData.url;
+    const newDomain = formattedUrl;
+    const nameChanged = data.name !== initialData.name;
+    const domainChanged = newDomain !== originalDomain;
+
+    // Validate domain changes
+    if (domainChanged && newDomain && accessToken) {
+      try {
+        const validation = await validateDomain(newDomain, accessToken);
+        
+        if (validation.exists && validation.name !== data.name) {
+          // Domain is registered to a different company
+          setDomainValidationData({
+            domain: newDomain,
+            registeredName: validation.name!,
+            logo: validation.logo,
+            type: 'domain-change',
+            formData: formattedData,
+          });
+          setShowDomainDialog(true);
+          return; // Stop submission, wait for user confirmation
+        }
+      } catch (error) {
+        console.error('Error validating domain:', error);
+        // Continue with update if validation fails
+      }
+    }
+
+    // Check if name changed but domain stayed the same
+    if (nameChanged && !domainChanged && originalDomain && accessToken) {
+      try {
+        const validation = await validateDomain(originalDomain, accessToken);
+        
+        if (validation.exists && validation.name !== data.name) {
+          // Domain belongs to a different company name
+          setDomainValidationData({
+            domain: originalDomain,
+            registeredName: validation.name!,
+            logo: validation.logo,
+            type: 'name-mismatch',
+            attemptedName: data.name,
+            formData: formattedData,
+          });
+          setShowDomainDialog(true);
+          return; // Stop submission, show warning
+        }
+      } catch (error) {
+        console.error('Error validating domain:', error);
+        // If validation fails (e.g. backend error), warn the user and stop.
+        toast.error('Could not validate domain. Please try again or check your connection.');
+        return; 
+      }
+    }
+
+    // Proceed with update
+    await performUpdate(formattedData);
+  };
+
+  const performUpdate = async (formattedData: any) => {
+    const accessToken = getAccessToken();
+    
     try {
-      await dispatch(
+      const result = await dispatch(
         updateCompany({
           ...formattedData,
           accessToken,
           companyId: currentJobPost?.company?.id,
         }),
       ).unwrap();
+
+      // Update localStorage to keep it in sync
+      if (currentJobPost) {
+        const updatedJobPost = {
+          ...currentJobPost,
+          company: {
+            ...currentJobPost.company,
+            ...result,
+          },
+        };
+        localStorage.setItem('currentJobPost', JSON.stringify(updatedJobPost));
+      }
 
       // Update succeeded - update local state and close
       updateCompanyInfo(formattedData);
@@ -104,9 +191,29 @@ const EditCompanyForm = ({
     }
   };
 
+  const handleDomainDialogAccept = async () => {
+    if (domainValidationData?.type === 'domain-change') {
+      // User accepted the domain change with the registered company name
+      const updatedData = {
+        ...domainValidationData.formData,
+        name: domainValidationData.registeredName,
+      };
+      await performUpdate(updatedData);
+    }
+    setShowDomainDialog(false);
+    setDomainValidationData(null);
+  };
+
+  const handleDomainDialogCancel = () => {
+    setShowDomainDialog(false);
+    setDomainValidationData(null);
+  };
+
   const handleCompanySelect = (company: CompanySuggestion) => {
     form.setValue('name', company.name);
     form.setValue('url', company.domain);
+    // Reset logo to undefined so the dynamic high-quality version is used by default
+    form.setValue('logo', undefined);
   };
 
   return (
@@ -140,7 +247,7 @@ const EditCompanyForm = ({
                 <FormLabel>Description</FormLabel>
                 <FormControl>
                   <Textarea
-                    rows={8}
+                    rows={5}
                     {...field}
                     placeholder="Company Description"
                   />
@@ -178,6 +285,43 @@ const EditCompanyForm = ({
             )}
           />
 
+          <FormField
+            name="logo"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <div className="flex justify-between items-center">
+                  <FormLabel>Logo URL</FormLabel>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs text-blue-500 hover:text-blue-600 p-0"
+                    onClick={() => field.onChange(null)}
+                  >
+                    Reset to Automatic
+                  </Button>
+                </div>
+                <div className="flex gap-4 items-start">
+                  <FormControl>
+                    <Input placeholder="Custom Logo URL (Override)" {...field} value={field.value || ''} />
+                  </FormControl>
+                  {field.value && (
+                    <div className="flex-shrink-0 w-10 h-10 border rounded overflow-hidden bg-white flex items-center justify-center">
+                      <img 
+                        src={field.value} 
+                        alt="Logo preview" 
+                        className="max-w-full max-h-full object-contain"
+                        onError={(e) => (e.currentTarget.style.display = 'none')}
+                      />
+                    </div>
+                  )}
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <div className="flex gap-4 items-center mt-4 pt-4">
             <Button type="submit" variant="normal">
               {buttonText}
@@ -201,6 +345,20 @@ const EditCompanyForm = ({
           )}
         </form>
       </Form>
+
+      {domainValidationData && (
+        <DomainValidationDialog
+          open={showDomainDialog}
+          onOpenChange={setShowDomainDialog}
+          onAccept={handleDomainDialogAccept}
+          onCancel={handleDomainDialogCancel}
+          domain={domainValidationData.domain}
+          registeredName={domainValidationData.registeredName}
+          logo={domainValidationData.logo}
+          type={domainValidationData.type}
+          attemptedName={domainValidationData.attemptedName}
+        />
+      )}
     </div>
   );
 };

@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 interface CompanyLogoProps {
   domain: string;
   companyName: string;
+  logo?: string | null;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
 }
@@ -22,11 +23,16 @@ const sizeMap = {
 export const CompanyLogo = ({
   domain,
   companyName,
+  logo,
   size = 'sm',
   className,
 }: CompanyLogoProps) => {
   const [hasError, setHasError] = useState(false);
   const [isBlankImage, setIsBlankImage] = useState(false);
+  const [fallbackStage, setFallbackStage] = useState<0 | 1>(0); 
+  // 0: Initial (Manual Logo or Brandfetch if no manual)
+  // 1: Brandfetch Fallback (if manual fails)
+  
   const { width, height, iconSize } = sizeMap[size];
 
   // Extract domain from URL if needed
@@ -39,11 +45,32 @@ export const CompanyLogo = ({
   useEffect(() => {
     setHasError(false);
     setIsBlankImage(false);
-  }, [cleanDomain, companyName]);
+    setFallbackStage(0);
+  }, [cleanDomain, companyName, logo]);
 
-  const logoUrl = `https://cdn.brandfetch.io/${cleanDomain}?c=${config.brandfetch.clientId}`;
+  // Priority Logic:
+  // 1. Manual Logo (if stage 0)
+  // 2. Brandfetch Dynamic (if stage 1 OR no manual logo provided)
+  const brandfetchUrl = `https://cdn.brandfetch.io/${cleanDomain}?c=${config.brandfetch.clientId}`;
+  
+  let logoUrl: string | undefined = logo || undefined;
+  
+  // If we are in fallback stage 1, or if a manual logo was never provided, use Brandfetch dynamic
+  if (fallbackStage === 1 || !logoUrl) {
+    logoUrl = cleanDomain ? brandfetchUrl : undefined;
+  }
 
-  if (hasError || isBlankImage || !cleanDomain) {
+  const handleNextStage = () => {
+    // If the manual logo failed to load, try Brandfetch dynamic
+    if (fallbackStage === 0 && logo && cleanDomain) {
+      setFallbackStage(1);
+    } else {
+      // If Brandfetch dynamic failed, or if there's no domain to fall back to
+      setHasError(true);
+    }
+  };
+
+  if (hasError || isBlankImage || (!logoUrl)) {
     return (
       <div
         className={cn(
@@ -70,20 +97,18 @@ export const CompanyLogo = ({
         src={logoUrl}
         loading="lazy"
         alt={`${companyName} logo`}
-        key={`${cleanDomain}-${companyName}`}
+        title={companyName}
+        key={`${cleanDomain}-${companyName}-${fallbackStage}-${logo}`}
         className="object-contain w-full h-full"
         onLoad={(e) => {
           const img = e.currentTarget;
-
-          // Check if image is suspiciously small (likely a placeholder or low-quality)
-          // Brandfetch often returns small placeholder images (e.g., 40x40) for unavailable logos
-          if (img.naturalWidth < 60 || img.naturalHeight < 60) {
-            setIsBlankImage(true);
+          // Check for small placeholder images (Brandfetch placeholder is often 40x40 but sometimes smaller)
+          // If the image is very small, it's likely a bad asset or placeholder.
+          if (img.naturalWidth < 16 || img.naturalHeight < 16) {
+            handleNextStage();
           }
         }}
-        onError={() => {
-          setHasError(true);
-        }}
+        onError={handleNextStage}
       />
     </div>
   );
