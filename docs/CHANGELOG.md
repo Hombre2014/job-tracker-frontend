@@ -44,7 +44,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - On failure, comprehensive cleanup resets all related state
     - Prevents partial/inconsistent updates
   - **Error Recovery**:
-    - Resets company name, URL, ID, form value, and localStorage
+    - Resets all React state: company name, URL, ID, selectedCompany
+    - Clears form value using `form.setValue('company', '')`
+    - Removes stale data from localStorage (`company` and `companyId` keys)
+    - Ensures complete cleanup prevents state mismatch between React, form, and localStorage
     - Ensures clean state for retry attempts
     - Added TODO for future user-facing error notification
   - **Files**: `components/Forms/AddJobShort/AddJobShortForm.tsx`

@@ -273,6 +273,8 @@ const AddJobShortForm = ({
       setCompanyUrl('');
       setCompanyId(undefined);
       form.setValue('company', '');
+      localStorage.removeItem('company');
+      localStorage.removeItem('companyId');
       // TODO: Show user-facing error notification
       // Consider using toast/notification system to inform user
     }
