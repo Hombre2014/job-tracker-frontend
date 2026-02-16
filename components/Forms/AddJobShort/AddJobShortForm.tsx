@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from 'react-toastify';
 import { useForm } from 'react-hook-form';
 import { useParams, useSearchParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,6 +12,7 @@ import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { createCompany } from '@/redux/companies/companiesThunk';
 import { CompanyAutocomplete } from '@/components/CompanyAutocomplete';
 import { CompanySuggestion } from '@/services/companyAutocompleteService';
+import { findCompanyByNameOrDomain } from '@/services/brandfetchValidationService';
 import ComboBoardListBox from '@/components/Forms/AddJobShort/ComboBoardListBox';
 import {
   initExtensionMessageListener,
@@ -244,29 +246,46 @@ const AddJobShortForm = ({
       return;
     }
 
-    // Create company in backend with name and url first
     try {
-      const result = await dispatch(
-        createCompany({
-          accessToken,
+      // First, check if company already exists by name or domain
+      const existingCompany = await findCompanyByNameOrDomain(
+        {
           name: companyName,
-          url: companyDomain,
-        }),
-      ).unwrap();
+          domain: companyDomain,
+        },
+        accessToken,
+      );
 
-      const newCompanyId = result.id;
+      let companyId: string;
 
-      // Only update state after successful creation
+      if (existingCompany?.id) {
+        // Company exists, use its ID
+        companyId = existingCompany.id;
+        console.log('Using existing company:', existingCompany.name, companyId);
+      } else {
+        // Company doesn't exist, create new one
+        const result = await dispatch(
+          createCompany({
+            accessToken,
+            name: companyName,
+            url: companyDomain,
+          }),
+        ).unwrap();
+        companyId = result.id;
+        console.log('Created new company:', companyName, companyId);
+      }
+
+      // Update state after successful lookup/creation
       setCompany(companyName);
       setCompanyUrl(companyDomain);
       setSelectedCompany(companyObj);
-      setCompanyId(newCompanyId);
+      setCompanyId(companyId);
       form.setValue('company', companyName);
       localStorage.setItem('company', companyName);
-      localStorage.setItem('companyId', newCompanyId);
-      emitDraft({ company: companyName, companyId: newCompanyId });
+      localStorage.setItem('companyId', companyId);
+      emitDraft({ company: companyName, companyId });
     } catch (error) {
-      console.error('Error creating company:', error);
+      console.error('Error handling company selection:', error);
       // Reset to clean state - no partial updates
       setSelectedCompany(null);
       setCompany('');
@@ -275,8 +294,11 @@ const AddJobShortForm = ({
       form.setValue('company', '');
       localStorage.removeItem('company');
       localStorage.removeItem('companyId');
-      // TODO: Show user-facing error notification
-      // Consider using toast/notification system to inform user
+      emitDraft({ company: '', companyId: undefined });
+      toast.error('Failed to process company selection. Please try again.', {
+        position: 'top-right',
+        autoClose: 5000,
+      });
     }
   };
 

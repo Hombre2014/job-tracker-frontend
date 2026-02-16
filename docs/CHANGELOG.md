@@ -33,6 +33,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed - Form State Management
 
+- **AddJobShortForm - Duplicate Company Prevention**:
+  - **Root Cause**: `handleCompanySelect` unconditionally created companies on every autocomplete selection
+  - **Previous Behavior**:
+    - If user cleared field and re-selected same company, duplicate records were created
+    - Multiple selections of the same company created multiple database entries
+    - No deduplication logic in place
+  - **Solution**: Added company existence check before creation
+    - Calls `findCompanyByNameOrDomain` service to check if company exists
+    - If company exists, reuses existing company ID
+    - If company doesn't exist, creates new company
+    - Logs action for debugging ("Using existing company" vs "Created new company")
+  - **Benefits**:
+    - Prevents duplicate company records in database
+    - Improves data consistency and integrity
+    - Reduces unnecessary API calls and database writes
+    - Maintains referential integrity across job applications
+  - **Files**: `components/Forms/AddJobShort/AddJobShortForm.tsx`
+
 - **AddJobShortForm - Inconsistent State on Company Creation Failure**:
   - **Root Cause**: Optimistic updates were applied before API success, leaving form in inconsistent state on failure
   - **Previous Behavior**:
@@ -47,9 +65,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Resets all React state: company name, URL, ID, selectedCompany
     - Clears form value using `form.setValue('company', '')`
     - Removes stale data from localStorage (`company` and `companyId` keys)
-    - Ensures complete cleanup prevents state mismatch between React, form, and localStorage
+    - Syncs reset state to parent component via `emitDraft({ company: '', companyId: undefined })`
+    - Displays user-facing error toast notification using `react-toastify`
+    - Ensures complete cleanup prevents state mismatch between React, form, localStorage, and parent component
     - Ensures clean state for retry attempts
-    - Added TODO for future user-facing error notification
   - **Files**: `components/Forms/AddJobShort/AddJobShortForm.tsx`
 
 ## [1.4.5] - 2026-02-08
