@@ -151,6 +151,162 @@ const HowTo = () => {
           </div>
         </section>
 
+        {/* Browser Extension Section */}
+        <section className="bg-purple-100 dark:bg-slate-700 rounded-xl p-8 shadow-lg mb-12">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-4 text-center">
+            Using the JobTracker Browser Extension
+          </h2>
+          <p className="text-lg text-slate-700 dark:text-slate-200 mb-6 text-center">
+            Save time by automatically capturing job details directly from
+            LinkedIn, Indeed, and other job boards with just a couple of clicks!
+          </p>
+
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-4">
+              How It Works
+            </h3>
+            <ol className="list-decimal list-inside space-y-4 text-slate-700 dark:text-slate-200 max-w-2xl mx-auto">
+              <li>
+                <strong>Install the Extension:</strong> Add the JobTracker
+                browser extension from the Chrome Web Store (link available from
+                your dashboard).
+              </li>
+              <li>
+                <strong>Browse Job Listings:</strong> Navigate to any job
+                posting on LinkedIn, Indeed, or other supported job boards.
+              </li>
+              <li>
+                <strong>Click the Extension Icon:</strong> When you&apos;re
+                viewing a job you want to save, click the JobTracker extension
+                icon in your browser toolbar. The extension will automatically
+                scrape the job details including:
+                <ul className="list-disc list-inside ml-6 mt-2 space-y-1">
+                  <li>Job Title</li>
+                  <li>Company Name and Logo</li>
+                  <li>Location</li>
+                  <li>Job Description</li>
+                  <li>Salary Information (when available)</li>
+                  <li>Direct Link to the Job Posting</li>
+                </ul>
+              </li>
+              <li>
+                <strong>Review and Select Board:</strong> The extension popup
+                will display the captured information. Choose which board you
+                want to save the job to (e.g., &quot;Wishlist&quot;,
+                &quot;Applied&quot;, etc.).
+              </li>
+              <li>
+                <strong>Save to JobTracker:</strong> Click the &quot;Save
+                Job&quot; button. The job will be instantly added to your
+                selected board. If you have JobTracker open in another tab, it
+                will automatically update without needing to refresh!
+              </li>
+            </ol>
+          </div>
+
+          {/* LinkedIn Example */}
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-4 text-center">
+              Example: Saving a Job from LinkedIn
+            </h3>
+            <div className="flex justify-center">
+              <Image
+                priority
+                unoptimized
+                width={1200}
+                height={800}
+                src="/gifs/linkedin-demo.gif"
+                alt="Demo: Using browser extension to save a job from LinkedIn"
+                className="rounded-lg border border-purple-400 shadow-md max-w-full h-auto"
+                style={{
+                  zIndex: 2,
+                  position: 'relative',
+                  transform: 'translateZ(0)',
+                  backfaceVisibility: 'hidden',
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Indeed Example */}
+          <div className="mb-8">
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-4 text-center">
+              Example: Saving a Job from Indeed
+            </h3>
+            <div className="flex justify-center">
+              <Image
+                priority
+                unoptimized
+                width={1200}
+                height={800}
+                src="/gifs/indeed-demo.gif"
+                alt="Demo: Using browser extension to save a job from Indeed"
+                className="rounded-lg border border-purple-400 shadow-md max-w-full h-auto"
+                style={{
+                  zIndex: 2,
+                  position: 'relative',
+                  transform: 'translateZ(0)',
+                  backfaceVisibility: 'hidden',
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="bg-purple-200 dark:bg-slate-600 rounded-lg p-6 mt-6">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2">
+              <span className="text-2xl">⚡</span>
+              <span>Benefits of Using the Extension</span>
+            </h3>
+            <ul className="space-y-2 text-slate-700 dark:text-slate-200">
+              <li className="flex items-start gap-2">
+                <span className="text-purple-600 dark:text-purple-300 font-bold mt-1">
+                  ✓
+                </span>
+                <span>
+                  <strong>Save Time:</strong> No need to manually copy and paste
+                  job details
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-purple-600 dark:text-purple-300 font-bold mt-1">
+                  ✓
+                </span>
+                <span>
+                  <strong>Avoid Errors:</strong> Automatically captures accurate
+                  information
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-purple-600 dark:text-purple-300 font-bold mt-1">
+                  ✓
+                </span>
+                <span>
+                  <strong>Stay Organized:</strong> Jobs are instantly saved to
+                  your chosen board
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-purple-600 dark:text-purple-300 font-bold mt-1">
+                  ✓
+                </span>
+                <span>
+                  <strong>Tab Reuse:</strong> If JobTracker is already open, it
+                  reuses that tab automatically
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-purple-600 dark:text-purple-300 font-bold mt-1">
+                  ✓
+                </span>
+                <span>
+                  <strong>Company Logos:</strong> Automatically fetches and
+                  displays company logos
+                </span>
+              </li>
+            </ul>
+          </div>
+        </section>
+
         {/* Managing Applications */}
         <section>
           <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-6">
@@ -324,6 +480,29 @@ const HowTo = () => {
               <span>
                 Regularly review your wishlist and convert prospects into active
                 applications
+              </span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-purple-600 dark:text-purple-400 font-bold">
+                🔌
+              </span>
+              <span>
+                <strong>Browser Extension - Sync Issue:</strong> If the
+                extension shows &quot;Sync required&quot; message, click the
+                &quot;Rescan & Sync&quot; button at the top right of the
+                extension popup to refresh the job data
+              </span>
+            </li>
+            <li className="flex items-start gap-3">
+              <span className="text-purple-600 dark:text-purple-400 font-bold">
+                🔌
+              </span>
+              <span>
+                <strong>Browser Extension - No Data Fetched:</strong> If
+                clicking the extension icon doesn&apos;t load any job details,
+                try refreshing the job posting page and then click the extension
+                icon again. This is especially helpful on LinkedIn where pages
+                load dynamically
               </span>
             </li>
           </ul>
