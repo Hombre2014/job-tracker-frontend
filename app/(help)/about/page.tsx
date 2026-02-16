@@ -105,6 +105,64 @@ const About = () => {
           </div>
         </section>
 
+        {/* Browser Extension Section */}
+        <section className="bg-purple-50 dark:bg-slate-800 rounded-xl p-8 shadow-lg border-2 border-purple-200 dark:border-purple-700">
+          <div className="flex items-center justify-center mb-4">
+            <span className="text-4xl mr-3">🔌</span>
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100">
+              Browser Extension
+            </h2>
+            <span className="ml-3 bg-purple-600 text-white text-sm font-semibold px-3 py-1 rounded-full">
+              NEW
+            </span>
+          </div>
+          <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed mb-6 text-center max-w-3xl mx-auto">
+            Save time and eliminate manual data entry with our powerful browser
+            extension. Capture job details from LinkedIn, Indeed, and other job
+            boards with just a couple of clicks!
+          </p>
+          <div className="grid md:grid-cols-3 gap-6 mt-6">
+            <div className="bg-white dark:bg-slate-700 rounded-lg p-5 shadow-md">
+              <div className="text-3xl mb-3">⚡</div>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                One-Click Capture
+              </h3>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">
+                Automatically scrapes job title, company name, logo, location,
+                description, salary, and posting URL.
+              </p>
+            </div>
+            <div className="bg-white dark:bg-slate-700 rounded-lg p-5 shadow-md">
+              <div className="text-3xl mb-3">🔄</div>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                Instant Sync
+              </h3>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">
+                Jobs are immediately added to your selected board. If JobTracker
+                is open, it updates automatically without refresh.
+              </p>
+            </div>
+            <div className="bg-white dark:bg-slate-700 rounded-lg p-5 shadow-md">
+              <div className="text-3xl mb-3">🎯</div>
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                100% Accurate
+              </h3>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">
+                No more copy-paste errors or missing information. Every detail
+                is captured exactly as it appears on the job posting.
+              </p>
+            </div>
+          </div>
+          <div className="text-center mt-8">
+            <Link
+              href="/how-to#browser-extension"
+              className="inline-block bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02]"
+            >
+              Learn How to Use the Extension
+            </Link>
+          </div>
+        </section>
+
         {/* Technology Section */}
         <section className="bg-blue-50 dark:bg-slate-800 rounded-xl p-8 shadow-lg">
           <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-4">

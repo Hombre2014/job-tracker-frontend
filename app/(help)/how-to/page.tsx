@@ -152,7 +152,10 @@ const HowTo = () => {
         </section>
 
         {/* Browser Extension Section */}
-        <section className="bg-purple-100 dark:bg-slate-700 rounded-xl p-8 shadow-lg mb-12">
+        <section
+          id="browser-extension"
+          className="bg-purple-100 dark:bg-slate-700 rounded-xl p-8 shadow-lg mb-12"
+        >
           <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-4 text-center">
             Using the JobTracker Browser Extension
           </h2>
