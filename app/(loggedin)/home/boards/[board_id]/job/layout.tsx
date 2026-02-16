@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
-import { cn } from '@/lib/utils';
 import Modal from '@/components/Misc/Modal';
 import { Button } from '@/components/ui/button';
 import { CompanyLogo } from '@/components/CompanyLogo';

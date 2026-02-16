@@ -9,13 +9,15 @@ Implemented persistent storage and manual management for company logos to ensure
 ### Architecture
 
 #### Backend (NestJS)
+
 - **Entities**: Added a nullable `logo` column to the `Company` entity.
-- **DTOs**: 
+- **DTOs**:
   - `CreateCompanyDto`: Now includes optional `logo` for initial creation.
   - `UpdateCompanyDto`: Added `logo` field to allow manual URL updates for existing companies.
 - **Data Integrity**: Backend mappers (`CompanyMapper`, `JobApplicationMapper`) and services automatically propagate the `logo` field through the relational chain.
 
 #### Frontend (Next.js + Redux)
+
 - **Manual Override**:
   - `EditCompanyForm` includes a "Logo URL" field with a live preview.
   - On save, the new URL is persisted to the database and synchronized immediately with `localStorage` (`currentJobPost`).
@@ -23,25 +25,26 @@ Implemented persistent storage and manual management for company logos to ensure
   - `jobsSlice` and `boardsSlice` handle `updateCompany.fulfilled` to propagate company logo changes to all related job applications in the local state.
 - **Resilient Display Logic (`CompanyLogo` component)**:
   - The component follows a prioritized three-stage fallback flow:
-    1.  **Manual URL**: Uses the stored URL from the database.
-    2.  **Brandfetch Dynamic**: High-quality dynamic logo derived from the domain. Used if no manual URL is provided or if the manual URL fails to load.
-    3.  **Generic Icon**: Final fallback (`Building2` from Lucide).
+    1. **Manual URL**: Uses the stored URL from the database.
+    2. **Brandfetch Dynamic**: High-quality dynamic logo derived from the domain. Used if no manual URL is provided or if the manual URL fails to load.
+    3. **Generic Icon**: Final fallback (`Building2` from Lucide).
   - **Auto-Sync**: The component resets when the company domain, name, or manual logo URL changes.
 
 ### Key Implementation Details
 
-1.  **LocalStorage Sync**: In `EditCompanyForm`, `localStorage` is updated immediately upon success to ensure sub-views (like Job Details) reflect changes without a refresh.
-2.  **Reset to Automatic**: Added a "Reset to Automatic" button in `EditCompanyForm` to allow users to clear a manual override and revert to the high-quality dynamic logo.
-3.  **Autocomplete Integration**: Selecting a company from the autocomplete dropdown automatically clears the `logo` field to ensure the new company uses high-quality dynamic logos by default.
-4.  **Domain-less Support**: The logo system works for companies without URLs by relying strictly on manual URLs or the default icon.
-5.  **Placeholder Detection**: `CompanyLogo` detects if an external service returns a small/empty placeholder and automatically advances to the next fallback.
+1. **LocalStorage Sync**: In `EditCompanyForm`, `localStorage` is updated immediately upon success to ensure sub-views (like Job Details) reflect changes without a refresh.
+2. **Reset to Automatic**: Added a "Reset to Automatic" button in `EditCompanyForm` to allow users to clear a manual override and revert to the high-quality dynamic logo.
+3. **Autocomplete Integration**: Selecting a company from the autocomplete dropdown automatically clears the `logo` field to ensure the new company uses high-quality dynamic logos by default.
+4. **Domain-less Support**: The logo system works for companies without URLs by relying strictly on manual URLs or the default icon.
+5. **Placeholder Detection**: `CompanyLogo` detects if an external service returns a small/empty placeholder and automatically advances to the next fallback.
 
 ### Files
-- **Backend**: 
+
+- **Backend**:
   - `src/modules/companies/entities/company.entity.ts`
   - `src/modules/companies/dtos/update-company.dto.ts`
   - `src/modules/companies/companies.mapper.ts`
-- **Frontend**: 
+- **Frontend**:
   - `components/CompanyLogo/CompanyLogo.tsx`
   - `components/Forms/EditCompanyForm.tsx`
   - `redux/jobs/jobsSlice.ts`
@@ -52,22 +55,24 @@ Implemented persistent storage and manual management for company logos to ensure
 
 ## Company Deduplication System (v1.0.2 / v1.4.4, 07/02/2026)
 
-### Overview
+### Overview - 07/02/2026
 
 Implemented a robust system to prevent duplicate company records based on company name and domain URL. This ensures data integrity and provides a seamless user experience when adding or editing companies.
 
-### Architecture
+### Architecture - 07/02/2026
 
-#### Backend (NestJS)
+#### Backend (NestJS) - 07/02/2026
+
 - **Entities**: `Company` entity now enforces unique constraints on `name` and `url`.
-- **Service**: 
+- **Service**:
   - `CompaniesService.create` checks for existing companies by name OR domain before creation.
   - `findByNameOrDomain` method uses `LOWER()` for case-insensitive matching.
 - **Validation**:
   - `BrandfetchService` validates domains against the Brandfetch API to ensure they are real and retrieves official company data.
   - New endpoints: `/companies/find-by-name-or-domain` and `/companies/validate-domain`.
 
-#### Frontend (Next.js)
+#### Frontend (Next.js) - 07/02/2026
+
 - **Validation**:
   - `brandfetchValidationService` handles client-side validation calls.
   - `EditCompanyForm` includes real-time domain validation to warn if a user tries to change a domain to one that is already registered.
@@ -82,13 +87,14 @@ Implemented a robust system to prevent duplicate company records based on compan
    - Backend checks if `name` or `url` exists.
    - If found, returns existing company.
    - If not found, creates new company.
-   
+
 2. **Editing a Company Domain**:
    - Frontend validates new domain against backend.
    - If domain belongs to another company, shows warning dialog.
    - User can cancel or confirm generic "update" (which might fail if strict constraint is hit, but frontend dialog handles the user intent first).
 
-### Files
+### Files - 07/02/2026
+
 - **Backend**: `src/modules/companies/companies.service.ts`, `brandfetch.service.ts`
 - **Frontend**: `components/Forms/EditCompanyForm.tsx`, `services/brandfetchValidationService.ts`
 
@@ -96,7 +102,7 @@ Implemented a robust system to prevent duplicate company records based on compan
 
 ## Frontend URL Parameter Integration (v1.3.0, 30/01/2026)
 
-### Overview
+### Overview - 30/01/2026
 
 Implemented deep linking support to allow external sources (like the browser extension) to pre-fill the "Add Job" form via URL parameters. This enables seamless data transfer from job boards to the Job Tracker.
 
@@ -113,13 +119,14 @@ The `AddJobShortForm` component now accepts the following URL search parameters:
 
 ### Workflow
 
-1.  **Incoming URL**: `.../board?company=Google&title=Engineer`
-2.  **Detection**: `useSearchParams` hook detects parameters on board load.
-3.  **State Update**:
-    *   Form fields (`company`, `jobTitle`) are auto-populated.
-    *   `localStorage` is updated to persist data across component re-renders (like modals).
-4.  **Validation**: Form validation runs immediately, enabling the "Add" button if requirements are met.
-5.  **Submission**: User clicks "Add" to create the job with pre-filled data.
+1. **Incoming URL**: `.../board?company=Google&title=Engineer`
+2. **Detection**: `useSearchParams` hook detects parameters on board load.
+3. **State Update**:
+   - Form fields (`company`, `jobTitle`) are auto-populated.
+   - `localStorage` is updated to persist data across component re-renders (like modals).
+
+4. **Validation**: Form validation runs immediately, enabling the "Add" button if requirements are met.
+5. **Submission**: User clicks "Add" to create the job with pre-filled data.
 
 ### Key Components
 
@@ -134,7 +141,7 @@ The `AddJobShortForm` component now accepts the following URL search parameters:
 
 ## Test Infrastructure (v1.1.1, 28/01/2026)
 
-### Overview
+### Overview - 28/01/2026
 
 Enhanced the testing infrastructure to fix TypeScript errors and improve test reliability. The project uses Vitest with React Testing Library.
 
@@ -150,13 +157,14 @@ Enhanced the testing infrastructure to fix TypeScript errors and improve test re
 ### Verification
 
 Run tests with:
+
 ```bash
 npm test
 ```
 
 ## Company Autocomplete & Logo Integration (v1.1.0, 27/01/2026)
 
-### Overview
+### Overview - 27/01/2026
 
 The application now uses a hybrid approach for company name autocomplete and logo display:
 
@@ -164,14 +172,14 @@ The application now uses a hybrid approach for company name autocomplete and log
 - **Brandfetch Logo API** for dynamic company logo display
 - No backend changes required; all logic is frontend-only
 
-### Key Components
+### Key Components - 27/01/2026
 
 - `components/CompanyAutocomplete/CompanyAutocomplete.tsx`: Autocomplete dropdown with logos
 - `components/CompanyLogo/CompanyLogo.tsx`: Displays company logos with fallback
 - `hooks/useCompanyAutocomplete.ts`: Debounced API calls for suggestions
 - `services/companyAutocompleteService.ts`: Clearbit API client
 
-### Workflow
+### Workflow - User types in company name field
 
 - **Add/Edit Company**: User types company name, suggestions appear with logos, selection auto-fills name and URL
 - **Display**: Logos shown on job cards, modals, and company tab using the company URL
@@ -198,7 +206,7 @@ See `docs/Company_Autocomplete_Integration.md` for full implementation details, 
 
 Implemented comprehensive strong password enforcement system that validates passwords at registration and guides existing users to update weak passwords through a non-intrusive flow.
 
-### Architecture
+### Architecture Overview
 
 ```text
 ┌─────────────────────────────────────────────────────────┐

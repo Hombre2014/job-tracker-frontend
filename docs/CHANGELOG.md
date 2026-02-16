@@ -3,6 +3,74 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.6] - 2026-02-16
+
+### Added - Documentation Updates
+
+- **How To Page - Browser Extension Guide**:
+  - Added comprehensive "Using the JobTracker Browser Extension" section
+  - Detailed 5-step guide explaining how to capture job details from LinkedIn, Indeed, and other job boards
+  - Lists all automatically scraped information (job title, company, logo, location, description, salary, URL)
+  - Included two GIF placeholders for visual demonstrations:
+    - `/gifs/Extension_LinkedIn.gif` - LinkedIn job capture demo
+    - `/gifs/Extension_Indeed.gif` - Indeed job capture demo
+  - Added "Benefits of Using the Extension" subsection highlighting key advantages
+  - Added troubleshooting tips in "Tips & Best Practices" section:
+    - "Sync required" message resolution (use "Rescan & Sync" button)
+    - No data fetched issue (refresh page and retry, especially for LinkedIn SPA)
+  - Added `id="browser-extension"` attribute for direct linking from other pages
+  - **File**: `app/(help)/how-to/page.tsx`
+
+- **About Page - Browser Extension Feature**:
+  - Added prominent new "Browser Extension" section with purple theme and "NEW" badge
+  - Positioned between "What We Offer" and "Technology" sections for maximum visibility
+  - Included three key benefit cards:
+    - ⚡ One-Click Capture - Automatic job detail scraping
+    - 🔄 Instant Sync - Real-time updates without page refresh
+    - 🎯 100% Accurate - Eliminates copy-paste errors
+  - Added call-to-action button linking to How To page browser extension section
+  - **File**: `app/(help)/about/page.tsx`
+
+### Fixed - Form State Management
+
+- **AddJobShortForm - Duplicate Company Prevention**:
+  - **Root Cause**: `handleCompanySelect` unconditionally created companies on every autocomplete selection
+  - **Previous Behavior**:
+    - If user cleared field and re-selected same company, duplicate records were created
+    - Multiple selections of the same company created multiple database entries
+    - No deduplication logic in place
+  - **Solution**: Added company existence check before creation
+    - Calls `findCompanyByNameOrDomain` service to check if company exists
+    - If company exists, reuses existing company ID
+    - If company doesn't exist, creates new company
+    - Logs action for debugging ("Using existing company" vs "Created new company")
+  - **Benefits**:
+    - Prevents duplicate company records in database
+    - Improves data consistency and integrity
+    - Reduces unnecessary API calls and database writes
+    - Maintains referential integrity across job applications
+  - **Files**: `components/Forms/AddJobShort/AddJobShortForm.tsx`
+
+- **AddJobShortForm - Inconsistent State on Company Creation Failure**:
+  - **Root Cause**: Optimistic updates were applied before API success, leaving form in inconsistent state on failure
+  - **Previous Behavior**:
+    - Form state and localStorage were updated before API call
+    - On failure, only `selectedCompany` was reset
+    - Company name remained visible with no `companyId`, confusing users
+  - **Solution**: Moved all state updates inside try block after successful API response
+    - State only updates when backend confirms company creation
+    - On failure, comprehensive cleanup resets all related state
+    - Prevents partial/inconsistent updates
+  - **Error Recovery**:
+    - Resets all React state: company name, URL, ID, selectedCompany
+    - Clears form value using `form.setValue('company', '')`
+    - Removes stale data from localStorage (`company` and `companyId` keys)
+    - Syncs reset state to parent component via `emitDraft({ company: '', companyId: undefined })`
+    - Displays user-facing error toast notification using `react-toastify`
+    - Ensures complete cleanup prevents state mismatch between React, form, localStorage, and parent component
+    - Ensures clean state for retry attempts
+  - **Files**: `components/Forms/AddJobShort/AddJobShortForm.tsx`
+
 ## [1.4.5] - 2026-02-08
 
 ### Added - Company Logo Persistence
@@ -3802,6 +3870,7 @@ _All changes maintain backward compatibility and enhance user experience with im
 
 <!-- Version comparison links -->
 
+[1.4.6]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.4.5...v1.4.6
 [1.4.5]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.4.4...v1.4.5
 [1.4.4]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.4.3...v1.4.4
 [1.4.3]: https://github.com/Hombre2014/job-tracker-frontend/compare/v1.4.2...v1.4.3
