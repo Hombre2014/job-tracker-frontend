@@ -244,13 +244,7 @@ const AddJobShortForm = ({
       return;
     }
 
-    setCompany(companyName);
-    setCompanyUrl(companyDomain);
-    setSelectedCompany(companyObj);
-    form.setValue('company', companyName);
-    localStorage.setItem('company', companyName);
-
-    // Create company in backend with name and url
+    // Create company in backend with name and url first
     try {
       const result = await dispatch(
         createCompany({
@@ -261,12 +255,26 @@ const AddJobShortForm = ({
       ).unwrap();
 
       const newCompanyId = result.id;
+
+      // Only update state after successful creation
+      setCompany(companyName);
+      setCompanyUrl(companyDomain);
+      setSelectedCompany(companyObj);
       setCompanyId(newCompanyId);
+      form.setValue('company', companyName);
+      localStorage.setItem('company', companyName);
       localStorage.setItem('companyId', newCompanyId);
       emitDraft({ company: companyName, companyId: newCompanyId });
     } catch (error) {
       console.error('Error creating company:', error);
+      // Reset to clean state - no partial updates
       setSelectedCompany(null);
+      setCompany('');
+      setCompanyUrl('');
+      setCompanyId(undefined);
+      form.setValue('company', '');
+      // TODO: Show user-facing error notification
+      // Consider using toast/notification system to inform user
     }
   };
 
