@@ -4,6 +4,7 @@ import { RequestQueue } from '@/utils/RequestQueue';
 
 const client = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
+  withCredentials: true,
   timeout: 30000, // 30 second timeout
 });
 

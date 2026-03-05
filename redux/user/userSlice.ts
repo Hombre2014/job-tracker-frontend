@@ -7,6 +7,7 @@ import {
   createDeleteVerificationCode, 
   deleteUserAccount 
 } from './userThunk';
+import client from '@/api/client';
 
 // Get user thunk - moved here to avoid circular dependency
 export const getUser = createAsyncThunk('user/getUser', async (_, thunkAPI) => {
@@ -58,7 +59,7 @@ export const login = createAsyncThunk(
     }
 
     try {
-      const response = await axios.post(
+      const response = await client.post(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
         values
       );
@@ -77,8 +78,8 @@ export const login = createAsyncThunk(
         }
 
         // Store tokens in localStorage
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
+        localStorage.setItem('accessToken', "THIS IS NOT AN ACCESS TOKEN (userSlice)");
+        localStorage.setItem('refreshToken', "THIS IS NOT A REFRESH TOKEN (userSlice)");
 
         // Also store user info for persistence
         if (decoded && typeof decoded === 'object') {
