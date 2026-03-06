@@ -120,13 +120,6 @@ const JobPostCard = ({
 
   const handleJobPostClick = (id: string) => {
     if (!isDialogOpen) {
-      // Check if user has valid tokens
-      if (!TokenManager.hasValidTokens()) {
-        console.log('JobPostCard: No valid tokens, redirecting to login');
-        router.push('/login');
-        return;
-      }
-
       router.push(`/home/boards/${board_id}/job/${id}/job-details`);
       // Only set localStorage if user is authenticated
       localStorage.setItem('columnId', columnId);
