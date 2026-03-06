@@ -45,8 +45,6 @@ const Documents = () => {
     // Simple refresh without disruptive re-renders - just re-fetch job data
     if (job_id) {
       try {
-        // Add cache-busting param to jobPostId (if backend supports it)
-        const cacheBuster = `?t=${Date.now()}`;
         await dispatch(getJobPost(job_id as string)).unwrap();
       } catch (error) {
         console.warn('Failed to refresh job documents:', error);

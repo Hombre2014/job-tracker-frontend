@@ -32,10 +32,7 @@ const Notes = () => {
   const currentNote = notes.find((note) => note.id === editingNoteId);
 
   useEffect(() => {
-    const updatePayload = {
-      jobApplicationId: job_id,
-    };
-    dispatch(getAllJobApplicationNotes(updatePayload));
+    dispatch(getAllJobApplicationNotes(job_id as string));
   }, [dispatch, job_id]);
 
   useEffect(() => {
@@ -58,7 +55,7 @@ const Notes = () => {
           };
 
           dispatch(updateJobApplicationNote(updatePayload)).then(() => {
-            dispatch(getAllJobApplicationNotes(job_id));
+            dispatch(getAllJobApplicationNotes(job_id as string));
           });
         }
         setEditingNoteId(null);
@@ -128,11 +125,8 @@ const Notes = () => {
   };
 
   const handleDeleteNote = (noteId: string) => {
-    const deletePayload = {
-      noteId,
-    };
-    dispatch(deleteJobApplicationNote(deletePayload)).then(() => {
-      dispatch(getAllJobApplicationNotes(job_id));
+    dispatch(deleteJobApplicationNote(noteId)).then(() => {
+      dispatch(getAllJobApplicationNotes(job_id as string));
     });
     setOpenDropdownId(null);
   };

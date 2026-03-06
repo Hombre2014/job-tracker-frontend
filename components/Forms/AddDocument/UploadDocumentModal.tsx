@@ -227,11 +227,7 @@ const UploadDocumentModal = ({
           // First, refresh linked jobs if any
           if (jobsConnectedToDocument.length > 0) {
             for (const job of jobsConnectedToDocument) {
-              await dispatch(
-                getJobPost({
-                  jobPostId: job.id,
-                })
-              ).unwrap();
+              await dispatch(getJobPost(job.id)).unwrap();
             }
           }
 

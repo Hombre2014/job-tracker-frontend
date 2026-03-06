@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { CompanyLogo } from '@/components/CompanyLogo';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getAllJobApplicationNotes } from '@/redux/notes/notesThunk';
-import { getAllJobPostsPerColumn, updateJobPost } from '@/redux/jobs/jobsThunk';
+import { updateJobPost } from '@/redux/jobs/jobsThunk';
 import {
   Card,
   CardTitle,
@@ -35,14 +35,6 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   const [selectedListName, setSelectedListName] = useState('');
   const [temporaryMessage, setTemporaryMessage] = useState<string>('');
   const boardColumns = boards.find((board) => board.id === board_id)?.columns;
-
-  useEffect(() => {
-    const columnId = localStorage.getItem('columnId');
-    if (!columnId || columnId === 'null')
-      return;
-
-    dispatch(getAllJobPostsPerColumn(columnId));
-  }, [dispatch, board_id, job_id]);
 
   const closeModal = () => {
     push(`/home/boards/${board_id}/board`);
@@ -117,11 +109,7 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
       };
 
       dispatch(updateJobPost(updatePayload)).then(() => {
-        dispatch(
-          getAllJobApplicationNotes({
-            jobApplicationId: job_id,
-          }),
-        );
+        dispatch(getAllJobApplicationNotes(job_id as string));
       });
 
       setTimeout(() => {

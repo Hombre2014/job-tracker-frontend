@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent } from '@/components/ui/card';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { getAllJobPostsPerColumn, updateJobPost } from '@/redux/jobs/jobsThunk';
+import { getJobPost, updateJobPost } from '@/redux/jobs/jobsThunk';
 import {
   Popover,
   PopoverAnchor,
@@ -89,10 +89,8 @@ const JobInfo = () => {
   }, []);
 
   useEffect(() => {
-    const columnId = localStorage.getItem('columnId');
-    if (!columnId || columnId === 'null') return;
-
-    dispatch(getAllJobPostsPerColumn(columnId));
+    if (job_id?.length > 1)
+      dispatch(getJobPost(job_id as string));
   }, [dispatch, job_id]);
 
   const handleSelectDeadline = (date: Date | undefined) => {

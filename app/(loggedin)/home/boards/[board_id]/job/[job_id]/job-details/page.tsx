@@ -5,7 +5,6 @@ import { useParams } from 'next/navigation';
 
 import jobPostMenuItems from '@/data/job-post-menu-items';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { getAllJobPostsPerColumn } from '@/redux/jobs/jobsThunk';
 import { getAllJobApplicationNotes } from '@/redux/notes/notesThunk';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -20,18 +19,7 @@ const JobDetails = () => {
   const { notes } = useAppSelector((state) => state.notes);
 
   useEffect(() => {
-    const columnId = localStorage.getItem('columnId');
-    if (!columnId || columnId === 'null') return;
-
-    dispatch(getAllJobPostsPerColumn(columnId));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch]);
-
-  useEffect(() => {
-    const updatePayload = {
-      jobApplicationId: job_id,
-    };
-    dispatch(getAllJobApplicationNotes(updatePayload));
+    dispatch(getAllJobApplicationNotes(job_id as string));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, job_id]);
 
