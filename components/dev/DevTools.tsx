@@ -130,11 +130,7 @@ const DevTools: React.FC = () => {
         return;
       }
 
-      const response = await fetch(`${apiUrl}/users`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const response = await fetch(`${apiUrl}/users`);
       console.log('Test API Response:', response.status, await response.json());
     } catch (error) {
       console.error('Test API Error:', error);

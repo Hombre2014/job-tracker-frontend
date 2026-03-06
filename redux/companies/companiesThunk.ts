@@ -12,12 +12,6 @@ export const getCompanyThatStartsWith = createAsyncThunk(
       const res = await client.post(
         '/companies/starts-with',
         { name: companyName },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-        },
       );
       return res.data;
     } catch (err: unknown) {
@@ -34,7 +28,7 @@ export const getCompanyThatStartsWith = createAsyncThunk(
 export const createCompany = createAsyncThunk(
   'companies/createNewCompany',
   async (values: any, thunkAPI) => {
-    const { accessToken, name, url, logo } = values;
+    const { name, url, logo } = values;
     const body: { name: string; url?: string; logo?: string | null } = {
       name: name,
     };
@@ -52,7 +46,6 @@ export const createCompany = createAsyncThunk(
     try {
       const res = await client.post('/companies', body, {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
       });
@@ -71,11 +64,10 @@ export const createCompany = createAsyncThunk(
 export const getCompany = createAsyncThunk(
   'companies/getCompany',
   async (values: any, thunkAPI) => {
-    const { companyId, accessToken } = values;
+    const { companyId } = values;
     try {
       const res = await client.get(`/companies/${companyId}`, {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
       });
@@ -94,11 +86,10 @@ export const getCompany = createAsyncThunk(
 export const updateCompany = createAsyncThunk(
   'companies/updateCompany',
   async (values: any, thunkAPI) => {
-    const { companyId, accessToken, ...rest } = values;
+    const { companyId, ...rest } = values;
     try {
       const res = await client.put(`/companies/${companyId}`, rest, {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
       });

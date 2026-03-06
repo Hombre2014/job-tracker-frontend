@@ -136,7 +136,7 @@ const CreateContactModal = ({
       try {
         // Get all boards and use the first one (default "Job Search" board)
         const boards = await dispatch(
-          getBoardsOnly(accessToken as string)
+          getBoardsOnly()
         ).unwrap();
         if (boards && boards.length > 0) {
           // Sort by creation date to get the first created board

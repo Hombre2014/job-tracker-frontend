@@ -23,7 +23,6 @@ export const validateDomain = async (domain: string, accessToken: string) => {
       { domain },
       {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
       },
@@ -45,7 +44,6 @@ export const findCompanyByNameOrDomain = async (
   try {
     const response = await client.post('/companies/find-by-name-or-domain', params, {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
     });

@@ -6,17 +6,13 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 export const createJobApplicationNote = createAsyncThunk(
   'notes/createJobApplicationNote',
   async (values: any, thunkAPI) => {
-    const { accessToken, jobApplicationId, noteContent } = values;
+    const { jobApplicationId, noteContent } = values;
     const body = {
       content: noteContent,
       jobApplicationId: jobApplicationId,
     };
     try {
-      const res = await client.post(`/job-application-notes`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.post(`/job-application-notes`, body);
       const data = res.data;
       return data;
     } catch (err: unknown) {
@@ -33,15 +29,10 @@ export const createJobApplicationNote = createAsyncThunk(
 export const getAllJobApplicationNotes = createAsyncThunk(
   'notes/getAllJobApplicationNotes',
   async (values: any, thunkAPI) => {
-    const { accessToken, jobApplicationId } = values;
+    const { jobApplicationId } = values;
     try {
       const res = await client.get(
-        `/job-application-notes/${jobApplicationId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+        `/job-application-notes/${jobApplicationId}`
       );
       const data = res.data;
       return data;
@@ -59,16 +50,12 @@ export const getAllJobApplicationNotes = createAsyncThunk(
 export const updateJobApplicationNote = createAsyncThunk(
   'notes/updateJobApplicationNote',
   async (values: any, thunkAPI) => {
-    const { accessToken, noteContent, noteId } = values;
+    const { noteContent, noteId } = values;
     const body = {
       content: noteContent,
     };
     try {
-      const res = await client.put(`/job-application-notes/${noteId}`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.put(`/job-application-notes/${noteId}`, body);
       const data = res.data;
       return data;
     } catch (err: unknown) {
@@ -85,13 +72,9 @@ export const updateJobApplicationNote = createAsyncThunk(
 export const deleteJobApplicationNote = createAsyncThunk(
   'notes/deleteJobApplicationNote',
   async (values: any, thunkAPI) => {
-    const { accessToken, noteId } = values;
+    const { noteId } = values;
     try {
-      await client.delete(`/job-application-notes/${noteId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      await client.delete(`/job-application-notes/${noteId}`);
       return noteId;
     } catch (err: unknown) {
       if (isAxiosError(err)) {

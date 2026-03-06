@@ -9,7 +9,6 @@ export const createJobPost = createAsyncThunk(
   'jobs/createJobPost',
   async (values: any, thunkAPI) => {
     const {
-      accessToken,
       title,
       companyId,
       columnId,
@@ -34,11 +33,7 @@ export const createJobPost = createAsyncThunk(
       createdAt: new Date().toISOString(),
     };
     try {
-      const res = await client.post('/job-applications', body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.post('/job-applications', body);
 
       const data = res.data;
       return data;
@@ -56,13 +51,9 @@ export const createJobPost = createAsyncThunk(
 export const getAllJobPostsPerColumn = createAsyncThunk(
   'jobs/getAllJobPostsPerColumn',
   async (values: any, thunkAPI) => {
-    const { accessToken, columnId } = values;
+    const { columnId } = values;
     try {
-      const res = await client.get(`/job-applications/column/${columnId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.get(`/job-applications/column/${columnId}`);
 
       const data = res.data;
       return data;
@@ -91,7 +82,6 @@ export const updateJobPost = createAsyncThunk(
       deadline,
       columnId,
       jobPostId,
-      accessToken,
       description,
       statusChangedAt,
     } = values;
@@ -114,11 +104,7 @@ export const updateJobPost = createAsyncThunk(
       body.company = { name: companyName };
     }
     try {
-      const res = await client.put(`/job-applications/${jobPostId}`, body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.put(`/job-applications/${jobPostId}`, body);
 
       const data = res.data;
       return data;
@@ -136,7 +122,7 @@ export const updateJobPost = createAsyncThunk(
 export const deleteJobPost = createAsyncThunk(
   'jobs/deleteJobPost',
   async (values: any, thunkAPI) => {
-    const { accessToken, jobPostId, jobPostData } = values;
+    const { jobPostId, jobPostData } = values;
     try {
       // Step 1: Handle documents attached to this job post using DocumentService
       if (jobPostData?.documents && jobPostData.documents.length > 0) {
@@ -144,7 +130,6 @@ export const deleteJobPost = createAsyncThunk(
           await DocumentService.handleDocumentsForJobDeletion(
             jobPostData.documents,
             jobPostId,
-            accessToken
           );
 
         // Log the results for debugging in development only
@@ -154,11 +139,7 @@ export const deleteJobPost = createAsyncThunk(
       }
 
       // Step 2: Delete the job post itself
-      await client.delete(`/job-applications/${jobPostId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      await client.delete(`/job-applications/${jobPostId}`);
 
       return jobPostId;
     } catch (err: unknown) {
@@ -175,13 +156,9 @@ export const deleteJobPost = createAsyncThunk(
 export const getJobPost = createAsyncThunk(
   'jobs/getJobPost',
   async (values: any, thunkAPI) => {
-    const { accessToken, jobPostId } = values;
+    const { jobPostId } = values;
     try {
-      const res = await client.get(`/job-applications/${jobPostId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.get(`/job-applications/${jobPostId}`);
 
       const data = res.data;
       return data;
