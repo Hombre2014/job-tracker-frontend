@@ -66,7 +66,6 @@ const JobInfo = () => {
     setFirstVisit(false);
 
     const updatePayload = {
-      accessToken: localStorage.getItem('accessToken'),
       company: {
         name: currentJobPost?.company.name,
       },
@@ -93,12 +92,7 @@ const JobInfo = () => {
     const columnId = localStorage.getItem('columnId');
     if (!columnId || columnId === 'null') return;
 
-    const jobPostsData = {
-      accessToken: localStorage.getItem('accessToken') as string,
-      columnId,
-    };
-
-    dispatch(getAllJobPostsPerColumn(jobPostsData));
+    dispatch(getAllJobPostsPerColumn(columnId));
   }, [dispatch, job_id]);
 
   const handleSelectDeadline = (date: Date | undefined) => {

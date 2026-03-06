@@ -34,7 +34,6 @@ const Login = () => {
   const [userEmail, setUserEmail] = useState<string>('');
   const { status } = useAppSelector((state) => state.user);
   const [error, setError] = useState<string | undefined>('');
-  const { accessToken } = useAppSelector((state) => state.user);
   const [success, setSuccess] = useState<string | undefined>('');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<
@@ -75,7 +74,7 @@ const Login = () => {
         setShowPasswordModal(true);
       } else if (passwordStrength === 'strong') {
         // Password is strong or already updated, continue normally
-        dispatch(getBoards(accessToken as string));
+        dispatch(getBoards());
       }
     }
 
@@ -87,7 +86,7 @@ const Login = () => {
         clearTimeout(timeout);
       };
     }
-  }, [status, dispatch, accessToken, passwordStrength]);
+  }, [status, dispatch, passwordStrength]);
 
   useEffect(() => {
     if (boardsStatus === 'succeeded') {

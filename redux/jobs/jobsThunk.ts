@@ -50,8 +50,7 @@ export const createJobPost = createAsyncThunk(
 
 export const getAllJobPostsPerColumn = createAsyncThunk(
   'jobs/getAllJobPostsPerColumn',
-  async (values: any, thunkAPI) => {
-    const { columnId } = values;
+  async (columnId: string, thunkAPI) => {
     try {
       const res = await client.get(`/job-applications/column/${columnId}`);
 
@@ -155,8 +154,7 @@ export const deleteJobPost = createAsyncThunk(
 
 export const getJobPost = createAsyncThunk(
   'jobs/getJobPost',
-  async (values: any, thunkAPI) => {
-    const { jobPostId } = values;
+  async (jobPostId: string, thunkAPI) => {
     try {
       const res = await client.get(`/job-applications/${jobPostId}`);
 

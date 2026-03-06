@@ -27,30 +27,20 @@ const UserDocuments = () => {
     firstName: string;
     profilePicUrl?: string;
   } | null>(null);
-  const accessToken = (() => {
-    try {
-      return localStorage.getItem('accessToken');
-    } catch (error) {
-      console.warn('Failed to access localStorage:', error);
-      return null;
-    }
-  })();
 
   // Function to refresh user documents
   const handleDocumentsRefresh = async () => {
-    if (accessToken) {
-      try {
-        // Directly dispatch the action without unwrapping to ensure Redux store is updated
-        await dispatch(getDocumentsPerUser(accessToken));
-      } catch (error) {
-        console.warn('Failed to refresh user documents:', error);
-      }
+    try {
+      // Directly dispatch the action without unwrapping to ensure Redux store is updated
+      await dispatch(getDocumentsPerUser());
+    } catch (error) {
+      console.warn('Failed to refresh user documents:', error);
     }
   };
 
   // Fetch user info for uploader details
   useEffect(() => {
-    if (accessToken && !uploaderInfo) {
+    if (!uploaderInfo) {
       if (user.firstName && user.lastName) {
         setUploaderInfo({
           lastName: user.lastName,
@@ -72,7 +62,6 @@ const UserDocuments = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     dispatch,
-    accessToken,
     user.lastName,
     user.firstName,
     user.profilePicUrl,
@@ -80,10 +69,8 @@ const UserDocuments = () => {
 
   // Fetch user documents on mount
   useEffect(() => {
-    if (accessToken) {
-      dispatch(getDocumentsPerUser(accessToken));
-    }
-  }, [dispatch, accessToken]);
+    dispatch(getDocumentsPerUser());
+  }, [dispatch]);
 
   // Count documents per category
   const categoryCounts: CategoryCount[] = [];
@@ -137,7 +124,6 @@ const UserDocuments = () => {
     handleDownloadDocument,
   } = useDocumentActions(
     userDocuments,
-    accessToken,
     handleDocumentsRefresh,
     true
   ); // Enable optimistic updates

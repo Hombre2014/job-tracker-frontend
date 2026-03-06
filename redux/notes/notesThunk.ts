@@ -28,8 +28,7 @@ export const createJobApplicationNote = createAsyncThunk(
 
 export const getAllJobApplicationNotes = createAsyncThunk(
   'notes/getAllJobApplicationNotes',
-  async (values: any, thunkAPI) => {
-    const { jobApplicationId } = values;
+  async (jobApplicationId: any, thunkAPI) => {
     try {
       const res = await client.get(
         `/job-application-notes/${jobApplicationId}`

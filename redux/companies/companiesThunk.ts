@@ -6,7 +6,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 export const getCompanyThatStartsWith = createAsyncThunk(
   'companies/getCompanyThatStartsWith',
   async (values: any, thunkAPI) => {
-    const { accessToken, companyName } = values;
+    const { companyName } = values;
 
     try {
       const res = await client.post(

@@ -25,8 +25,6 @@ export const WeakPasswordModal = ({
   const handleUpdatePassword = () => {
     // Logout user first
     try {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
     } catch (error) {
       // Continue with redirect even if localStorage clearing fails

@@ -106,10 +106,9 @@ export const updateContact = createAsyncThunk(
 
 export const deleteContact = createAsyncThunk(
   'contacts/deleteContact',
-  async (values: any, thunkAPI) => {
-    const { id } = values;
+  async (contactId: string, thunkAPI) => {
     try {
-      const res = await client.delete(`/contacts/${id}`);
+      const res = await client.delete(`/contacts/${contactId}`);
       const data = res.data;
       return data;
     } catch (err: unknown) {
@@ -143,8 +142,7 @@ export const getContact = createAsyncThunk(
 
 export const getAllContactsPerBoard = createAsyncThunk(
   'contacts/getAllContactsPerBoard',
-  async (values: any, thunkAPI) => {
-    const { boardId } = values;
+  async (boardId: string, thunkAPI) => {
     try {
       const res = await client.get(`/contacts?boardId=${boardId}`);
       const data = res.data;
@@ -345,10 +343,9 @@ export const updateContactPhone = createAsyncThunk(
 
 export const deleteContactEmail = createAsyncThunk(
   'contacts/deleteContactEmail',
-  async (values: any, thunkAPI) => {
-    const { id } = values;
+  async (contactId: string, thunkAPI) => {
     try {
-      const res = await client.delete(`/contacts/contact-method/email/${id}`);
+      const res = await client.delete(`/contacts/contact-method/email/${contactId}`);
       const data = res.data;
       return data;
     } catch (err: unknown) {

@@ -16,7 +16,7 @@ export interface FindCompanyParams {
 /**
  * Validate domain against Brandfetch API via backend
  */
-export const validateDomain = async (domain: string, accessToken: string) => {
+export const validateDomain = async (domain: string) => {
   try {
     const response = await client.post(
       '/companies/validate-domain',
@@ -37,10 +37,7 @@ export const validateDomain = async (domain: string, accessToken: string) => {
 /**
  * Find existing company by name or domain
  */
-export const findCompanyByNameOrDomain = async (
-  params: FindCompanyParams,
-  accessToken: string,
-): Promise<any | null> => {
+export const findCompanyByNameOrDomain = async (params: FindCompanyParams): Promise<any | null> => {
   try {
     const response = await client.post('/companies/find-by-name-or-domain', params, {
       headers: {

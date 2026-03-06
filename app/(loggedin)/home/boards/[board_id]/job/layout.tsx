@@ -37,22 +37,11 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   const boardColumns = boards.find((board) => board.id === board_id)?.columns;
 
   useEffect(() => {
-    const accessToken = localStorage.getItem('accessToken');
     const columnId = localStorage.getItem('columnId');
-    if (
-      !columnId ||
-      columnId === 'null' ||
-      !accessToken ||
-      accessToken === 'null'
-    )
+    if (!columnId || columnId === 'null')
       return;
 
-    const jobPostsData = {
-      accessToken,
-      columnId,
-    };
-
-    dispatch(getAllJobPostsPerColumn(jobPostsData));
+    dispatch(getAllJobPostsPerColumn(columnId));
   }, [dispatch, board_id, job_id]);
 
   const closeModal = () => {
@@ -64,17 +53,13 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   const currentJobPost = safeJobPosts.find((jobPost) => jobPost.id === job_id);
 
   useEffect(() => {
-    const accessToken = localStorage.getItem('accessToken');
-    if (currentJobPost && accessToken) {
+    if (currentJobPost) {
       // Only set localStorage if user is authenticated
       localStorage.setItem('currentJobPost', JSON.stringify(currentJobPost));
     }
   }, [currentJobPost]);
 
   const handleSelectList = (value: string) => {
-    const accessToken = localStorage.getItem('accessToken');
-    if (!accessToken) return;
-
     const chosenColumn = localStorage.getItem('chosenColumn');
 
     setSelectedListName(value);
@@ -126,7 +111,6 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
         jobPostId: job_id,
         columnId: newColumnId,
         statusChangedTime: new Date().toISOString(),
-        accessToken,
         company: {
           name: currentJobPost!.company?.name || '',
         },
@@ -135,7 +119,6 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
       dispatch(updateJobPost(updatePayload)).then(() => {
         dispatch(
           getAllJobApplicationNotes({
-            accessToken,
             jobApplicationId: job_id,
           }),
         );

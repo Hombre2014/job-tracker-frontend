@@ -55,8 +55,6 @@ const AddJobShortForm = ({
   const searchParams = useSearchParams();
   const [jobTitle, setJobTitle] = useState('');
   const [companyId, setCompanyId] = useState<string | undefined>(undefined);
-  const getAccessToken = () =>
-    typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
   const { boards } = useAppSelector((state) => state.boards);
   const initialBoard = boards.find((b) => b.id === board_id);
 
@@ -240,12 +238,6 @@ const AddJobShortForm = ({
     const companyName = companyObj.name;
     const companyDomain = companyObj.domain;
 
-    const accessToken = getAccessToken();
-    if (!accessToken) {
-      console.error('No access token available');
-      return;
-    }
-
     try {
       // First, check if company already exists by name or domain
       const existingCompany = await findCompanyByNameOrDomain(
@@ -253,7 +245,6 @@ const AddJobShortForm = ({
           name: companyName,
           domain: companyDomain,
         },
-        accessToken,
       );
 
       let companyId: string;
@@ -266,7 +257,6 @@ const AddJobShortForm = ({
         // Company doesn't exist, create new one
         const result = await dispatch(
           createCompany({
-            accessToken,
             name: companyName,
             url: companyDomain,
           }),

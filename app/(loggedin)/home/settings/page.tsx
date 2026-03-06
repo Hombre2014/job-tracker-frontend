@@ -29,7 +29,6 @@ const Settings = () => {
   const [newFirstName, setNewFirstName] = useState(firstName);
   const { email, profilePicUrl } = useAppSelector((state) => state.user);
   const [newEmail, setNewEmail] = useState(email);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const { daily, weekly, loading } = useAppSelector(
     (state) => state.notifications
@@ -41,16 +40,7 @@ const Settings = () => {
   // Removed automatic updateUser call - should only update when user explicitly saves
 
   useEffect(() => {
-    try {
-      const token = localStorage.getItem('accessToken');
-      setAccessToken(token);
-      if (token) {
-        dispatch(getBothNotifications(token));
-      }
-    } catch (error) {
-      console.error('Failed to access localStorage:', error);
-      setAccessToken(null);
-    }
+    dispatch(getBothNotifications());
   }, [dispatch]);
 
   useEffect(() => {
@@ -118,14 +108,6 @@ const Settings = () => {
   };
 
   const handleSaveNotifications = async () => {
-    if (!accessToken) {
-      toast.error('Access token not available. Please log in again.', {
-        autoClose: 3000,
-        position: 'top-right',
-      });
-      return;
-    }
-
     try {
       const timezoneOffset = new Date().getTimezoneOffset();
       const notifications = {
@@ -145,10 +127,7 @@ const Settings = () => {
       };
 
       await dispatch(
-        createUpdateDeleteNotifications({
-          accessToken,
-          notifications,
-        })
+        createUpdateDeleteNotifications({notifications})
       ).unwrap();
 
       setNotificationsDirty(false);
@@ -172,14 +151,6 @@ const Settings = () => {
   };
 
   const handleSaveProfile = async () => {
-    if (!accessToken) {
-      toast.error('Access token not available. Please log in again.', {
-        autoClose: 3000,
-        position: 'top-right',
-      });
-      return;
-    }
-
     try {
       await dispatch(
         updateUser({
@@ -187,7 +158,6 @@ const Settings = () => {
           email: newEmail,
           lastName: newLastName,
           firstName: newFirstName,
-          accessToken: accessToken,
         })
       ).unwrap();
 
@@ -224,14 +194,6 @@ const Settings = () => {
       }
       setPreviewImageUrl(URL.createObjectURL(selectedFile));
 
-      if (!accessToken) {
-        toast.error('Access token not available. Please log in again.', {
-          position: 'top-right',
-          autoClose: 3000,
-        });
-        return;
-      }
-
       try {
         await dispatch(
           updateUser({
@@ -240,7 +202,6 @@ const Settings = () => {
             lastName: newLastName,
             firstName: newFirstName,
             profilePic: selectedFile,
-            accessToken: accessToken,
           })
         ).unwrap();
 

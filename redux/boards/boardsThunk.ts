@@ -57,11 +57,9 @@ export const getBoardsOnly = createAsyncThunk(
 
 export const createBoard = createAsyncThunk(
   'boards/createBoard',
-  async (values: any, thunkAPI) => {
-    const { name } = values;
-    const postData = { name };
+  async (boardName: string, thunkAPI) => {
     try {
-      const res = await client.post('/boards', postData);
+      const res = await client.post('/boards', {boardName});
 
       const data = res.data;
       return data;
@@ -99,11 +97,10 @@ export const renameBoard = createAsyncThunk(
 
 export const archiveBoard = createAsyncThunk(
   'boards/archiveBoard',
-  async (values: any, thunkAPI) => {
-    const { id } = values;
+  async (boardId: string, thunkAPI) => {
     try {
       const res = await client.patch(
-        `/boards/${id}`,
+        `/boards/${boardId}`,
         {
           isArchived: true,
         }
@@ -175,8 +172,7 @@ export const unarchiveBoard = createAsyncThunk(
 
 export const getBoardWithColumns = createAsyncThunk(
   'boards/getBoardWithColumns',
-  async (values: any, thunkAPI) => {
-    const { boardId } = values;
+  async (boardId: string, thunkAPI) => {
     try {
       const res = await client.get(`/boards/${boardId}`);
 

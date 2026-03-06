@@ -11,13 +11,10 @@ import React, {
 import { useRouter } from 'next/navigation';
 
 import DevToolsWrapper from '@/components/dev/DevToolsWrapper';
-import { TokenManager } from '@/utils/TokenManager';
 import { cleanupAfterLogout } from '@/utils/helpers';
-import { SmartTokenRefresh } from '@/utils/SmartTokenRefresh';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import {
   updateUserData,
-  updateUserTokens,
   logout as logoutThunk,
 } from '@/redux/user/userSlice';
 
@@ -43,16 +40,9 @@ interface AuthContextType {
   authState: AuthState;
 
   // Actions
-  refreshToken: () => Promise<boolean>;
   logout: () => Promise<void>;
   clearError: () => void;
 
-  // Utilities
-  getAuthStatus: () => {
-    isRefreshing: boolean;
-    isAuthenticated: boolean;
-    timeUntilExpiration: number | null;
-  };
   debugAuth: () => void;
 }
 
@@ -119,117 +109,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Local auth state
   const [authState, setAuthState] = useState<AuthState>(() => {
-    const refreshStatus = SmartTokenRefresh.getStatus();
-    const hasValidTokens = TokenManager.hasValidTokens();
-
     return {
-      isLoading: false,
-      isAuthenticated: hasValidTokens,
-      isRefreshing: refreshStatus.isRefreshing,
-      user:
-        hasValidTokens && reduxUser.email
-          ? {
-              email: reduxUser.email,
-              id: reduxUser.userId || '',
-              lastName: reduxUser.lastName || '',
-              firstName: reduxUser.firstName || '',
-              profilePicUrl: reduxUser.profilePicUrl,
-            }
-          : null,
-      timeUntilExpiration: refreshStatus.timeUntilExpiration,
-      error: null,
-    };
+        user: null,
+        error: null,
+        isLoading: false,
+        isRefreshing: false,
+        isAuthenticated: false,
+        timeUntilExpiration: null,
+      };
   });
-
-  // Update auth state when Redux user state changes
-  useEffect(() => {
-    const hasValidTokens = TokenManager.hasValidTokens();
-    const refreshStatus = SmartTokenRefresh.getStatus();
-
-    setAuthState((prev) => ({
-      ...prev,
-      isAuthenticated: hasValidTokens,
-      isRefreshing: refreshStatus.isRefreshing,
-      user:
-        hasValidTokens && reduxUser.email
-          ? {
-              email: reduxUser.email,
-              id: reduxUser.userId || '',
-              lastName: reduxUser.lastName || '',
-              firstName: reduxUser.firstName || '',
-              profilePicUrl: reduxUser.profilePicUrl,
-            }
-          : null,
-      timeUntilExpiration: refreshStatus.timeUntilExpiration,
-    }));
-  }, [reduxUser]);
-
-  // Periodic auth state updates
-  useEffect(() => {
-    const updateAuthState = () => {
-      const hasValidTokens = TokenManager.hasValidTokens();
-      const refreshStatus = SmartTokenRefresh.getStatus();
-
-      setAuthState((prev) => ({
-        ...prev,
-        isAuthenticated: hasValidTokens,
-        isRefreshing: refreshStatus.isRefreshing,
-        timeUntilExpiration: refreshStatus.timeUntilExpiration,
-      }));
-    };
-
-    // Configurable update interval with validation and environment-based defaults
-    const getAuthUpdateInterval = (): number => {
-      const envInterval = process.env.NEXT_PUBLIC_AUTH_UPDATE_INTERVAL;
-
-      if (envInterval) {
-        const parsed = parseInt(envInterval, 10);
-        // Validate range: minimum 10 seconds, maximum 5 minutes
-        if (!isNaN(parsed) && parsed >= 10000 && parsed <= 300000) {
-          return parsed;
-        }
-      }
-
-      // Default: 30 seconds for development, 60 seconds for production
-      return process.env.NODE_ENV === 'development' ? 30000 : 60000;
-    };
-
-    const UPDATE_INTERVAL = getAuthUpdateInterval();
-    const interval = setInterval(updateAuthState, UPDATE_INTERVAL);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    // Prevent double initialization in React StrictMode
-    if (initializationRef.current) return;
-    initializationRef.current = true;
-
-    if (process.env.NODE_ENV === 'development') {
-      console.log('AuthProvider: Initializing authentication system');
-    }
-
-    // Sync tokens from localStorage to Redux on app startup
-    const tokens = TokenManager.getTokensForReduxSync();
-    if (tokens) {
-      dispatch(updateUserTokens(tokens));
-    }
-
-    // Load user data from localStorage if available
-    syncUserDataToRedux('Loading stored user data');
-
-    // Start smart token refresh if user has valid tokens
-    if (TokenManager.hasValidTokens()) {
-      console.log('AuthProvider: Valid tokens found, starting smart refresh');
-      // SmartTokenRefresh is already initialized as singleton
-    } else {
-      console.log('AuthProvider: No valid tokens found');
-    }
-
-    // Cleanup on unmount
-    return () => {
-      SmartTokenRefresh.cleanup();
-    };
-  }, [dispatch, syncUserDataToRedux]);
 
   // Watch for localStorage user data changes (e.g., profile picture updates)
   useEffect(() => {
@@ -261,17 +149,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     };
 
-    // Listen for custom token update events (from SmartTokenRefresh and api/client)
-    const handleTokensUpdated = (event: CustomEvent) => {
-      const { accessToken, refreshToken } = event.detail;
-      dispatch(updateUserTokens({ accessToken, refreshToken }));
-      console.log('AuthProvider: Tokens updated via custom event');
-    };
-    window.addEventListener(
-      'tokensUpdated',
-      handleTokensUpdated as EventListener
-    );
-
     // Listen for custom events that indicate user data changes
     window.addEventListener('userDataUpdated', triggerUserDataSync);
 
@@ -280,59 +157,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener(
-        'tokensUpdated',
-        handleTokensUpdated as EventListener
-      );
       window.removeEventListener('userDataUpdated', triggerUserDataSync);
       clearInterval(interval);
     };
   }, [dispatch, reduxUser.profilePicUrl, syncUserDataToRedux]);
-
-  // Watch for token changes and restart SmartTokenRefresh
-  useEffect(() => {
-    const hasValidTokens = TokenManager.hasValidTokens();
-
-    if (hasValidTokens) {
-      console.log('AuthProvider: Tokens detected, restarting smart refresh');
-      SmartTokenRefresh.restart();
-
-      // Sync user data from localStorage to Redux if missing
-      if (!reduxUser.firstName || !reduxUser.email) {
-        const userData = syncUserDataToRedux('Syncing user data to Redux');
-        if (userData) {
-          // Update Redux with tokens if available
-          dispatch(
-            updateUserTokens({
-              accessToken: userData.accessToken || reduxUser.accessToken,
-              refreshToken: userData.refreshToken || reduxUser.refreshToken,
-            })
-          );
-
-          // Update auth state
-          setAuthState((prev) => ({
-            ...prev,
-            user: {
-              id: userData.userId || '',
-              email: userData.email || '',
-              lastName: userData.lastName || '',
-              firstName: userData.firstName || '',
-              profilePicUrl: userData.profilePicUrl || '',
-            },
-            isAuthenticated: true,
-          }));
-        }
-      }
-    }
-  }, [
-    dispatch,
-    // reduxUser, // Use entire object instead of individual properties to reduce re-renders
-    reduxUser.email,
-    reduxUser.firstName,
-    reduxUser.accessToken,
-    reduxUser.refreshToken,
-    syncUserDataToRedux,
-  ]);
 
   // Auth actions
   const logout = useCallback(async () => {
@@ -341,9 +169,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Comprehensive cleanup of all localStorage data
       cleanupAfterLogout();
-
-      // Clear tokens via TokenManager
-      TokenManager.clearTokens();
 
       // Dispatch Redux logout to reset state
       await dispatch(logoutThunk()).unwrap();
@@ -367,7 +192,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // ALWAYS force local cleanup for security - this is critical
       cleanupAfterLogout();
-      TokenManager.clearTokens();
 
       // Fire-and-forget Redux logout (don't let server errors block local logout)
       dispatch(logoutThunk());
@@ -410,45 +234,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setAuthState((prev) => ({ ...prev, error: null }));
   }, []);
 
-  const refreshToken = useCallback(async () => {
-    try {
-      setAuthState((prev) => ({ ...prev, isRefreshing: true, error: null }));
-      const success = await SmartTokenRefresh.refreshNow();
-
-      if (!success) {
-        setAuthState((prev) => ({
-          ...prev,
-          isRefreshing: false,
-          error: 'Token refresh failed',
-        }));
-      }
-
-      return success;
-    } catch (error) {
-      console.error('AuthProvider: Manual refresh failed:', error);
-      setAuthState((prev) => ({
-        ...prev,
-        isRefreshing: false,
-        error: 'Token refresh failed',
-      }));
-      return false;
-    }
-  }, []);
-
-  const getAuthStatus = useCallback(() => {
-    const refreshStatus = SmartTokenRefresh.getStatus();
-    return {
-      isAuthenticated: TokenManager.hasValidTokens(),
-      isRefreshing: refreshStatus.isRefreshing,
-      timeUntilExpiration: refreshStatus.timeUntilExpiration,
-    };
-  }, []);
-
   const debugAuth = useCallback(() => {
     console.log('=== AUTH DEBUG INFO ===');
     console.log('AuthProvider State:', authState);
-    TokenManager.debugTokenState();
-    SmartTokenRefresh.debugState();
     console.log('=====================');
   }, [authState]);
 
@@ -457,8 +245,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     authState,
     debugAuth,
     clearError,
-    refreshToken,
-    getAuthStatus,
   };
 
   return (

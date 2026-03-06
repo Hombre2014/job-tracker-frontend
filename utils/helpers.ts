@@ -47,8 +47,6 @@ export const cleanupAfterLogout = () => {
 
   // Clear authentication tokens
   localStorage.removeItem('user');
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
   localStorage.removeItem('userDeletionContext');
 
   // Clear Redux Persist (if used)

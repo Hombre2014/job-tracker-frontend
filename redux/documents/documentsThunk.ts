@@ -5,8 +5,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 
 export const getDocument = createAsyncThunk(
   'documents/getDocument',
-  async (values: GetDocumentParams, thunkAPI) => {
-    const { documentId } = values;
+  async (documentId: string, thunkAPI) => {
     try {
       const res = await client.get(`/documents/${documentId}`);
       const data = res.data;
@@ -107,8 +106,7 @@ export const detachDocumentFromJobApplication = createAsyncThunk(
 
 export const deleteDocument = createAsyncThunk(
   'documents/deleteDocument',
-  async (values: DeleteDocumentParams, thunkAPI) => {
-    const { documentId } = values;
+  async (documentId: string, thunkAPI) => {
     try {
       const res = await client.delete(`/documents/${documentId}`);
       // Return the documentId for filtering in the slice

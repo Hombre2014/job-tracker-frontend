@@ -20,25 +20,15 @@ const JobDetails = () => {
   const { notes } = useAppSelector((state) => state.notes);
 
   useEffect(() => {
-    const accessToken = localStorage.getItem('accessToken');
     const columnId = localStorage.getItem('columnId');
-    if (!columnId || columnId === 'null' || !accessToken) return;
+    if (!columnId || columnId === 'null') return;
 
-    const jobPostsData = {
-      accessToken,
-      columnId,
-    };
-
-    dispatch(getAllJobPostsPerColumn(jobPostsData));
+    dispatch(getAllJobPostsPerColumn(columnId));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch]);
 
   useEffect(() => {
-    const accessToken = localStorage.getItem('accessToken');
-    if (!accessToken) return;
-
     const updatePayload = {
-      accessToken,
       jobApplicationId: job_id,
     };
     dispatch(getAllJobApplicationNotes(updatePayload));

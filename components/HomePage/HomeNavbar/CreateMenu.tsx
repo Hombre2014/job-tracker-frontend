@@ -34,7 +34,6 @@ const CreateMenu = () => {
   const dispatch = useAppDispatch();
   const [, setIsMenuOpen] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
-  const accessToken = localStorage.getItem('accessToken');
   const [showJobModal, setShowJobModal] = useState(false);
   const [isSubmittingJob, setIsSubmittingJob] = useState(false);
   // In-memory draft (incremental refactor) populated by AddJobShortForm via onDraftChange
@@ -64,7 +63,6 @@ const CreateMenu = () => {
       try {
         const result = await dispatch(
           createCompany({
-            accessToken,
             name: draft.company,
             url: draft.companyDomain,
             logo: draft.companyLogo,
@@ -81,7 +79,6 @@ const CreateMenu = () => {
 
     const jobPost = {
       status: 'Job Created',
-      accessToken: accessToken as string,
       title: draft.jobTitle || legacyTitle,
       columnId: localStorage.getItem('columnId'),
       companyId: finalCompanyId,
@@ -102,7 +99,7 @@ const CreateMenu = () => {
       }
       setIsSubmittingJob(false);
     });
-    dispatch(getBoards(accessToken as string));
+    dispatch(getBoards());
 
     cleanupAfterJobPost();
   };
@@ -141,7 +138,7 @@ const CreateMenu = () => {
       try {
         // Get all boards and use the first one (default "Job Search" board)
         const boards = await dispatch(
-          getBoardsOnly(accessToken as string),
+          getBoardsOnly(),
         ).unwrap();
         if (boards && boards.length > 0) {
           // Sort by creation date to get the first created board
@@ -160,7 +157,6 @@ const CreateMenu = () => {
     const values = {
       emails,
       phones,
-      accessToken,
       boardId: effectiveBoardId,
       comment: localStorage.getItem('comment'),
       jobTitle: localStorage.getItem('jobTitle'),
@@ -185,7 +181,6 @@ const CreateMenu = () => {
           uploadContactImage({
             file: pendingImage,
             contactId: newContactId,
-            accessToken: accessToken as string,
           }),
         ).unwrap();
 
@@ -194,7 +189,6 @@ const CreateMenu = () => {
             id: newContactId,
             boardId: board_id,
             photoUrl: uploadImageResult.imageUrl,
-            accessToken: accessToken as string,
           }),
         ).unwrap();
       }
@@ -209,7 +203,6 @@ const CreateMenu = () => {
         await Promise.all(
           jobsConnectedToContact.map(async (jobPost: JobApplication) => {
             const assignData = {
-              accessToken,
               contactId: newContactId,
               jobApplicationId: jobPost.id,
             };
@@ -218,7 +211,7 @@ const CreateMenu = () => {
         );
       } // Fetch all contacts for the board
       await dispatch(
-        getAllContactsPerBoard({ accessToken, boardId: board_id }),
+        getAllContactsPerBoard(board_id as string),
       ).unwrap();
 
       // Redirect to the contacts page to show the newly created contact

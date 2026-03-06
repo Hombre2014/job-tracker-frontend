@@ -90,7 +90,6 @@ const BoardColumns = () => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const [isEditing, setIsEditing] = useState(false);
-  const accessToken = localStorage.getItem('accessToken');
   const [currentColumnId, setCurrentColumnId] = useState('');
   const { boards } = useAppSelector((state) => state.boards);
   const focusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -160,7 +159,6 @@ const BoardColumns = () => {
       company &&
       title &&
       !arrivalProcessed.current &&
-      accessToken &&
       boardColumns.length > 0
     ) {
       arrivalProcessed.current = true;
@@ -194,7 +192,6 @@ const BoardColumns = () => {
           let companyId = '';
           const createCompanyResult = await dispatch(
             createCompany({
-              accessToken,
               name: company,
               url: finalCompanyDomain,
               logo: finalCompanyLogo,
@@ -212,7 +209,6 @@ const BoardColumns = () => {
           const result = await dispatch(
             createJobPost({
               status: 'Job Created',
-              accessToken: accessToken as string,
               title: title,
               columnId: selectedColumn.id,
               companyId: companyId,
@@ -250,7 +246,7 @@ const BoardColumns = () => {
 
       handleArrivalAutoSave();
     }
-  }, [searchParams, accessToken, boardColumns, board_id, dispatch, router]);
+  }, [searchParams, boardColumns, board_id, dispatch, router]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -269,9 +265,9 @@ const BoardColumns = () => {
         currentInputElement.focus();
       }
     } else {
-      dispatch(getBoards(accessToken as string));
+      dispatch(getBoards());
     }
-  }, [isEditing, currentColumnId, accessToken, dispatch]);
+  }, [isEditing, currentColumnId, dispatch]);
   // Draft + submission guard hooks must appear before any early return
   const jobDraftRef = useRef<{
     company?: string;
@@ -320,12 +316,11 @@ const BoardColumns = () => {
 
     dispatch(
       updateColumnName({
-        accessToken,
         id: currentColumnId,
         name: renamedColumnName,
       }),
     );
-    dispatch(getBoards(accessToken as string));
+    dispatch(getBoards());
   };
 
   const checkForEnter = (e: any) => {
@@ -348,7 +343,6 @@ const BoardColumns = () => {
       try {
         const result = await dispatch(
           createCompany({
-            accessToken,
             name: draft.company,
             url: draft.companyDomain,
             logo: draft.companyLogo,
@@ -365,7 +359,6 @@ const BoardColumns = () => {
 
     const jobPost = {
       status: 'Job Created',
-      accessToken: accessToken as string,
       title: draft.jobTitle || legacyTitle,
       columnId: localStorage.getItem('columnId'),
       companyId: finalCompanyId,
@@ -389,7 +382,7 @@ const BoardColumns = () => {
         const targetPath = `/home/boards/${selectedBoardId}/job/${newJobPostId}/job-details`;
         router.push(targetPath);
         setIsSubmittingJob(false);
-        dispatch(getBoards(accessToken as string));
+        dispatch(getBoards());
         cleanupAfterJobPost();
       })
       .catch((error) => {
@@ -458,7 +451,6 @@ const BoardColumns = () => {
 
     dispatch(
       updateJobPost({
-        accessToken,
         status: newStatus,
         jobPostId: draggedJob.id,
         columnId: targetColumn.id,
