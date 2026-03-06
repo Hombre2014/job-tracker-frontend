@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios, { isAxiosError } from 'axios';
-import jwt from 'jsonwebtoken';
+import { isAxiosError } from 'axios';
 import PerformanceMonitor from '@/utils/PerformanceMonitor';
 import SecurityValidator from '@/utils/SecurityValidator';
 import { 
@@ -12,7 +11,7 @@ import client from '@/api/client';
 // Get user thunk - moved here to avoid circular dependency
 export const getUser = createAsyncThunk('user/getUser', async (_, thunkAPI) => {
   try {
-    const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/users`);
+    const res = await client.get(`${process.env.NEXT_PUBLIC_API_URL}/users`);
 
     if (res.status === 200) {
       return res.data;
@@ -155,7 +154,7 @@ export const updateUser = createAsyncThunk(
     }
 
     try {
-      const response = await axios.patch(
+      const response = await client.patch(
         `${process.env.NEXT_PUBLIC_API_URL}/users`,
         formData
       );
