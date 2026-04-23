@@ -518,7 +518,7 @@ const BoardColumns = () => {
         )}
 
         {/* Board Columns */}
-        <div className="w-full flex h-full flex-1">
+        <div className="w-full flex h-full flex-1 pb-4!">
           {filteredColumns?.map((column) => (
             <DroppableColumn key={column.id} column={column}>
               {/* Fixed Header */}
@@ -578,7 +578,7 @@ const BoardColumns = () => {
               </div>
 
               {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto min-h-0">
+              <div className="flex-1 overflow-y-auto min-h-0 pb-8">
                 {column.jobApplications?.map((job) =>
                   job.company === null ? null : (
                     <DraggableJobPostCard
