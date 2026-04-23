@@ -21,7 +21,6 @@ import {
 const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
-  const accessToken = localStorage.getItem('accessToken');
   const { boards } = useAppSelector((state) => state.boards);
   const currentBoard = boards.find((board) => board.id === board_id);
   const [selectedColumn, setSelectedColumn] = useState<number>(columnOrder);
@@ -43,12 +42,11 @@ const ThreeDotsMenu = ({ columnOrder }: { columnOrder: number }) => {
       rearrangeColumns({
         boardId: board_id,
         columns_id: columnIds,
-        accessToken: accessToken,
       })
     );
     
     // Then refresh the boards data
-    dispatch(getBoards(accessToken as string));
+    dispatch(getBoards());
   };
 
   return (

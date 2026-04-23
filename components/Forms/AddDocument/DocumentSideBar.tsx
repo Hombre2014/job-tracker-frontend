@@ -36,15 +36,14 @@ const DocumentSideBar = ({
   const { board_id } = useParams();
   const dispatch = useAppDispatch();
   const jobs = useAppSelector((state) => state.jobs);
-  const { accessToken } = useAppSelector((state) => state.user);
   const [boardJobs, setBoardJobs] = useState<JobApplication[]>([]);
 
   useEffect(() => {
     const fetchBoardJobs = async () => {
-      if (board_id && accessToken) {
+      if (board_id) {
         try {
           const boardData = await dispatch(
-            getBoardWithColumns({ boardId: board_id, accessToken })
+            getBoardWithColumns(board_id as string)
           ).unwrap();
           const allJobsFromBoard = boardData.columns.flatMap(
             (column: Column) => column.jobApplications || []
@@ -57,7 +56,7 @@ const DocumentSideBar = ({
       }
     };
     fetchBoardJobs();
-  }, [board_id, dispatch, accessToken]);
+  }, [board_id, dispatch]);
 
   useEffect(() => {
     // Only auto-assign job when coming from job post modal (job_id exists)

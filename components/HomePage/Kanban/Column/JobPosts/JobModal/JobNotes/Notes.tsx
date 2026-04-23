@@ -24,7 +24,6 @@ import {
 const Notes = () => {
   const { job_id } = useParams();
   const dispatch = useAppDispatch();
-  const accessToken = localStorage.getItem('accessToken');
   const { notes } = useAppSelector((state) => state.notes);
   const [editingNoteContent, setEditingNoteContent] = useState('');
   const { firstName, lastName } = useAppSelector((state) => state.user);
@@ -33,12 +32,8 @@ const Notes = () => {
   const currentNote = notes.find((note) => note.id === editingNoteId);
 
   useEffect(() => {
-    const updatePayload = {
-      accessToken,
-      jobApplicationId: job_id,
-    };
-    dispatch(getAllJobApplicationNotes(updatePayload));
-  }, [accessToken, dispatch, job_id]);
+    dispatch(getAllJobApplicationNotes(job_id as string));
+  }, [dispatch, job_id]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -57,16 +52,10 @@ const Notes = () => {
           const updatePayload = {
             noteId: editingNoteId,
             noteContent: editingNoteContent,
-            accessToken: localStorage.getItem('accessToken'),
           };
 
           dispatch(updateJobApplicationNote(updatePayload)).then(() => {
-            dispatch(
-              getAllJobApplicationNotes({
-                accessToken,
-                jobApplicationId: job_id,
-              })
-            );
+            dispatch(getAllJobApplicationNotes(job_id as string));
           });
         }
         setEditingNoteId(null);
@@ -78,7 +67,7 @@ const Notes = () => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [editingNoteId, editingNoteContent, dispatch, notes, accessToken, job_id]);
+  }, [editingNoteId, editingNoteContent, dispatch, notes, job_id]);
 
   const handleFieldChange = (
     fieldName: keyof JobApplication,
@@ -92,7 +81,6 @@ const Notes = () => {
     const updatePayload = {
       noteContent: value,
       jobApplicationId: job_id,
-      accessToken: localStorage.getItem('accessToken'),
     };
 
     dispatch(createJobApplicationNote(updatePayload));
@@ -137,17 +125,8 @@ const Notes = () => {
   };
 
   const handleDeleteNote = (noteId: string) => {
-    const deletePayload = {
-      noteId,
-      accessToken: localStorage.getItem('accessToken'),
-    };
-    dispatch(deleteJobApplicationNote(deletePayload)).then(() => {
-      dispatch(
-        getAllJobApplicationNotes({
-          accessToken,
-          jobApplicationId: job_id,
-        })
-      );
+    dispatch(deleteJobApplicationNote(noteId)).then(() => {
+      dispatch(getAllJobApplicationNotes(job_id as string));
     });
     setOpenDropdownId(null);
   };

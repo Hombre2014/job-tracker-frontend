@@ -5,13 +5,9 @@ import client from '@/api/client';
 
 export const getBoards = createAsyncThunk(
   'boards/getBoards',
-  async (accessToken: string, thunkAPI) => {
+  async (_, thunkAPI) => {
     try {
-      const res = await client.get('/boards-all', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.get('/boards-all');
       const data = res.data;
 
       if (data.length === 0) {
@@ -35,13 +31,9 @@ export const getBoards = createAsyncThunk(
 
 export const getBoardsOnly = createAsyncThunk(
   'boards/getBoardsOnly',
-  async (accessToken: string, thunkAPI) => {
+  async (_, thunkAPI) => {
     try {
-      const res = await client.get('/boards', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.get('/boards');
       const data = res.data;
 
       if (data.length === 0) {
@@ -65,15 +57,9 @@ export const getBoardsOnly = createAsyncThunk(
 
 export const createBoard = createAsyncThunk(
   'boards/createBoard',
-  async (values: any, thunkAPI) => {
-    const { accessToken, name } = values;
-    const postData = { name };
+  async (boardName: string, thunkAPI) => {
     try {
-      const res = await client.post('/boards', postData, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.post('/boards', {boardName});
 
       const data = res.data;
       return data;
@@ -91,14 +77,10 @@ export const createBoard = createAsyncThunk(
 export const renameBoard = createAsyncThunk(
   'boards/renameBoard',
   async (values: any, thunkAPI) => {
-    const { accessToken, name, id } = values;
+    const { name, id } = values;
     const patchData = { name };
     try {
-      const res = await client.patch(`/boards/${id}`, patchData, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.patch(`/boards/${id}`, patchData);
 
       const data = res.data;
       return data;
@@ -115,18 +97,12 @@ export const renameBoard = createAsyncThunk(
 
 export const archiveBoard = createAsyncThunk(
   'boards/archiveBoard',
-  async (values: any, thunkAPI) => {
-    const { accessToken, id } = values;
+  async (boardId: string, thunkAPI) => {
     try {
       const res = await client.patch(
-        `/boards/${id}`,
+        `/boards/${boardId}`,
         {
           isArchived: true,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
         }
       );
 
@@ -145,13 +121,9 @@ export const archiveBoard = createAsyncThunk(
 
 export const getArchivedBoards = createAsyncThunk(
   'boards/getArchivedBoards',
-  async (accessToken: string, thunkAPI) => {
+  async (_, thunkAPI) => {
     try {
-      const res = await client.get('/boards', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.get('/boards');
       const data = res.data;
 
       if (data.length === 0) {
@@ -176,17 +148,12 @@ export const getArchivedBoards = createAsyncThunk(
 export const unarchiveBoard = createAsyncThunk(
   'boards/unarchiveBoard',
   async (values: any, thunkAPI) => {
-    const { accessToken, id } = values;
+    const { id } = values;
     try {
       const res = await client.patch(
         `/boards/${id}`,
         {
           isArchived: false,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
         }
       );
 
@@ -205,14 +172,9 @@ export const unarchiveBoard = createAsyncThunk(
 
 export const getBoardWithColumns = createAsyncThunk(
   'boards/getBoardWithColumns',
-  async (values: any, thunkAPI) => {
-    const { accessToken, boardId } = values;
+  async (boardId: string, thunkAPI) => {
     try {
-      const res = await client.get(`/boards/${boardId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.get(`/boards/${boardId}`);
 
       const data = res.data;
       return data;
@@ -230,14 +192,10 @@ export const getBoardWithColumns = createAsyncThunk(
 export const updateColumnName = createAsyncThunk(
   'boards/updateColumnName',
   async (values: any, thunkAPI) => {
-    const { accessToken, name, id } = values;
+    const { name, id } = values;
     const patchData = { name };
     try {
-      const res = await client.patch(`/board-columns/${id}`, patchData, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.patch(`/board-columns/${id}`, patchData);
 
       const data = res.data;
       return data;
@@ -255,16 +213,11 @@ export const updateColumnName = createAsyncThunk(
 export const rearrangeColumns = createAsyncThunk(
   'boards/rearrangeColumns',
   async (values: any, thunkAPI) => {
-    const { accessToken, boardId, columns_id } = values;
+    const { boardId, columns_id } = values;
     try {
       const res = await client.put(
         `/board-columns/${boardId}/rearrange`,
-        columns_id,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+        columns_id
       );
 
       const data = res.data;

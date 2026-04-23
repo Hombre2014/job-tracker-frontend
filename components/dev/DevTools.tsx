@@ -107,10 +107,6 @@ const DevTools: React.FC = () => {
     console.log('Current User State:', user);
     try {
       console.log('LocalStorage user:', localStorage.getItem('user'));
-      console.log('LocalStorage tokens:', {
-        accessToken: localStorage.getItem('accessToken'),
-        refreshToken: localStorage.getItem('refreshToken'),
-      });
     } catch (error) {
       console.log('LocalStorage access failed:', error);
     }
@@ -124,17 +120,7 @@ const DevTools: React.FC = () => {
         return;
       }
 
-      const accessToken = localStorage.getItem('accessToken');
-      if (!accessToken) {
-        console.error('No access token available');
-        return;
-      }
-
-      const response = await fetch(`${apiUrl}/users`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const response = await fetch(`${apiUrl}/users`);
       console.log('Test API Response:', response.status, await response.json());
     } catch (error) {
       console.error('Test API Error:', error);
@@ -210,22 +196,6 @@ const DevTools: React.FC = () => {
           >
             {loggingEnabled ? '🔇 Disable Logs' : '🔊 Enable Logs'}
           </Button>
-
-          <div className="border-t border-gray-600 pt-1 mt-1">
-            <div className="text-xs text-gray-300">
-              User: {user.firstName || 'Not logged in'}
-            </div>
-            <div className="text-xs text-gray-300">
-              Token:{' '}
-              {(() => {
-                try {
-                  return localStorage.getItem('accessToken') ? '✅' : '❌';
-                } catch {
-                  return '❌';
-                }
-              })()}
-            </div>
-          </div>
 
           <Button
             size="sm"

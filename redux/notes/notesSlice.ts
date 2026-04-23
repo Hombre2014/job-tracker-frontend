@@ -70,7 +70,7 @@ export const notesSlice = createSlice({
       .addCase(deleteJobApplicationNote.fulfilled, (state, action) => {
         state.notesStatus = 'succeeded';
         state.notes = state.notes.filter(
-          (note) => note.id !== action.payload.id
+          (note) => note.id !== action.payload
         );
         state.error = null;
       })

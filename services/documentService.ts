@@ -16,14 +16,9 @@ export class DocumentService {
   /**
    * Get all job applications associated with a document
    */
-  static async getDocumentJobApplications(
-    documentId: string,
-    accessToken: string
-  ): Promise<DocumentJobApplication[]> {
+  static async getDocumentJobApplications(documentId: string): Promise<DocumentJobApplication[]> {
     try {
-      const response = await client.get(`/documents/${documentId}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      const response = await client.get(`/documents/${documentId}`);
       return response.data.jobApplications || [];
     } catch (err: unknown) {
       if (isAxiosError(err)) {
@@ -44,14 +39,9 @@ export class DocumentService {
    * Check if a document is shared across multiple job applications
    * (excluding the specified job application)
    */
-  static async isDocumentShared(
-    documentId: string,
-    excludeJobId: string,
-    accessToken: string
-  ): Promise<boolean> {
+  static async isDocumentShared(documentId: string, excludeJobId: string): Promise<boolean> {
     const jobApplications = await this.getDocumentJobApplications(
-      documentId,
-      accessToken
+      documentId
     );
 
     const otherJobApplications = jobApplications.filter(
@@ -66,17 +56,11 @@ export class DocumentService {
    */
   static async detachDocumentFromJob(
     documentId: string,
-    jobId: string,
-    accessToken: string
+    jobId: string
   ): Promise<void> {
     await client.post(
       `/documents/${documentId}/job-application/${jobId}/detach`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
+      {}
     );
   }
 
@@ -84,14 +68,9 @@ export class DocumentService {
    * Delete a document completely
    */
   static async deleteDocument(
-    documentId: string,
-    accessToken: string
-  ): Promise<void> {
-    await client.delete(`/documents/${documentId}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    documentId: string
+    ): Promise<void> {
+    await client.delete(`/documents/${documentId}`);
   }
 
   /**
@@ -100,7 +79,6 @@ export class DocumentService {
   static async waitForDetachmentComplete(
     documentId: string,
     jobId: string,
-    accessToken: string,
     maxWait = 5000,
     pollInterval = 250
   ): Promise<void> {
@@ -109,8 +87,7 @@ export class DocumentService {
     while (Date.now() - start < maxWait) {
       try {
         const jobApplications = await this.getDocumentJobApplications(
-          documentId,
-          accessToken
+          documentId
         );
 
         const stillAttached = jobApplications.some(
@@ -140,8 +117,7 @@ export class DocumentService {
    */
   static async handleDocumentsForJobDeletion(
     documents: any[],
-    jobId: string,
-    accessToken: string
+    jobId: string
   ): Promise<
     { documentId: string; action: 'detached' | 'deleted'; error?: string }[]
   > {
@@ -160,26 +136,24 @@ export class DocumentService {
           const isShared = await this.isDocumentShared(
             document.id,
             jobId,
-            accessToken
           );
 
           if (isShared) {
             // Document is shared - only detach from current job
-            await this.detachDocumentFromJob(document.id, jobId, accessToken);
+            await this.detachDocumentFromJob(document.id, jobId);
             return { documentId: document.id, action: 'detached' as const };
           } else {
             // Document is orphaned - detach and delete
-            await this.detachDocumentFromJob(document.id, jobId, accessToken);
+            await this.detachDocumentFromJob(document.id, jobId);
 
             // Wait for detachment to complete
             await this.waitForDetachmentComplete(
               document.id,
-              jobId,
-              accessToken
+              jobId
             );
 
             // Then delete the document
-            await this.deleteDocument(document.id, accessToken);
+            await this.deleteDocument(document.id);
             return { documentId: document.id, action: 'deleted' as const };
           }
         } catch (error) {

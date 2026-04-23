@@ -22,7 +22,6 @@ const EditDocumentModal = ({
 }: EditDocumentsProps) => {
   const dispatch = useAppDispatch();
   const [isSaving, setIsSaving] = React.useState(false);
-  const accessToken = localStorage.getItem('accessToken');
   const [title, setTitle] = React.useState(documentToEdit.title || '');
   const [description, setDescription] = React.useState(
     documentToEdit.description || ''
@@ -36,10 +35,6 @@ const EditDocumentModal = ({
   );
 
   const handleEdit = async () => {
-    if (!accessToken) {
-      toast.error('Authentication required');
-      return;
-    }
     if (!title.trim() || !category) {
       toast.error('Title and category are required.');
       return;
@@ -50,7 +45,6 @@ const EditDocumentModal = ({
         updateDocument({
           category,
           description,
-          accessToken,
           title: title.trim(),
           documentId: documentToEdit.id,
         })

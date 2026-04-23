@@ -1,11 +1,7 @@
 import { toast } from 'react-toastify';
-import { TokenManager } from './TokenManager';
-import { RequestQueue } from './RequestQueue';
-import { SmartTokenRefresh } from './SmartTokenRefresh';
 
 export enum AuthErrorType {
   NETWORK_ERROR = 'NETWORK_ERROR',
-  TOKEN_EXPIRED = 'TOKEN_EXPIRED',
   REFRESH_FAILED = 'REFRESH_FAILED',
   UNAUTHORIZED = 'UNAUTHORIZED',
   SERVER_ERROR = 'SERVER_ERROR',
@@ -89,16 +85,6 @@ class AuthErrorHandlerClass {
               : error.response.data.message || '';
         }
         errorMessage = errorMessage || error.message || '';
-        const lowerMessage = errorMessage.toLowerCase();
-
-        if (
-          lowerMessage.includes('token') &&
-          (lowerMessage.includes('expired') ||
-            lowerMessage.includes('invalid') ||
-            lowerMessage.includes('malformed'))
-        ) {
-          return AuthErrorType.TOKEN_EXPIRED;
-        }
         return AuthErrorType.UNAUTHORIZED;
       }
 
@@ -151,9 +137,6 @@ class AuthErrorHandlerClass {
       case AuthErrorType.NETWORK_ERROR:
         return 'Network connection lost. Please check your internet connection and try again.';
 
-      case AuthErrorType.TOKEN_EXPIRED:
-        return 'Your session has expired. Please log in again.';
-
       case AuthErrorType.REFRESH_FAILED:
         return 'Unable to refresh your session. Please log in again.';
 
@@ -179,9 +162,6 @@ class AuthErrorHandlerClass {
       case AuthErrorType.NETWORK_ERROR:
       case AuthErrorType.SERVER_ERROR:
       case AuthErrorType.TIMEOUT:
-      case AuthErrorType.TOKEN_EXPIRED: // Can retry after token refresh
-        return true;
-
       case AuthErrorType.REFRESH_FAILED:
       case AuthErrorType.UNAUTHORIZED:
       case AuthErrorType.UNKNOWN:
@@ -239,9 +219,6 @@ class AuthErrorHandlerClass {
       case AuthErrorType.NETWORK_ERROR:
         return this.handleNetworkError(authError);
 
-      case AuthErrorType.TOKEN_EXPIRED:
-        return this.handleTokenExpiredError(authError);
-
       case AuthErrorType.UNAUTHORIZED:
         return this.handleUnauthorizedError(authError);
 
@@ -286,55 +263,6 @@ class AuthErrorHandlerClass {
   }
 
   /**
-   * Handle token expired errors (specific case of 401 with token-related message)
-   */
-  private async handleTokenExpiredError(error: AuthError): Promise<{
-    shouldRetry: boolean;
-    shouldLogout: boolean;
-  }> {
-    // Check if we have a refresh token
-    const refreshToken = TokenManager.getRefreshToken();
-
-    if (!refreshToken) {
-      toast.error('Session expired. Please log in again.');
-      return {
-        shouldRetry: false,
-        shouldLogout: true,
-      };
-    }
-
-    // Try to refresh token using SmartTokenRefresh
-    try {
-      console.log('AuthErrorHandler: Token expired, attempting refresh...');
-      const refreshSuccess = await SmartTokenRefresh.refreshNow();
-
-      if (refreshSuccess) {
-        console.log(
-          'AuthErrorHandler: Token refresh successful, retrying request'
-        );
-        return {
-          shouldRetry: true,
-          shouldLogout: false,
-        };
-      } else {
-        console.warn('AuthErrorHandler: Token refresh failed');
-        toast.error('Session expired. Please log in again.');
-        return {
-          shouldRetry: false,
-          shouldLogout: true,
-        };
-      }
-    } catch (refreshError) {
-      console.error('AuthErrorHandler: Token refresh error:', refreshError);
-      toast.error('Session expired. Please log in again.');
-      return {
-        shouldRetry: false,
-        shouldLogout: true,
-      };
-    }
-  }
-
-  /**
    * Handle general unauthorized errors (403, or 401 without token-specific message)
    */
   private async handleUnauthorizedError(error: AuthError): Promise<{
@@ -359,10 +287,6 @@ class AuthErrorHandlerClass {
     shouldLogout: boolean;
   }> {
     toast.error(error.userMessage);
-
-    // Clear tokens and force logout
-    TokenManager.clearTokens();
-    RequestQueue.reset();
 
     return {
       shouldRetry: false,

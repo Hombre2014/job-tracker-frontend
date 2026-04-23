@@ -1,21 +1,17 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios, { isAxiosError } from 'axios';
-import jwt from 'jsonwebtoken';
+import { isAxiosError } from 'axios';
 import PerformanceMonitor from '@/utils/PerformanceMonitor';
 import SecurityValidator from '@/utils/SecurityValidator';
 import { 
   createDeleteVerificationCode, 
   deleteUserAccount 
 } from './userThunk';
+import client from '@/api/client';
 
 // Get user thunk - moved here to avoid circular dependency
 export const getUser = createAsyncThunk('user/getUser', async (_, thunkAPI) => {
   try {
-    const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-      },
-    });
+    const res = await client.get(`${process.env.NEXT_PUBLIC_API_URL}/users`);
 
     if (res.status === 200) {
       return res.data;
@@ -58,104 +54,23 @@ export const login = createAsyncThunk(
     }
 
     try {
-      const response = await axios.post(
+      const response = await client.post(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
         values
       );
 
       if (response.status === 200) {
-        const { accessToken, refreshToken, passwordStrength } = response.data;
-        // ⚠️ SECURITY WARNING: jwt.decode() does NOT verify signatures!
-        // This is for UX purposes only (storing user info for display)
-        // Server must verify token signatures for all security decisions
-        // Client-side signature verification is NOT needed - server handles this
-        const decoded = jwt.decode(accessToken);
+        const responseData = response.data
 
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Login: JWT decoded payload:', decoded);
-          console.log('Login: Password strength:', passwordStrength);
-        }
-
-        // Store tokens in localStorage
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
-
-        // Also store user info for persistence
-        if (decoded && typeof decoded === 'object') {
-          // Check different possible field names in the JWT
-          const decodedAny = decoded as any;
-          const userInfo = {
-            userId: decodedAny.sub || decodedAny.id || decodedAny.userId || '',
-            email: decodedAny.email || '',
-            firstName:
-              decodedAny.firstName ||
-              decodedAny.first_name ||
-              decodedAny.given_name ||
-              '',
-            lastName:
-              decodedAny.lastName ||
-              decodedAny.last_name ||
-              decodedAny.family_name ||
-              '',
-            profilePicUrl:
-              decodedAny.profilePicUrl ||
-              decodedAny.profile_pic_url ||
-              decodedAny.picture ||
-              '',
-            role: decodedAny.role || 'user',
-            accessToken,
-            refreshToken,
-          };
-
-          console.log('Login: Storing user info:', userInfo);
-          localStorage.setItem('user', JSON.stringify(userInfo));
-
-          // If user data is missing from JWT, try to fetch it from API
-          if (!userInfo.firstName || !userInfo.lastName) {
-            console.log(
-              'Login: User data missing from JWT, fetching from API...'
-            );
-            try {
-              const userResponse = await axios.get(
-                `${process.env.NEXT_PUBLIC_API_URL}/users`,
-                {
-                  headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                  },
-                }
-              );
-
-              if (userResponse.status === 200) {
-                const apiUserData = userResponse.data;
-                console.log('Login: Fetched user data from API:', apiUserData);
-
-                // Update user info with API data
-                const completeUserInfo = {
-                  ...userInfo,
-                  firstName: apiUserData.firstName || userInfo.firstName,
-                  lastName: apiUserData.lastName || userInfo.lastName,
-                  profilePicUrl:
-                    apiUserData.profilePicUrl || userInfo.profilePicUrl,
-                  email: apiUserData.email || userInfo.email,
-                };
-
-                console.log('Login: Complete user info:', completeUserInfo);
-                localStorage.setItem('user', JSON.stringify(completeUserInfo));
-
-                return {
-                  data: { accessToken, refreshToken, passwordStrength },
-                  decoded,
-                  userProfile: apiUserData,
-                };
-              }
-            } catch (apiError) {
-              console.error(
-                'Login: Failed to fetch user profile from API:',
-                apiError
-              );
-            }
-          }
-        }
+        const userInfo = {
+          userId: responseData.id,
+          email: responseData.email,
+          firstName: responseData.firstName,
+          lastName: responseData.lastName,
+          profilePicUrl: responseData.profilePicUrl,
+          role: responseData.role || 'user',
+        };
+        localStorage.setItem('user', JSON.stringify(userInfo));
 
         // Track successful login
         SecurityValidator.trackLoginAttempt(clientIP, true);
@@ -163,15 +78,15 @@ export const login = createAsyncThunk(
           'login',
           true,
           Date.now() - startTime,
-          (decoded as any)?.sub || undefined,
+          responseData.id,
           {
             email: values.email,
           }
         );
 
         return {
-          data: { accessToken, refreshToken, passwordStrength },
-          decoded,
+          data: { passwordStrength: responseData.passwordStrength },
+          userInfo
         };
       } else {
         // Track failed login
@@ -209,8 +124,6 @@ export const login = createAsyncThunk(
 // Simple logout thunk
 export const logout = createAsyncThunk('user/logout', async () => {
   // Clear localStorage
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
   localStorage.removeItem('user');
 
   return true;
@@ -224,9 +137,8 @@ export const updateUser = createAsyncThunk(
     lastName: string;
     firstName: string;
     profilePic?: File;
-    accessToken: string;
   }) => {
-    const { accessToken, firstName, lastName, email, profilePic, role } =
+    const { firstName, lastName, email, profilePic, role } =
       userData;
 
     // Create FormData object
@@ -242,15 +154,9 @@ export const updateUser = createAsyncThunk(
     }
 
     try {
-      const response = await axios.patch(
+      const response = await client.patch(
         `${process.env.NEXT_PUBLIC_API_URL}/users`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'multipart/form-data',
-          },
-        }
+        formData
       );
 
       if (response.status === 200) {
@@ -301,9 +207,7 @@ interface UserState {
   email: string;
   lastName: string;
   firstName: string;
-  accessToken?: string;
   error: string | null;
-  refreshToken?: string;
   userId: string | null;
   profilePicUrl?: string;
   role?: 'admin' | 'user' | null;
@@ -318,8 +222,6 @@ const initialState: UserState = {
   userId: null,
   firstName: '',
   status: 'idle',
-  accessToken: '',
-  refreshToken: '',
   profilePicUrl: '',
 };
 
@@ -329,10 +231,6 @@ export const userSlice = createSlice({
   reducers: {
     setStatusToIdle: (state) => {
       state.status = 'idle';
-    },
-    updateUserTokens: (state, action) => {
-      state.accessToken = action.payload.accessToken;
-      state.refreshToken = action.payload.refreshToken;
     },
     updateUserData: (state, action) => {
       state.userId = action.payload.userId || state.userId;
@@ -350,44 +248,14 @@ export const userSlice = createSlice({
       })
       .addCase(login.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.accessToken = action.payload?.data.accessToken;
-        state.refreshToken = action.payload?.data.refreshToken;
 
-        // Use API user profile data if available, otherwise fall back to JWT
-        const userProfile = action.payload?.userProfile;
-        const jwtDecoded = action.payload?.decoded as any;
-
-        if (userProfile) {
-          // Use data from API
-          state.userId =
-            userProfile.id || userProfile.userId || jwtDecoded?.sub || '';
-          state.email = userProfile.email || jwtDecoded?.email || '';
-          state.firstName = userProfile.firstName || '';
-          state.lastName = userProfile.lastName || '';
-          state.profilePicUrl = userProfile.profilePicUrl || '';
-          state.role = userProfile.role || 'user';
-        } else if (jwtDecoded) {
-          // Fall back to JWT data
-          state.userId =
-            jwtDecoded.sub || jwtDecoded.id || jwtDecoded.userId || '';
-          state.email = jwtDecoded.email || '';
-          state.firstName =
-            jwtDecoded.firstName ||
-            jwtDecoded.first_name ||
-            jwtDecoded.given_name ||
-            '';
-          state.lastName =
-            jwtDecoded.lastName ||
-            jwtDecoded.last_name ||
-            jwtDecoded.family_name ||
-            '';
-          state.role = jwtDecoded.role || 'user';
-          state.profilePicUrl =
-            jwtDecoded.profilePicUrl ||
-            jwtDecoded.profile_pic_url ||
-            jwtDecoded.picture ||
-            '';
-        }
+        const userProfile = action.payload?.userInfo;
+        state.userId = userProfile.userId;
+        state.email = userProfile.email;
+        state.firstName = userProfile.firstName;
+        state.lastName = userProfile.lastName;
+        state.profilePicUrl = userProfile.profilePicUrl || '';
+        state.role = userProfile.role || 'user';
 
         state.error = null;
       })
@@ -405,15 +273,12 @@ export const userSlice = createSlice({
         state.lastName = '';
         state.firstName = '';
         state.status = 'idle';
-        state.accessToken = '';
-        state.refreshToken = '';
         state.profilePicUrl = '';
       })
       .addCase(logout.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message || 'Logout failed';
       })
-
       .addCase(updateUser.pending, (state) => {
         state.status = 'loading';
       })
@@ -473,8 +338,6 @@ export const userSlice = createSlice({
         state.lastName = '';
         state.firstName = '';
         state.status = 'idle';
-        state.accessToken = '';
-        state.refreshToken = '';
         state.profilePicUrl = '';
         state.role = 'user';
       })
@@ -485,7 +348,7 @@ export const userSlice = createSlice({
   },
 });
 
-export const { setStatusToIdle, updateUserTokens, updateUserData } =
+export const { setStatusToIdle, updateUserData } =
   userSlice.actions;
 export const selectUser = (state: any) => state.user;
 export default userSlice.reducer;

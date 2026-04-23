@@ -1,14 +1,12 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import JobPostCard from '../JobPostCard';
-import { TokenManager } from '@/utils/TokenManager';
 import * as navigation from 'next/navigation';
 import * as reduxHooks from '@/redux/hooks';
 
 // Mock dependencies
 vi.mock('@/redux/hooks');
 vi.mock('next/navigation');
-vi.mock('@/utils/TokenManager');
 vi.mock('@/redux/jobs/jobsThunk');
 
 // Mock CompanyLogo
@@ -106,8 +104,6 @@ describe('JobPostCard', () => {
     });
 
     it('navigates to details page on click if authorized', () => {
-        (TokenManager.hasValidTokens as any).mockReturnValue(true);
-        
         render(<JobPostCard {...defaultProps} />);
         
         fireEvent.click(screen.getByText('Software Engineer'));
@@ -116,8 +112,6 @@ describe('JobPostCard', () => {
     });
 
     it('redirects to login if unauthorized', () => {
-        (TokenManager.hasValidTokens as any).mockReturnValue(false);
-        
         render(<JobPostCard {...defaultProps} />);
         
         fireEvent.click(screen.getByText('Software Engineer'));

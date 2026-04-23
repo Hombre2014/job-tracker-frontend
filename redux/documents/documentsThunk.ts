@@ -5,14 +5,9 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 
 export const getDocument = createAsyncThunk(
   'documents/getDocument',
-  async (values: GetDocumentParams, thunkAPI) => {
-    const { accessToken, documentId } = values;
+  async (documentId: string, thunkAPI) => {
     try {
-      const res = await client.get(`/documents/${documentId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.get(`/documents/${documentId}`);
       const data = res.data;
       return data;
     } catch (err: unknown) {
@@ -29,7 +24,7 @@ export const getDocument = createAsyncThunk(
 export const uploadDocument = createAsyncThunk(
   'documents/uploadDocument',
   async (values: UploadDocumentParams, thunkAPI) => {
-    const { file, title, boardId, category, description, accessToken } = values;
+    const { file, title, boardId, category, description } = values;
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -45,7 +40,6 @@ export const uploadDocument = createAsyncThunk(
 
       const res = await client.post(`/documents`, formData, {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'multipart/form-data',
         },
       });
@@ -65,16 +59,11 @@ export const uploadDocument = createAsyncThunk(
 export const attachDocumentToJobApplication = createAsyncThunk(
   'documents/attachDocumentToJobApplication',
   async (values: AttachDocumentParams, thunkAPI) => {
-    const { jobId, documentId, accessToken } = values;
+    const { jobId, documentId } = values;
     try {
       const res = await client.post(
         `/documents/${documentId}/job-application/${jobId}/attach`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+        {}
       );
       const data = res.data;
       return data;
@@ -94,16 +83,11 @@ export const attachDocumentToJobApplication = createAsyncThunk(
 export const detachDocumentFromJobApplication = createAsyncThunk(
   'documents/detachDocumentFromJobApplication',
   async (values: DetachDocumentParams, thunkAPI) => {
-    const { jobId, documentId, accessToken } = values;
+    const { jobId, documentId } = values;
     try {
       const res = await client.post(
         `/documents/${documentId}/job-application/${jobId}/detach`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+        {}
       );
       const data = res.data;
       return data;
@@ -122,14 +106,9 @@ export const detachDocumentFromJobApplication = createAsyncThunk(
 
 export const deleteDocument = createAsyncThunk(
   'documents/deleteDocument',
-  async (values: DeleteDocumentParams, thunkAPI) => {
-    const { documentId, accessToken } = values;
+  async (documentId: string, thunkAPI) => {
     try {
-      const res = await client.delete(`/documents/${documentId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.delete(`/documents/${documentId}`);
       // Return the documentId for filtering in the slice
       return documentId;
     } catch (err: unknown) {
@@ -145,13 +124,9 @@ export const deleteDocument = createAsyncThunk(
 
 export const getDocumentsPerUser = createAsyncThunk(
   'documents/getDocumentsPerUser',
-  async (accessToken: string, thunkAPI) => {
+  async (_, thunkAPI) => {
     try {
-      const res = await client.get('/documents/user', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.get('/documents/user');
       const data = res.data;
       return data;
     } catch (err: unknown) {
@@ -167,14 +142,10 @@ export const getDocumentsPerUser = createAsyncThunk(
 
 export const getDocumentsPerBoard = createAsyncThunk(
   'documents/getDocumentsPerBoard',
-  async (values: { boardId: string; accessToken: string }, thunkAPI) => {
-    const { boardId, accessToken } = values;
+  async (values: { boardId: string; }, thunkAPI) => {
+    const { boardId } = values;
     try {
-      const res = await client.get(`/documents/board/${boardId}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const res = await client.get(`/documents/board/${boardId}`);
       const data = res.data;
       return data;
     } catch (err: unknown) {
@@ -195,12 +166,11 @@ export const updateDocument = createAsyncThunk(
       title: string;
       category: string;
       documentId: string;
-      accessToken: string;
       description?: string;
     },
     thunkAPI
   ) => {
-    const { documentId, title, category, description, accessToken } = values;
+    const { documentId, title, category, description } = values;
     try {
       const formData = new FormData();
       formData.append('title', title);
@@ -211,7 +181,6 @@ export const updateDocument = createAsyncThunk(
 
       const res = await client.patch(`/documents/${documentId}`, formData, {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'multipart/form-data',
         },
       });

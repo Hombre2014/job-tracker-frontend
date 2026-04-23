@@ -1,24 +1,12 @@
 'use client';
 
 import React from 'react';
-import { useAppSelector } from '@/redux/hooks';
 import Navbar from '@/components/LandingPage/Navbar';
 import Sidebar from '@/components/HomePage/SideBar/Sidebar';
 
 const HelpLayout = ({ children }: { children: React.ReactNode }) => {
   // Check authentication state
-  const { accessToken: reduxAccessToken } = useAppSelector(
-    (state) => state.user,
-  );
-  const [isAuthenticated, setIsAuthenticated] =
-    React.useState(!!reduxAccessToken);
-
-  // Check localStorage after hydration to avoid mismatch
-  React.useEffect(() => {
-    const token = reduxAccessToken || localStorage.getItem('accessToken');
-    setIsAuthenticated(!!token);
-  }, [reduxAccessToken]);
-
+  const isAuthenticated = localStorage.getItem('user') ? true : false;
   // Logged-in users: Render with Sidebar (like home pages)
   if (isAuthenticated) {
     return (

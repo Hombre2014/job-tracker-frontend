@@ -6,7 +6,6 @@ import { CaretSortIcon, CheckIcon } from '@radix-ui/react-icons';
 import { cn } from '@/lib/utils';
 import { useAppSelector } from '@/redux/hooks';
 import { Button } from '@/components/ui/button';
-import { TokenManager } from '@/utils/TokenManager';
 import {
   Popover,
   PopoverContent,
@@ -36,7 +35,6 @@ const ComboBoardListBox = forwardRef<HTMLDivElement, ComboBoardListBoxProps>(
     ref
   ) => {
     const [open, setOpen] = useState(false);
-    const hasValidTokens = TokenManager.hasValidTokens();
     const { lastName } = useAppSelector((state) => state.user);
     const { firstName } = useAppSelector((state) => state.user);
     const { boardsStatus } = useAppSelector((state) => state.boards);

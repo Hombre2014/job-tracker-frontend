@@ -66,9 +66,6 @@ const EditCompanyForm = ({
     reset(initialData); // Reset the form values whenever initialData changes
   }, [initialData, reset]);
 
-  const getAccessToken = () =>
-    typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
-
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [showDomainDialog, setShowDomainDialog] = useState(false);
   const [domainValidationData, setDomainValidationData] = useState<{
@@ -81,7 +78,6 @@ const EditCompanyForm = ({
   } | null>(null);
 
   const onSubmit = async (data: z.infer<typeof EditCompanySchema>) => {
-    const accessToken = getAccessToken();
     setSubmitError(null); // Clear previous error at start
 
     const formattedUrl = data.url?.trim()
@@ -111,9 +107,9 @@ const EditCompanyForm = ({
     }
 
     // Validate domain changes
-    if (domainChanged && newDomain && accessToken) {
+    if (domainChanged && newDomain) {
       try {
-        const validation = await validateDomain(newDomain, accessToken);
+        const validation = await validateDomain(newDomain);
         if (!validation.exists) {
           toast.error(
             'Could not validate domain. Please try again or check your connection.',
@@ -141,9 +137,9 @@ const EditCompanyForm = ({
     }
 
     // Check if name changed but domain stayed the same
-    if (nameChanged && !domainChanged && originalDomain && accessToken) {
+    if (nameChanged && !domainChanged && originalDomain) {
       try {
-        const validation = await validateDomain(originalDomain, accessToken);
+        const validation = await validateDomain(originalDomain);
         if (!validation.exists) {
           toast.error(
             'Could not validate domain. Please try again or check your connection.',
@@ -176,17 +172,10 @@ const EditCompanyForm = ({
   };
 
   const performUpdate = async (formattedData: any) => {
-    const accessToken = getAccessToken();
-    if (!accessToken) {
-      setSubmitError('Session expired. Please log in again.');
-      return;
-    }
-
     try {
       const result = await dispatch(
         updateCompany({
           ...formattedData,
-          accessToken,
           companyId: currentJobPost?.company?.id,
         }),
       ).unwrap();

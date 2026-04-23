@@ -30,14 +30,6 @@ const Documents = () => {
   const [documentToEdit, setDocumentToEdit] = useState<JobDocument | null>(
     null
   );
-  const accessToken = (() => {
-    try {
-      return localStorage.getItem('accessToken');
-    } catch (error) {
-      console.warn('Failed to access localStorage:', error);
-      return null;
-    }
-  })();
   const [uploaderInfo, setUploaderInfo] = useState<{
     lastName: string;
     firstName: string;
@@ -51,16 +43,9 @@ const Documents = () => {
   // Function to refresh documents (called after successful upload)
   const handleDocumentsRefresh = async () => {
     // Simple refresh without disruptive re-renders - just re-fetch job data
-    if (job_id && accessToken) {
+    if (job_id) {
       try {
-        // Add cache-busting param to jobPostId (if backend supports it)
-        const cacheBuster = `?t=${Date.now()}`;
-        await dispatch(
-          getJobPost({
-            accessToken,
-            jobPostId: job_id + cacheBuster,
-          })
-        ).unwrap();
+        await dispatch(getJobPost(job_id as string)).unwrap();
       } catch (error) {
         console.warn('Failed to refresh job documents:', error);
       }
@@ -69,7 +54,7 @@ const Documents = () => {
 
   // Fetch user info for uploader details
   useEffect(() => {
-    if (accessToken && !uploaderInfo) {
+    if (!uploaderInfo) {
       // Check if user info is already in Redux state
       if (user.firstName && user.lastName) {
         setUploaderInfo({
@@ -92,7 +77,6 @@ const Documents = () => {
     }
   }, [
     dispatch,
-    accessToken,
     uploaderInfo,
     user.lastName,
     user.firstName,
@@ -101,17 +85,15 @@ const Documents = () => {
 
   // Fetch user documents for link document functionality
   useEffect(() => {
-    if (accessToken) {
-      dispatch(getDocumentsPerUser(accessToken));
-    }
-  }, [dispatch, accessToken]);
+    dispatch(getDocumentsPerUser());
+  }, [dispatch]);
 
   // Handle document selection from LinkDocument
   const handleDocumentSelect = async (
     documentTitle: string,
     documentId: string
   ) => {
-    if (!accessToken || !job_id) {
+    if (!job_id) {
       toast.error('Unable to attach document. Please try again.');
       return;
     }
@@ -120,7 +102,6 @@ const Documents = () => {
       await dispatch(
         attachDocumentToJobApplication({
           documentId,
-          accessToken,
           jobId: job_id as string,
         })
       ).unwrap();
@@ -160,17 +141,9 @@ const Documents = () => {
 
   const handleDeleteDocument = async (documentId: string) => {
     try {
-      if (!accessToken) {
-        toast.error('Authentication required');
-        return;
-      }
-
       // First, get the document details to check how many job applications it's attached to
       const documentDetailsResult = await dispatch(
-        getDocument({
-          documentId,
-          accessToken: accessToken as string,
-        })
+        getDocument(documentId)
       ).unwrap();
 
       const jobApplicationsCount =
@@ -181,8 +154,7 @@ const Documents = () => {
         await dispatch(
           detachDocumentFromJobApplication({
             documentId,
-            jobId: job_id as string,
-            accessToken: accessToken as string,
+            jobId: job_id as string
           })
         ).unwrap();
       }
@@ -190,12 +162,7 @@ const Documents = () => {
       // Only delete the document if it was attached to 1 or fewer job applications
       // (meaning after detaching, it's not attached to any other job applications)
       if (jobApplicationsCount <= 1) {
-        await dispatch(
-          deleteDocument({
-            documentId,
-            accessToken: accessToken as string,
-          })
-        ).unwrap();
+        await dispatch(deleteDocument(documentId)).unwrap();
         toast.success('Document detached and deleted successfully!');
       } else {
         toast.success('Document detached from this job application!');

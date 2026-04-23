@@ -10,14 +10,13 @@ import BoardColumns from '@/components/HomePage/Kanban/Column/BoardColumns';
 const KanbanBoard = () => {
   const dispatch = useAppDispatch();
   const { jobPosts } = useAppSelector((state) => state.jobs);
-  const { accessToken } = useAppSelector((state) => state.user);
 
   // Fetch boards only when no job posts are loaded yet to reduce server requests
   useEffect(() => {
-    if (jobPosts.length === 0 && accessToken) {
-      dispatch(getBoards(accessToken));
+    if (jobPosts.length === 0) {
+      dispatch(getBoards());
     }
-  }, [dispatch, accessToken, jobPosts]);
+  }, [dispatch, jobPosts]);
 
   useEffect(() => {
     return () => {

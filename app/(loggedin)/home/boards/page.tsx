@@ -23,7 +23,6 @@ const UserBoards = () => {
   }
 
   const [isEditing, setIsEditing] = useState(false);
-  const accessToken = localStorage.getItem('accessToken');
   const [currentBoardId, setCurrentBoardId] = useState('');
   const { lastName } = useAppSelector((state) => state.user);
   const { boards } = useAppSelector((state) => state.boards);
@@ -34,11 +33,8 @@ const UserBoards = () => {
   const hasConfirmedRef = useRef(false);
 
   useEffect(() => {
-    // Only fetch boards on mount if we have a token
-    if (accessToken) {
-      void dispatch(getBoards(accessToken));
-    }
-  }, [dispatch, accessToken]);
+    void dispatch(getBoards());
+  }, [dispatch]);
 
   useEffect(() => {
     if (isEditing) {
@@ -81,13 +77,10 @@ const UserBoards = () => {
       await dispatch(
         renameBoard({
           name: trimmed,
-          accessToken: accessToken ?? '',
           id: currentBoardId,
         })
       ).unwrap();
-      if (accessToken) {
-        await dispatch(getBoards(accessToken)).unwrap();
-      }
+      await dispatch(getBoards()).unwrap();
       // Toasts removed per request
     } catch (err: unknown) {
       console.error('Rename failed', err);

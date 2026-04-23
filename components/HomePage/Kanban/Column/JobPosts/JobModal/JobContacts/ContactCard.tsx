@@ -38,7 +38,6 @@ const ContactCard = ({
   // Get a reliable board_id - first check URL params, then contact itself, then look for board object
   const params = useParams();
   const dispatch = useAppDispatch();
-  const accessToken = localStorage.getItem('accessToken');
   const [companyNames, setCompanyNames] = useState<string[]>([]);
   const [showContactModal, setShowContactModal] = useState(false);
   const { firstName, lastName } = useAppSelector((state) => state.user);
@@ -90,10 +89,6 @@ const ContactCard = ({
   useEffect(() => {
     const getCurrentContact = async () => {
       try {
-        if (!accessToken) {
-          setCompanyNames(['No company']);
-          return;
-        }
         // Initialize effectiveBoardId with the current board_id we have
         let effectiveBoardId = board_id;
         // Option 1: If companies data is already available in the contact, use it
@@ -121,9 +116,7 @@ const ContactCard = ({
         if (!effectiveBoardId) {
           try {
             // Try to fetch the first board as default
-            const boards = await dispatch(
-              getBoardsOnly(accessToken),
-            ).unwrap();
+            const boards = await dispatch(getBoardsOnly()).unwrap();
             if (boards && boards.length > 0) {
               // Sort by creation date to get the first created board
               const sortedBoards = [...boards].sort(
@@ -144,7 +137,6 @@ const ContactCard = ({
           const value = {
             contactId: contact.id,
             boardId: effectiveBoardId,
-            accessToken,
           };
 
           try {
@@ -171,7 +163,7 @@ const ContactCard = ({
       }
     };
     getCurrentContact();
-  }, [dispatch, accessToken, board_id, contact]);
+  }, [dispatch, board_id, contact]);
   const handleEditContact = () => {
     setShowContactModal(true);
     setOpenDropdownId(null);
@@ -179,7 +171,7 @@ const ContactCard = ({
 
   const handleDeleteContact = () => {
     dispatch(
-      deleteContact({ id: contact.id, accessToken: accessToken as string }),
+      deleteContact(contact.id),
     )
       .unwrap()
       .then(() => {

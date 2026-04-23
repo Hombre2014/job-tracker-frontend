@@ -16,19 +16,18 @@ import {
 const ArchivedBoards = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const accessToken = localStorage.getItem('accessToken');
   const { archivedBoards } = useAppSelector((state) => state.boards);
 
-  const handleUnarchiveBoard = (accessToken: string, boardId: string) => {
-    dispatch(unarchiveBoard({ accessToken, id: boardId }));
-    dispatch(getBoards(accessToken));
-    dispatch(getArchivedBoards(accessToken));
+  const handleUnarchiveBoard = (boardId: string) => {
+    dispatch(unarchiveBoard({ id: boardId }));
+    dispatch(getBoards());
+    dispatch(getArchivedBoards());
     router.push('/home/boards');
   };
 
   useEffect(() => {
-    dispatch(getArchivedBoards(accessToken as string));
-  }, [dispatch, accessToken]);
+    dispatch(getArchivedBoards());
+  }, [dispatch]);
 
   return (
     <div className="w-full md:w-3/4 xl:w-2/3 2xl:w-1/2 mx-auto">
@@ -59,7 +58,7 @@ const ArchivedBoards = () => {
                   stylings="mt-4 bg-blue-500 text-white"
                   dialogText="Are you sure you want to unarchive this board?"
                   actionFunction={() =>
-                    handleUnarchiveBoard(accessToken as string, board.id)
+                    handleUnarchiveBoard(board.id)
                   }
                 />
               </div>

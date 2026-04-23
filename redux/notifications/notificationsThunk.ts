@@ -66,15 +66,11 @@ export const getBothNotifications = createAsyncThunk<
   { rejectValue: ApiError }
 >(
   'notifications/getBothNotifications',
-  async (accessToken, { rejectWithValue, signal }) => {
-    if (!accessToken) {
-      return rejectWithValue({ message: 'Missing access token' });
-    }
+  async (_, { rejectWithValue, signal }) => {
     try {
       const res = await client.get<NotificationsResponse>(
         '/notifications/report',
         {
-          headers: { Authorization: `Bearer ${accessToken}` },
           signal,
         }
       );
@@ -92,20 +88,16 @@ export const getBothNotifications = createAsyncThunk<
 
 export const createUpdateDeleteNotifications = createAsyncThunk<
   NotificationsResponse,
-  { accessToken: string; notifications: CreateUpdateNotificationRequest },
+  { notifications: CreateUpdateNotificationRequest },
   { rejectValue: ApiError }
 >(
   'notifications/createUpdateDeleteNotifications',
-  async ({ accessToken, notifications }, { rejectWithValue, signal }) => {
-    if (!accessToken) {
-      return rejectWithValue({ message: 'Missing access token' });
-    }
+  async ({ notifications }, { rejectWithValue, signal }) => {
     try {
       const res = await client.post<NotificationsResponse>(
         '/notifications/report',
         notifications,
         {
-          headers: { Authorization: `Bearer ${accessToken}` },
           signal,
         }
       );

@@ -30,15 +30,13 @@ const CreateNewBoard = ({
   const router = useRouter();
   const dispatch = useAppDispatch();
   const [newBoardName, setNewBoardName] = useState('');
-  const accessToken = localStorage.getItem('accessToken');
   const { boards } = useAppSelector((state) => state.boards);
   const [buttonIsDisabled, setButtonIsDisabled] = useState(true);
   const archivedBoards = useAppSelector((state) => state.boards.archivedBoards);
 
   useEffect(() => {
-    const accessToken = localStorage.getItem('accessToken');
-    dispatch(getArchivedBoards(accessToken as string));
-  }, [dispatch, accessToken]);
+    dispatch(getArchivedBoards());
+  }, [dispatch]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -57,8 +55,7 @@ const CreateNewBoard = ({
       alert('Board with that name already exists! Please choose another name.');
       return;
     } else {
-      const values = { name, accessToken };
-      dispatch(createBoard(values));
+      dispatch(createBoard(name));
       router.push('/home/boards/');
       newBoardName && setNewBoardName('');
     }

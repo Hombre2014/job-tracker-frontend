@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { CompanyLogo } from '@/components/CompanyLogo';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
 import { getAllJobApplicationNotes } from '@/redux/notes/notesThunk';
-import { getAllJobPostsPerColumn, updateJobPost } from '@/redux/jobs/jobsThunk';
+import { updateJobPost } from '@/redux/jobs/jobsThunk';
 import {
   Card,
   CardTitle,
@@ -36,25 +36,6 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   const [temporaryMessage, setTemporaryMessage] = useState<string>('');
   const boardColumns = boards.find((board) => board.id === board_id)?.columns;
 
-  useEffect(() => {
-    const accessToken = localStorage.getItem('accessToken');
-    const columnId = localStorage.getItem('columnId');
-    if (
-      !columnId ||
-      columnId === 'null' ||
-      !accessToken ||
-      accessToken === 'null'
-    )
-      return;
-
-    const jobPostsData = {
-      accessToken,
-      columnId,
-    };
-
-    dispatch(getAllJobPostsPerColumn(jobPostsData));
-  }, [dispatch, board_id, job_id]);
-
   const closeModal = () => {
     push(`/home/boards/${board_id}/board`);
   };
@@ -64,17 +45,13 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
   const currentJobPost = safeJobPosts.find((jobPost) => jobPost.id === job_id);
 
   useEffect(() => {
-    const accessToken = localStorage.getItem('accessToken');
-    if (currentJobPost && accessToken) {
+    if (currentJobPost) {
       // Only set localStorage if user is authenticated
       localStorage.setItem('currentJobPost', JSON.stringify(currentJobPost));
     }
   }, [currentJobPost]);
 
   const handleSelectList = (value: string) => {
-    const accessToken = localStorage.getItem('accessToken');
-    if (!accessToken) return;
-
     const chosenColumn = localStorage.getItem('chosenColumn');
 
     setSelectedListName(value);
@@ -126,19 +103,13 @@ const JobDetailsLayout = ({ children }: { children: React.ReactNode }) => {
         jobPostId: job_id,
         columnId: newColumnId,
         statusChangedTime: new Date().toISOString(),
-        accessToken,
         company: {
           name: currentJobPost!.company?.name || '',
         },
       };
 
       dispatch(updateJobPost(updatePayload)).then(() => {
-        dispatch(
-          getAllJobApplicationNotes({
-            accessToken,
-            jobApplicationId: job_id,
-          }),
-        );
+        dispatch(getAllJobApplicationNotes(job_id as string));
       });
 
       setTimeout(() => {

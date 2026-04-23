@@ -9,23 +9,13 @@ import { getAllContactsPerBoard } from '@/redux/contacts/contactsThunk';
 
 const UserContacts = () => {
   const dispatch = useAppDispatch();
-  const accessToken = localStorage.getItem('accessToken');
   const [allUserContacts, setAllUserContacts] = useState<Contact[]>([]);
 
   const fetchAllContacts = useCallback(async () => {
-    if (!accessToken) return;
-
     try {
-      const boardsResponse = await dispatch(
-        getBoardsOnly(accessToken)
-      ).unwrap();
+      const boardsResponse = await dispatch(getBoardsOnly()).unwrap();
       const contactsPromises = boardsResponse.map((board: Board) =>
-        dispatch(
-          getAllContactsPerBoard({
-            accessToken,
-            boardId: board.id,
-          })
-        ).unwrap()
+        dispatch(getAllContactsPerBoard(board.id)).unwrap()
       );
 
       const contactsArrays = await Promise.all(contactsPromises);
@@ -39,7 +29,7 @@ const UserContacts = () => {
     } catch (error) {
       console.error('Error fetching contacts:', error);
     }
-  }, [dispatch, accessToken]);
+  }, [dispatch]);
 
   useEffect(() => {
     fetchAllContacts();

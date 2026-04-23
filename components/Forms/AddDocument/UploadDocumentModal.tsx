@@ -46,7 +46,7 @@ const UploadDocumentModal = ({
 }: UploadDocumentModalProps) => {
   const { board_id, job_id } = useParams();
   const dispatch = useAppDispatch();
-  const { accessToken, firstName, lastName, email } = useAppSelector(
+  const { firstName, lastName, email } = useAppSelector(
     (state) => state.user
   );
 
@@ -166,8 +166,7 @@ const UploadDocumentModal = ({
       !selectedFile ||
       !title.trim() ||
       !category ||
-      !board_id ||
-      !accessToken
+      !board_id
     ) {
       // Add debugging to identify which validation is failing
       console.log('Upload validation failed:', {
@@ -175,14 +174,12 @@ const UploadDocumentModal = ({
         hasTitle: !!title.trim(),
         hasCategory: !!category,
         hasBoardId: !!board_id,
-        hasAccessToken: !!accessToken,
       });
 
       if (!selectedFile) toast.error('No file selected');
       if (!title.trim()) toast.error('Title is required');
       if (!category) toast.error('Category is required');
       if (!board_id) toast.error('Board ID is missing');
-      if (!accessToken) toast.error('Authentication required');
 
       return;
     }
@@ -204,7 +201,6 @@ const UploadDocumentModal = ({
       const uploadResult = await dispatch(
         uploadDocument({
           category,
-          accessToken,
           title: finalTitle, // Use title with preserved extension
           file: selectedFile,
           boardId: board_id as string,
@@ -217,7 +213,6 @@ const UploadDocumentModal = ({
         const attachmentPromises = jobsConnectedToDocument.map((job) =>
           dispatch(
             attachDocumentToJobApplication({
-              accessToken,
               jobId: job.id,
               documentId: uploadResult.id,
             })
@@ -232,12 +227,7 @@ const UploadDocumentModal = ({
           // First, refresh linked jobs if any
           if (jobsConnectedToDocument.length > 0) {
             for (const job of jobsConnectedToDocument) {
-              await dispatch(
-                getJobPost({
-                  accessToken,
-                  jobPostId: job.id,
-                })
-              ).unwrap();
+              await dispatch(getJobPost(job.id)).unwrap();
             }
           }
 
