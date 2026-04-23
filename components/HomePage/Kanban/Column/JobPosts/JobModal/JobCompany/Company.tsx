@@ -70,9 +70,10 @@ const Company = () => {
                 />
                 <h2 className="text-2xl">{companyInfo.name}</h2>
               </div>
-              <p className="text-muted-foreground mb-8 max-h-[360px] overflow-y-auto">
-                {companyInfo.description}
-              </p>
+              <div
+                className="text-muted-foreground mb-8 max-h-[360px] overflow-y-auto"
+                dangerouslySetInnerHTML={{ __html: companyInfo.description }}
+              />
 
               <Link
                 target="_blank"

@@ -197,7 +197,7 @@ const Notes = () => {
           .map((note) => (
             <div
               key={note.id}
-              className="flex flex-col basis-[calc(33.333%-16px)] gap-1"
+              className="flex flex-col basis-[calc(33.333%-16px)] gap-1 min-w-0 overflow-hidden"
             >
               <Card
                 className="w-full min-h-60 max-h-60 overflow-y-auto bg-yellow-50 dark:bg-slate-700 dark:text-white relative rounded-sm hover:border-gray-400 dark:hover:border-gray-300 cursor-pointer"
@@ -247,7 +247,7 @@ const Notes = () => {
                   </DropdownMenu>
                 </div>
                 <CardContent
-                  className="pl-2 pt-0 pr-8 cursor-text text-gray-900 dark:text-gray-100"
+                  className="pl-2 pt-0 pr-8 cursor-text text-gray-900 dark:text-gray-100 over"
                   dangerouslySetInnerHTML={{ __html: note.content }}
                 />
               </Card>

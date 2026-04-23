@@ -10,7 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Input } from '@/components/ui/input';
 import { EditCompanySchema } from '@/schemas';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import TextEditor from '@/components/HomePage/Kanban/Column/JobPosts/JobModal/JobEdit/TextEditor';
 import { FormError } from '@/components/Forms/form-error';
 import { FormSuccess } from '@/components/Forms/form-success';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
@@ -270,10 +270,13 @@ const EditCompanyForm = ({
               <FormItem>
                 <FormLabel>Description</FormLabel>
                 <FormControl>
-                  <Textarea
-                    rows={5}
-                    {...field}
+                  <TextEditor
+                    title=""
+                    id="description"
+                    buttonVisibility={false}
+                    value={field.value || ''}
                     placeholder="Company Description"
+                    sendData={(_: any, value: string) => field.onChange(value)}
                   />
                 </FormControl>
                 <FormMessage />
